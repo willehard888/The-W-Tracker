@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -9,22 +9,21 @@ import {
   Wind as WindIcon,
   Sparkles,
   Hourglass,
-  Crown,
-  Clock,
-  Flame,
+  Check,
   ChevronRight,
   BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fmtInt } from "@/lib/format";
+import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import PageBar from "@/components/ui/page-bar";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
 import { useTrialAccess } from "@/hooks/use-trial-access";
-import EvidenceChip from "@/components/vault/EvidenceChip";
+import { EVIDENCE_LABEL } from "@/components/vault/EvidenceChip";
 import { RECIPE_COUNT } from "@/data/library-counts";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
-import CourseProgressRing from "@/components/vault/CourseProgressRing";
 import VaultCover from "@/components/vault/VaultCover";
 import { hapticImpact } from "@/lib/haptics";
 
@@ -103,21 +102,33 @@ const CATEGORIES: VaultCategory[] = [
   },
 ];
 
+/**
+ * The library, one shelf, covers lead. The opening line is the reader's own
+ * count; the covers are the categories (no frame around them); the pieces
+ * inside a category are hairline rows.
+ */
 const Vault = () => {
   const navigate = useNavigate();
-  const { isPremium, subscriptionLoading, profile } = useAuth();
+  const { isPremium, subscriptionLoading } = useAuth();
   // Trial = full access (the header pill literally promises "Full access ·
   // Nd"). Server RLS agrees since vault_trial_access — has_active_access
   // covers members AND trialists, same gate the AI Coach uses.
   const { isInTrial } = useTrialAccess();
   const hasVaultAccess = isPremium || isInTrial;
-  const [openArticle, setOpenArticle] = useState<{ article: VaultArticle; accent: string } | null>(
+  // `wasRead` is the row's state when its sheet opened: a row that turns read
+  // while the sheet is up gets its commit-pop when the sheet closes, not
+  // while it is hidden behind it.
+  const [openArticle, setOpenArticle] = useState<{ article: VaultArticle; accent: string; wasRead: boolean } | null>(
     null,
   );
+  const [poppedId, setPoppedId] = useState<string | null>(null);
 
-  // Hero stats derived from the real library so they never drift as content
-  // ships. Same cached query the category sections use (react-query dedups).
-  const { data: allVaultArticles } = useVaultArticles();
+  // One cached query for the beat and every category (react-query dedups).
+  const { data: allVaultArticles, isLoading } = useVaultArticles();
+  const { data: progress } = useVaultProgress();
+  const readIds = new Set((progress ?? []).map((p) => p.article_id));
+  const readIdsRef = useRef(readIds);
+  readIdsRef.current = readIds;
 
   useEffect(() => {
     if (subscriptionLoading) return;
@@ -135,7 +146,7 @@ const Vault = () => {
     if (article) {
       const accent =
         CATEGORIES.find((c) => c.id === article.category_id)?.accent ?? "hsl(45 90% 58%)";
-      setOpenArticle({ article, accent });
+      setOpenArticle({ article, accent, wasRead: readIdsRef.current.has(article.id) });
     }
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
@@ -146,112 +157,69 @@ const Vault = () => {
 
   if (!hasVaultAccess) return null;
 
-  const firstName =
-    profile?.username || profile?.display_name || null;
+  const total = allVaultArticles?.length ?? 0;
+  const read = (allVaultArticles ?? []).filter((a) => readIds.has(a.id)).length;
+  const left = total - read;
 
-  // Real counts; fall back to a dash until the cached list resolves (avoids a
-  // "0" flash) rather than to hardcoded numbers that would drift.
-  const articleCount = allVaultArticles?.length ?? null;
-  const citationCount =
-    allVaultArticles?.reduce((n, a) => n + (a.references_json?.length ?? 0), 0) ?? null;
-  const heroStats = [
-    { label: "Articles", value: articleCount != null ? String(articleCount) : "—" },
-    { label: "Categories", value: String(CATEGORIES.length) },
-    { label: "Citations", value: citationCount != null ? `${citationCount}` : "—" },
-  ];
+  const closeArticle = () => {
+    if (openArticle && !openArticle.wasRead && readIds.has(openArticle.article.id)) setPoppedId(openArticle.article.id);
+    setOpenArticle(null);
+  };
 
   return (
     <div className="min-h-full">
-      <PageBar
-        onBack={() => navigate(-1)}
-        action={
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/40 shadow-[0_0_18px_hsl(var(--gold)/0.25)]">
-            <Crown size={11} className="text-gold" strokeWidth={2.6} />
-            <span className="eyebrow text-gold">
-              Premium
-            </span>
-          </div>
-        }
-      />
+      <PageBar title="Vault" onBack={() => navigate(-1)} />
 
       <div className="px-4 pt-4 pb-6">
-      {/* Hero — clean & precise (calm canvas, one gold accent, sharp type) */}
-      <div className="relative mb-5 home-rise home-rise-1 surface-card px-5 pt-7 pb-5 text-center">
-        <div className="mx-auto mb-3 h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_6px_20px_-6px_hsl(var(--gold)/0.5)]">
-          <Sparkles size={26} className="text-background" strokeWidth={2.4} />
-        </div>
-
-        {firstName && (
-          <p className="eyebrow text-gold/80 mb-1.5">
-            Welcome in, {firstName}
+        {/* Opening beat — the reader's own count, then one whisper of type. */}
+        <header className="home-rise">
+          {isLoading ? (
+            <div className="h-7 w-3/4 rounded-lg bg-card/40 skeleton-block" />
+          ) : (
+            <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+              {read > 0 ? (
+                <>
+                  <span className="text-gold glow-gold-text tabular-nums">{fmtInt(read)}</span> read.{" "}
+                  {left > 0 ? `${fmtInt(left)} to go.` : "The whole shelf."}
+                </>
+              ) : total > 0 ? (
+                `${fmtInt(total)} pieces. Start anywhere.`
+              ) : (
+                "Start anywhere."
+              )}
+            </h2>
+          )}
+          <p className="text-[12px] text-muted-foreground leading-relaxed mt-2">
+            Every piece is graded by evidence tier and cites its research. New protocols ship regularly.
           </p>
-        )}
-        <h1 className="font-display text-2xl leading-none font-black tracking-tight mb-2">
-          The <span className="text-gradient-gold">Vault</span>
-        </h1>
-        <p className="text-[12px] text-muted-foreground max-w-[300px] mx-auto leading-relaxed">
-          A curated, evidence-led library of protocols across nutrition, training,
-          recovery, nervous-system regulation and inner work — every article cited.
-        </p>
+        </header>
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {heroStats.map((s) => (
-            <div key={s.label} className="rounded-xl bg-secondary/30 border border-border/50 px-2 py-2">
-              <p className="font-display text-base font-black text-gold leading-none tabular-nums">
-                {s.value}
-              </p>
-              <p className="eyebrow-sm text-muted-foreground mt-1">
-                {s.label}
-              </p>
+        {/* The shelf — covers are the categories. No frame, no strip below. */}
+        <div className="mt-5 space-y-3">
+          {CATEGORIES.map((cat, i) => (
+            <div key={cat.id} className="animate-fade-in-up" style={{ animationDelay: `${120 + i * 45}ms` }}>
+              <VaultCategoryBlock
+                category={cat}
+                poppedId={poppedId}
+                onOpenArticle={(a) => {
+                  hapticImpact("light");
+                  setOpenArticle({ article: a, accent: cat.accent, wasRead: readIds.has(a.id) });
+                }}
+              />
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Banner — calm, single hairline */}
-      <div className="mb-5 surface-card px-4 py-3 home-rise home-rise-2 flex items-start gap-3">
-        <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/30">
-          <Flame size={15} className="text-gold" strokeWidth={2.4} />
-        </div>
-        <div className="min-w-0">
-          <p className="eyebrow text-gold/85 mb-0.5">
-            Founding-member library
-          </p>
-          <p className="text-[12px] text-muted-foreground leading-snug">
-            New protocols ship regularly. Every article is graded by evidence tier
-            and references the underlying research.
-          </p>
-        </div>
-      </div>
-
-      {/* Categories */}
-      <div className="space-y-3 home-rise home-rise-3">
-        {CATEGORIES.map((cat) => (
-          <VaultCategoryBlock
-            key={cat.id}
-            category={cat}
-            onOpenArticle={(a) => {
-              hapticImpact("light");
-              setOpenArticle({ article: a, accent: cat.accent });
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="mt-8 text-center">
         {/* No hardcoded price — a US/UK member paid a different number than the
             euro list price, and the store price is the only truth. */}
-        <p className="eyebrow text-muted-foreground/70">
-          Premium member
-        </p>
-      </div>
+        <p className="mt-8 text-center text-[11px] text-muted-foreground/70">Premium member</p>
 
-      <VaultArticleSheet
-        article={openArticle?.article ?? null}
-        accent={openArticle?.accent ?? "hsl(var(--gold))"}
-        open={!!openArticle}
-        onClose={() => setOpenArticle(null)}
-      />
+        <VaultArticleSheet
+          article={openArticle?.article ?? null}
+          accent={openArticle?.accent ?? "hsl(var(--gold))"}
+          open={!!openArticle}
+          onClose={closeArticle}
+        />
       </div>
     </div>
   );
@@ -259,9 +227,11 @@ const Vault = () => {
 
 const VaultCategoryBlock = ({
   category,
+  poppedId,
   onOpenArticle,
 }: {
   category: VaultCategory;
+  poppedId: string | null;
   onOpenArticle: (a: VaultArticle) => void;
 }) => {
   const Icon = category.icon;
@@ -272,93 +242,77 @@ const VaultCategoryBlock = ({
   const { data: allArticles, isLoading, error, refetch } = useVaultArticles();
   const { data: progress } = useVaultProgress();
   const articles = (allArticles ?? []).filter((a) => a.category_id === category.id);
-  const completedIds = new Set((progress ?? []).map((p) => p.article_id));
-  const doneCount = articles.filter((a) => completedIds.has(a.id)).length;
+  const readIds = new Set((progress ?? []).map((p) => p.article_id));
+  const readCount = articles.filter((a) => readIds.has(a.id)).length;
 
   return (
-    <div className="relative w-full text-left rounded-2xl overflow-hidden border border-border/60 bg-card/40 transition-colors duration-200">
+    <div>
+      {/* The cover IS the category: art, name, a read count. Tap to open the shelf. */}
       <button
         type="button"
         onClick={() => {
           hapticImpact("light");
           setExpanded((v) => !v);
         }}
-        className="press relative block w-full text-left transition-transform"
+        aria-expanded={expanded}
+        className="relative block w-full aspect-[16/7] rounded-2xl overflow-hidden text-left"
       >
-        {/* Premium cover banner — hand-crafted SVG art per category */}
-        <div className="relative aspect-[16/7] overflow-hidden">
-          <VaultCover id={category.id} accent={category.accent} />
-          <div className="absolute top-3 right-3 z-10">
-            <CourseProgressRing done={doneCount} total={articles.length} color={category.accent} />
-          </div>
-          <div className="absolute inset-x-0 bottom-0 z-10 p-4">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Icon size={13} style={{ color: category.accent }} strokeWidth={2.6} />
-              <p className="eyebrow" style={{ color: category.accent }}>
-                {category.tagline}
-              </p>
-            </div>
-            <p className="font-display text-[19px] font-black leading-none tracking-tight text-white drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">
-              {category.title}
-            </p>
-          </div>
-        </div>
-
-        {/* Description + expand caret */}
-        <div className="flex items-center gap-2 px-4 py-3">
-          <p className="text-[12px] text-muted-foreground leading-snug flex-1">
-            {category.description}
+        <VaultCover id={category.id} accent={category.accent} />
+        {articles.length > 0 && (
+          <p className="absolute top-3 right-3 z-10 text-[11px] font-bold tabular-nums text-white/80">
+            {readCount} of {articles.length} read
           </p>
-          <ChevronRight
-            size={15}
-            className={cn("text-muted-foreground shrink-0 transition-transform", expanded && "rotate-90")}
-          />
+        )}
+        <div className="absolute inset-x-0 bottom-0 z-10 p-4 pr-10">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold mb-1" style={{ color: category.accent }}>
+            <Icon size={12} strokeWidth={2.6} aria-hidden />
+            {category.tagline}
+          </p>
+          <p className="font-display text-[19px] font-black leading-none tracking-tight text-white drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">
+            {category.title}
+          </p>
         </div>
+        <ChevronRight
+          size={16}
+          className={cn("absolute bottom-4 right-4 z-10 text-white/70 transition-transform", expanded && "rotate-90")}
+          aria-hidden
+        />
       </button>
 
       {expanded && (
-        <div className="relative px-4 pb-4 pt-1 space-y-2 border-t border-border/30">
+        <div className="px-1 divide-y divide-border/35">
+          <p className="py-3 text-[12px] text-muted-foreground leading-snug">{category.description}</p>
+
           {/* Recipes category → the full meal-prep recipe collection (poster
-              style + batch scaler). Leads the section above the articles. */}
+              style + batch scaler). A quiet row leading the pieces. */}
           {category.id === "recipes" && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); navigate("/recipes"); }}
-              className="press w-full text-left rounded-xl border border-gold/35 bg-gradient-to-br from-gold/[0.1] via-card/90 to-card p-3.5 transition-transform"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">
-                  <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.5} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="eyebrow text-gold/85 mb-0.5">Meal-prep recipes</p>
-                  <p className="text-[12px] font-bold leading-tight">{RECIPE_COUNT} high-protein recipes · scale 1×–5× · storage &amp; reheat</p>
-                </div>
-                <ChevronRight size={16} className="text-gold shrink-0" />
-              </div>
+            <button type="button" onClick={() => navigate("/recipes")} className="w-full flex items-center gap-3 py-3 text-left">
+              <Utensils size={16} className="text-muted-foreground shrink-0" aria-hidden />
+              <span className="flex-1 min-w-0">
+                <span className="block text-[13px] font-bold leading-tight">Meal-prep recipes</span>
+                <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">
+                  {RECIPE_COUNT} high-protein recipes · scale 1×–5× · storage &amp; reheat
+                </span>
+              </span>
+              <ChevronRight size={14} className="text-muted-foreground shrink-0" aria-hidden />
             </button>
           )}
 
-          {isLoading && (
-            <div className="space-y-2">
-              {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-16 rounded-xl bg-card/40 border border-border/40 skeleton-block" />
-              ))}
-            </div>
-          )}
+          {isLoading &&
+            [0, 1, 2].map((i) => (
+              <div key={i} className="py-3">
+                <div className="h-9 rounded-lg bg-card/40 skeleton-block" />
+              </div>
+            ))}
 
           {!isLoading && error && (
-            <div className="py-3 text-center">
+            <div className="py-4 text-center">
               {/* Real retry — this page has no pull-to-refresh, so the old
                   "Pull to refresh" copy asked for something impossible. */}
               <p className="text-[12px] text-rose-400/90 mb-2">Couldn't load articles.</p>
-              <button
-                type="button"
-                onClick={() => refetch()}
-                className="press inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/[0.06] px-3 py-1.5 text-[12px] font-bold text-gold transition"
-              >
+              <Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => refetch()}>
                 Try again
-              </button>
+              </Button>
             </div>
           )}
 
@@ -368,67 +322,36 @@ const VaultCategoryBlock = ({
 
           {!isLoading &&
             articles.map((a) => {
-              const done = completedIds.has(a.id);
+              const isRead = readIds.has(a.id);
               return (
                 <button
                   key={a.id}
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenArticle(a);
-                  }}
-                  className="press w-full text-left rounded-xl border border-border/50 bg-background/40 hover:border-border hover:bg-background/60 p-3 transition "
-                  style={
-                    done
-                      ? {
-                          borderColor: `${category.accent}55`,
-                          background: `linear-gradient(135deg, ${category.accent}10, hsl(var(--background) / 0.4) 80%)`,
-                        }
-                      : undefined
-                  }
+                  onClick={() => onOpenArticle(a)}
+                  className={cn("w-full flex items-start gap-3 py-3 text-left", poppedId === a.id && "commit-pop")}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        {a.lesson_number && (
-                          <span
-                            className="eyebrow-sm tabular-nums shrink-0"
-                            style={{ color: category.accent }}
-                          >
-                            L{a.lesson_number}
-                          </span>
-                        )}
-                        <p className="font-display text-[13px] font-black tracking-tight leading-tight">
-                          {a.title}
-                        </p>
-                      </div>
-                      {a.subtitle && (
-                        <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug">
-                          {a.subtitle}
-                        </p>
-                      )}
-                      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                        <EvidenceChip tier={a.evidence_tier} />
-                        <span className="eyebrow-sm inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-muted-foreground">
-                          <Clock size={10} strokeWidth={3} />
-                          {a.read_time_min} min
-                        </span>
-                        {done && (
-                          <span
-                            className="eyebrow-sm inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full"
-                            style={{
-                              background: `${category.accent}22`,
-                              color: category.accent,
-                              border: `1px solid ${category.accent}55`,
-                            }}
-                          >
-                            ✓ Done
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-1" />
-                  </div>
+                  {a.lesson_number != null && (
+                    <span
+                      className="w-5 shrink-0 font-display text-[13px] font-black tabular-nums leading-tight"
+                      style={{ color: category.accent }}
+                    >
+                      {a.lesson_number}
+                    </span>
+                  )}
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-display text-[13px] font-black tracking-tight leading-tight">{a.title}</span>
+                    {a.subtitle && (
+                      <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{a.subtitle}</span>
+                    )}
+                    <span className="eyebrow-sm block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
+                      {EVIDENCE_LABEL[a.evidence_tier]} · {a.read_time_min} min
+                    </span>
+                  </span>
+                  {isRead ? (
+                    <Check size={14} className="shrink-0 mt-0.5" style={{ color: category.accent }} aria-hidden />
+                  ) : (
+                    <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
+                  )}
                 </button>
               );
             })}

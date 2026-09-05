@@ -18,7 +18,6 @@ import {
   TrialSlide,
   PushSlide,
   FinaleSlide,
-  ONBOARDING_KEYFRAMES,
 } from "@/components/onboarding/OnboardingSlides";
 import {
   GOAL_OPTIONS,
@@ -141,7 +140,6 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-full gradient-dark flex flex-col px-6 py-6 safe-top safe-bottom overflow-hidden">
-      <style>{ONBOARDING_KEYFRAMES}</style>
       <ConfettiBurst active={confetti} />
 
       {/* Top chrome: progress + skip (hidden on welcome & finale) */}

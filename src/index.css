@@ -2787,3 +2787,18 @@ p, span.selectable, input, textarea, [contenteditable] {
     animation: none !important;
   }
 }
+
+/* Auth — the onboarding flame hero's keyframes. They were a <style> block
+   injected by Onboarding.tsx; `float` is renamed so it can no longer shadow
+   the app-wide `float` above while the flow is mounted. */
+@keyframes onboarding-float { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-14px) scale(1.15); } }
+@keyframes pulseRing { 0% { transform: scale(0.6); opacity: 0.6; } 100% { transform: scale(1.4); opacity: 0; } }
+@keyframes flameDance {
+  0%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-6px) scale(1.05) rotate(-3deg); }
+  75% { transform: translateY(-3px) scale(1.02) rotate(3deg); }
+}
+@keyframes fadeSlideUp { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  [style*="onboarding-float"], [style*="pulseRing"], [style*="flameDance"] { animation: none !important; }
+}

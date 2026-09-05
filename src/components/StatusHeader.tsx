@@ -98,6 +98,8 @@ const StatusHeader = () => {
 
   if (!user || !profile) return null;
   if (HIDDEN_ROUTES.has(location.pathname)) return null;
+  // Active workout — full-screen, no chrome.
+  if (location.pathname.startsWith("/coach/session/")) return null;
   if (
     location.pathname.startsWith("/oauth") ||
     location.pathname.startsWith("/callback") ||

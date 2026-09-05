@@ -1,6 +1,7 @@
 import { isRestDay } from "@/lib/training/session";
 import { useMemo, useState } from "react";
-import { Check, ChevronDown, Loader2, Wind } from "lucide-react";
+import { Check, ChevronDown, Loader2, Wind, Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
@@ -25,6 +26,7 @@ interface Props {
 
 const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged }: Props) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [rpeSaving, setRpeSaving] = useState<number | null>(null);
   const [openWarmup, setOpenWarmup] = useState(false);
@@ -118,6 +120,22 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           <p className="text-[12px] text-muted-foreground mt-1 mb-4">
             {day.duration_min} min · {day.blocks.length} block{day.blocks.length !== 1 && "s"}
           </p>
+        )}
+
+        {/* The primary action on this card is starting, not reading. The list
+            below stays for anyone who wants to see the session first. */}
+        {!isRest && !todayLog && day.blocks.length > 0 && (
+          <Button
+            variant="ember"
+            size="lg"
+            className="w-full mb-4"
+            onClick={() => {
+              hapticImpact("medium");
+              navigate(`/coach/session/${currentWeek}/${todayDayIndex}`);
+            }}
+          >
+            <Play size={16} aria-hidden /> Start workout
+          </Button>
         )}
 
         {!isRest ? (

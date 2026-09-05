@@ -75,6 +75,9 @@ const TrainingZone = () => {
   );
 
   const open = () => go("/coach/program");
+  // Start goes straight into the runner — the whole point is removing the
+  // steps between "I have a session" and "I am doing it".
+  const startSession = () => go(`/coach/session/${currentWeek}/${todayDayIndex}`);
 
   return (
     <div className="surface-card surface-card-quiet flex items-center">
@@ -116,7 +119,7 @@ const TrainingZone = () => {
           day with a Start button would be asking for the wrong thing. */}
       {isTrainingDay(day) && !done && (
         <div className="pr-2 shrink-0">
-          <Button variant="outline" size="sm" className="min-h-11" onClick={open}>
+          <Button variant="outline" size="sm" className="min-h-11" onClick={startSession}>
             Start
           </Button>
         </div>

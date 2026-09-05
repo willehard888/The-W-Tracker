@@ -94,7 +94,11 @@ const BottomNav = () => {
     navigate(path);
   }, [location.pathname, navigate]);
 
-  if (HIDDEN_PATHS.has(location.pathname) || location.pathname.startsWith("/chat/")) {
+  // The active workout owns the whole screen: nothing should compete with the
+  // set in front of the athlete, and a stray tab tap mid-session loses their place.
+  if (HIDDEN_PATHS.has(location.pathname)
+      || location.pathname.startsWith("/chat/")
+      || location.pathname.startsWith("/coach/session/")) {
     return null;
   }
 

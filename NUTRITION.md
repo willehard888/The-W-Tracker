@@ -6,8 +6,6 @@ mirrored on the client, a meal diary with per-item nutrition snapshots, user rec
 lookup, an AI photo scanner that only *identifies* food, a daily dashboard and personal
 targets. This file is the part that needs a human with keys.
 
-**Slow connection?** The JSONL dump is 12.8 GB; on a ~3 MB/s link that is over an hour. The CSV export (`en.openfoodfacts.org.products.csv.gz`, 1.3 GB) carries the same per-100 g values and barcodes but only one product name per product; `python3 scripts/nutrition/off-csv-to-jsonl.py off.csv.gz | gzip -1 > off-nordic.jsonl.gz` turns its Nordic rows into the JSONL shape `off.mts` reads (used for the first load on 2026-09-05: 4.5 M rows → 93 k Nordic → 33 k with kcal + a valid barcode, 58 s to ingest).
-
 ## One-time setup (founder)
 
 1. **Push the schema.** Pre-flight, then push:
@@ -93,6 +91,8 @@ products edited since then are re-ingested.
 reference `foods` with `ON DELETE RESTRICT`, and diary items keep their snapshots but lose the
 link. Attribution: "Data from Open Food Facts (ODbL)" — the in-app sheet renders the fuller
 line from `food_sources`.
+
+**Slow connection?** The JSONL dump is 12.8 GB; on a ~3 MB/s link that is over an hour. The CSV export (`en.openfoodfacts.org.products.csv.gz`, 1.3 GB) carries the same per-100 g values and barcodes but only one product name per product; `python3 scripts/nutrition/off-csv-to-jsonl.py off.csv.gz | gzip -1 > off-nordic.jsonl.gz` turns its Nordic rows into the JSONL shape `off.mts` reads (used for the first load on 2026-09-05: 4.5 M rows → 93 k Nordic → 33 k with kcal + a valid barcode, 58 s to ingest).
 
 ## Data sources and what we owe them
 

@@ -7,6 +7,7 @@ import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import CoachStrip from "@/components/home/CoachStrip";
+import TrainingZone from "@/components/coach/TrainingZone";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -399,6 +400,17 @@ const Index = () => {
           </ErrorBoundary>
         </div>
       )}
+
+      {/* ── TRAINING — today's prescribed session, stated plainly. Same quiet
+             grammar as Fuel, and no gold of its own: the hero and the W-Index
+             keep Home's whole gold budget. Before this the day's exercises
+             lived on exactly one screen two taps away, and nothing on Home
+             ever mentioned them. ── */}
+      <div className="home-rise home-rise-4 mb-6 relative z-10">
+        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+          <TrainingZone />
+        </ErrorBoundary>
+      </div>
 
       {/* ── COACH — a whisper, not a card. The coach's one line in its own
              voice; a low quiet band so it reads as a presence, never a second

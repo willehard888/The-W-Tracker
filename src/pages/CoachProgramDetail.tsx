@@ -6,6 +6,7 @@ import WeekStrip from "@/components/coach/WeekStrip";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
 import TodaySessionCard from "@/components/coach/TodaySessionCard";
 import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
+import ProgramReveal from "@/components/coach/ProgramReveal";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +26,10 @@ const CoachProgramDetail = () => {
   const navigate = useNavigate();
   const { isElite } = useAuth();
   const [showRegen, setShowRegen] = useState(false);
+  // Set the moment generation returns; cleared when the athlete starts. Local
+  // state on purpose — the durable "has seen the reveal" version arrives with
+  // the TRAINING_PROGRAM_READY onboarding event.
+  const [justGenerated, setJustGenerated] = useState(false);
   const {
     isLoading,
     program,
@@ -93,13 +98,28 @@ const CoachProgramDetail = () => {
                 via your athlete profile — the plan adapts each week.
               </p>
             </div>
-            <ProgramOnboarding onGenerated={() => refetch()} />
+            <ProgramOnboarding
+              onGenerated={() => {
+                // The reveal is the payoff for a 25-second wait. Without it the
+                // athlete lands straight in a collapsed four-week accordion
+                // with nothing telling them what was built or where to start.
+                setJustGenerated(true);
+                refetch();
+              }}
+            />
           </>
         )}
 
         {/* Has program — full layout */}
         {!isLoading && program && (
           <>
+            {justGenerated && (
+              <ProgramReveal
+                program={program}
+                currentWeek={currentWeek}
+                onStart={() => setJustGenerated(false)}
+              />
+            )}
             <TodaySessionCard
               program={program}
               currentWeek={currentWeek}
@@ -131,7 +151,11 @@ const CoachProgramDetail = () => {
             )}
             {isElite && showRegen && (
               <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.05] to-card p-1">
-                <ProgramOnboarding onGenerated={() => { setShowRegen(false); refetch(); }} />
+                {/* A new block earns the same reveal — it is a different plan,
+                    and "what changed and why" is the whole question here. */}
+                <ProgramOnboarding
+                  onGenerated={() => { setShowRegen(false); setJustGenerated(true); refetch(); }}
+                />
               </div>
             )}
           </>

@@ -18,7 +18,7 @@ const RULES = [
   { re: /purple-[1-9]00/, msg: "stock violet — use gold/ember tokens" },
   // Vocabulary
   { re: /tracking-\[0\.22em\]|tracking-widest|tracking-\[0\.1[468]em\]/, msg: "hand-rolled eyebrow — use .eyebrow / .eyebrow-sm",
-    exempt: [UI, "src/components/StatusHeader.tsx", "src/pages/Landing.tsx", "src/components/StoryShareModal.tsx", "src/components/paywall/PilotCodeRedeem.tsx", "src/components/TierLadder.tsx"] },
+    exempt: [UI, "src/components/StatusHeader.tsx", "src/pages/Landing.tsx", "src/components/StoryShareModal.tsx", "src/components/paywall/PilotCodeRedeem.tsx"] },
   { re: /\.toLocaleString\(\)/, msg: "locale grouping — use fmtInt/fmtUnit from @/lib/format", stripComments: true, exempt: ["src/lib/format.ts"] },
   { re: /\.\.\.(?=["'`<]|\s*<\/)/, msg: "three dots — use the … glyph", stripComments: true, exempt: ["src/main.tsx"] },
   { re: /(?<![\w.])confirm\(/, msg: "window.confirm — use ConfirmDialog", exempt: [/__tests__/] },

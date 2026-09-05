@@ -63,6 +63,7 @@ export interface OffProduct {
   product_quantity_unit?: string;
   serving_size?: string;
   serving_quantity?: number | string;
+  serving_quantity_unit?: string;
   nutrition_data_per?: string;
   nutriments?: Record<string, unknown>;
   image_front_small_url?: string;
@@ -98,6 +99,16 @@ const OFF_QUALITY_KEYS = ["energy-kcal", "proteins", "fat", "carbohydrates", "su
 const USDA_CARBS_ID = 1005; // "Carbohydrate, by difference" — includes fibre
 const USDA_FIBER_ID = 1079;
 const USDA_COUNTRY: Record<string, string> = { "United States": "US" };
+/** OFF country tag → ISO code, in priority order (a product sold in several wins the first). */
+export const OFF_COUNTRIES: ReadonlyArray<readonly [tag: string, code: string]> = [
+  ["en:finland", "FI"],
+  ["en:sweden", "SE"],
+  ["en:norway", "NO"],
+  ["en:denmark", "DK"],
+  ["en:estonia", "EE"],
+];
+const SERVING_RE = /(\d+(?:[.,]\d+)?)\s*(g|gr|gram|grams|ml|cl|dl|l)\b/gi;
+const TO_ML: Record<string, number> = { ml: 1, cl: 10, dl: 100, l: 1000 };
 
 export function buildNutrientMaps(defs: NutrientDef[]): NutrientMaps {
   const byOff = new Map<string, NutrientRef>();
@@ -140,6 +151,28 @@ function clip(s: string | null | undefined, max = 200): string | null {
 
 const round4 = (n: number): number => Math.round(n * 1e4) / 1e4;
 
+// ponytail: single country column — add foods.countries[] if the app ships in Sweden
+export function offCountry(tags: string[] | undefined): string | null {
+  if (!tags?.length) return null;
+  const set = new Set(tags);
+  return OFF_COUNTRIES.find(([tag]) => set.has(tag))?.[1] ?? null;
+}
+
+/**
+ * "1 slice (25 g)" → 25 g, "2 dl" → 200 ml (density 1). The LAST unit wins:
+ * OFF writes the gram weight after the household unit. null when absent or
+ * outside (0, MAX_SERVING_G].
+ */
+export function parseServingSize(s: string | null | undefined): { grams: number; unit: "g" | "ml" } | null {
+  let m: RegExpMatchArray | null = null;
+  for (const x of (s ?? "").matchAll(SERVING_RE)) m = x;
+  if (!m) return null;
+  const unit = m[2].toLowerCase();
+  const grams = round4(Number(m[1].replace(",", ".")) * (TO_ML[unit] ?? 1));
+  if (!(grams > 0) || grams > MAX_SERVING_G) return null;
+  return { grams, unit: unit in TO_ML ? "ml" : "g" };
+}
+
 /** OFF `_100g` values (grams for every mass nutrient) with the documented fallbacks filled in. */
 function offPer100g(nutriments: Record<string, unknown>): Map<string, number> {
   const out = new Map<string, number>();
@@ -148,7 +181,8 @@ function offPer100g(nutriments: Record<string, unknown>): Map<string, number> {
     const n = num(v);
     if (n !== null && n >= 0) out.set(k.slice(0, -"_100g".length), n);
   }
-  const kj = out.get("energy-kj");
+  // The dump often carries only `energy_100g`, which is kJ.
+  const kj = out.get("energy-kj") ?? out.get("energy");
   if (!out.has("energy-kcal") && kj !== undefined) out.set("energy-kcal", kj / 4.184);
   const salt = out.get("salt");
   const sodium = out.get("sodium");
@@ -178,8 +212,15 @@ export function mapOffProduct(p: OffProduct, maps: NutrientMaps, requestedCode?:
   if (nutrients[KCAL_KEY] === undefined) return null;
 
   const sq = num(p.serving_quantity);
-  const servings: IngestServing[] = sq !== null && sq > 0 && sq <= MAX_SERVING_G
-    ? [{ label: clip(p.serving_size, 80) ?? `1 serving (${sq} g)`, grams: sq, source_unit: "serving", is_default: true }]
+  const sv = sq !== null && sq > 0 && sq <= MAX_SERVING_G ? { grams: sq, unit: "g" } : parseServingSize(p.serving_size);
+  const ml = sv?.unit === "ml" || (p.serving_quantity_unit ?? "").trim().toLowerCase() === "ml";
+  const servings: IngestServing[] = sv
+    ? [{
+      label: clip(p.serving_size, 80) ?? `1 serving (${sv.grams} ${ml ? "ml" : "g"})`,
+      grams: sv.grams,
+      source_unit: ml ? "ml" : "serving",
+      is_default: true,
+    }]
     : [];
 
   const barcode = normalizeBarcode(code);
@@ -192,7 +233,7 @@ export function mapOffProduct(p: OffProduct, maps: NutrientMaps, requestedCode?:
     // main-language `product_name` still has to land in one of them.
     name_en: nameEn ?? (nameFi ? null : name),
     brand: clip(p.brands?.split(",")[0], 120),
-    country: p.countries_tags?.includes("en:finland") ? "FI" : null,
+    country: offCountry(p.countries_tags),
     category: null,
     food_type: "branded",
     data_quality: OFF_QUALITY_KEYS.every((k) => per100.has(k)) ? 2 : 3,

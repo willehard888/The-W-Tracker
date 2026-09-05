@@ -8,6 +8,8 @@ import {
   mapOffProduct,
   mapUsdaFood,
   normalizeBarcode,
+  offCountry,
+  parseServingSize,
   type NutrientDef,
   type OffProduct,
   type UsdaFood,
@@ -176,7 +178,7 @@ describe("mapOffProduct", () => {
     p.serving_size = undefined;
     delete p.nutriments!.salt_100g;
     const food = mapOffProduct(p, maps)!;
-    expect(food).toMatchObject({ name: "Bread", name_fi: null, name_en: "Rye bread", brand: null, country: null, data_quality: 3 });
+    expect(food).toMatchObject({ name: "Bread", name_fi: null, name_en: "Rye bread", brand: null, country: "SE", data_quality: 3 });
     expect(food.servings).toEqual([]);
 
     // Only a main-language name: it still lands in name_en so search_text covers it.
@@ -189,6 +191,34 @@ describe("mapOffProduct", () => {
     expect(f2.name_en).toBe(f2.name);
   });
 
+  it("takes the serving from serving_size when serving_quantity is absent, ml when the unit says so", () => {
+    const fromSize = fullOff();
+    fromSize.serving_quantity = undefined;
+    fromSize.serving_size = "1 slice (25 g)";
+    expect(mapOffProduct(fromSize, maps)!.servings).toEqual([
+      { label: "1 slice (25 g)", grams: 25, source_unit: "serving", is_default: true },
+    ]);
+
+    const ml = fullOff();
+    ml.serving_quantity = undefined;
+    ml.serving_size = "2 dl";
+    expect(mapOffProduct(ml, maps)!.servings).toEqual([{ label: "2 dl", grams: 200, source_unit: "ml", is_default: true }]);
+
+    const unit = fullOff();
+    unit.serving_quantity = 250;
+    unit.serving_quantity_unit = "ml";
+    unit.serving_size = undefined;
+    expect(mapOffProduct(unit, maps)!.servings).toEqual([
+      { label: "1 serving (250 ml)", grams: 250, source_unit: "ml", is_default: true },
+    ]);
+  });
+
+  it("derives kcal from the dump's energy_100g (kJ) when that is the only energy key", () => {
+    const p = fullOff();
+    p.nutriments = { energy_100g: 2092, proteins_100g: 1 };
+    expect(mapOffProduct(p, maps)!.nutrients.kcal).toBe(500);
+  });
+
   it("returns null without a usable code or name; uses the requested code when the record has none", () => {
     const p = fullOff();
     p.code = undefined;
@@ -197,6 +227,29 @@ describe("mapOffProduct", () => {
     const nameless = fullOff();
     nameless.product_name = nameless.product_name_fi = nameless.product_name_en = "  ";
     expect(mapOffProduct(nameless, maps)).toBeNull();
+  });
+});
+
+describe("offCountry", () => {
+  it("picks the first Nordic tag in priority order, null outside the list", () => {
+    expect(offCountry(["en:sweden", "en:finland"])).toBe("FI");
+    expect(offCountry(["en:estonia"])).toBe("EE");
+    expect(offCountry(["en:germany"])).toBeNull();
+    expect(offCountry(undefined)).toBeNull();
+  });
+});
+
+describe("parseServingSize", () => {
+  it.each([
+    ["1 slice (25 g)", { grams: 25, unit: "g" }],
+    ["30g", { grams: 30, unit: "g" }],
+    ["250 ml", { grams: 250, unit: "ml" }],
+    ["2 dl", { grams: 200, unit: "ml" }],
+    ["1,5 l", { grams: 1500, unit: "ml" }],
+    ["1 portion", null],
+    ["6000 g", null],
+  ])("%s", (input, expected) => {
+    expect(parseServingSize(input)).toEqual(expected);
   });
 });
 

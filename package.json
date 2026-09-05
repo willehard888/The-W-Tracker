@@ -21,6 +21,7 @@
     "types:gen": "supabase gen types typescript --project-id gcwuvijcuzhunkcauzom --schema public > src/integrations/supabase/types.ts",
     "nutrition:fineli": "vite-node scripts/nutrition/fineli.mts --",
     "nutrition:usda": "vite-node scripts/nutrition/usda.mts --",
+    "nutrition:off": "vite-node scripts/nutrition/off.mts --",
     "nutrition:report": "vite-node scripts/nutrition/report.mts"
   },
   "dependencies": {

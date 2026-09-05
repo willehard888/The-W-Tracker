@@ -50,9 +50,47 @@ targets. This file is the part that needs a human with keys.
    ```
    Commit `src/integrations/supabase/types.ts` with the feature.
 
-Branded products are not bulk-loaded: `nutrition-lookup` fetches them from Open Food Facts
-and USDA Branded on demand (barcode scan, or the explicit "Search online" button) and caches
-them into the same tables. Unknown barcodes are remembered for 7 days so OFF is not hammered.
+## Open Food Facts bulk import (Nordic)
+
+Branded products sold in FI/SE/NO/DK/EE are bulk-loaded from the OFF JSONL dump (source `off`,
+`source_id` = the raw OFF code, the same row `nutrition-lookup` writes on demand). Everything
+else branded still arrives on demand through `nutrition-lookup` (barcode scan, "Search online"),
+and unknown barcodes are remembered for 7 days so OFF is not hammered.
+
+Expect 150–200 k products ≈ 0.5 GB in Postgres (foods + nutrients + servings + barcodes) —
+a Pro project, not the free tier. The dump itself is 12.8 GB gzipped and is streamed through
+`grep` once; only the Nordic slice (≈0.4–0.7 GB) is kept on disk.
+
+```bash
+export SCRATCH=${NUTRITION_SCRATCH:-/private/tmp/claude-501/-Users-rasmuspetterson-The-W-Tracker/41b11332-bd41-444e-83f8-5fdc2543bd10/scratchpad/nutrition}; mkdir -p "$SCRATCH"
+curl -sSL --retry 5 https://static.openfoodfacts.org/data/openfoodfacts-products.jsonl.gz | gunzip \
+ | LC_ALL=C grep -aF -e '"en:finland"' -e '"en:sweden"' -e '"en:norway"' -e '"en:denmark"' -e '"en:estonia"' \
+ | gzip -1 > "$SCRATCH/off-nordic.jsonl.gz"        # 12.8 GB gz streamed, never stored; ≈0.4–0.7 GB result
+export SUPABASE_SERVICE_ROLE_KEY=<service role key>
+npm run nutrition:off -- --file "$SCRATCH/off-nordic.jsonl.gz" --dry-run --limit 20
+npm run nutrition:off -- --file "$SCRATCH/off-nordic.jsonl.gz" --concurrency 3      # ~10–20 min, resumable
+npm run nutrition:report
+supabase db query --linked "ANALYZE public.foods, public.food_nutrients, public.food_servings, public.food_barcodes"
+unset SUPABASE_SERVICE_ROLE_KEY
+npm run types:gen
+```
+
+The script skips products without per-100 g energy, without a valid GS1 barcode, or with
+label typos (kcal > 900 or a macro > 100 g per 100 g), keeps one product per barcode (better
+`data_quality`, then newer `last_modified_t`) and prints every skip count. `--dry-run` needs no
+service key (nutrient definitions come from the migration seed). `--countries fi,se` narrows
+the set; `--concurrency 1..8` runs that many `ingest_foods` batches in flight (deadlocks on
+`food_barcodes` are retried — the RPC is idempotent).
+
+**Monthly refresh:** OFF republishes the dump nightly. Re-run the runbook with
+`--since <the max last_modified_t the previous run printed as "next run: --since N">` so only
+products edited since then are re-ingested.
+
+**ODbL separability:** the OFF rows are single-source and can be switched off in one statement —
+`UPDATE foods SET is_active = false WHERE source = 'off'`. Never `DELETE` them: recipe items
+reference `foods` with `ON DELETE RESTRICT`, and diary items keep their snapshots but lose the
+link. Attribution: "Data from Open Food Facts (ODbL)" — the in-app sheet renders the fuller
+line from `food_sources`.
 
 ## Data sources and what we owe them
 
@@ -104,8 +142,8 @@ PGDATA=/tmp/wf-pgdata; initdb -D $PGDATA -U postgres --auth=trust --locale=C -E 
 pg_ctl -D $PGDATA -o "-p 5499 -k /tmp" -l $PGDATA/pg.log start
 psql -h /tmp -p 5499 -U postgres -c 'CREATE DATABASE wf'
 psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f scripts/nutrition/local-stubs.sql
-for f in supabase/migrations/20260905*.sql; do psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f $f || break; done
-for c in contract-check calc-check rls-check; do psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f scripts/nutrition/$c.sql || break; done
+for f in supabase/migrations/2026090[56]*.sql; do psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f $f || break; done
+for c in contract-check calc-check rls-check search-check; do psql -h /tmp -p 5499 -U postgres -d wf -v ON_ERROR_STOP=1 -q -f scripts/nutrition/$c.sql || break; done
 node scripts/nutrition/gen-local-types.mjs > /tmp/local-types.ts && node scripts/nutrition/splice-types.mjs /tmp/local-types.ts
 pg_ctl -D $PGDATA stop
 ```

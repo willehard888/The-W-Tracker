@@ -26,6 +26,8 @@ export interface SearchFoodRow {
   is_favorite: boolean;
   use_count: number;
   rank: number;
+  /** Boost-free text similarity (0..1); absent from responses older than 20260906100000. */
+  match_score?: number | null;
 }
 
 export interface MealLogRow {
@@ -142,6 +144,7 @@ export function parseSearchFoodRow(v: unknown): SearchFoodRow | null {
     is_favorite: v.is_favorite === true,
     use_count: toNum(v.use_count) ?? 0,
     rank: toNum(v.rank) ?? 0,
+    match_score: toNum(v.match_score),
   };
 }
 

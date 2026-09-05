@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -72,7 +73,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
           <p className="text-[13px] text-muted-foreground leading-snug mt-1.5">{recipe.blurb}</p>
           <div className="flex flex-wrap items-center gap-1.5 mt-3">
             {recipe.tags.map((t) => (
-              <span key={t} className="rounded-full border border-border/60 bg-secondary/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span key={t} className="eyebrow rounded-full border border-border/60 bg-secondary/40 px-2.5 py-1 text-muted-foreground">
                 {t}
               </span>
             ))}
@@ -116,7 +117,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
           <div className="space-y-4">
             {recipe.groups.map((g) => (
               <div key={g.title}>
-                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground mb-2">{g.title}</p>
+                <p className="eyebrow text-muted-foreground mb-2">{g.title}</p>
                 <ul className="space-y-1.5">
                   {g.items.map((it, i) => (
                     <li key={i} className="flex items-baseline gap-2 text-[14px] leading-snug">
@@ -164,7 +165,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
               <Refrigerator size={15} className="text-gold/80 shrink-0" />
               <div>
                 <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.fridgeDays}d</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
+                <p className="eyebrow-sm text-muted-foreground mt-0.5">Fridge</p>
               </div>
             </div>
             {recipe.mealPrep.freezerWeeks != null && (
@@ -172,7 +173,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                 <Snowflake size={15} className="text-gold/80 shrink-0" />
                 <div>
                   <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.freezerWeeks}wk</p>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
+                  <p className="eyebrow-sm text-muted-foreground mt-0.5">Freezer</p>
                 </div>
               </div>
             )}
@@ -223,12 +224,12 @@ const RecipeList = () => {
             question people actually arrive with. */}
         <div className="relative">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <input
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search recipes or ingredients"
             aria-label="Search recipes or ingredients"
-            className="w-full surface-inset rounded-xl h-11 pl-9 pr-9 text-[14px] outline-none focus:border-gold/50 transition-colors"
+            className="h-11 rounded-xl pl-9 pr-9 text-[14px]"
           />
           {query && (
             <button

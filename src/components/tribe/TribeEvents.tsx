@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video, Layers, ChevronDown } from "lucide-react";
 import { Portal } from "@/components/ui/Portal";
@@ -214,27 +215,27 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
         {isNext && (
           <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/35">
             <Flame size={11} className="text-[hsl(var(--ember))]" fill="currentColor" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--ember))]">Next up</span>
+            <span className="eyebrow-sm text-[hsl(var(--ember))]">Next up</span>
           </div>
         )}
         <div className="flex items-start gap-3">
           <div className="shrink-0 w-14 rounded-xl bg-gradient-to-b from-gold/20 to-gold/[0.04] border border-gold/30 flex flex-col items-center justify-center py-2 shadow-[0_4px_14px_-8px_hsl(var(--gold)/0.6)]">
-            <span className="text-[10px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "EEE")}</span>
+            <span className="eyebrow-sm text-gold/70 leading-none">{format(start, "EEE")}</span>
             <span className="font-display font-black text-2xl leading-none text-gold tabular-nums my-0.5">{format(start, "d")}</span>
-            <span className="text-[10px] font-black uppercase tracking-wider text-gold/70 leading-none">{format(start, "MMM")}</span>
+            <span className="eyebrow-sm text-gold/70 leading-none">{format(start, "MMM")}</span>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               {ev.activity && (() => {
                 const ActIcon = activityIcon(ev.activity);
                 return (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
+                  <span className="eyebrow-sm inline-flex items-center gap-1 text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
                     <ActIcon size={11} strokeWidth={2.6} /> {ev.activity}
                   </span>
                 );
               })()}
               {rel && (
-                <span className="text-[10px] font-black uppercase tracking-wider text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
+                <span className="eyebrow-sm text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
@@ -333,11 +334,11 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
+              <span className="eyebrow-sm inline-flex items-center gap-1 text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
                 <ActIcon size={11} strokeWidth={2.6} /> {series.sessions.length}-part series
               </span>
               {series.activity && (
-                <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{series.activity}</span>
+                <span className="eyebrow-sm text-muted-foreground">{series.activity}</span>
               )}
             </div>
             <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{series.title}</p>
@@ -494,6 +495,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
   };
 
   const field = "w-full surface-inset rounded-xl px-3 py-2.5 text-[13px] outline-none focus:border-gold/50";
+  const input = "h-11 rounded-xl text-[13px]";
   const sessionCount = sessions.filter((s) => s.trim()).length;
 
   return (
@@ -537,11 +539,11 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
         )}
 
         <div className="space-y-2.5">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder={titlePlaceholder} className={field} />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder={titlePlaceholder} className={input} />
           <div className="space-y-2">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/55 mb-1">{group.label}</p>
+                <p className="eyebrow-sm text-muted-foreground/55 mb-1">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <Button
@@ -559,16 +561,16 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           </div>
 
           {kind === "single" ? (
-            <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={field} />
+            <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={input} />
           ) : (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">Sessions</label>
+              <label className="eyebrow text-muted-foreground block">Sessions</label>
               {sessions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <span className="shrink-0 h-7 w-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-[11px] font-black text-muted-foreground tabular-nums">{i + 1}</span>
-                  <input type="datetime-local" value={s}
+                  <Input type="datetime-local" value={s}
                     onChange={(e) => setSessions((prev) => prev.map((x, idx) => idx === i ? e.target.value : x))}
-                    className={cn(field, "flex-1")} />
+                    className={cn(input, "flex-1")} />
                   {sessions.length > 1 && (
                     <Button
                       type="button"
@@ -611,19 +613,19 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
             ))}
           </div>
           {mode === "in_person" ? (
-            <input value={place} onChange={(e) => setPlace(e.target.value)} maxLength={80} placeholder="Place — e.g. Central Park, main gate" className={field} />
+            <Input value={place} onChange={(e) => setPlace(e.target.value)} maxLength={80} placeholder="Place — e.g. Central Park, main gate" className={input} />
           ) : (
-            <input value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="Paste link — Google Meet, Teams, Zoom…" className={cn(field, linkInvalid && "border-destructive/60")} />
+            <Input value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="Paste link — Google Meet, Teams, Zoom…" className={cn(field, linkInvalid && "border-destructive/60")} />
           )}
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Duration (min)</label>
-              <input type="number" value={duration} min={10} step={5} onChange={(e) => { setDuration(parseInt(e.target.value || "60", 10)); setDurationTouched(true); }} className={field} />
+              <label className="eyebrow text-muted-foreground mb-1 block">Duration (min)</label>
+              <Input type="number" value={duration} min={10} step={5} onChange={(e) => { setDuration(parseInt(e.target.value || "60", 10)); setDurationTouched(true); }} className={input} />
             </div>
             {kind === "single" && (
               <div className="flex-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Capacity (opt.)</label>
-                <input type="number" value={capacity} min={1} placeholder="∞" onChange={(e) => setCapacity(e.target.value)} className={field} />
+                <label className="eyebrow text-muted-foreground mb-1 block">Capacity (opt.)</label>
+                <Input type="number" value={capacity} min={1} placeholder="∞" onChange={(e) => setCapacity(e.target.value)} className={input} />
               </div>
             )}
           </div>

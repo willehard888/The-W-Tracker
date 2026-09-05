@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Swords, Loader2, ChevronRight, Flame, Clock, Trophy } from "lucide-react";
@@ -118,7 +119,7 @@ const MyTribeBattles = () => {
       <div className="rounded-xl border border-dashed border-border/60 p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-1.5">
           <Swords size={14} className="text-[hsl(var(--ember))]" />
-          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+          <p className="eyebrow text-muted-foreground">
             Tribe Battles
           </p>
         </div>
@@ -127,7 +128,7 @@ const MyTribeBattles = () => {
         </p>
         <button
           onClick={() => navigate("/squad?tab=tribes")}
-          className="text-[12px] font-black uppercase tracking-widest text-gold inline-flex items-center gap-1"
+          className="eyebrow text-gold inline-flex items-center gap-1"
         >
           Find a tribe <ChevronRight size={12} />
         </button>
@@ -178,7 +179,7 @@ const MyTribeBattles = () => {
         )}
       >
         <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest font-black text-muted-foreground">
+          <div className="eyebrow flex items-center gap-1.5 text-muted-foreground">
             <Swords size={12} className="text-[hsl(var(--ember))]" />
             {b.status === "pending" && (myIsChallenger ? "Awaiting" : "Incoming")}
             {b.status === "active" && <span className="text-[hsl(var(--ember))]">Live</span>}
@@ -207,8 +208,8 @@ const MyTribeBattles = () => {
         {(b.status === "active" || b.status === "completed") && (
           <>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[12px] font-black tabular-nums text-gold">{myScore.toLocaleString()} XP</span>
-              <span className="text-[12px] font-black tabular-nums text-foreground/80">{theirScore.toLocaleString()} XP</span>
+              <span className="text-[12px] font-black tabular-nums text-gold">{fmtInt(myScore)} XP</span>
+              <span className="text-[12px] font-black tabular-nums text-foreground/80">{fmtInt(theirScore)} XP</span>
             </div>
             <div className="h-1.5 rounded-full bg-secondary overflow-hidden flex">
               <div
@@ -233,7 +234,7 @@ const MyTribeBattles = () => {
           <Swords size={13} className="text-[hsl(var(--ember))]" />
           <h2 className="font-display font-bold text-sm tracking-tight">Tribe Battles</h2>
           {active.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
+            <span className="eyebrow-sm inline-flex items-center gap-1 text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
               <Flame size={10} /> {active.length} live
             </span>
           )}
@@ -241,14 +242,14 @@ const MyTribeBattles = () => {
         {tribes.length === 1 ? (
           <button
             onClick={() => navigate(`/tribes/${tribes[0].id}/battles`)}
-            className="text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
+            className="eyebrow text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
           >
             View all <ChevronRight size={12} />
           </button>
         ) : (
           <button
             onClick={() => navigate("/squad?tab=tribes")}
-            className="text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
+            className="eyebrow text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
           >
             My tribes <ChevronRight size={12} />
           </button>
@@ -263,7 +264,7 @@ const MyTribeBattles = () => {
           {tribes.length === 1 ? (
             <button
               onClick={() => navigate(`/tribes/${tribes[0].id}/battles`)}
-              className="text-[12px] font-black uppercase tracking-widest text-[hsl(var(--ember))] inline-flex items-center gap-1"
+              className="eyebrow text-[hsl(var(--ember))] inline-flex items-center gap-1"
             >
               Open arena <ChevronRight size={12} />
             </button>

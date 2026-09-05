@@ -53,13 +53,13 @@ const TopTribesWidget = () => {
         <div className="flex items-center gap-2 min-w-0">
           <Crown size={15} className="text-[hsl(var(--ember))] shrink-0" />
           <h2 className="font-display font-bold text-base tracking-tight truncate">Top Tribes</h2>
-          <span className="shrink-0 text-[10px] uppercase tracking-widest font-black text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
+          <span className="eyebrow-sm shrink-0 text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
             Weekly
           </span>
         </div>
         <button
           onClick={() => navigate("/tribes/leaderboard")}
-          className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-[hsl(var(--ember))] inline-flex items-center gap-0.5"
+          className="eyebrow shrink-0 whitespace-nowrap text-muted-foreground hover:text-[hsl(var(--ember))] inline-flex items-center gap-0.5"
         >
           Full board <ChevronRight size={12} />
         </button>
@@ -76,7 +76,7 @@ const TopTribesWidget = () => {
           </p>
           <button
             onClick={() => navigate(canCreate ? "/tribes/new" : "/squad?tab=tribes")}
-            className="text-[12px] font-black uppercase tracking-widest text-[hsl(var(--ember))] inline-flex items-center gap-1"
+            className="eyebrow text-[hsl(var(--ember))] inline-flex items-center gap-1"
           >
             {canCreate ? "Found a tribe" : "Browse tribes"} <ChevronRight size={12} />
           </button>

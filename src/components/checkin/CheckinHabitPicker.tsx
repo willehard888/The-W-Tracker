@@ -143,7 +143,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                 if (!habits?.length) return null;
                 return (
                   <div key={pillar}>
-                    <p className="mb-2 text-[12px] font-black tracking-[0.22em] uppercase text-gold/70">
+                    <p className="eyebrow mb-2 text-gold/70">
                       {PILLAR_LABEL[pillar]}
                     </p>
                     <div className="space-y-2">

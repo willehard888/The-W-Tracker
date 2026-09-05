@@ -79,7 +79,7 @@ const BattleChallengeModal = ({
 
         <Button variant="ember" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
           <Swords size={14} />
-          {creating ? "Sending..." : "Send Challenge"}
+          {creating ? "Sending…" : "Send Challenge"}
         </Button>
       </div>
     </div>

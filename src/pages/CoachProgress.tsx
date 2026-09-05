@@ -46,7 +46,7 @@ const CoachProgress = () => {
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles size={12} className="text-gold" />
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
+            <p className="eyebrow text-gold">
               Last 7 days at a glance
             </p>
           </div>
@@ -92,7 +92,7 @@ const CoachProgress = () => {
             onClick={() => navigate("/paywall")}
             className="w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-card p-4 active:scale-[0.99] transition-transform"
           >
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold mb-1">
+            <p className="eyebrow text-gold mb-1">
               AI Coach · Premium
             </p>
             <p className="text-[13px] font-bold mb-1">Unlock AI weekly review</p>
@@ -113,7 +113,7 @@ const SummaryTile = ({
   <div className="surface-card surface-card-quiet px-3 py-2.5">
     <div className="flex items-center gap-1 mb-0.5">
       <Icon size={12} className="text-muted-foreground" />
-      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+      <span className="eyebrow-sm text-muted-foreground">
         {label}
       </span>
     </div>

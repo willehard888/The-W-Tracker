@@ -304,6 +304,10 @@
   .eyebrow {
     @apply text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground;
   }
+  /* The small cut — chips, stat captions, dense rows. Same voice, 10 px. */
+  .eyebrow-sm {
+    @apply text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground;
+  }
 }
 
 @layer utilities {

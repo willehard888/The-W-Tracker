@@ -44,7 +44,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85">
+            <p className="eyebrow text-gold/85">
               {PILLAR_LABEL[pillar]} pillar
             </p>
             <p className="font-display text-2xl font-black tabular-nums leading-tight">
@@ -61,7 +61,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
         </div>
 
         {/* Sub-signals */}
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
+        <p className="eyebrow text-foreground/60 mb-2">
           What drives it
         </p>
         <div className="space-y-2.5 mb-5">
@@ -88,7 +88,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
         </div>
 
         {/* Levers */}
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
+        <p className="eyebrow text-foreground/60 mb-2">
           Your biggest levers
         </p>
         <div className="space-y-2.5">

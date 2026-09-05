@@ -1,9 +1,9 @@
+import { fmtRelative } from "@/lib/format";
 import { memo } from "react";
 import {
   Flame, MessageCircle, Send, Crown, MoreHorizontal,
   AlertTriangle, Trash2, ShieldCheck, Award, Reply, X,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
@@ -144,7 +144,7 @@ const FeedPostCard = memo(function FeedPostCard({
         <div className="flex items-center justify-between mb-3 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20">
           <div className="flex items-center gap-1.5">
             <AlertTriangle aria-hidden size={12} className="text-destructive" />
-            <span className="text-[11px] font-bold text-destructive uppercase tracking-wider">Reported</span>
+            <span className="eyebrow text-destructive">Reported</span>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -188,7 +188,7 @@ const FeedPostCard = memo(function FeedPostCard({
             )}
           </div>
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+            <span>{fmtRelative(post.created_at)}</span>
             {/* Author-only: server moderation hasn't approved yet (others can't
                 see the post until it does — usually seconds). */}
             {post.moderation_status === "pending" && (
@@ -338,7 +338,7 @@ const FeedPostCard = memo(function FeedPostCard({
       {isCommentsOpen && (
         <div className="mt-2 rounded-2xl bg-secondary/25 px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
+            <p className="eyebrow text-muted-foreground">
               Discussion
             </p>
             <p className="text-[11px] text-muted-foreground/75 tabular-nums">
@@ -375,7 +375,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] p-2 animate-fade-in">
                   <div className="w-0.5 rounded-full bg-gold shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-gold uppercase tracking-wider">
+                    <div className="eyebrow flex items-center gap-1 text-gold">
                       <Reply aria-hidden size={12} />
                       Replying to @{replyTo.username}
                     </div>
@@ -403,7 +403,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     ref={commentInputRef}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Add a comment..."}
+                    placeholder={replyTo ? `Reply to @${replyTo.username}…` : "Add a comment…"}
                     aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                     maxLength={300}
                     className={cn(

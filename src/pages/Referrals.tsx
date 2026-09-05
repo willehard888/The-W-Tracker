@@ -1,3 +1,4 @@
+import { fmtDate } from "@/lib/format";
 import { useState } from "react";
 import { Copy, Check, Users, Share2, Image as ImageIcon, CreditCard, Gift, CalendarCheck, Flame } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
@@ -92,7 +93,7 @@ const Referrals = () => {
 
       {/* Hero invite — code + link + two primary share actions (precision) */}
       <div className="animate-reveal animate-reveal-delay-1 surface-card p-5 mb-4">
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/80 mb-1">Your invite</p>
+        <p className="eyebrow text-gold/80 mb-1">Your invite</p>
         <p className="text-[13px] text-muted-foreground leading-snug mb-4">
           Your friends get a <span className="text-foreground font-semibold">14-day free trial</span>. You get a <span className="text-gold font-semibold">free month for every 3</span> who go paid — no cap.
         </p>
@@ -103,7 +104,7 @@ const Referrals = () => {
           className="w-full rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-3 mb-2 flex items-center gap-3 active:scale-[0.99] transition-transform"
         >
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-gold/60 mb-0.5">Invite code</p>
+            <p className="eyebrow-sm text-gold/60 mb-0.5">Invite code</p>
             <p className="font-display text-xl font-black text-gold tracking-wide truncate leading-none">{referralCode}</p>
           </div>
           <span className="shrink-0 inline-flex items-center gap-1 text-[12px] font-bold text-gold">
@@ -159,7 +160,7 @@ const Referrals = () => {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-base">🎁</span>
+              <Gift size={16} className="text-gold shrink-0" aria-hidden />
               <p className="font-display font-black text-sm tracking-tight text-gold">Next free month</p>
             </div>
             <p className="text-[12px] text-muted-foreground leading-snug mb-2">
@@ -170,7 +171,7 @@ const Referrals = () => {
                 You've earned <span className="text-gold">{monthsEarned} free month{monthsEarned === 1 ? "" : "s"}</span>
                 {creditsActive && creditsUntil && (
                   <span className="block text-[12px] text-muted-foreground font-medium mt-0.5">
-                    Free until {creditsUntil.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                    Free until {fmtDate(creditsUntil)}
                   </span>
                 )}
               </p>
@@ -207,7 +208,7 @@ const Referrals = () => {
           onClick={() => setShareCardOpen(true)}
           className="animate-reveal w-full text-left mb-4 rounded-xl border border-gold/45 bg-gradient-to-r from-gold/[0.12] via-gold/[0.05] to-transparent p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
         >
-          <span className="text-2xl shrink-0">🎁</span>
+          <Gift size={24} className="text-gold shrink-0" aria-hidden />
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-black text-foreground leading-tight">
               You're <span className="text-gold">1 paid friend away</span> from a free month!
@@ -230,15 +231,15 @@ const Referrals = () => {
                 </div>
                 <p className="flex-1 min-w-0 text-[13px] font-bold truncate">@{r.referred_username}</p>
                 {r.converted ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-xp-green">
+                  <span className="eyebrow inline-flex items-center gap-1 text-xp-green">
                     <Check size={12} /> Premium
                   </span>
                 ) : r.activated_at ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[hsl(var(--ember))]">
+                  <span className="eyebrow inline-flex items-center gap-1 text-[hsl(var(--ember))]">
                     <Flame size={11} /> Active
                   </span>
                 ) : (
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Joined</span>
+                  <span className="eyebrow text-muted-foreground">Joined</span>
                 )}
               </div>
             ))}
@@ -273,7 +274,7 @@ const Referrals = () => {
       <div className="animate-reveal animate-reveal-delay-3">
         <div className="flex items-end justify-between mb-3">
           <h2 className="font-display font-bold text-sm tracking-tight">Badge milestones</h2>
-          <p className="text-[11px] text-gold/70 uppercase tracking-wider font-bold">Paid friends</p>
+          <p className="eyebrow text-gold/70">Paid friends</p>
         </div>
         <div className="space-y-2">
           {BADGE_MILESTONES.map((m) => {
@@ -309,7 +310,7 @@ const Referrals = () => {
                   <p className="text-[12px] text-muted-foreground leading-snug">{m.detail}</p>
                 </div>
                 {isNext && (
-                  <span className="text-[11px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30 shrink-0">
+                  <span className="eyebrow px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30 shrink-0">
                     Next
                   </span>
                 )}

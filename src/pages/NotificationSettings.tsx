@@ -145,7 +145,7 @@ const NotificationSettings = () => {
               <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green opacity-60 animate-ping motion-reduce:animate-none" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-xp-green" />
             </span>
-            <p className="text-[12px] font-bold tracking-wider uppercase text-xp-green/90">
+            <p className="eyebrow text-xp-green/90">
               Delivering to this device
             </p>
           </div>
@@ -204,7 +204,7 @@ const NotificationSettings = () => {
               <div className="h-[22px] w-[22px] rounded-[6px] gradient-gold flex items-center justify-center shrink-0">
                 <span className="font-display text-[12px] font-black text-primary-foreground leading-none">W</span>
               </div>
-              <span className="flex-1 text-[10px] font-bold tracking-[0.14em] uppercase text-foreground/55">
+              <span className="eyebrow-sm flex-1 text-foreground/55">
                 The W Tracker
               </span>
               <span className="text-[11px] tabular-nums text-foreground/45">

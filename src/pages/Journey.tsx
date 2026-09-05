@@ -1,3 +1,5 @@
+import { fmtDate } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Compass, TrendingUp, TrendingDown, Moon, Flame, BookHeart, HeartPulse } from "lucide-react";
@@ -167,7 +169,7 @@ const Journey = () => {
           <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp size={12} className="text-gold" />
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
+              <p className="eyebrow text-gold">
                 How far you've come
               </p>
             </div>
@@ -210,7 +212,7 @@ const Journey = () => {
             title="Momentum"
             sub={`XP per week · ${xpWeeks.length} weeks`}
             values={xpWeeks}
-            delta={xpDelta != null ? `${xpDelta >= 0 ? "+" : ""}${xpDelta.toLocaleString()} xp` : null}
+            delta={xpDelta != null ? `${xpDelta >= 0 ? "+" : ""}${fmtInt(xpDelta)} xp` : null}
             good={(xpDelta ?? 0) >= 0}
           />
         )}
@@ -231,7 +233,7 @@ const Journey = () => {
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <BookHeart size={13} className="text-gold" />
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
+            <p className="eyebrow text-muted-foreground/80">
               Your reflections
             </p>
             {reflections.length > 0 && (
@@ -281,8 +283,8 @@ const DeltaTile = ({
       )}
     />
     <p className="font-display text-lg font-black tabular-nums leading-none">{value}</p>
-    {unit && <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{unit}</p>}
-    <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider mt-1">{label}</p>
+    {unit && <p className="eyebrow-sm text-muted-foreground mt-0.5">{unit}</p>}
+    <p className="eyebrow-sm text-muted-foreground/70 mt-1">{label}</p>
   </div>
 );
 
@@ -307,7 +309,7 @@ const TrendCard = ({
         <Icon size={13} className="text-gold" />
         <div>
           <p className="text-[13px] font-black leading-tight">{title}</p>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{sub}</p>
+          <p className="eyebrow text-muted-foreground">{sub}</p>
         </div>
       </div>
       {delta && (
@@ -328,7 +330,7 @@ const relDate = (iso: string): string => {
   if (days <= 0) return "Today";
   if (days === 1) return "Yesterday";
   if (days < 7) return `${days} days ago`;
-  return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return fmtDate(iso + "T00:00:00");
 };
 
 const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
@@ -338,7 +340,7 @@ const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
     <div className="surface-panel rounded-xl px-3 py-2.5">
       <div className="flex items-center gap-2 mb-1">
         {mood && <span className="text-sm leading-none">{mood}</span>}
-        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">
+        <span className="eyebrow text-muted-foreground/60">
           {relDate(r.reflection_date)}
         </span>
       </div>

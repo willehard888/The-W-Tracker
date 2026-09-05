@@ -167,7 +167,7 @@ const Vault = () => {
         action={
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/40 shadow-[0_0_18px_hsl(var(--gold)/0.25)]">
             <Crown size={11} className="text-gold" strokeWidth={2.6} />
-            <span className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
+            <span className="eyebrow text-gold">
               Premium
             </span>
           </div>
@@ -182,7 +182,7 @@ const Vault = () => {
         </div>
 
         {firstName && (
-          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold/80 mb-1.5">
+          <p className="eyebrow text-gold/80 mb-1.5">
             Welcome in, {firstName}
           </p>
         )}
@@ -200,7 +200,7 @@ const Vault = () => {
               <p className="font-display text-base font-black text-gold leading-none tabular-nums">
                 {s.value}
               </p>
-              <p className="text-[10px] tracking-widest uppercase text-muted-foreground mt-1">
+              <p className="eyebrow-sm text-muted-foreground mt-1">
                 {s.label}
               </p>
             </div>
@@ -214,7 +214,7 @@ const Vault = () => {
           <Flame size={15} className="text-gold" strokeWidth={2.4} />
         </div>
         <div className="min-w-0">
-          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold/85 mb-0.5">
+          <p className="eyebrow text-gold/85 mb-0.5">
             Founding-member library
           </p>
           <p className="text-[12px] text-muted-foreground leading-snug">
@@ -241,7 +241,7 @@ const Vault = () => {
       <div className="mt-8 text-center">
         {/* No hardcoded price — a US/UK member paid a different number than the
             euro list price, and the store price is the only truth. */}
-        <p className="text-[11px] tracking-widest uppercase text-muted-foreground/70">
+        <p className="eyebrow text-muted-foreground/70">
           Premium member
         </p>
       </div>
@@ -294,7 +294,7 @@ const VaultCategoryBlock = ({
           <div className="absolute inset-x-0 bottom-0 z-10 p-4">
             <div className="flex items-center gap-1.5 mb-1">
               <Icon size={13} style={{ color: category.accent }} strokeWidth={2.6} />
-              <p className="text-[11px] font-black tracking-[0.22em] uppercase" style={{ color: category.accent }}>
+              <p className="eyebrow" style={{ color: category.accent }}>
                 {category.tagline}
               </p>
             </div>
@@ -331,7 +331,7 @@ const VaultCategoryBlock = ({
                   <Utensils size={18} className="text-[hsl(260_18%_4%)]" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-0.5">Meal-prep recipes</p>
+                  <p className="eyebrow text-gold/85 mb-0.5">Meal-prep recipes</p>
                   <p className="text-[12px] font-bold leading-tight">{RECIPE_COUNT} high-protein recipes · scale 1×–5× · storage &amp; reheat</p>
                 </div>
                 <ChevronRight size={16} className="text-gold shrink-0" />
@@ -392,7 +392,7 @@ const VaultCategoryBlock = ({
                       <div className="flex items-center gap-1.5">
                         {a.lesson_number && (
                           <span
-                            className="text-[10px] font-black tabular-nums tracking-wider uppercase shrink-0"
+                            className="eyebrow-sm tabular-nums shrink-0"
                             style={{ color: category.accent }}
                           >
                             L{a.lesson_number}
@@ -409,13 +409,13 @@ const VaultCategoryBlock = ({
                       )}
                       <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                         <EvidenceChip tier={a.evidence_tier} />
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground">
+                        <span className="eyebrow-sm inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-muted-foreground">
                           <Clock size={10} strokeWidth={3} />
                           {a.read_time_min} min
                         </span>
                         {done && (
                           <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-[0.22em] uppercase"
+                            className="eyebrow-sm inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full"
                             style={{
                               background: `${category.accent}22`,
                               color: category.accent,

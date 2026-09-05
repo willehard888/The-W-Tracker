@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { X, Search, Flame, ChevronRight, UserPlus } from "lucide-react";
@@ -59,11 +60,11 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
         <div className="p-4 pb-2">
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search friends"
-              className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+              className="h-11 rounded-xl pl-9 pr-9 text-[13px]"
             />
           </div>
         </div>

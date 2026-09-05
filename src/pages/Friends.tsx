@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -100,11 +101,11 @@ const Friends = () => {
         <div>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Add a friend by username"
-              className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+              className="h-11 rounded-xl pl-9 pr-9 text-[13px]"
             />
           </div>
 
@@ -154,7 +155,7 @@ const Friends = () => {
         {/* People you may know — members of your tribes you're not connected to */}
         {!searching2 && (suggestions?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="eyebrow text-gold/85 mb-2 px-1">
               People you may know
             </p>
             <div className="space-y-1.5">
@@ -195,7 +196,7 @@ const Friends = () => {
         {/* Incoming requests */}
         {(requests?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="eyebrow text-gold/85 mb-2 px-1">
               Friend requests · {requests!.length}
             </p>
             <div className="space-y-1.5">
@@ -228,7 +229,7 @@ const Friends = () => {
 
         {/* Your friends */}
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-2 px-1">
+          <p className="eyebrow text-muted-foreground/70 mb-2 px-1">
             Your friends
           </p>
           {friendsLoading ? (

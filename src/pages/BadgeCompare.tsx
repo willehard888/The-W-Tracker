@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Search, Shield } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
@@ -76,15 +77,15 @@ const BadgeCompare = () => {
       {/* Search */}
       <div className="relative mb-4 animate-reveal animate-reveal-delay-1">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           type="text"
-          placeholder="Search by username..."
+          placeholder="Search by username…"
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
             if (e.target.value.length < 2) setSelectedUser(null);
           }}
-          className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/40 transition-colors"
+          className="h-11 rounded-xl pl-10 text-sm"
         />
       </div>
 
@@ -150,7 +151,7 @@ const BadgeCompare = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold truncate">{badge.name}</p>
                     <p className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.22em]",
+                      "eyebrow-sm",
                       badge.rarity === "legendary" ? "text-gold" :
                       badge.rarity === "epic" ? "text-[hsl(var(--badge-epic))]" :
                       badge.rarity === "rare" ? "text-[hsl(var(--badge-rare))]" :

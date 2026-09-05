@@ -39,7 +39,7 @@ const RecoveryCard = () => {
       >
         <div className="flex items-center gap-2 mb-1">
           <HeartPulse size={13} className="text-[hsl(var(--ember))]" />
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery</p>
+          <p className="eyebrow text-muted-foreground/80">Recovery</p>
         </div>
         <p className="text-[12px] text-muted-foreground leading-snug">
           Allow Apple Health (sleep, heart rate) to see last night's recovery and let the coach explain why you slept the way you did.
@@ -110,8 +110,8 @@ const RecoveryCard = () => {
     >
       <div className="flex items-center gap-2 mb-2.5">
         <HeartPulse size={13} className={underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green"} />
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">Recovery · last night</p>
-        <span className={cn("ml-auto text-[11px] font-black uppercase tracking-wider", underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green")}>{status}</span>
+        <p className="eyebrow text-muted-foreground/80">Recovery · last night</p>
+        <span className={cn("eyebrow ml-auto", underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green")}>{status}</span>
       </div>
 
       {last!.sleep_total_min != null && (
@@ -157,7 +157,7 @@ const RecoveryCard = () => {
       {rhrTrend.length >= 5 && (
         <div className="mb-3 surface-card surface-card-quiet px-3 py-2">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground/60">
+            <p className="eyebrow-sm text-muted-foreground/60">
               Resting HR · {rhrTrend.length} nights
             </p>
             {trendDelta != null && Math.abs(trendDelta) >= 1 && (
@@ -175,7 +175,7 @@ const RecoveryCard = () => {
       <p className="text-[12px] text-foreground/85 leading-snug mb-3">{cause}</p>
 
       {/* What happened last night? — ground truth for the coach's causal read */}
-      <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">What happened last night?</p>
+      <p className="eyebrow text-muted-foreground/60 mb-1.5">What happened last night?</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {NIGHT_FACTORS.map((f) => {
           const on = active.has(f);
@@ -198,7 +198,7 @@ const RecoveryCard = () => {
       <button
         type="button"
         onClick={() => navigate("/coach")}
-        className="w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/40 border border-border/50 py-2 text-[12px] font-black uppercase tracking-widest text-gold/90 active:scale-[0.99] transition-transform"
+        className="eyebrow w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/40 border border-border/50 py-2 text-gold/90 active:scale-[0.99] transition-transform"
       >
         Ask coach why <ChevronRight size={13} />
       </button>

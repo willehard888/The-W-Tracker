@@ -66,7 +66,7 @@ const CoachBriefHero = ({
         </span>
         <p className="eyebrow">AI Coach</p>
         {brief.ribbon && (
-          <span className="ml-auto text-[10px] font-black uppercase tracking-wider text-gold/70 bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 truncate max-w-[55%]">
+          <span className="eyebrow-sm ml-auto text-gold/70 bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 truncate max-w-[55%]">
             {brief.ribbon}
           </span>
         )}
@@ -85,7 +85,7 @@ const CoachBriefHero = ({
         <div className="flex flex-wrap gap-1.5 mt-3">
           {brief.prescriptions.map((p, i) => (
             <span key={i} className="inline-flex items-baseline gap-1 rounded-lg bg-card/70 border border-border/50 px-2.5 py-1">
-              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">{p.label}</span>
+              <span className="eyebrow-sm text-muted-foreground/70">{p.label}</span>
               <span className="text-[12px] font-black text-gold tabular-nums">{p.value}</span>
             </span>
           ))}

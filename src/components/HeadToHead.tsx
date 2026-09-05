@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { motion } from "framer-motion";
 import { Zap, Flame, Trophy, TrendingUp, Crown, Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -60,7 +61,7 @@ const DeltaPill = ({
       )}
     >
       {!tied && (meWins ? "+" : "−")}
-      {Math.abs(delta).toLocaleString()}
+      {fmtInt(Math.abs(delta))}
       {suffix}
     </span>
   );
@@ -72,7 +73,7 @@ const Row = ({
   mine,
   theirs,
   color,
-  format = (v: number) => v.toLocaleString(),
+  format = (v: number) => fmtInt(v),
   suffix = "",
 }: {
   icon: any;
@@ -93,7 +94,7 @@ const Row = ({
         {/* Label column */}
         <div className="flex items-center gap-1.5 w-[70px] shrink-0">
           <Icon size={11} className={color} />
-          <span className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">
+          <span className="eyebrow text-muted-foreground">
             {label}
           </span>
         </div>
@@ -177,11 +178,11 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       <div className="flex items-center justify-between mb-3 relative">
         <div className="flex items-center gap-1.5">
           <Swords size={11} className="text-gold/80" />
-          <p className="text-[11px] uppercase tracking-[0.22em] font-black text-gold/80">
+          <p className="eyebrow text-gold/80">
             Head to Head
           </p>
         </div>
-        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1">
+        <span className="eyebrow-sm text-muted-foreground flex items-center gap-1">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green/70 opacity-75 animate-ping" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-xp-green" />
@@ -193,7 +194,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       {/* Players */}
       <div className="flex items-center justify-between gap-2 mb-4 relative">
         <div className="flex-1 text-right min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="eyebrow-sm text-muted-foreground/70 mb-0.5">
             You
           </p>
           <p
@@ -218,7 +219,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-bold mb-0.5">
+          <p className="eyebrow-sm text-muted-foreground/70 mb-0.5">
             Them
           </p>
           <p
@@ -236,7 +237,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
       {/* Score summary banner */}
       {overallLead !== "tie" && (
         <div className="mb-2 -mx-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-transparent via-gold/[0.06] to-transparent border-y border-gold/10">
-          <p className="text-[10px] uppercase tracking-[0.22em] font-black text-center text-gold/80">
+          <p className="eyebrow-sm text-center text-gold/80">
             {overallLead === "me" ? "You lead" : "They lead"} {Math.max(wins, losses)}–{Math.min(wins, losses)}
           </p>
         </div>

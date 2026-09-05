@@ -1,3 +1,4 @@
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams, type NavigateFunction } from "react-router-dom";
 import { Send, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain, AlertTriangle } from "lucide-react";
@@ -146,49 +147,23 @@ const Coach = () => {
 
 // The PageBar's one action: trainer-profile + memory links live one tap deeper
 // inside a small menu rather than fighting for bar real-estate.
-const CoachMenu = ({ navigate }: { navigate: NavigateFunction }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setMenuOpen((v) => !v)}
-        aria-label="Coach settings"
-        aria-expanded={menuOpen}
-      >
-        <MoreVertical size={16} />
+const CoachMenu = ({ navigate }: { navigate: NavigateFunction }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" size="icon" aria-label="Coach settings">
+        <MoreVertical size={16} aria-hidden />
       </Button>
-      {menuOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-30"
-            onClick={() => setMenuOpen(false)}
-            aria-hidden
-          />
-          <div className="absolute right-0 top-11 z-40 w-48 surface-glass rounded-2xl overflow-hidden">
-            <button
-              type="button"
-              onClick={() => { setMenuOpen(false); navigate("/coach/profile"); }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition"
-            >
-              <User size={14} className="text-gold" />
-              <span>Trainer profile</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMenuOpen(false); navigate("/coach/memory"); }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition border-t border-border/40"
-            >
-              <Brain size={14} className="text-gold" />
-              <span>Coach memory</span>
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuItem onClick={() => navigate("/coach/profile")}>
+        <User size={14} className="mr-2 text-gold" aria-hidden /> Trainer profile
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => navigate("/coach/memory")}>
+        <Brain size={14} className="mr-2 text-gold" aria-hidden /> Coach memory
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
 
 const CoachShell = ({ session, program, navigate }: any) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -657,7 +632,7 @@ const ChatSheet = ({
               ))}
               <button
                 onClick={() => { hapticImpact("light"); setShowBrowser(true); }}
-                className="mt-1 inline-flex items-center justify-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-muted-foreground hover:text-gold transition"
+                className="eyebrow mt-1 inline-flex items-center justify-center gap-1.5 text-muted-foreground hover:text-gold transition"
               >
                 <BookOpen size={12} /> Browse playbook
               </button>
@@ -712,7 +687,7 @@ const ChatSheet = ({
                 <button
                   type="button"
                   onClick={goDeeper}
-                  className="mt-1.5 ml-1 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-gold/85 hover:text-gold transition"
+                  className="eyebrow mt-1.5 ml-1 inline-flex items-center gap-1 text-gold/85 hover:text-gold transition"
                 >
                   <Sparkles size={12} /> Go deeper
                 </button>

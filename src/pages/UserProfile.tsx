@@ -1,3 +1,5 @@
+import { fmtRelative } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
 import { ProfileSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,7 +23,6 @@ import { getTierConfig, getTierHeroSurface, type StatusTier } from "@/lib/status
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 
 
@@ -416,7 +417,7 @@ const UserProfile = () => {
             <div className="flex items-center justify-center border-t border-border">
               <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
                 <Camera size={12} className="text-foreground" />
-                <span className="text-[11px] font-black tracking-[0.22em] uppercase text-foreground">
+                <span className="eyebrow text-foreground">
                   Posts · {mediaPosts.length}
                 </span>
               </div>
@@ -489,7 +490,7 @@ const UserProfile = () => {
               {championHistory.seasons.map((s: any, i: number) => (
                 <div key={i} className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{s.name}</span>
-                  <span className="text-gold font-semibold">{s.points.toLocaleString()} XP</span>
+                  <span className="text-gold font-semibold">{fmtInt(s.points)} XP</span>
                 </div>
               ))}
             </div>

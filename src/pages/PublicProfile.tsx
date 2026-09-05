@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,7 +80,7 @@ const PublicProfile = () => {
       const tier = getTierConfig(profile.status_tier || 'recruit');
       document.title = `@${profile.username} · ${tier.label} · Whealth Factory`;
       const desc = document.querySelector('meta[name="description"]');
-      const text = `${tier.emoji} ${tier.label} · Level ${profile.level ?? 1} · ${profile.streak ?? 0}d streak · ${(profile.xp ?? 0).toLocaleString()} XP`;
+      const text = `${tier.emoji} ${tier.label} · Level ${profile.level ?? 1} · ${profile.streak ?? 0}d streak · ${fmtInt(profile.xp ?? 0)} XP`;
       if (desc) desc.setAttribute('content', text);
       else {
         const m = document.createElement('meta');
@@ -160,7 +161,7 @@ const PublicProfile = () => {
                 <p className={cn("font-display font-black text-xl leading-none tabular-nums", s.color)}>
                   {s.value}
                 </p>
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold mt-1">
+                <p className="eyebrow text-muted-foreground mt-1">
                   {s.label}
                 </p>
               </motion.div>
@@ -213,7 +214,7 @@ const PublicProfile = () => {
             size="md"
           />
           {isApexSubscriber && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-[0.22em] bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">
+            <span className="eyebrow-sm inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-gradient-to-r from-gold via-[hsl(42_90%_70%)] to-gold text-[hsl(260_18%_4%)] border border-gold">
               <Crown size={11} strokeWidth={3} />
               Day-One
             </span>
@@ -225,20 +226,20 @@ const PublicProfile = () => {
           ) : profile.status_tier === 'elite' ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
               <Crown size={12} className="text-gold" />
-              <span className="text-[11px] font-black text-gold tracking-wider uppercase">{formatTier('elite', profile.tier_division ?? 0)}</span>
+              <span className="eyebrow text-gold">{formatTier('elite', profile.tier_division ?? 0)}</span>
             </span>
           ) : null}
           {championHistory && championHistory.wins > 0 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gold/45 bg-gold/5">
               <Trophy size={12} className="text-gold" />
-              <span className="text-[11px] font-black text-gold tracking-wider uppercase">
+              <span className="eyebrow text-gold">
                 {championHistory.wins > 1 ? `${championHistory.wins}× ` : ""}Season Champion
               </span>
             </span>
           )}
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-card">
             <Trophy size={12} className="text-muted-foreground" />
-            <span className="text-[11px] font-black text-muted-foreground tracking-wider uppercase">
+            <span className="eyebrow text-muted-foreground">
               Best {profile.longest_streak}d
             </span>
           </span>
@@ -259,7 +260,7 @@ const PublicProfile = () => {
             <div className="flex items-center justify-center border-t border-border">
               <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
                 <Camera size={12} className="text-foreground" />
-                <span className="text-[11px] font-black tracking-[0.22em] uppercase text-foreground">
+                <span className="eyebrow text-foreground">
                   Posts · {mediaPosts.length}
                 </span>
               </div>
@@ -308,7 +309,7 @@ const PublicProfile = () => {
             <div className="flex items-center justify-center border-t border-border">
               <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
                 <Camera size={12} className="text-foreground" />
-                <span className="text-[11px] font-black tracking-[0.22em] uppercase text-foreground">
+                <span className="eyebrow text-foreground">
                   Posts
                 </span>
               </div>
@@ -326,7 +327,7 @@ const PublicProfile = () => {
         {/* Badges — moved below the feed */}
         {badges && badges.length > 0 && (
           <div className="px-0 mb-4">
-            <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-2">
+            <p className="eyebrow text-muted-foreground mb-2">
               Recent Badges
             </p>
             <div className="grid grid-cols-4 gap-2">

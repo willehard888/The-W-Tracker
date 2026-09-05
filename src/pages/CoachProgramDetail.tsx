@@ -54,7 +54,7 @@ const CoachProgramDetail = () => {
           >
             <div className="flex items-center gap-2 mb-2">
               <Crown size={12} className="text-gold" />
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
+              <p className="eyebrow text-gold">
                 Premium feature
               </p>
             </div>
@@ -74,7 +74,7 @@ const CoachProgramDetail = () => {
             <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={12} className="text-gold" />
-                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
+                <p className="eyebrow text-gold">
                   No program yet
                 </p>
               </div>
@@ -114,7 +114,7 @@ const CoachProgramDetail = () => {
               <button
                 type="button"
                 onClick={() => setShowRegen(true)}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-card/40 px-4 py-3 text-[12px] font-black uppercase tracking-widest text-gold/90 active:scale-[0.99] transition-transform"
+                className="eyebrow w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-card/40 px-4 py-3 text-gold/90 active:scale-[0.99] transition-transform"
               >
                 <RefreshCw size={13} /> Generate a new block
               </button>

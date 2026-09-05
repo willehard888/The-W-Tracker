@@ -1,3 +1,6 @@
+import { ActionRow } from "@/components/ActionRow";
+import { Input } from "@/components/ui/input";
+import { fmtRelative } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +10,6 @@ import StatusAvatar from "@/components/StatusAvatar";
 import EmptyState from "@/components/ui/empty-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { useState } from "react";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
@@ -150,11 +152,11 @@ const Messages = () => {
       <div className="animate-reveal mb-4">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
-          <input
+          <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search users..."
-            className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/50"
+            placeholder="Search users…"
+            className="h-11 rounded-xl pl-9 pr-9 text-[13px]"
           />
           {searchQuery && (
             <button aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground">
@@ -167,7 +169,7 @@ const Messages = () => {
       {/* Search Results */}
       {searchQuery.trim().length >= 2 && searchResults && searchResults.length > 0 && (
         <div className="animate-reveal mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+          <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
             <Search size={12} /> Results
           </p>
           <div className="space-y-2">
@@ -208,52 +210,38 @@ const Messages = () => {
       {/* Pending Friend Requests */}
       {pendingRequests && pendingRequests.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+          <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
             <UserPlus size={12} /> Friend Requests
           </p>
           <div className="space-y-2">
             {pendingRequests.map((req: any) => (
-              <div key={req.id} className="flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/20 bg-[hsl(var(--teal))]/5 p-3 card-depth">
-                <StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || 'recruit'} size="sm" animated={false} />
-                <div className="flex-1 min-w-0">
+              <ActionRow
+                key={req.id}
+                leading={<StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || "recruit"} size="sm" animated={false} />}
+                title={
                   <TierUsername
-                    as="p"
+                    as="span"
                     username={req.profile?.username}
                     tier={req.profile?.status_tier || "recruit"}
-                    className="text-sm font-semibold truncate"
+                    className="text-sm font-semibold"
                   />
-                  <p className="text-[11px] text-muted-foreground">Wants to be friends</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  onClick={async () => {
-                    const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", req.id);
-                    if (error) { toast.error("Could not accept — try again."); return; }
-                    queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
-                    queryClient.invalidateQueries({ queryKey: ["friends"] });
-                    queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
-                    queryClient.invalidateQueries({ queryKey: ["conversations"] });
-                  }}
-                  className="rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] border-[hsl(var(--teal))]/30"
-                >
-                  Accept
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="xs"
-                  aria-label="Decline"
-                  onClick={async () => {
-                    const { error } = await supabase.from("friendships").update({ status: "declined" }).eq("id", req.id);
-                    if (error) { toast.error("Could not decline — try again."); return; }
-                    queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
-                    queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
-                  }}
-                  className="rounded-full text-muted-foreground"
-                >
-                  ✕
-                </Button>
-              </div>
+                }
+                subtitle="Wants to be friends"
+                onAccept={async () => {
+                  const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", req.id);
+                  if (error) { toast.error("Could not accept — try again."); return; }
+                  queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
+                  queryClient.invalidateQueries({ queryKey: ["friends"] });
+                  queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+                  queryClient.invalidateQueries({ queryKey: ["conversations"] });
+                }}
+                onDecline={async () => {
+                  const { error } = await supabase.from("friendships").update({ status: "declined" }).eq("id", req.id);
+                  if (error) { toast.error("Could not decline — try again."); return; }
+                  queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
+                  queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+                }}
+              />
             ))}
           </div>
         </div>
@@ -262,7 +250,7 @@ const Messages = () => {
       {/* Friends Section */}
       {(friends && friends.length > 0) && (
         <div className="animate-reveal animate-reveal-delay-1 mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+          <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
             <UserCheck size={12} /> Friends
           </p>
 
@@ -313,7 +301,7 @@ const Messages = () => {
       {otherConvos.length > 0 && (
         <div className="animate-reveal animate-reveal-delay-2">
           {friends && friends.length > 0 && (
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">Others</p>
+            <p className="eyebrow text-muted-foreground mb-2">Others</p>
           )}
           <div className="space-y-2">
             {otherConvos.map((conv) => (
@@ -359,7 +347,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
           className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}
         />
         <span className="text-[11px] text-muted-foreground shrink-0">
-          {formatDistanceToNow(new Date(conv.lastMessage.created_at), { addSuffix: true })}
+          {fmtRelative(conv.lastMessage.created_at)}
         </span>
       </div>
       <p className={cn(

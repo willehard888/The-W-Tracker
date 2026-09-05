@@ -1,3 +1,5 @@
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { fmtInt } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -555,8 +557,9 @@ const TribeDetail = () => {
     invalidateTribe();
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Delete this tribe? This cannot be undone.")) return;
+  const [confirmDeleteTribe, setConfirmDeleteTribe] = useState(false);
+  const handleDelete = () => setConfirmDeleteTribe(true);
+  const deleteTribe = async () => {
     const { error } = await supabase.rpc("delete_tribe", { p_tribe_id: id! });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Tribe deleted");
@@ -685,7 +688,7 @@ const TribeDetail = () => {
             }}
           >
             <p
-              className="text-[11px] uppercase tracking-[0.22em] font-black text-center mb-1"
+              className="eyebrow text-center mb-1"
               style={{ color: tierUp.accent }}
             >
               Tribe Fire promoted
@@ -731,7 +734,7 @@ const TribeDetail = () => {
             <UserCheck size={14} className="text-gold" strokeWidth={2.6} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] uppercase tracking-widest font-black text-gold">Pending requests</p>
+            <p className="eyebrow text-gold">Pending requests</p>
             <p className="text-[11px] text-muted-foreground truncate">
               {pendingCount} {pendingCount === 1 ? "person wants" : "people want"} to join
             </p>
@@ -748,7 +751,7 @@ const TribeDetail = () => {
             <ShieldAlert size={14} className="text-destructive" strokeWidth={2.6} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
+            <p className="eyebrow text-destructive">Reported posts</p>
             <p className="text-[11px] text-muted-foreground truncate">
               {reportedCount} {reportedCount === 1 ? "post needs" : "posts need"} your review
             </p>
@@ -771,7 +774,7 @@ const TribeDetail = () => {
               )}
               {isOwner && (tribe.weekly_xp ?? 0) > 0 && (
                 <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums text-gold">
-                  <Zap size={12} fill="currentColor" /> +{(tribe.weekly_xp ?? 0).toLocaleString()} XP
+                  <Zap size={12} fill="currentColor" /> +{fmtInt(tribe.weekly_xp ?? 0)} XP
                 </span>
               )}
             </span>
@@ -933,6 +936,13 @@ const TribeDetail = () => {
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
           <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={invalidateTribe} />
           <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={invalidateTribe} />
+          <ConfirmDialog
+            open={confirmDeleteTribe}
+            onOpenChange={setConfirmDeleteTribe}
+            title="Delete this tribe?"
+            description="This cannot be undone."
+            onConfirm={() => { setConfirmDeleteTribe(false); void deleteTribe(); }}
+          />
           {isOwner && tribe && profile?.user_id && (
             <TribeManageDialog
               tribeId={id}

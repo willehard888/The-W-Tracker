@@ -123,7 +123,7 @@ const ResetPassword = () => {
 
         <form onSubmit={handleReset} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+            <label className="eyebrow text-muted-foreground mb-1.5 block">
               New Password
             </label>
             <div className="relative">
@@ -147,7 +147,7 @@ const ResetPassword = () => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+            <label className="eyebrow text-muted-foreground mb-1.5 block">
               Confirm Password
             </label>
             <input
@@ -168,7 +168,7 @@ const ResetPassword = () => {
           )}
 
           <Button variant="ember" size="xl" className="w-full" type="submit" disabled={loading}>
-            {loading ? "Updating..." : "Update Password"}
+            {loading ? "Updating…" : "Update Password"}
           </Button>
         </form>
       </div>

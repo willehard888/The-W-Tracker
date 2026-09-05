@@ -1,4 +1,7 @@
 
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { fmtRelative } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils } from "lucide-react";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsList";
 import { isNativePlatform } from "@/lib/platform";
@@ -26,7 +29,7 @@ import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow, subDays, format } from "date-fns";
+import { subDays, format } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { getTierConfig } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
@@ -89,10 +92,9 @@ const Profile = () => {
   // (sign-out + delete + subscription management). The hero card above
   // stays always visible because it's the identity.
   const [profileTab, setProfileTab] = useState<"stats" | "badges" | "settings">("stats");
-  // Always-visible "..." menu — user feedback: logout buttons "disappeared"
+  // Always-visible "…" menu — user feedback: logout buttons "disappeared"
   // because they're inside the Settings tab. This menu makes them reachable
   // in one tap from any tab.
-  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -144,7 +146,7 @@ const Profile = () => {
   const handleShareProfile = async () => {
     if (!profile?.username) return;
     const url = `https://whealthfactory.com/u/${profile.username}`;
-    const text = `@${profile.username} on Whealth Factory — Lv ${profile.level ?? 1} · ${(profile.xp ?? 0).toLocaleString()} XP · ${profile.streak ?? 0}d streak`;
+    const text = `@${profile.username} on Whealth Factory — Lv ${profile.level ?? 1} · ${fmtInt(profile.xp ?? 0)} XP · ${profile.streak ?? 0}d streak`;
     try {
       if (navigator.share) {
         await navigator.share({ title: `@${profile.username}`, text, url });
@@ -395,45 +397,25 @@ const Profile = () => {
       {/* Always-visible quick menu — Sign Out + Delete Account are also in
           the Settings tab, but users frequently miss them. This kebab menu
           surfaces them in one tap from any tab. */}
-      <div className="relative flex justify-end mb-2">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Account menu"
-          onClick={() => setQuickMenuOpen((v) => !v)}
-        >
-          <MoreVertical aria-hidden size={18} />
-        </Button>
-        {quickMenuOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-30"
-              onClick={() => setQuickMenuOpen(false)}
-              aria-hidden
-            />
-            <div className="absolute right-0 top-10 z-40 w-52 rounded-2xl border border-border/60 bg-card shadow-[0_18px_56px_-12px_hsl(var(--background)/0.8)] overflow-hidden">
-              <button
-                type="button"
-                onClick={() => { hapticSelection(); setQuickMenuOpen(false); setProfileTab("settings"); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition"
-              >
-                <SettingsIcon aria-hidden size={14} className="text-gold" />
-                <span>Open Settings</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { hapticSelection(); setQuickMenuOpen(false); signOut(); }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-sm hover:bg-secondary/60 active:bg-secondary/40 active:scale-[0.98] transition border-t border-border/40"
-              >
-                <LogOut aria-hidden size={14} className="text-gold" />
-                <span>Sign Out</span>
-              </button>
-              {/* Delete Account lives ONLY in Settings behind the
-                  type-to-confirm dialog — no quick path to a destructive
-                  action from a kebab menu. */}
-            </div>
-          </>
-        )}
+      <div className="flex justify-end mb-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon-sm" aria-label="Account menu">
+              <MoreVertical aria-hidden size={18} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem onClick={() => { hapticSelection(); setProfileTab("settings"); }}>
+              <SettingsIcon aria-hidden size={14} className="mr-2 text-gold" /> Open Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { hapticSelection(); signOut(); }}>
+              <LogOut aria-hidden size={14} className="mr-2 text-gold" /> Sign Out
+            </DropdownMenuItem>
+            {/* Delete Account lives ONLY in Settings behind the
+                type-to-confirm dialog — no quick path to a destructive
+                action from a kebab menu. */}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <BadgeUnlockModal badge={previewBadge} onClose={() => setPreviewBadge(null)} />
@@ -470,7 +452,7 @@ const Profile = () => {
             key={t}
             onClick={() => { void hapticSelection(); setProfileTab(t); }}
             className={cn(
-              "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
+              "eyebrow flex-1 py-2 rounded-lg transition-all",
               profileTab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -629,7 +611,7 @@ const Profile = () => {
                   <span className="flex items-center gap-1"><Heart aria-hidden size={12} /> {post.likes_count}</span>
                   <span className="flex items-center gap-1"><Trophy aria-hidden size={12} className="text-gold" /> {post.kudos_count}</span>
                   <span className="flex items-center gap-1"><MessageSquare aria-hidden size={12} /> {post.comments_count}</span>
-                  <span className="ml-auto">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+                  <span className="ml-auto">{fmtRelative(post.created_at)}</span>
                 </div>
               </div>
             ))}
@@ -667,7 +649,7 @@ const Profile = () => {
                 <CreditCard aria-hidden size={14} className="text-xp-green" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold tracking-wider uppercase text-xp-green/90">
+                <p className="eyebrow text-xp-green/90">
                   Membership active
                 </p>
                 <p className="text-[12px] text-muted-foreground">
@@ -781,7 +763,7 @@ const Profile = () => {
                       deleteConfirmText.trim() !== profile.username
                     }
                   >
-                    {deletingAccount ? "Deleting..." : "Delete Permanently"}
+                    {deletingAccount ? "Deleting…" : "Delete Permanently"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

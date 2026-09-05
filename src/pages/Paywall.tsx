@@ -1,3 +1,4 @@
+import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
@@ -143,9 +144,7 @@ const Paywall = () => {
   const creditsUntilRaw: string | null = profile?.membership_credits_until ?? null;
   const creditsActive = creditsUntilRaw && new Date(creditsUntilRaw).getTime() > Date.now();
   const creditsUntilLabel = creditsActive
-    ? new Date(creditsUntilRaw as string).toLocaleDateString(undefined, {
-        day: "numeric", month: "short", year: "numeric",
-      })
+    ? fmtDate(creditsUntilRaw as string)
     : null;
 
   // ─── Native purchase handler ─────────────────────────────────
@@ -291,7 +290,7 @@ const Paywall = () => {
       </div>
 
       <div className="text-center mt-4">
-        <p className="text-[11px] text-muted-foreground tracking-wider uppercase">
+        <p className="eyebrow text-muted-foreground">
           {/* "Cancel anytime" said once, in the CTA footnote — not four times. */}
           {isNative ? "Secure Apple in-app purchase" : "Subscribe in the iOS app"}
         </p>

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Droplets, Camera, Zap,
   ChevronDown, Check, Plus, Search, X,
-  SlidersHorizontal, ShieldCheck, Sparkles,
+  SlidersHorizontal, ShieldCheck, Sparkles, Thermometer,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -771,7 +771,7 @@ const DailyCheckin = () => {
         )}
         aria-pressed={sickToday}
       >
-        <span className="text-lg shrink-0">🤒</span>
+        <Thermometer size={18} className={cn("shrink-0", sickToday ? "text-teal" : "text-muted-foreground")} aria-hidden />
         <span className="min-w-0 flex-1">
           <span className={cn("block text-sm font-bold", sickToday && "text-teal")}>Sick today</span>
           <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">
@@ -811,7 +811,7 @@ const DailyCheckin = () => {
       {/* First-run onboarding — make personalization obvious (non-blocking). */}
       {showOnboard && (
         <div className="mt-3 mb-4 rounded-2xl border border-gold/35 bg-gradient-to-b from-gold/10 to-gold/[0.03] p-4 text-center animate-reveal">
-          <p className="text-2xl mb-1">✨</p>
+          <Sparkles size={24} className="text-gold mx-auto mb-1" aria-hidden />
           <p className="font-display text-lg font-black tracking-tight">Make it yours</p>
           <p className="text-xs text-muted-foreground mt-1 mb-3 max-w-[280px] mx-auto">
             Pick the habits you'll actually track every day. Sleep, workout, water &amp; meditation
@@ -820,7 +820,7 @@ const DailyCheckin = () => {
           <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
             <SlidersHorizontal aria-hidden size={16} /> Choose my habits
           </Button>
-          <button onClick={dismissOnboard} className="mt-2 text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/75 hover:text-foreground transition-colors py-1">
+          <button onClick={dismissOnboard} className="eyebrow mt-2 text-muted-foreground/75 hover:text-foreground transition-colors py-1">
             Use the defaults for now
           </button>
         </div>
@@ -1222,7 +1222,7 @@ const DailyCheckin = () => {
       <div className="mt-6">
         <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} loading={submitting} aria-busy={submitting} disabled={submitting || honest !== true}>
           <Zap aria-hidden size={20} />
-          {submitting ? "Submitting..." : (
+          {submitting ? "Submitting…" : (
             // The number every tick feeds — it counts instead of teleporting,
             // closing the tick → total chain at its endpoint.
             <span className="tabular-nums">

@@ -217,7 +217,7 @@ const PremiumHero = ({
               disabled={busy}
               onClick={() => setPlan("monthly")}
               className={cn(
-                "relative px-4 py-1.5 rounded-full text-[12px] font-black tracking-wider uppercase transition-all duration-200",
+                "eyebrow relative px-4 py-1.5 rounded-full transition-all duration-200",
                 !isYearly
                   ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
                   : "text-muted-foreground hover:text-foreground",
@@ -232,7 +232,7 @@ const PremiumHero = ({
               disabled={busy}
               onClick={() => setPlan("yearly")}
               className={cn(
-                "relative px-4 py-1.5 rounded-full text-[12px] font-black tracking-wider uppercase transition-all duration-200 flex items-center gap-1.5",
+                "eyebrow relative px-4 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1.5",
                 isYearly
                   ? "bg-gold text-background shadow-[0_0_12px_hsl(var(--gold)/0.5)]"
                   : "text-muted-foreground hover:text-foreground",
@@ -274,11 +274,11 @@ const PremiumHero = ({
               · <span className="text-gold font-bold">Save {yearlyDiscountPct}%</span> · ~2 months free
             </p>
           ) : yearlyAvailable ? (
-            <p className="text-[11px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+            <p className="eyebrow text-muted-foreground/80 mt-2">
               Switch to yearly anytime · Save {yearlyDiscountPct}%
             </p>
           ) : (
-            <p className="text-[11px] text-muted-foreground/80 mt-2 tracking-widest uppercase">
+            <p className="eyebrow text-muted-foreground/80 mt-2">
               Full access · Cancel anytime
             </p>
           )}
@@ -315,7 +315,7 @@ const PremiumHero = ({
             role="alert"
             className="mb-3 rounded-xl border border-destructive/50 bg-destructive/10 px-3.5 py-2.5 animate-reveal"
           >
-            <p className="text-[12px] font-black tracking-wider uppercase text-destructive mb-0.5">
+            <p className="eyebrow text-destructive mb-0.5">
               Purchase failed
             </p>
             <p className="text-[12px] text-foreground/90 leading-snug mb-2">

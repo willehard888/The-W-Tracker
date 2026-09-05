@@ -1,3 +1,5 @@
+import { fmtDate } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import { ChevronRight, Award, ArrowUp, Crown } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
@@ -217,7 +219,7 @@ const Index = () => {
   // is never generic filler.
   const now = new Date();
   const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
-  const monthDay = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const monthDay = fmtDate(now);
   const ritualLine = !canCheckin
     ? "Today is locked in."
     : profile.streak > 0
@@ -331,7 +333,7 @@ const Index = () => {
                 <span className="font-display font-black text-[17px] tabular-nums leading-none">
                   #<AnimatedNumber value={rankData!.rank} duration={700} />
                 </span>
-                <span className="text-[11px] text-muted-foreground">of {(rankData?.totalUsers ?? 0).toLocaleString()}</span>
+                <span className="text-[11px] text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)}</span>
               </span>
             )}
             <span className="inline-flex items-baseline gap-1">
@@ -468,7 +470,7 @@ const Index = () => {
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">
-        <p className="text-[11px] text-muted-foreground font-semibold tracking-[0.22em] uppercase">
+        <p className="eyebrow text-muted-foreground">
           {tierConfig.message}
         </p>
       </div>

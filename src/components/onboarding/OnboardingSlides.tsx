@@ -141,7 +141,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
           >
             <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden><span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" /></span>
             <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
-            <span className="ml-auto text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">
+            <span className="eyebrow ml-auto text-muted-foreground/70">
               {cfg.percentile}
             </span>
           </div>

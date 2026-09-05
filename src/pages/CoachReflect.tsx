@@ -24,7 +24,7 @@ const CoachReflect = () => {
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={12} className="text-gold" />
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
+            <p className="eyebrow text-gold">
               60 seconds before bed
             </p>
           </div>
@@ -60,7 +60,7 @@ const CoachReflect = () => {
         <div className="rounded-2xl border border-border/40 bg-card/30 p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <BookOpen size={11} className="text-muted-foreground" />
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+            <p className="eyebrow text-muted-foreground">
               Why this matters
             </p>
           </div>
@@ -77,7 +77,7 @@ const CoachReflect = () => {
 
 const Tile = ({ label, value, good }: { label: string; value: string; good: boolean }) => (
   <div className={`rounded-xl border px-3 py-2 ${good ? "border-gold/35 bg-gold/[0.05]" : "border-border/40 bg-card/40"}`}>
-    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">{label}</p>
+    <p className="eyebrow-sm text-muted-foreground mb-0.5">{label}</p>
     <p className={`text-sm font-display font-black ${good ? "text-gold" : "text-foreground/85"}`}>{value}</p>
   </div>
 );

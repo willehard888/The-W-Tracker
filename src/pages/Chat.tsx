@@ -1,3 +1,5 @@
+import { Input } from "@/components/ui/input";
+import { fmtRelative } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +15,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 
 const Chat = () => {
   const { partnerId } = useParams<{ partnerId: string }>();
@@ -172,9 +173,9 @@ const Chat = () => {
             />
             <div className="text-left min-w-0">
               <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
-                @{partner?.username || "..."}
+                @{partner?.username || "…"}
                 {partnerIsElite && (
-                  <span className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
+                  <span className="eyebrow-sm text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
                     Elite
                   </span>
                 )}
@@ -273,7 +274,7 @@ const Chat = () => {
                       isOwn ? "text-gold/50" : "text-muted-foreground/50"
                     )}
                   >
-                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                    {fmtRelative(msg.created_at)}
                     {isOwn && msg.read && <span className="ml-1">· seen</span>}
                   </p>
                 )}
@@ -288,17 +289,12 @@ const Chat = () => {
       <div className="shrink-0 border-t border-border/60 bg-card/90 backdrop-blur-xl px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="flex gap-2 items-end">
           <div className="flex-1 relative">
-            <input
+            <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Message..."
+              placeholder="Message…"
               maxLength={1000}
-              className={cn(
-                "w-full h-11 px-4 rounded-full border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-all",
-                text.trim()
-                  ? "border-gold/40 focus:ring-2 focus:ring-gold/30 shadow-[0_0_0_1px_hsl(var(--gold)/0.15)]"
-                  : "border-border focus:ring-1 focus:ring-border"
-              )}
+              className="h-11 rounded-full px-4 text-sm"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

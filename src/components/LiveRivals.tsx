@@ -28,7 +28,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
       className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}
     >
       <div className="flex items-center justify-between mb-3">
-        <p className="font-display font-black text-xs uppercase tracking-widest text-muted-foreground">
+        <p className="eyebrow font-display text-muted-foreground">
           Live Rivals
         </p>
         <button
@@ -61,7 +61,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
                 tier={data.above.status_tier}
                 className="font-bold text-sm truncate"
               />
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Ahead of you</p>
+              <p className="eyebrow text-muted-foreground">Ahead of you</p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
               <ArrowUp size={12} className="text-xp-green" />
@@ -97,7 +97,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               />
               <p
                 className={cn(
-                  "text-[11px] uppercase tracking-wider flex items-center gap-1",
+                  "eyebrow flex items-center gap-1",
                   heatBelow ? "text-destructive font-black" : "text-muted-foreground",
                 )}
               >

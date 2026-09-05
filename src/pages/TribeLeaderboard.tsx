@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useMemo, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useNavigate } from "react-router-dom";
@@ -123,7 +124,7 @@ const TribeLeaderboard = () => {
         style={{ color: accent }}
       >
         <Flame size={12} fill="currentColor" strokeWidth={0} />
-        {streak.toLocaleString()}d · {collectiveTierName(streak)}
+        {fmtInt(streak)}d · {collectiveTierName(streak)}
       </span>
     );
   };
@@ -144,7 +145,7 @@ const TribeLeaderboard = () => {
             key={p}
             onClick={() => setPeriod(p)}
             className={cn(
-              "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
+              "eyebrow flex-1 py-2 rounded-lg transition-all",
               period === p ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -184,7 +185,7 @@ const TribeLeaderboard = () => {
                       <Lock size={12} className="text-muted-foreground shrink-0" />
                     )}
                     {mine && (
-                      <span className="text-[10px] px-1 py-0.5 rounded bg-gold/20 text-gold font-black uppercase tracking-widest shrink-0">
+                      <span className="eyebrow-sm px-1 py-0.5 rounded bg-gold/20 text-gold shrink-0">
                         Mine
                       </span>
                     )}

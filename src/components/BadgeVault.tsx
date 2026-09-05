@@ -244,7 +244,7 @@ const BadgeVault = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Target size={12} className="text-gold" />
-                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+                <span className="eyebrow-sm text-gold">
                   Next Drop
                 </span>
               </div>

@@ -61,7 +61,7 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
             <div key={s.code} className="py-3">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-[15px] font-bold">{s.name}</p>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground shrink-0">{s.licence}</span>
+                <span className="eyebrow text-muted-foreground shrink-0">{s.licence}</span>
               </div>
               <p className="text-[13px] text-muted-foreground leading-snug mt-1">{s.attribution_text}</p>
               <div className="flex gap-4 mt-1.5">

@@ -1,3 +1,4 @@
+import { fmtDate } from "@/lib/format";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Trash2, Brain, Sparkles } from "lucide-react";
@@ -35,7 +36,7 @@ const CoachMemoryScreen = () => {
         <div className="surface-card p-3 space-y-2">
           <div className="flex items-center gap-2">
             <Sparkles size={12} className="text-gold" />
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">Add a fact</p>
+            <p className="eyebrow text-gold">Add a fact</p>
           </div>
           <div className="flex gap-2">
             <Input value={draft} onChange={e => setDraft(e.target.value.slice(0, 200))}
@@ -74,7 +75,7 @@ const CoachMemoryScreen = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm leading-relaxed">{m.fact}</p>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {SOURCE_LABEL[m.source] ?? m.source} · {new Date(m.created_at).toLocaleDateString()}
+                    {SOURCE_LABEL[m.source] ?? m.source} · {fmtDate(m.created_at)}
                   </p>
                 </div>
                 <Button variant="ghost" size="icon-sm"

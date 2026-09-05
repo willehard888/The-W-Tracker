@@ -92,7 +92,7 @@ const ProgramCard = () => {
         </p>
       )}
 
-      <div className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-gold">
+      <div className="eyebrow mt-3 inline-flex items-center gap-1 text-gold">
         Open program <ArrowRight size={12} />
       </div>
     </button>

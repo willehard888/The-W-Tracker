@@ -1,9 +1,10 @@
+import { fmtRelative } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import { Swords, Crown, Clock, Trophy, Check, X, Loader2, Flame } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 import TribeFireLite from "@/components/TribeFireLite";
 import { collectiveTierName, collectiveStreakTier, collectiveAccent, collectivePalette } from "@/lib/tribe-streak";
 
@@ -85,7 +86,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest font-black text-muted-foreground">
+        <div className="eyebrow flex items-center gap-1.5 text-muted-foreground">
           <Swords size={11} className="text-[hsl(var(--ember))]" />
           {battle.status === "pending" && (myIsChallenger ? "Awaiting Response" : "Incoming Challenge")}
           {battle.status === "active" && "Battle Live"}
@@ -142,7 +143,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                <p className="eyebrow-sm text-muted-foreground">
                   {isMine ? "Your tribe" : "Opponent"}
                 </p>
                 <p className={cn("font-display font-black text-sm truncate", isMine && "text-gold")}>
@@ -155,7 +156,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             </div>
             {hasBigger && (
               <span
-                className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-widest uppercase border"
+                className="eyebrow-sm mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border"
                 style={{
                   color: accent,
                   borderColor: accent.replace(")", " / 0.5)"),
@@ -167,7 +168,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
               </span>
             )}
             {streak > 0 && (
-              <span className="ml-1.5 mt-1.5 inline-block text-[10px] uppercase tracking-wider text-muted-foreground/70">
+              <span className="eyebrow-sm ml-1.5 mt-1.5 inline-block text-muted-foreground/70">
                 {collectiveTierName(streak)}
               </span>
             )}
@@ -203,8 +204,8 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
       {(battle.status === "active" || battle.status === "completed") && (
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-black tabular-nums text-gold">{myScore.toLocaleString()} XP</span>
-            <span className="text-xs font-black tabular-nums text-foreground/80">{theirScore.toLocaleString()} XP</span>
+            <span className="text-xs font-black tabular-nums text-gold">{fmtInt(myScore)} XP</span>
+            <span className="text-xs font-black tabular-nums text-foreground/80">{fmtInt(theirScore)} XP</span>
           </div>
           <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
             <div
@@ -222,8 +223,8 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
               myScore > theirScore ? "text-xp-green" : "text-[hsl(var(--ember))]",
             )}>
               {myScore > theirScore
-                ? `Ahead by ${(myScore - theirScore).toLocaleString()} XP — keep the pressure on`
-                : `Behind by ${(theirScore - myScore).toLocaleString()} XP — every check-in counts`}
+                ? `Ahead by ${fmtInt(myScore - theirScore)} XP — keep the pressure on`
+                : `Behind by ${fmtInt(theirScore - myScore)} XP — every check-in counts`}
             </p>
           )}
         </div>
@@ -234,11 +235,11 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
         <span>{battle.duration_days}-day battle</span>
         <span>
           {battle.status === "pending"
-            ? `Sent ${formatDistanceToNow(new Date(battle.created_at), { addSuffix: true })}`
+            ? `Sent ${fmtRelative(battle.created_at)}`
             : battle.status === "active" && startedAt
-            ? `Started ${formatDistanceToNow(startedAt, { addSuffix: true })}`
+            ? `Started ${fmtRelative(startedAt)}`
             : battle.ended_at
-            ? `Ended ${formatDistanceToNow(new Date(battle.ended_at), { addSuffix: true })}`
+            ? `Ended ${fmtRelative(battle.ended_at)}`
             : null}
         </span>
       </div>

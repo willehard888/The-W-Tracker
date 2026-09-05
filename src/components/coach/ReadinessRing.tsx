@@ -60,7 +60,7 @@ const ReadinessRing = ({ score, size = 56, label, className }: Props) => {
       </div>
       {label && (
         <div className="leading-tight">
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="eyebrow-sm text-muted-foreground">
             Readiness
           </p>
           <p className={cn("text-[12px] font-bold", t.text)}>{label}</p>

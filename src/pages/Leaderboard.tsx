@@ -1,4 +1,5 @@
 
+import { fmtInt } from "@/lib/format";
 import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal, Swords, ShieldCheck, AlertTriangle, Flame } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
@@ -335,10 +336,10 @@ const Leaderboard = () => {
             </div>
           </div>
           {hasRank && percentile < 50 && (
-            <p className="text-[11px] text-destructive font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><AlertTriangle size={11} aria-hidden /> Falling behind — others are gaining</p>
+            <p className="eyebrow text-destructive mt-3 text-center inline-flex items-center gap-1 w-full justify-center"><AlertTriangle size={11} aria-hidden /> Falling behind — others are gaining</p>
           )}
           {hasRank && percentile >= 90 && (
-            <p className="text-[11px] text-gold font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><Flame size={11} aria-hidden /> Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
+            <p className="eyebrow text-gold mt-3 text-center inline-flex items-center gap-1 w-full justify-center"><Flame size={11} aria-hidden /> Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
           )}
         </div>
       )}
@@ -493,9 +494,9 @@ const Leaderboard = () => {
                 </div>
                 <div className="text-right">
                   <p className={cn("font-display font-black text-sm tabular-nums", isMe && "text-gold")}>
-                    {points.toLocaleString()}
+                    {fmtInt(points)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+                  <p className="eyebrow-sm text-muted-foreground">
                     {mode === "season" ? "Season XP" : "XP"}
                   </p>
                 </div>
@@ -619,7 +620,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
         />
       )}
 
-      <div className={cn("absolute top-2 right-2 font-display font-black text-[11px] tabular-nums uppercase tracking-wider",
+      <div className={cn("eyebrow absolute top-2 right-2 font-display tabular-nums",
         isFirst ? "text-gold" : isSecond ? "text-foreground/60" : "text-amber-600"
       )}>
         {rankLabel}
@@ -654,9 +655,9 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
         "font-display font-black tabular-nums mt-1",
         isFirst ? "text-gold text-xl" : "text-foreground text-sm",
       )}>
-        {points.toLocaleString()}
+        {fmtInt(points)}
       </p>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+      <p className="eyebrow-sm text-muted-foreground">
         {mode === "season" ? "Season XP" : "XP"}
       </p>
       <div className="flex items-center gap-2 mt-1.5 flex-wrap justify-center">
@@ -702,7 +703,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={isSeason}
           onClick={() => onChange("season")}
           className={cn(
-            "relative z-10 py-2 min-h-11 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors active:scale-[0.97]",
+            "eyebrow relative z-10 py-2 min-h-11 font-display transition-colors active:scale-[0.97]",
             isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -716,7 +717,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={!isSeason}
           onClick={() => onChange("all_time")}
           className={cn(
-            "relative z-10 py-2 min-h-11 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors active:scale-[0.97]",
+            "eyebrow relative z-10 py-2 min-h-11 font-display transition-colors active:scale-[0.97]",
             !isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -727,7 +728,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
         </button>
       </div>
       {/* Swipe hint */}
-      <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">
+      <div className="eyebrow-sm mt-2 flex items-center justify-center gap-1.5 text-muted-foreground">
         <ChevronLeft aria-hidden size={12} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
         <span>Swipe to switch</span>
         <ChevronRight aria-hidden size={12} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />

@@ -125,7 +125,7 @@ const EmberRiseLayer = ({ events, accent }: EmberRiseLayerProps) => {
             {/* 5. Username caption fading in below the chip */}
             {e.username && (
               <span
-                className="absolute left-1/2 -translate-x-1/2 text-[11px] uppercase tracking-widest font-black"
+                className="eyebrow absolute left-1/2 -translate-x-1/2"
                 style={{
                   bottom: "20%",
                   color: accent,

@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BattleTypeInfo } from "@/components/battles/types";
@@ -26,7 +27,7 @@ const BattleIncomingCard = ({ battle, opp, typeInfo, onRespond, responding = fal
         </p>
       </div>
       <div className="text-right">
-        <p className="text-xs text-muted-foreground">{(opp.xp ?? 0).toLocaleString()} XP</p>
+        <p className="text-xs text-muted-foreground">{fmtInt(opp.xp ?? 0)} XP</p>
         <p className="text-xs text-[hsl(var(--streak-orange))]">{opp.streak}d streak</p>
       </div>
     </div>

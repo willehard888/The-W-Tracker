@@ -106,7 +106,7 @@ const ProfileHero = ({
               className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95"
             >
               {uploadingAvatar ? (
-                <span className="text-[11px] text-gold animate-pulse">...</span>
+                <span className="text-[11px] text-gold animate-pulse">…</span>
               ) : (
                 <Camera aria-hidden size={16} className="text-gold" />
               )}

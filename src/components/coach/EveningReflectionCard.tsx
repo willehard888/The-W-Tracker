@@ -21,7 +21,7 @@ const Scale = ({
 }) => (
   <div className="space-y-1.5">
     <div className="flex items-center justify-between">
-      <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="eyebrow text-muted-foreground">{label}</span>
       {value != null && <span className="text-[12px] font-black text-gold">{value}/{max}</span>}
     </div>
     <div className="flex gap-1">
@@ -138,7 +138,7 @@ const EveningReflectionCard = () => {
               <Scale label="Session RPE" value={rpe} onChange={setRpe} max={10} hints={["easy", "max"]} />
 
               <div className="space-y-1.5">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">One win</span>
+                <span className="eyebrow text-muted-foreground">One win</span>
                 <input
                   value={win}
                   onChange={(e) => setWin(e.target.value.slice(0, 200))}
@@ -147,7 +147,7 @@ const EveningReflectionCard = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">One friction</span>
+                <span className="eyebrow text-muted-foreground">One friction</span>
                 <input
                   value={friction}
                   onChange={(e) => setFriction(e.target.value.slice(0, 200))}

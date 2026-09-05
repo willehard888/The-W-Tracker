@@ -150,7 +150,7 @@ const VaultArticleSheet = ({
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
                   <span
-                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black tracking-[0.22em] uppercase"
+                    className="eyebrow-sm inline-flex items-center px-2 py-0.5 rounded-full"
                     style={{
                       background: `${accent}22`,
                       color: accent,
@@ -163,7 +163,7 @@ const VaultArticleSheet = ({
                   </span>
                 )}
                 <EvidenceChip tier={article.evidence_tier} />
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-[10px] font-black tracking-[0.22em] uppercase text-muted-foreground">
+                <span className="eyebrow-sm inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-muted-foreground">
                   <Clock size={10} strokeWidth={3} />
                   {article.read_time_min} min
                 </span>
@@ -219,7 +219,7 @@ const VaultArticleSheet = ({
                   <div className="flex items-center gap-2 mb-3">
                     <Target size={13} style={{ color: accent }} strokeWidth={2.6} />
                     <p
-                      className="text-[11px] font-black tracking-[0.22em] uppercase"
+                      className="eyebrow"
                       style={{ color: accent }}
                     >
                       Protocol
@@ -337,7 +337,7 @@ const VaultArticleSheet = ({
 
               {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
-                  <p className="text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground mb-2">
+                  <p className="eyebrow text-muted-foreground mb-2">
                     References
                   </p>
                   <ol className="space-y-1.5 text-[12px] text-muted-foreground/90 list-decimal list-inside">
@@ -367,7 +367,7 @@ const VaultArticleSheet = ({
                 type="button"
                 onClick={handleComplete}
                 disabled={completeLesson.isPending || isCompleted}
-                className="w-full rounded-2xl py-3 text-[12px] font-black tracking-[0.22em] uppercase transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="eyebrow w-full rounded-2xl py-3 transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
                   background: isCompleted ? `${accent}20` : accent,
                   color: isCompleted ? accent : "hsl(var(--background))",
@@ -396,7 +396,7 @@ const VaultArticleSheet = ({
 
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col">
-    <dt className="text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground/80">
+    <dt className="eyebrow text-muted-foreground/80">
       {label}
     </dt>
     <dd className="text-foreground/95 leading-snug">{value}</dd>
@@ -414,7 +414,7 @@ const SectionHeader = ({
 }) => (
   <div className="flex items-center gap-2 mb-2">
     <Icon size={13} style={{ color }} strokeWidth={2.6} />
-    <p className="text-[11px] font-black tracking-[0.22em] uppercase" style={{ color }}>
+    <p className="eyebrow" style={{ color }}>
       {label}
     </p>
   </div>

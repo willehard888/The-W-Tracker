@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Zap, Flame, Trophy, ArrowUp, Crown, Target, TrendingUp, Sparkles } from "lucide-react";
@@ -127,7 +128,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         >
           <span
             className={cn(
-              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.22em] font-black ring-1",
+              "eyebrow-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-full ring-1",
               accent.ring,
               cfg.rank >= 5
                 ? "bg-background/60 text-foreground"
@@ -225,7 +226,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Trophy aria-hidden size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">Level</p>
+              <p className="eyebrow-sm text-muted-foreground">Level</p>
               {leveledUp && (
                 <motion.span
                   animate={{ y: [0, -2, 0] }}
@@ -285,7 +286,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                     : "text-streak-orange"
                 }
               />
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-black">Streak</p>
+              <p className="eyebrow-sm text-muted-foreground">Streak</p>
             </div>
             <p
               className={cn(
@@ -327,12 +328,12 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             cfg.rank >= 5 ? "border-gold/30" : "border-border",
           )}
         >
-          <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground font-black">
+          <span className="eyebrow flex items-center gap-1.5 text-muted-foreground">
             <Target aria-hidden size={11} strokeWidth={3} />
             Total XP
           </span>
           <span className="font-display text-xl font-black tabular-nums">
-            {summary.newTotalXp.toLocaleString()}
+            {fmtInt(summary.newTotalXp)}
           </span>
         </motion.div>
 
@@ -372,7 +373,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.54 }}
-            className="mt-4 flex items-center justify-center gap-1.5 text-[11px] uppercase tracking-[0.22em] font-black text-gold"
+            className="eyebrow mt-4 flex items-center justify-center gap-1.5 text-gold"
           >
             <Crown aria-hidden size={11} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle standard" : "Apex doesn't skip days"}

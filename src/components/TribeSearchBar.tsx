@@ -193,7 +193,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-black truncate">{r.name}</p>
                       {r.visibility === "private" && (
-                        <span className="text-[10px] px-1 rounded bg-secondary text-muted-foreground font-black uppercase tracking-widest shrink-0">
+                        <span className="eyebrow-sm px-1 rounded bg-secondary text-muted-foreground shrink-0">
                           Private
                         </span>
                       )}

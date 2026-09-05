@@ -1,4 +1,5 @@
 
+import { fmtRelative } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
@@ -27,7 +28,6 @@ import { downscaleImage } from "@/lib/downscale-image";
 import { fetchFeedPosts } from "@/lib/feed-query";
 import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
 import MediaPreview from "@/components/media/MediaPreview";
-import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -817,7 +817,7 @@ const EliteFeed = () => {
                       <p className="text-[11px] text-muted-foreground">
                         Reported by <span className="font-semibold text-foreground">@{report.reporter?.username || "unknown"}</span>
                         {" · "}
-                        {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
+                        {fmtRelative(report.created_at)}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">{report.reason}</p>
                       {report.post && (

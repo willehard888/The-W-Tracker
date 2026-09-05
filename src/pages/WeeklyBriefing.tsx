@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useParams, useNavigate } from "react-router-dom";
@@ -182,7 +183,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5 }}
           className="mb-6"
         >
-          <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80 font-bold mb-2">
+          <p className="eyebrow text-gold/80 mb-2">
             Weekly Briefing · {formatDateRange(briefing.week_start, briefing.week_end)}
           </p>
           <h1 className="font-display font-black text-2xl leading-tight tracking-tight text-gradient-gold">
@@ -197,7 +198,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="grid grid-cols-2 gap-3 mb-6"
         >
-          <StatTile label="Week XP" value={(stats.total_xp ?? 0).toLocaleString()} />
+          <StatTile label="Week XP" value={fmtInt(stats.total_xp ?? 0)} />
           <StatTile label="Perfect Days" value={`${stats.perfect_days ?? 0}/7`} />
           <StatTile label="Workouts" value={`${stats.workouts ?? 0}/7`} />
           <StatTile label="Check-ins" value={`${stats.days_checked_in ?? 0}/7`} />
@@ -210,7 +211,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-6"
         >
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-bold mb-3">
+          <h2 className="eyebrow text-muted-foreground mb-3">
             Key Insights
           </h2>
           <div className="space-y-2">
@@ -240,7 +241,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-6"
         >
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-bold mb-3">
+          <h2 className="eyebrow text-muted-foreground mb-3">
             Next Week Protocol
           </h2>
           <div className="space-y-2">
@@ -288,7 +289,7 @@ const WeeklyBriefing = () => {
           ) : (
             <Share2 size={18} />
           )}
-          {sharing ? "Generating..." : "Share Briefing"}
+          {sharing ? "Generating…" : "Share Briefing"}
         </Button>
       </div>
 

@@ -39,7 +39,7 @@ const BattleActiveCard = ({
       <div className="flex items-center justify-between p-4 pb-2">
         <div className="flex items-center gap-2">
           <TypeIcon size={14} className={typeInfo.color} />
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(var(--gold))" }}>
+          <span className="eyebrow" style={{ color: "hsl(var(--gold))" }}>
             {typeInfo.emoji} {typeInfo.label} Battle
           </span>
         </div>
@@ -108,7 +108,7 @@ const BattleActiveCard = ({
 
       {/* Proof Section — REQUIRED */}
       <div className="p-4 pt-3 border-t border-border mt-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+        <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
           <Camera size={12} /> Proof Photos <span className="text-destructive ml-1">(required)</span>
         </p>
 
@@ -138,7 +138,7 @@ const BattleActiveCard = ({
                 className="w-full aspect-square rounded-lg border-2 border-dashed border-destructive/40 bg-destructive/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-destructive/10 active:scale-95 animate-pulse"
               >
                 {isUploading ? (
-                  <span className="text-[11px] text-muted-foreground animate-pulse">Uploading...</span>
+                  <span className="text-[11px] text-muted-foreground animate-pulse">Uploading…</span>
                 ) : (
                   <>
                     <Camera size={20} className="text-destructive" />

@@ -99,7 +99,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[12px] font-black text-gold tracking-widest uppercase">
+            <p className="eyebrow text-gold">
               Road to Elite
             </p>
             <span className="text-[12px] font-bold text-gold tabular-nums">
@@ -149,7 +149,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               <h3 className="font-display font-black text-base tracking-tight leading-none">
                 Road to Elite
               </h3>
-                <p className="text-[11px] text-muted-foreground mt-1 tracking-wider uppercase font-semibold">
+                <p className="eyebrow text-muted-foreground mt-1">
                   Top 20% or 20 days + 21 streak
               </p>
             </div>
@@ -159,7 +159,7 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               {r.overallPercent}
               <span className="text-sm text-muted-foreground">%</span>
             </p>
-            <p className="text-[10px] text-muted-foreground mt-1 tracking-wider uppercase">
+            <p className="eyebrow-sm text-muted-foreground mt-1">
               {r.metCount}/2 paths met
             </p>
           </div>

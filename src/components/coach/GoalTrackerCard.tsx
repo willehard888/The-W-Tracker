@@ -1,3 +1,4 @@
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Target, TrendingUp, Trash2 } from "lucide-react";
@@ -31,6 +32,7 @@ const computePace = (g: { baseline_value: number | null; current_value: number |
 const GoalTrackerCard = () => {
   const { goals, activeGoal, upsert, updateProgress, remove } = useCoachGoals();
   const [adding, setAdding] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [draft, setDraft] = useState({ title: "", metric: "custom", unit: "", baseline_value: "", target_value: "", deadline: "" });
 
   const create = async () => {
@@ -78,7 +80,7 @@ const GoalTrackerCard = () => {
   if (adding) {
     return (
       <div className="rounded-2xl border border-border/40 bg-card/50 p-4 space-y-3">
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">New goal</p>
+        <p className="eyebrow text-gold">New goal</p>
         <Input placeholder="Title (e.g. Bench 100 kg)" value={draft.title}
           onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />
         <div className="grid grid-cols-2 gap-2">
@@ -112,7 +114,7 @@ const GoalTrackerCard = () => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold flex items-center gap-1">
+          <p className="eyebrow text-gold flex items-center gap-1">
             <Target size={12} /> North Star
           </p>
           <h3 className="font-display text-base font-black mt-0.5 truncate">{activeGoal.title}</h3>
@@ -122,7 +124,7 @@ const GoalTrackerCard = () => {
           </p>
         </div>
         <span className={cn(
-          "text-[11px] font-black uppercase tracking-wider px-2 py-1 rounded-full",
+          "eyebrow px-2 py-1 rounded-full",
           onPace ? "bg-xp-green/15 text-xp-green" : "bg-rose-500/15 text-rose-300"
         )}>
           {onPace ? "On pace" : "Off pace"}
@@ -148,10 +150,7 @@ const GoalTrackerCard = () => {
           <TrendingUp size={14} /> Log progress
         </Button>
         <Button variant="ghost" size="icon-sm"
-          onClick={async () => {
-            if (!confirm("Delete this goal?")) return;
-            await remove(activeGoal.id);
-          }} aria-label="Delete">
+          onClick={() => setConfirmDelete(true)} aria-label="Delete">
           <Trash2 size={14} />
         </Button>
       </div>
@@ -163,6 +162,12 @@ const GoalTrackerCard = () => {
           <Plus size={12} /> Add another goal
         </button>
       )}
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Delete this goal?"
+        onConfirm={() => { setConfirmDelete(false); void remove(activeGoal.id); }}
+      />
     </motion.div>
   );
 };

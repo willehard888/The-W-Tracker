@@ -241,7 +241,7 @@ const TodaysPlanCard = () => {
               type="button"
               onClick={regenerate}
               disabled={generating}
-              className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 active:scale-95 transition disabled:opacity-40"
+              className="eyebrow shrink-0 inline-flex items-center gap-1 text-muted-foreground/70 active:scale-95 transition disabled:opacity-40"
               aria-label="Regenerate plan"
             >
               <RotateCw size={11} className={cn(generating && "animate-spin")} /> Refresh
@@ -287,7 +287,7 @@ const TodaysPlanCard = () => {
       </div>
 
       {done > 0 && done >= total && total > 0 && (
-        <p className="mt-3 text-center text-[12px] font-black uppercase tracking-widest text-xp-green">
+        <p className="eyebrow mt-3 text-center text-xp-green">
           Plan complete · you showed up
         </p>
       )}

@@ -10,7 +10,7 @@ import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkel
 
 const Row = ({ label, value }: { label: string; value: string }) => (
   <div className="flex items-baseline justify-between py-2.5 border-b border-border/30 last:border-0">
-    <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+    <span className="eyebrow text-muted-foreground">{label}</span>
     <span className="text-sm text-foreground text-right max-w-[60%] truncate">{value}</span>
   </div>
 );
@@ -79,7 +79,7 @@ const AthleteProfileSettings = () => {
       <div className="px-4 pt-4 pb-6 space-y-5">
         {profile.i_am && (
           <div className="rounded-2xl px-4 py-4 border border-[hsl(var(--gold)/0.4)] bg-[hsl(var(--gold)/0.05)]">
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold mb-1">Identity</p>
+            <p className="eyebrow text-gold mb-1">Identity</p>
             <p className="text-sm leading-relaxed">{profile.i_am}</p>
           </div>
         )}
@@ -143,7 +143,7 @@ const AthleteProfileSettings = () => {
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div>
-    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-1.5 px-1">{title}</p>
+    <p className="eyebrow text-muted-foreground/70 mb-1.5 px-1">{title}</p>
     <div className="rounded-2xl bg-card/40 border border-border/30 px-4">{children}</div>
   </div>
 );

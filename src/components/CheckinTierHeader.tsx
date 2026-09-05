@@ -114,7 +114,7 @@ const CheckinTierHeader = ({
           <div className="flex items-center gap-1.5 mb-0.5">
             <span
               className={cn(
-                "inline-flex items-center gap-1 px-1.5 py-[2px] rounded text-[10px] uppercase tracking-[0.22em] font-black ring-1",
+                "eyebrow-sm inline-flex items-center gap-1 px-1.5 py-[2px] rounded ring-1",
                 accent.chipBg,
                 accent.chipText,
                 accent.ring,
@@ -191,7 +191,7 @@ const CheckinTierHeader = ({
           >
             {streak}
           </span>
-          <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+          <span className="eyebrow-sm text-muted-foreground">
             day{streak === 1 ? "" : "s"}
           </span>
         </div>
@@ -199,7 +199,7 @@ const CheckinTierHeader = ({
         {/* Progress bar with aggressive label */}
         <div className="min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] uppercase tracking-[0.22em] font-black text-muted-foreground flex items-center gap-1">
+            <span className="eyebrow-sm text-muted-foreground flex items-center gap-1">
               <Target aria-hidden size={11} strokeWidth={3} />
               Today
             </span>
@@ -249,7 +249,7 @@ const CheckinTierHeader = ({
         <motion.p
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-2 flex items-center gap-1 text-[11px] uppercase tracking-wider font-black text-destructive/90"
+          className="eyebrow mt-2 flex items-center gap-1 text-destructive/90"
         >
           <AlertTriangle aria-hidden size={12} strokeWidth={3} />
           {cfg.pressureMessage}
@@ -259,7 +259,7 @@ const CheckinTierHeader = ({
         <motion.p
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-2 flex items-center gap-1 text-[11px] uppercase tracking-wider font-black text-gold"
+          className="eyebrow mt-2 flex items-center gap-1 text-gold"
         >
           <TrendingUp aria-hidden size={12} strokeWidth={3} />
           You're crushing it — submit & lock the day in.

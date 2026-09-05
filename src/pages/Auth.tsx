@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -222,19 +223,19 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
             <div className="animate-reveal">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+              <label className="eyebrow text-muted-foreground mb-1.5 block">
                 Username
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
-                <input
+                <Input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value.trim().toLowerCase())}
                   placeholder="your_handle"
                   maxLength={20}
                   className={
-                    "w-full h-12 pl-8 pr-4 rounded-xl border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/40 transition-all " +
+                    "h-12 pl-8 rounded-xl text-sm " +
                     (nameStatus === "taken"
                       ? "border-destructive/60"
                       : nameStatus === "available"
@@ -276,31 +277,31 @@ const Auth = () => {
           )}
 
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+            <label className="eyebrow text-muted-foreground mb-1.5 block">
               Email
             </label>
-            <input
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40 transition-all"
+              className="h-12 rounded-xl text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+            <label className="eyebrow text-muted-foreground mb-1.5 block">
               Password
             </label>
             <div className="relative">
-              <input
+              <Input
                 type={showPass ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 minLength={6}
-                className="w-full h-12 px-4 pr-12 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40 transition-all"
+                className="h-12 rounded-xl pr-12 text-sm"
                 required
               />
               <button
@@ -320,7 +321,7 @@ const Auth = () => {
           )}
 
           <Button variant="ember" size="xl" className="w-full" type="submit" disabled={loading}>
-            {loading ? "Loading..." : mode === "login" ? "Log In" : "Create Account"}
+            {loading ? "Loading…" : mode === "login" ? "Log In" : "Create Account"}
             <ArrowRight size={18} />
           </Button>
         </form>
@@ -333,7 +334,7 @@ const Auth = () => {
           <>
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">or</span>
+              <span className="eyebrow text-muted-foreground">or</span>
               <div className="flex-1 h-px bg-border" />
             </div>
             <div>

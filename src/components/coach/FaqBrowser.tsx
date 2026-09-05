@@ -50,7 +50,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
             onClick={() => { hapticImpact("light"); onSelect(f); }}
             className="w-full text-left rounded-2xl border border-border/40 bg-card/60 p-3.5 hover:border-gold/40 hover:bg-card/80 transition"
           >
-            <p className="text-[11px] font-black uppercase tracking-widest text-gold/80 mb-1">
+            <p className="eyebrow text-gold/80 mb-1">
               {f.category}
             </p>
             <p className="text-sm text-foreground">{f.question}</p>

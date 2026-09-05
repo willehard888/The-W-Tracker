@@ -1,8 +1,9 @@
+import { ActionRow } from "@/components/ActionRow";
+import { fmtRelative } from "@/lib/format";
 import { useState } from "react";
 import { isSafeRoute } from "@/hooks/use-push-notifications";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
 import {
   Bell, Check, X, Swords, Users, Trophy, MessageSquare,
   Gift, Flame, Crown, CheckCheck, UserPlus,
@@ -170,82 +171,62 @@ const Notifications = () => {
       {actionCount > 0 && (
         <div className="animate-reveal mb-6">
           <p className="eyebrow text-gold/85 mb-2 px-1">Needs your response · {actionCount}</p>
-          <div className="space-y-1.5">
+          <div className="surface-card divide-y divide-border/35 overflow-hidden">
             {(friendRequests ?? []).map((r) => (
-              <div key={r.friendship_id} className="flex items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.05] p-2.5">
-                <button onClick={() => navigate(`/user/${r.user_id}`)} className="shrink-0">
-                  <StatusAvatar src={r.avatar_url} name={r.username} tier="recruit" size="sm" animated={false} />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">@{r.username}</p>
-                  <p className="text-[11px] text-muted-foreground">wants to be friends</p>
-                </div>
-                <Button size="sm" variant="ember" disabled={busy === r.friendship_id}
-                  onClick={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added")}>
-                  <Check size={13} /> Accept
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon-sm"
-                  disabled={busy === r.friendship_id}
-                  aria-label="Decline request"
-                  onClick={() => guard(r.friendship_id, () => declineRequest(r.friendship_id))}
-                  className="rounded-full text-muted-foreground shrink-0"
-                >
-                  <X size={15} />
-                </Button>
-              </div>
+              <ActionRow
+                key={r.friendship_id}
+                leading={
+                  <button type="button" onClick={() => navigate(`/user/${r.user_id}`)} aria-label={`@${r.username}`}>
+                    <StatusAvatar src={r.avatar_url} name={r.username} tier="recruit" size="sm" animated={false} />
+                  </button>
+                }
+                title={`@${r.username}`}
+                subtitle="wants to be friends"
+                busy={busy === r.friendship_id}
+                onAccept={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added")}
+                onDecline={() => guard(r.friendship_id, () => declineRequest(r.friendship_id))}
+              />
             ))}
 
             {(tribeInvites ?? []).map((inv) => (
-              <div key={inv.id} className="flex items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.05] p-2.5">
-                <span className="h-10 w-10 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
-                  <Crown size={16} className="text-gold" />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">{inv.tribeName}</p>
-                  <p className="text-[11px] text-muted-foreground">Tribe invite from @{inv.inviter}</p>
-                </div>
-                <Button size="sm" variant="ember" disabled={busy === inv.id}
-                  onClick={() => respondTribeInvite(inv.id, true, inv.tribe_id, inv.tribeName)}>
-                  <Check size={13} /> Join
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon-sm"
-                  disabled={busy === inv.id}
-                  aria-label="Decline invite"
-                  onClick={() => respondTribeInvite(inv.id, false, inv.tribe_id, inv.tribeName)}
-                  className="rounded-full text-muted-foreground shrink-0"
-                >
-                  <X size={15} />
-                </Button>
-              </div>
+              <ActionRow
+                key={inv.id}
+                leading={
+                  <span className="h-10 w-10 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center">
+                    <Crown size={16} className="text-gold" aria-hidden />
+                  </span>
+                }
+                title={inv.tribeName}
+                subtitle={`Tribe invite from @${inv.inviter}`}
+                acceptLabel="Join"
+                busy={busy === inv.id}
+                onAccept={() => respondTribeInvite(inv.id, true, inv.tribe_id, inv.tribeName)}
+                onDecline={() => respondTribeInvite(inv.id, false, inv.tribe_id, inv.tribeName)}
+              />
             ))}
 
             {(battleChallenges ?? []).map((b) => (
-              <div key={b.id} className="flex items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.05] p-2.5">
-                <button onClick={() => b.challenger && navigate(`/user/${b.challenger.user_id}`)} className="shrink-0">
-                  <StatusAvatar src={b.challenger?.avatar_url ?? null} name={b.challenger?.username ?? "?"} tier={b.challenger?.status_tier ?? "recruit"} size="sm" animated={false} />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">⚔️ @{b.challenger?.username ?? "someone"}</p>
-                  <p className="text-[11px] text-muted-foreground">{b.battle_type} battle · {b.duration_days} days</p>
-                </div>
-                <Button size="sm" variant="ember" disabled={busy === b.id} onClick={() => respondBattle(b.id, true)}>
-                  <Check size={13} /> Accept
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon-sm"
-                  disabled={busy === b.id}
-                  aria-label="Decline battle"
-                  onClick={() => respondBattle(b.id, false)}
-                  className="rounded-full text-muted-foreground shrink-0"
-                >
-                  <X size={15} />
-                </Button>
-              </div>
+              <ActionRow
+                key={b.id}
+                leading={
+                  <button
+                    type="button"
+                    onClick={() => b.challenger && navigate(`/user/${b.challenger.user_id}`)}
+                    aria-label={`@${b.challenger?.username ?? "challenger"}`}
+                  >
+                    <StatusAvatar src={b.challenger?.avatar_url ?? null} name={b.challenger?.username ?? "?"} tier={b.challenger?.status_tier ?? "recruit"} size="sm" animated={false} />
+                  </button>
+                }
+                title={
+                  <>
+                    <Swords size={13} className="inline -mt-0.5 mr-1 text-gold" aria-hidden />@{b.challenger?.username ?? "someone"}
+                  </>
+                }
+                subtitle={`${b.battle_type} battle · ${b.duration_days} days`}
+                busy={busy === b.id}
+                onAccept={() => respondBattle(b.id, true)}
+                onDecline={() => respondBattle(b.id, false)}
+              />
             ))}
           </div>
         </div>
@@ -296,7 +277,7 @@ const Notifications = () => {
                   </p>
                   {n.body && <p className="text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</p>}
                   <p className="text-[11px] text-muted-foreground/60 mt-1">
-                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                    {fmtRelative(n.created_at)}
                   </p>
                 </div>
                 {isUnread && <span className="h-2 w-2 rounded-full bg-[hsl(var(--ember))] shrink-0 mt-2" aria-label="Unread" />}

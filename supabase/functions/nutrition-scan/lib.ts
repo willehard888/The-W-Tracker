@@ -1,7 +1,7 @@
 // Pure logic for the nutrition-scan edge function. NO Deno / supabase
 // imports — vitest imports this file directly from src/lib/__tests__.
 
-export const PROMPT_VERSION = 2;
+export const PROMPT_VERSION = 3; // bump whenever the prompt OR the post-processing changes: the cache stores the processed result
 export const DEFAULT_MODEL = "google/gemini-3-flash-preview";
 export const FALLBACK_MODEL = "google/gemini-2.5-flash";
 export const ID_AUTO_SELECT = 0.7;

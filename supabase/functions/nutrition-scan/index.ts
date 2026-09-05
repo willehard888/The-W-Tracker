@@ -239,10 +239,10 @@ Deno.serve(async (req) => {
       return json({ ...cached.result, scan_id: typeof cached.id === "string" ? cached.id : scanId, cache_hit: true, latency_ms: ms });
     }
 
-    // ── Model calls: 18 s abort, drop `reasoning` if rejected, switch once
+    // ── Model calls: 18 s abort, no `reasoning` param (Gemini 3 answers 400 INVALID_ARGUMENT to it on forced tool calls; the prod coach functions never send it), switch once
     //    to the fallback model on "model not found", optional single retry on
     //    5xx/429/abort inside 20 s, everything inside the 40 s budget. ────
-    type ToolResult = { kind: "ok"; args: unknown } | { kind: "fail"; status: number | "abort" | "invalid" };
+    type ToolResult = { kind: "ok"; args: unknown } | { kind: "fail"; status: number | "abort" | "invalid"; text?: string };
     const callTool = async (opts: {
       system: string;
       content: unknown[];
@@ -252,7 +252,6 @@ Deno.serve(async (req) => {
       timeoutMs: number;
       retry: boolean;
     }): Promise<ToolResult> => {
-      let withReasoning = true;
       let retried = false;
       for (;;) {
         const left = remaining();
@@ -261,7 +260,6 @@ Deno.serve(async (req) => {
           model,
           temperature: 0.2,
           max_tokens: opts.maxTokens,
-          ...(withReasoning ? { reasoning: { effort: "low" } } : {}),
           messages: [
             { role: "system", content: opts.system },
             { role: "user", content: opts.content },
@@ -277,10 +275,6 @@ Deno.serve(async (req) => {
             return { kind: "fail", status: "invalid" };
           }
         }
-        if (r.kind === "http" && r.status === 400 && withReasoning && /reasoning/i.test(r.text)) {
-          withReasoning = false;
-          continue;
-        }
         if (r.kind === "http" && model !== FALLBACK_MODEL && isModelNotFound(r.status, r.text)) {
           console.warn(`nutrition-scan model ${model} unavailable (${r.status}); falling back to ${FALLBACK_MODEL}`);
           model = FALLBACK_MODEL;
@@ -292,7 +286,7 @@ Deno.serve(async (req) => {
           continue;
         }
         console.error(`nutrition-scan upstream error (${opts.toolName}):`, r.kind === "abort" ? "abort" : `${r.status} ${r.text.slice(0, 300)}`);
-        return { kind: "fail", status: r.kind === "abort" ? "abort" : r.status };
+        return { kind: "fail", status: r.kind === "abort" ? "abort" : r.status, text: r.kind === "abort" ? "" : r.text.slice(0, 300) };
       }
     };
     const stageTimeout = () => Math.min(STAGE_TIMEOUT_MS, remaining() - STAGE_RESERVE_MS);
@@ -310,7 +304,7 @@ Deno.serve(async (req) => {
     });
     if (pass1.kind === "fail") {
       const mapped = mapUpstreamError(pass1.status);
-      return json({ error: mapped.error, retryable: mapped.retryable }, mapped.http);
+      return json({ error: mapped.error, retryable: mapped.retryable, upstream: { status: pass1.status, text: pass1.text } }, mapped.http);
     }
     const scan = validateScanArgs(pass1.args);
     if (!scan) {

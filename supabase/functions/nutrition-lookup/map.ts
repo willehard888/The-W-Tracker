@@ -56,7 +56,7 @@ export interface OffProduct {
   product_name?: string;
   product_name_fi?: string;
   product_name_en?: string;
-  brands?: string;
+  brands?: string | string[]; // v2 product API: "A, B"; search-a-licious: ["A", "B"]
   countries_tags?: string[];
   quantity?: string;
   product_quantity?: number | string;
@@ -243,7 +243,7 @@ export function mapOffProduct(p: OffProduct, maps: NutrientMaps, requestedCode?:
     // search_text is built from name_fi/name_en/brand: a product with only the
     // main-language `product_name` still has to land in one of them.
     name_en: nameEn ?? (nameFi ? null : name),
-    brand: clip(p.brands?.split(",")[0], 120),
+    brand: clip((Array.isArray(p.brands) ? p.brands : p.brands?.split(","))?.[0], 120),
     country: offCountry(p.countries_tags),
     category: null,
     food_type: "branded",

@@ -367,3 +367,12 @@ describe("mapUsdaFood", () => {
     expect(mapUsdaFood(noEnergy, maps)).toBeNull();
   });
 });
+
+describe("mapOffProduct — search-a-licious hits", () => {
+  it("accepts brands as an array (the search API) as well as the product API's comma string", () => {
+    const arr = { ...fullOff(), brands: ["Valio", "Oy"] as unknown as string };
+    expect(mapOffProduct(arr, maps)!.brand).toBe("Valio");
+    expect(mapOffProduct({ ...fullOff(), brands: "Fazer, Oy" }, maps)!.brand).toBe("Fazer");
+    expect(mapOffProduct({ ...fullOff(), brands: undefined }, maps)!.brand ?? null).toBeNull();
+  });
+});

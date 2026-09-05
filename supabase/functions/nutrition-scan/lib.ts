@@ -344,6 +344,7 @@ const UNIT_TABLE: Array<[string[], number]> = [
   [["nakki"], 30],
   [["grillimakkara", "bratwurst"], 100],
   [["potato", "peruna"], 90],
+  [["cherry tomato", "kirsikkatomaatti", "cocktail tomato"], 15],
   [["tomato", "tomaatti"], 120],
   [["mandarin", "mandariini", "clementine", "satsuma"], 75],
   [["kiwi"], 75],
@@ -421,8 +422,12 @@ export function applyCount(item: EstimatedItem): EstimatedItem {
   if (unit == null || item.count == null) return { ...item, unit_g: unit };
   const countG = item.count * unit;
   const visual = item.estimated_grams;
+  // The keyword table is the weaker signal: when count × piece weight is far from what
+  // the model saw ("cherry tomatoes" matching the 120 g tomato row), keep the visual
+  // estimate and drop the unit so the UI offers no piece stepper with a wrong weight.
   const agree = Math.abs(countG - visual) / visual <= 0.5;
-  const est = clampGrams(Math.round(agree ? 0.7 * countG + 0.3 * visual : countG), item.category);
+  if (!agree) return { ...item, unit_g: null };
+  const est = clampGrams(Math.round(0.7 * countG + 0.3 * visual), item.category);
   return {
     ...item,
     unit_g: unit,
@@ -610,7 +615,28 @@ const coord = { type: "integer", minimum: 0, maximum: 1000 };
 
 // Strict tool schema. Deliberately contains NO nutrient fields — the model
 // identifies and weighs; the database supplies every nutrition number.
-export function buildToolSchema() {
+
+/**
+ * Google AI Studio rejects `minimum`/`maximum` inside function-declaration
+ * schemas with a bare 400 INVALID_ARGUMENT (bisected in prod 2026-09-05; the
+ * type-union rule of 6d097406 is the same family). Ranges live in the
+ * descriptions and in the validators' clamps instead.
+ */
+export function stripGeminiUnsupported<T>(schema: T): T {
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (!node || typeof node !== "object") return node;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+      if (k === "minimum" || k === "maximum") continue;
+      out[k] = walk(v);
+    }
+    return out;
+  };
+  return walk(schema) as T;
+}
+
+function buildToolSchemaRaw() {
   return {
     type: "function",
     function: {
@@ -678,7 +704,7 @@ export function buildToolSchema() {
   };
 }
 
-export function buildRefineToolSchema() {
+function buildRefineToolSchemaRaw() {
   return {
     type: "function",
     function: {
@@ -715,7 +741,7 @@ export function buildRefineToolSchema() {
 
 // The ONLY schema with nutrient fields: a transcription of a printed table,
 // isolated from the identification path and never blended with estimates.
-export function buildLabelToolSchema() {
+function buildLabelToolSchemaRaw() {
   const printed = { type: "number", minimum: -1, maximum: 10000, description: "As printed; -1 when not printed" };
   return {
     type: "function",
@@ -805,3 +831,15 @@ RULES
 export const PASS2_PROMPT = `You already reported the items on this meal. Look again at the listed items only, at the region each box marks on photo 1 (and photo 2 when given). For each listed item: choose the catalog candidate index that IS this food, or -1 when none of them is; refine grams (millilitres for liquids) with an honest low-high range and a portion_confidence; confirm the count of pieces (0 when not countable). Never output calories, macros or any nutrition number. Respond only by calling the refine_items tool.`;
 
 export const LABEL_PROMPT = `Transcribe the printed nutrition table in this photo exactly as printed, through the report_nutrition_label tool. Copy the numbers for the basis the table uses (per 100 g, per 100 ml, or per serving) and give the serving weight when the label prints it. Use -1 for every value that is not printed. Never estimate, complete or round a missing value. Copy a readable barcode's digits into barcode_seen. Respond only by calling the tool.`;
+
+export function buildToolSchema() {
+  return stripGeminiUnsupported(buildToolSchemaRaw());
+}
+
+export function buildRefineToolSchema() {
+  return stripGeminiUnsupported(buildRefineToolSchemaRaw());
+}
+
+export function buildLabelToolSchema() {
+  return stripGeminiUnsupported(buildLabelToolSchemaRaw());
+}

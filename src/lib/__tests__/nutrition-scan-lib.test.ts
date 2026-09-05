@@ -245,9 +245,15 @@ describe("unitWeightFor / applyCount", () => {
     expect(r).toMatchObject({ unit_g: 55, estimated_grams: 161, grams_low: 137, grams_high: 185 });
   });
 
-  it("trusts the count when the visual estimate is far off", () => {
+  it("keeps the visual estimate and drops the unit when count × piece weight is far off", () => {
+    // The keyword table is the weaker signal (a bowl of cherry tomatoes is not 4 × 120 g).
     const r = applyCount(estimated({ name: "Boiled eggs", canonical_search_terms: ["egg"], count: 4, estimated_grams: 60, grams_low: 50, grams_high: 70 }));
-    expect(r).toMatchObject({ unit_g: 55, estimated_grams: 220, grams_low: 187, grams_high: 253 });
+    expect(r).toMatchObject({ unit_g: null, estimated_grams: 60, grams_low: 50, grams_high: 70 });
+  });
+
+  it("knows cherry tomatoes are 15 g pieces, not 120 g tomatoes", () => {
+    const r = applyCount(estimated({ name: "cherry tomatoes", canonical_search_terms: ["cherry tomato", "kirsikkatomaatti"], count: 4, estimated_grams: 60, grams_low: 50, grams_high: 70 }));
+    expect(r).toMatchObject({ unit_g: 15, estimated_grams: 60 });
   });
 
   it("leaves unknown or uncounted items alone (still reporting the unit)", () => {
@@ -520,7 +526,7 @@ describe("tool schemas", () => {
     expect(names).toEqual(expect.arrayContaining(["kcal", "protein_g", "carbs_g", "sugar_g", "fat_g", "sat_fat_g", "fiber_g", "salt_g", "per_basis", "serving_g"]));
     expectGeminiSafe(buildLabelToolSchema(), 1);
     const kcal = buildLabelToolSchema().function.parameters.properties.kcal;
-    expect(kcal.minimum).toBe(-1);
+    expect(kcal.minimum).toBeUndefined(); // ranges are stripped for Google; the −1 sentinel is enforced by validateLabelArgs
   });
 
   it("maps count 0 (the schema's 'not countable') to null", () => {
@@ -533,5 +539,23 @@ describe("tool schemas", () => {
     };
     expect(validateScanArgs(base)?.items[0].count).toBeNull();
     expect(validateScanArgs({ ...base, items: [{ ...base.items[0], count: 3 }] })?.items[0].count).toBe(3);
+  });
+});
+
+describe("schemas — Google AI Studio compatibility (bisected in prod 2026-09-05)", () => {
+  it("no schema carries minimum/maximum (Google answers 400 INVALID_ARGUMENT)", () => {
+    const offenders: string[] = [];
+    const walk = (node: unknown, path: string) => {
+      if (Array.isArray(node)) return node.forEach((n, i) => walk(n, `${path}[${i}]`));
+      if (!node || typeof node !== "object") return;
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        if (k === "minimum" || k === "maximum") offenders.push(`${path}.${k}`);
+        walk(v, `${path}.${k}`);
+      }
+    };
+    walk(buildToolSchema(), "pass1");
+    walk(buildRefineToolSchema(), "refine");
+    walk(buildLabelToolSchema(), "label");
+    expect(offenders).toEqual([]);
   });
 });

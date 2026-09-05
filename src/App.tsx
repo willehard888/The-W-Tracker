@@ -409,7 +409,7 @@ const TabPrefetcher = () => {
           seasonJobs.push(
             queryClient.prefetchQuery({
               queryKey: ["leaderboard-season", season.id, userId],
-              queryFn: () => fetchSeasonBoard(season.id, userId),
+              queryFn: () => fetchSeasonBoard(season.id),
               staleTime: 5 * 60_000,
             }),
           );

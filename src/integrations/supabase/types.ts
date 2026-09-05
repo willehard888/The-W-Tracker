@@ -4110,6 +4110,10 @@ export type Database = {
           visibility: string
         }[]
       }
+      season_board: {
+        Args: { p_limit?: number; p_season_id: string }
+        Returns: Json
+      }
       set_checkin_habits: { Args: { p_keys: string[] }; Returns: Json }
       set_elite_status: {
         Args: { elite: boolean; target_user_id: string }
@@ -4426,6 +4430,7 @@ export type Database = {
         Args: { _checkin_id: string; _snapshot_date?: string }
         Returns: Json
       }
+      whealth_live_inputs: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

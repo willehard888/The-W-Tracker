@@ -159,7 +159,7 @@ const Leaderboard = () => {
     enabled: !!activeSeason?.id,
     staleTime: 5 * 60_000,
     gcTime:    15 * 60_000,
-    queryFn: () => fetchSeasonBoard(activeSeason.id, profile?.user_id),
+    queryFn: () => fetchSeasonBoard(activeSeason.id),
   });
 
   const { data: championData } = useQuery({
@@ -192,7 +192,7 @@ const Leaderboard = () => {
   });
 
   const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
-  const totalUsersForMode = mode === "season" ? seasonData?.full.length || 1 : totalCount || 1;
+  const totalUsersForMode = mode === "season" ? seasonData?.total || 1 : totalCount || 1;
   // All-Time "Your Position" derives from the SAME XP-ordered list the board
   // shows — the rank_score-based RPC could say "#7" while the user's own
   // highlighted row sat at #12 on the very same screen. RPC stays as the

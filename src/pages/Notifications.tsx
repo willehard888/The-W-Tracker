@@ -1,12 +1,12 @@
 import { ActionRow } from "@/components/ActionRow";
-import { fmtRelative } from "@/lib/format";
+import { fmtInt, fmtRelative } from "@/lib/format";
 import { useState } from "react";
 import { isSafeRoute } from "@/hooks/use-push-notifications";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Bell, Check, X, Swords, Users, Trophy, MessageSquare,
-  Gift, Flame, Crown, CheckCheck, UserPlus,
+  Bell, Swords, Users, Trophy, MessageSquare,
+  Gift, Flame, Crown, CheckCheck, UserPlus, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
@@ -40,11 +40,11 @@ const KIND_ICONS: Record<string, typeof Bell> = {
 };
 
 /**
- * The bell's home: everything that happened to you, in one place.
- *   1. "Needs your response" — friend requests, tribe invites and 1v1
+ * The bell's home: what needs you, then what happened.
+ *   1. The response stack — friend requests, tribe invites and 1v1
  *      challenges with INLINE accept/decline (the same RPCs the dedicated
  *      pages use, so every surface stays in sync via shared query keys).
- *   2. "Activity" — the notifications ledger; tap marks read + deep-links.
+ *   2. The ledger — hairline rows; tap marks read + deep-links.
  */
 const Notifications = () => {
   const navigate = useNavigate();
@@ -151,6 +151,7 @@ const Notifications = () => {
 
   const actionCount = (friendRequests?.length ?? 0) + (tribeInvites?.length ?? 0) + (battleChallenges?.length ?? 0);
   const unread = (notifications ?? []).filter((n) => !n.read_at).length;
+  const waiting = actionCount + unread;
 
   return (
     <div className="min-h-full">
@@ -158,20 +159,23 @@ const Notifications = () => {
         title="Notifications"
         onBack={() => navigate(-1)}
         action={
-          /* Friends management lives behind the bell now — the Squad-header
-             UserPlus button this replaces was the page's only door. */
-          <Button variant="secondary" size="icon" aria-label="Add friends" className="rounded-full" onClick={() => navigate("/friends")}>
-            <UserPlus size={15} />
-          </Button>
+          unread > 0 ? (
+            <Button variant="ghost" size="icon" aria-label="Mark all read" onClick={markAllRead}>
+              <CheckCheck size={18} />
+            </Button>
+          ) : undefined
         }
       />
 
       <div className="px-4 pt-4 pb-6">
-      {/* ── Needs your response ── */}
-      {actionCount > 0 && (
-        <div className="home-rise mb-6">
-          <p className="eyebrow text-gold/85 mb-2 px-1">Needs your response · {actionCount}</p>
-          <div className="surface-card divide-y divide-border/35 overflow-hidden">
+        {/* Opening beat — what is waiting, stated once. */}
+        <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          {waiting > 0 ? `${fmtInt(waiting)} waiting on you.` : "All caught up."}
+        </h2>
+
+        {/* ── The response stack — the one card on the screen ── */}
+        {actionCount > 0 && (
+          <div className="home-rise home-rise-1 mt-5 surface-card divide-y divide-border/35 overflow-hidden">
             {(friendRequests ?? []).map((r) => (
               <ActionRow
                 key={r.friendship_id}
@@ -229,63 +233,59 @@ const Notifications = () => {
               />
             ))}
           </div>
-        </div>
-      )}
-
-      {/* ── Activity ── */}
-      <div className="flex items-center justify-between mb-2 px-1">
-        <p className="eyebrow">Activity</p>
-        {unread > 0 && (
-          <Button variant="ghost" size="xs" className="text-gold" onClick={markAllRead}>
-            <CheckCheck aria-hidden /> Mark all read
-          </Button>
         )}
-      </div>
-      {isLoading ? (
-        <div className="space-y-1.5">
-          {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-card/60 skeleton-block" />)}
+
+        {/* ── The ledger — hairline rows, an ember dot for unread ── */}
+        <div className="mt-5">
+          {isLoading ? (
+            <div className="divide-y divide-border/35">
+              {[0, 1, 2].map((i) => <div key={i} className="h-10 my-3 rounded-lg bg-card/40 skeleton-block" />)}
+            </div>
+          ) : (notifications?.length ?? 0) === 0 ? (
+            <EmptyState
+              icon={Bell}
+              title="Quiet for now"
+              description="Friend requests, invites, kudos and battle news land here — go earn some noise."
+            />
+          ) : (
+            <div className="divide-y divide-border/35">
+              {notifications!.map((n, i) => {
+                const Icon = KIND_ICONS[n.kind] ?? Bell;
+                const isUnread = !n.read_at;
+                return (
+                  // Entrance on a wrapper: the keyframe pins transform, which would kill the row's press.
+                  <div key={n.id} className={cn(i < 8 && "animate-fade-in-up")} style={i < 8 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
+                    <button type="button" onClick={() => openNotification(n)} className="w-full flex items-start gap-3 py-3 text-left">
+                      <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/70")} aria-hidden />
+                      <span className="flex-1 min-w-0">
+                        <span className={cn("block text-[13px] leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
+                          {n.title}
+                        </span>
+                        {n.body && <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
+                        <span className="block text-[11px] text-muted-foreground/60 mt-1">{fmtRelative(n.created_at)}</span>
+                      </span>
+                      {isUnread && <span className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      ) : (notifications?.length ?? 0) === 0 ? (
-        <EmptyState
-          icon={Bell}
-          title="Quiet for now"
-          description="Friend requests, invites, kudos and battle news land here — go earn some noise."
-        />
-      ) : (
-        <div className="space-y-1.5">
-          {notifications!.map((n) => {
-            const Icon = KIND_ICONS[n.kind] ?? Bell;
-            const isUnread = !n.read_at;
-            return (
-              <button
-                key={n.id}
-                onClick={() => openNotification(n)}
-                className={cn(
-                  "press w-full flex items-start gap-3 p-3 text-left rounded-xl border transition-colors ",
-                  isUnread ? "border-gold/25 bg-gold/[0.05]" : "border-border/50 bg-card/40",
-                )}
-              >
-                <span className={cn(
-                  "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
-                  isUnread ? "bg-gold/12 border border-gold/30 text-gold" : "bg-secondary text-muted-foreground",
-                )}>
-                  <Icon size={15} />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-[13px] leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
-                    {n.title}
-                  </p>
-                  {n.body && <p className="text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</p>}
-                  <p className="text-[11px] text-muted-foreground/60 mt-1">
-                    {fmtRelative(n.created_at)}
-                  </p>
-                </div>
-                {isUnread && <span className="h-2 w-2 rounded-full bg-[hsl(var(--ember))] shrink-0 mt-2" aria-label="Unread" />}
-              </button>
-            );
-          })}
+
+        {/* Friends management lives behind the bell — a quiet door at the end,
+            not a second action in the bar. */}
+        <div className="home-rise home-rise-3 mt-7">
+          <button
+            type="button"
+            onClick={() => navigate("/friends")}
+            className="w-full surface-card surface-card-quiet px-4 py-3 flex items-center gap-3 text-left"
+          >
+            <UserPlus size={16} className="text-muted-foreground shrink-0" aria-hidden />
+            <span className="flex-1 min-w-0 text-[13px] font-bold">Find friends</span>
+            <ChevronRight size={14} className="text-muted-foreground shrink-0" aria-hidden />
+          </button>
         </div>
-      )}
       </div>
     </div>
   );

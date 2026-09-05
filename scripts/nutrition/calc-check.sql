@@ -76,6 +76,15 @@ BEGIN
   ASSERT public.normalize_barcode('96385075')     IS NULL, 'bad EAN-8 check digit accepted';
   ASSERT public.normalize_barcode('abc') IS NULL AND public.normalize_barcode('') IS NULL
      AND public.normalize_barcode(NULL) IS NULL AND public.normalize_barcode('1234567') IS NULL, 'garbage accepted';
+  -- GTIN-14 → consumer unit; shared vectors with barcode.test.ts + nutrition-lookup-map.test.ts (three mirrors)
+  ASSERT public.gs1_check_digit('400638133393') = 1 AND public.gs1_check_digit('9638507') = 4
+     AND public.gs1_check_digit('0000000') = 0, 'gs1_check_digit';
+  ASSERT public.normalize_barcode('14006381333938') = '4006381333931', 'GTIN-14 (ITF-14) -> consumer EAN-13';
+  ASSERT public.normalize_barcode('24006381333935') = '4006381333931', 'GTIN-14 indicator 2 -> consumer EAN-13';
+  ASSERT public.normalize_barcode('94006381333934') IS NULL, 'GTIN-14 indicator 9 (variable measure) accepted';
+  ASSERT public.normalize_barcode('14006381333939') IS NULL, 'GTIN-14 bad check digit accepted';
+  ASSERT public.normalize_barcode('0000096385074')  = '96385074', '00000-padded EAN-8 (13) -> 8';
+  ASSERT public.normalize_barcode('00000096385074') = '96385074', '00000-padded EAN-8 (14) -> 8';
   RAISE NOTICE 'calc-check 1/6 engine + barcodes: ok';
 END $$;
 

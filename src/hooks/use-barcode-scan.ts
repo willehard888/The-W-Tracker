@@ -7,14 +7,14 @@ import {
   scanBarcode,
 } from "@/lib/native/barcode-scan";
 import { normalizeBarcode } from "@/lib/nutrition/barcode";
-import { hapticImpact } from "@/lib/haptics";
 
 export type BarcodeScanOutcome =
   | { kind: "code"; code: string; raw: string; format: string }
   | { kind: "cancelled" }
   | { kind: "denied" }
   | { kind: "unreadable"; raw: string }
-  | { kind: "unsupported" };
+  | { kind: "unsupported" }
+  | { kind: "unavailable" };
 
 /**
  * Native barcode capture, normalised to the EAN-8/EAN-13 the catalog keys on.
@@ -41,10 +41,10 @@ export const useBarcodeScan = () => {
     if ((await checkCameraPermission()) === "denied") return { kind: "denied" };
     const r = await scanBarcode();
     if (r.denied) return { kind: "denied" };
+    if (r.unavailable) return { kind: "unavailable" };
     if (!r.barcode) return { kind: "cancelled" };
     const n = normalizeBarcode(r.barcode.rawValue, r.barcode.format);
     if (!n.ok) return { kind: "unreadable", raw: r.barcode.rawValue };
-    hapticImpact("light");
     return { kind: "code", code: n.code, raw: r.barcode.rawValue, format: r.barcode.format };
   }, [supported]);
 

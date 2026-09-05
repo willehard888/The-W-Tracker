@@ -1,7 +1,9 @@
 // The normalised code is the food_barcodes primary key — one wrong digit is a
 // wrong product. Vectors are hand-checked against the GS1 algorithm.
 import { describe, it, expect } from "vitest";
-import { normalizeBarcode, isValidGs1, gs1CheckDigit, expandUpcE } from "../barcode";
+import { normalizeBarcode, isValidGs1, gs1CheckDigit, expandUpcE, extractGtin } from "../barcode";
+
+const INVALID = { ok: false, reason: "invalid" };
 
 describe("isValidGs1 / gs1CheckDigit", () => {
   it("accepts known-good EAN-13, EAN-8, UPC-A and GTIN-14", () => {
@@ -73,9 +75,29 @@ describe("normalizeBarcode", () => {
     expect(normalizeBarcode("04252615", "UPC_E")).toEqual({ ok: false, reason: "invalid" });
   });
 
-  it("GTIN-14 with a leading 0 drops it; any other 14-digit code is invalid", () => {
+  // Shared with nutrition-lookup-map.test.ts and scripts/nutrition/calc-check.sql — three mirrors.
+  it("GTIN-14 → its consumer-unit GTIN-13; indicator 9 (variable measure) and a bad check digit are invalid", () => {
     expect(normalizeBarcode("04006381333931")).toEqual({ ok: true, code: "4006381333931" });
-    expect(normalizeBarcode("14006381333938")).toEqual({ ok: false, reason: "invalid" });
+    expect(normalizeBarcode("14006381333938")).toEqual({ ok: true, code: "4006381333931" });
+    expect(normalizeBarcode("24006381333935")).toEqual({ ok: true, code: "4006381333931" });
+    expect(normalizeBarcode("94006381333934")).toEqual(INVALID);
+    expect(normalizeBarcode("14006381333939")).toEqual(INVALID);
+  });
+
+  it("a 00000-padded EAN-8 (13 or 14 digits) → 8", () => {
+    expect(normalizeBarcode("0000096385074")).toEqual({ ok: true, code: "96385074" });
+    expect(normalizeBarcode("00000096385074")).toEqual({ ok: true, code: "96385074" });
+  });
+
+  it("ITF-14, Code 128 AI (01) and GS1 Digital Link payloads carry a GTIN; anything else is invalid", () => {
+    expect(normalizeBarcode("14006381333938", "ITF_14")).toEqual({ ok: true, code: "4006381333931" });
+    expect(normalizeBarcode("0104006381333931172612311021AB", "CODE_128")).toEqual({ ok: true, code: "4006381333931" });
+    expect(normalizeBarcode("ABC123", "CODE_128")).toEqual(INVALID);
+    expect(normalizeBarcode("https://id.gs1.org/01/09506000134352/10/ABC", "QR_CODE")).toEqual({ ok: true, code: "9506000134352" });
+    expect(normalizeBarcode("https://example.com", "QR_CODE")).toEqual(INVALID);
+    expect(extractGtin("https://id.gs1.org/01/9506000134352?10=ABC", "DATA_MATRIX")).toBe("9506000134352");
+    expect(extractGtin("https://id.gs1.org/01/123456789/10/ABC", "DATA_MATRIX")).toBeNull(); // 9 digits is no GTIN length
+    expect(extractGtin("96385074", "EAN_8")).toBe("96385074");
   });
 
   it("strips non-digits before validating", () => {

@@ -108,7 +108,7 @@ const FoodSearchPanel = ({
             {label}
           </Button>
         ))}
-        {!barcodeSupported && onEnterBarcode && (
+        {onEnterBarcode && (
           <Button size="pill" variant="outline" className="shrink-0" onClick={onEnterBarcode}>
             <ScanBarcode aria-hidden /> Barcode
           </Button>

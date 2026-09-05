@@ -389,17 +389,23 @@ const NutritionDiary = () => {
         action: { label: "Settings", onClick: () => void openSettings() },
       });
     } else if (o.kind === "unreadable") {
-      toast("Couldn't read that barcode", { description: "Try again in better light, or search by name." });
+      toast("Couldn't read that barcode", {
+        description: "Try again in better light, or search by name.",
+        action: { label: "Type it", onClick: () => setSheet({ view: "barcode", slot }) },
+      });
+    } else if (o.kind === "unavailable") {
+      toast("Camera isn't available right now", { description: "Type the digits instead." });
     } else if (o.kind === "unsupported") {
       toast("Barcode scanning isn't available on this device");
     }
   };
   const submitManualCode = (slot: MealSlot) => {
     const digits = manualCode.replace(/\D/g, "");
-    const format = digits.length === 8 ? "EAN_8" : digits.length === 12 ? "UPC_A" : "EAN_13";
-    const n = normalizeBarcode(digits, format);
-    if (!n.ok) return toast("That doesn't look like a valid barcode");
-    void lookup(n.code, slot);
+    const n = normalizeBarcode(digits);
+    // 8 digits that fail as EAN-8 are usually a UPC-E copied as printed (number system + 6 + check).
+    const r = !n.ok && digits.length === 8 ? normalizeBarcode(digits, "UPC_E") : n;
+    if (!r.ok) return toast("That doesn't look like a valid barcode");
+    void lookup(r.code, slot);
   };
 
   // ── Writes ───────────────────────────────────────────────────────────

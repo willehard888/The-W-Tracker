@@ -122,21 +122,32 @@ export function buildNutrientMaps(defs: NutrientDef[]): NutrientMaps {
   return { byOff, byUsda };
 }
 
+/** GS1 mod-10 check digit for a payload without its check digit (weights 3,1,3,1… from the right). */
+function gs1CheckDigit(body: string): number {
+  let sum = 0;
+  for (let i = 0; i < body.length; i++) sum += Number(body[i]) * ((body.length - i) % 2 === 1 ? 3 : 1);
+  return (10 - (sum % 10)) % 10;
+}
+const gs1Ok = (d: string) => gs1CheckDigit(d.slice(0, -1)) === Number(d[d.length - 1]);
+
 /**
- * Mirrors public.normalize_barcode: digits only; GTIN-14 with a leading 0 →
- * EAN-13; UPC-A (12) → EAN-13 with a leading 0; EAN-8 kept; mod-10 check
- * digit must hold. Anything else → null.
+ * Mirrors public.normalize_barcode and src/lib/nutrition/barcode.ts (three
+ * mirrors, change all or none): digits only; GTIN-14 → its consumer-unit
+ * GTIN-13 (indicator 9 = variable measure → null); UPC-A (12) → EAN-13 with a
+ * leading 0; a 00000-padded 13 → EAN-8; mod-10 check digit must hold.
+ * Anything else → null.
  */
 export function normalizeBarcode(raw: string | null | undefined): string | null {
   let d = (raw ?? "").replace(/\D/g, "");
-  if (d.length === 14 && d.startsWith("0")) d = d.slice(1);
-  if (d.length === 12) d = `0${d}`;
-  if (d.length !== 8 && d.length !== 13) return null;
-  let sum = 0;
-  for (let i = 0; i < d.length - 1; i++) {
-    sum += Number(d[i]) * ((d.length - 1 - i) % 2 === 1 ? 3 : 1);
+  if (d.length === 14) {
+    if (d[0] === "9" || !gs1Ok(d)) return null;
+    d = d.slice(1, 13);
+    d += gs1CheckDigit(d);
   }
-  return (10 - (sum % 10)) % 10 === Number(d[d.length - 1]) ? d : null;
+  if (d.length === 12) d = `0${d}`;
+  if (d.length === 13 && d.startsWith("00000")) d = d.slice(5);
+  if (d.length !== 8 && d.length !== 13) return null;
+  return gs1Ok(d) ? d : null;
 }
 
 function num(v: unknown): number | null {

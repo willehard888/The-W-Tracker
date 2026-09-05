@@ -206,4 +206,23 @@ describe("NutritionDiary — add sheet", () => {
     expect(screen.getByText(/6412345678901/)).toBeInTheDocument();
     expect(fx.logMeal).not.toHaveBeenCalled();
   });
+
+  it("offers typing the barcode even when the scanner is supported", () => {
+    fx.targets.targets = targetsRow;
+    renderDiary("/nutrition?add=1");
+    expect(screen.getByRole("button", { name: "Scan a barcode" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Barcode" }));
+    expect(screen.getByRole("dialog", { name: "Enter a barcode" })).toBeInTheDocument();
+  });
+
+  it("expands a typed 8-digit UPC-E (fails as EAN-8) before looking it up", async () => {
+    fx.targets.targets = targetsRow;
+    fx.lookupBarcode.mockResolvedValue({ status: "miss", row: null });
+    renderDiary("/nutrition?add=1");
+    fireEvent.click(screen.getByRole("button", { name: "Barcode" }));
+    fireEvent.change(screen.getByLabelText("Barcode"), { target: { value: "04252614" } });
+    fireEvent.click(screen.getByRole("button", { name: "Look up" }));
+    expect(fx.lookupBarcode).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ code: "0042100005264" }));
+    expect(await screen.findByText(/0042100005264/)).toBeInTheDocument(); // the miss view shows the expanded code
+  });
 });

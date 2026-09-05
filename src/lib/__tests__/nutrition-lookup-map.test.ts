@@ -84,6 +84,15 @@ describe("normalizeBarcode (mirrors public.normalize_barcode)", () => {
     expect(normalizeBarcode("00036000291452")).toBe("0036000291452");
     expect(normalizeBarcode(" 4006-3813-33931 ")).toBe("4006381333931");
   });
+  // Shared with barcode.test.ts and scripts/nutrition/calc-check.sql — three mirrors.
+  it("GTIN-14 → consumer-unit GTIN-13 (indicator 9 and a bad check digit → null); 00000-padded EAN-8 → 8", () => {
+    expect(normalizeBarcode("14006381333938")).toBe("4006381333931");
+    expect(normalizeBarcode("24006381333935")).toBe("4006381333931");
+    expect(normalizeBarcode("94006381333934")).toBeNull();
+    expect(normalizeBarcode("14006381333939")).toBeNull();
+    expect(normalizeBarcode("0000096385074")).toBe("96385074");
+    expect(normalizeBarcode("00000096385074")).toBe("96385074");
+  });
   it("rejects a bad check digit, odd lengths and empties", () => {
     expect(normalizeBarcode("4006381333932")).toBeNull();
     expect(normalizeBarcode("12345")).toBeNull();

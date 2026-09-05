@@ -5,7 +5,10 @@
 // the food was cached or just fetched. Never creates a food from nothing,
 // never invents a nutrient value; unknown barcodes are remembered for 7 days
 // so a re-scan does not hit the (shared per-IP) OFF rate limit again.
+// The daily quota (bump_ai_usage) is charged only when an upstream is actually
+// asked: invalid codes, local catalog hits and cached misses are free.
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { missCacheFresh, missOutcome, usdaBarcodeQuery, type UpstreamStatus } from "./decide.ts";
 import {
   buildNutrientMaps,
   type IngestFood,
@@ -27,13 +30,11 @@ const corsHeaders = {
 const DAILY_LIMIT = 300;
 const UPSTREAM_TIMEOUT_MS = 8_000;
 const RETRY_DELAY_MS = 2_000;
-const MISS_TTL_MS = 7 * 86400_000;
 const MAX_INGEST = 40;
 const OFF_FIELDS =
   "code,product_name,product_name_fi,product_name_en,brands,countries_tags,quantity,product_quantity,product_quantity_unit,serving_size,serving_quantity,nutrition_data_per,nutriments,image_front_small_url,last_modified_t";
 
 type Db = SupabaseClient;
-type UpstreamStatus = "hit" | "miss" | "rate_limited" | "error" | "skipped";
 
 interface SearchFoodRow {
   id: string;
@@ -75,6 +76,13 @@ interface Pulled {
 }
 
 class RateLimited extends Error {}
+class LimitReached extends Error {}
+
+/** One quota tick per upstream round-trip; throws LimitReached (→ 429) when today's allowance is spent. */
+async function charge(user: Db): Promise<void> {
+  const { data: allowed } = await user.rpc("bump_ai_usage", { p_limit: DAILY_LIMIT, p_kind: "nutrition_lookup" });
+  if (allowed === false) throw new LimitReached();
+}
 
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
@@ -146,27 +154,25 @@ async function lookupBarcode(ctx: Ctx, raw: string): Promise<Response> {
   const { user, service, maps, country } = ctx;
   const skipped = { off: "skipped", usda: "skipped" } as const;
 
-  const { data: normalized, error: normErr } = await user.rpc("normalize_barcode", { p_raw: raw });
-  if (normErr) throw new Error(`normalize_barcode: ${normErr.message}`);
-  if (typeof normalized !== "string" || !normalized) {
-    return json({ found: false, reason: "invalid", foods: [], upstream: skipped } satisfies LookupResponse);
-  }
-  const code = normalized;
+  const code = normalizeBarcode(raw);
+  if (!code) return json({ found: false, reason: "invalid", foods: [], upstream: skipped } satisfies LookupResponse);
   const byBarcode = () => searchFoods(user, { p_query: null, p_limit: 1, p_country: country, p_barcode: code });
 
   const local = await byBarcode();
   if (local.length) return json({ found: true, foods: local, upstream: skipped } satisfies LookupResponse);
 
+  const usdaKey = Deno.env.get("USDA_FDC_API_KEY");
   const { data: miss } = await service
     .from("food_barcode_misses")
-    .select("checked_at, attempts")
+    .select("checked_at, sources_checked, attempts")
     .eq("barcode", code)
     .maybeSingle();
-  const missRow = miss as { checked_at: string; attempts: number } | null;
-  if (missRow && Date.now() - new Date(missRow.checked_at).getTime() < MISS_TTL_MS) {
+  const missRow = miss as { checked_at: string; sources_checked: string[]; attempts: number } | null;
+  if (missCacheFresh(missRow, usdaKey ? ["off", "usda"] : ["off"])) {
     return json({ found: false, cached: true, foods: [], upstream: skipped } satisfies LookupResponse);
   }
 
+  await charge(user);
   const off = await pull(async () => {
     const res = await fetchJson<{ status?: number; product?: OffProduct }>(
       `https://world.openfoodfacts.org/api/v2/product/${code}?fields=${OFF_FIELDS}`,
@@ -175,15 +181,12 @@ async function lookupBarcode(ctx: Ctx, raw: string): Promise<Response> {
     const food = res?.status === 1 && res.product ? mapOffProduct(res.product, maps, code) : null;
     return food ? [food] : [];
   });
-  if (off.status === "rate_limited") return rateLimitedResponse();
 
+  // USDA runs even when OFF throttled us — a different host, a different quota.
   let usda: Pulled = { foods: [], status: "skipped" };
-  const usdaKey = Deno.env.get("USDA_FDC_API_KEY");
   if (!off.foods.length && usdaKey) {
-    // USDA stores label GTINs as printed — UPC-A products are 12 digits there.
-    const query = code.length === 13 && code.startsWith("0") ? code.slice(1) : code;
     usda = await pull(async () => {
-      const res = await fetchJson<{ foods?: UsdaFood[] }>(usdaSearchUrl(query, 5, 1, usdaKey), {});
+      const res = await fetchJson<{ foods?: UsdaFood[] }>(usdaSearchUrl(usdaBarcodeQuery(code), 5, 1, usdaKey), {});
       const hit = res?.foods?.find((f) => normalizeBarcode(f.gtinUpc) === code);
       const food = hit ? mapUsdaFood(hit, maps) : null;
       return food ? [food] : [];
@@ -198,11 +201,13 @@ async function lookupBarcode(ctx: Ctx, raw: string): Promise<Response> {
     return json({ found: rows.length > 0, foods: rows, upstream } satisfies LookupResponse);
   }
 
-  // Remember a definitive miss (a timeout or a missing key is not one).
-  const sources_checked = (["off", "usda"] as const).filter((s) => upstream[s] === "miss");
-  if (sources_checked.length) {
+  const outcome = missOutcome(upstream);
+  if (outcome.kind === "rate_limited") return rateLimitedResponse();
+  // Remember a definitive miss (a timeout or a missing key is not one). This
+  // attempt's sources only — a stale union would silence a source that never answered.
+  if (outcome.sources_checked.length) {
     const { error } = await service.from("food_barcode_misses").upsert(
-      { barcode: code, checked_at: new Date().toISOString(), sources_checked, attempts: (missRow?.attempts ?? 0) + 1 },
+      { barcode: code, checked_at: new Date().toISOString(), sources_checked: outcome.sources_checked, attempts: (missRow?.attempts ?? 0) + 1 },
       { onConflict: "barcode" },
     );
     if (error) console.warn("food_barcode_misses upsert failed:", error.message);
@@ -214,6 +219,7 @@ async function searchOnline(ctx: Ctx, q: string, page: number): Promise<Response
   const { user, service, maps, country } = ctx;
   const usdaKey = Deno.env.get("USDA_FDC_API_KEY");
 
+  await charge(user);
   const [off, usda] = await Promise.all([
     pull(async () => {
       const res = await fetchJson<{ hits?: OffProduct[] }>(
@@ -274,11 +280,6 @@ Deno.serve(async (req) => {
     const country = typeof body.country === "string" && /^[A-Za-z]{2}$/.test(body.country) ? body.country.toUpperCase() : "FI";
     if (!barcode && q.length < 2) return json({ error: "barcode or q (>= 2 chars) required" }, 400);
 
-    const { data: allowed } = await user.rpc("bump_ai_usage", { p_limit: DAILY_LIMIT, p_kind: "nutrition_lookup" });
-    if (allowed === false) {
-      return json({ error: "You've reached today's lookup limit. It resets at midnight UTC." }, 429);
-    }
-
     const { data: defs, error: defsErr } = await user
       .from("nutrient_definitions")
       .select("id, key, unit, off_key, off_factor, usda_nutrient_id, usda_factor");
@@ -288,6 +289,9 @@ Deno.serve(async (req) => {
     const ctx: Ctx = { user, service, maps, country };
     return barcode ? await lookupBarcode(ctx, barcode) : await searchOnline(ctx, q, page);
   } catch (e) {
+    if (e instanceof LimitReached) {
+      return json({ error: "You've reached today's lookup limit. It resets at midnight UTC." }, 429);
+    }
     console.error("nutrition-lookup error:", e);
     return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
   }

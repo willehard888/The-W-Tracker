@@ -17,6 +17,7 @@ import {
   mergePass2,
   overallConfidence,
   pickCandidate,
+  GENERIC_BONUS_PACKAGED,
   sanitizeRange,
   selectForPass2,
   toCandidateFields,
@@ -570,8 +571,12 @@ describe("pickCandidate — generic sources beat branded name coincidences", () 
     const r = pickCandidate([cand("Grilled Chicken Breast", "off", 1.0, 1), cand("Chicken, breast, grilled", "usda_sr_legacy", 0.9, 0.9)], 0.95);
     expect(r.candidates[0].source).toBe("usda_sr_legacy");
   });
-  it("still lets a clearly better branded match through", () => {
-    const r = pickCandidate([cand("Valio Oltermanni 17 %", "off", 1.0, 1), cand("Cheese, edam", "usda_sr_legacy", 0.5, 0.5)], 0.95);
+  it("on a packaging scene the branded exact match still wins", () => {
+    const r = pickCandidate([cand("Valio Oltermanni 17 %", "off", 1.0, 1), cand("Cheese, edam", "usda_sr_legacy", 0.5, 0.5)], 0.95, GENERIC_BONUS_PACKAGED);
     expect(r.candidates[0].source).toBe("off");
+  });
+  it("on a meal scene a plausible generic row beats a branded name coincidence", () => {
+    const r = pickCandidate([cand("Grilled chicken breast", "off", 1.0, 1), cand("Broileri, rintafilee, grillattu", "fineli", 0.45, 0.45)], 0.95);
+    expect(r.candidates[0].source).toBe("fineli");
   });
 });

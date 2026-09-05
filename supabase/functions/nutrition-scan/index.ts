@@ -15,6 +15,7 @@ import {
   type Candidate,
   DEFAULT_MODEL,
   FALLBACK_MODEL,
+  isGenericSource,
   isModelNotFound,
   LABEL_PROMPT,
   LOW_CONFIDENCE,
@@ -24,6 +25,8 @@ import {
   overallConfidence,
   PASS2_PROMPT,
   pickCandidate,
+  GENERIC_BONUS_MEAL,
+  GENERIC_BONUS_PACKAGED,
   type PriorRow,
   PROMPT_VERSION,
   sanitizeRange,
@@ -415,7 +418,7 @@ Deno.serve(async (req) => {
       if (results.some((r) => r.error)) return pickCandidate([], 0); // degrade this item only
       const rows: unknown[] = results.flatMap((r) => (Array.isArray(r.data) ? r.data : []));
       const cands = rows.map(toCandidateFields).filter((c): c is Candidate => c !== null);
-      return pickCandidate(cands, it.identification_confidence);
+      return pickCandidate(cands, it.identification_confidence, (scan.scene_type === "meal" ? GENERIC_BONUS_MEAL : GENERIC_BONUS_PACKAGED));
     });
 
     // ── Online fallback for zero-candidate items (OFF/USDA via nutrition-lookup) ──
@@ -436,7 +439,7 @@ Deno.serve(async (req) => {
             const foods = isRecord(data) && Array.isArray(data.foods) ? data.foods : [];
             const cands = foods.map(toCandidateFields).filter((c): c is Candidate => c !== null);
             online[i] = cands.length ? "hit" : "miss";
-            if (cands.length) picked[i] = pickCandidate(cands, est[i].identification_confidence);
+            if (cands.length) picked[i] = pickCandidate(cands, est[i].identification_confidence, (scan.scene_type === "meal" ? GENERIC_BONUS_MEAL : GENERIC_BONUS_PACKAGED));
           } catch (e) {
             console.warn("nutrition-scan online fallback failed:", e instanceof Error ? e.message : String(e));
           }
@@ -476,7 +479,7 @@ Deno.serve(async (req) => {
           const it = items[i];
           const box = it.box ? `box [${it.box.x0},${it.box.y0},${it.box.x1},${it.box.y1}]` : "box unknown";
           const cands = it.candidates.length
-            ? it.candidates.map((c, k) => `${k}: ${c.name}${c.brand ? ` (${c.brand})` : ""}`).join("; ")
+            ? it.candidates.map((c, k) => `${k}: ${c.name}${c.brand ? ` (${c.brand})` : ""} [${isGenericSource(c) ? "generic" : "packaged"}]`).join("; ")
             : "none";
           return `#${i} "${it.name}" · ${box} · ${it.ml != null ? `${it.ml} ml` : `${it.grams} g`} · candidates: ${cands}`;
         })

@@ -483,18 +483,26 @@ export function toCandidateFields(row: unknown): Candidate | null {
 // A branded OFF row whose name happens to equal the model's term ("Grilled Chicken Breast", 1.4 kcal)
 // must not beat the generic USDA/Fineli entry the diary should really use.
 const GENERIC_SOURCES = new Set(["fineli", "usda_foundation", "usda_sr_legacy"]);
-export const candidateScore = (c: Candidate): number => c.rank + (c.source && GENERIC_SOURCES.has(c.source) ? 0.2 : 0);
+export const isGenericSource = (c: Candidate): boolean => !!c.source && GENERIC_SOURCES.has(c.source);
+/** A photographed plate is almost always generic food: on a meal scene the Fineli/USDA row must beat a
+ *  packaged OFF product whose name merely coincides ("Grilled chicken breast"). Packaging scenes keep the
+ *  boost small so the branded row can still win. */
+export const GENERIC_BONUS_MEAL = 0.6;
+export const GENERIC_BONUS_PACKAGED = 0.2;
+export const candidateScore = (c: Candidate, genericBonus = GENERIC_BONUS_MEAL): number =>
+  c.rank + (c.source && GENERIC_SOURCES.has(c.source) ? genericBonus : 0);
 
 export function pickCandidate(
   cands: Candidate[],
   idConf: number,
+  genericBonus = GENERIC_BONUS_MEAL,
 ): { selected: Candidate | null; needs_user_choice: boolean; candidates: Candidate[] } {
   const best = new Map<string, Candidate>();
   for (const c of cands) {
     const prev = best.get(c.food_id);
     if (!prev || c.rank > prev.rank) best.set(c.food_id, c);
   }
-  const candidates = [...best.values()].sort((a, b) => candidateScore(b) - candidateScore(a));
+  const candidates = [...best.values()].sort((a, b) => candidateScore(b, genericBonus) - candidateScore(a, genericBonus));
   const top = candidates[0];
   const second = candidates[1];
   const auto =
@@ -836,7 +844,7 @@ RULES
 - Never output calories, macros or any nutrition number anywhere, not even in names or notes. The database computes nutrition from your grams.
 - Respond only by calling the report_food_items tool. No prose.`;
 
-export const PASS2_PROMPT = `You already reported the items on this meal. Look again at the listed items only, at the region each box marks on photo 1 (and photo 2 when given). For each listed item: choose the catalog candidate index that IS this food, or -1 when none of them is; refine grams (millilitres for liquids) with an honest low-high range and a portion_confidence; confirm the count of pieces (0 when not countable). Never output calories, macros or any nutrition number. Respond only by calling the refine_items tool.`;
+export const PASS2_PROMPT = `You already reported the items on this meal. Look again at the listed items only, at the region each box marks on photo 1 (and photo 2 when given). For each listed item: choose the catalog candidate index that IS this food, or -1 when none of them is; refine grams (millilitres for liquids) with an honest low-high range and a portion_confidence; confirm the count of pieces (0 when not countable). Candidates are tagged [generic] (a plain food from a national food composition database) or [packaged] (a branded product): on a cooked plate choose the [generic] entry unless the packaging itself is visible in the photo — a name that merely matches your description is not evidence of a brand. Never output calories, macros or any nutrition number. Respond only by calling the refine_items tool.`;
 
 export const LABEL_PROMPT = `Transcribe the printed nutrition table in this photo exactly as printed, through the report_nutrition_label tool. Copy the numbers for the basis the table uses (per 100 g, per 100 ml, or per serving) and give the serving weight when the label prints it. Use -1 for every value that is not printed. Never estimate, complete or round a missing value. Copy a readable barcode's digits into barcode_seen. Respond only by calling the tool.`;
 

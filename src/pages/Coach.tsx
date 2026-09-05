@@ -1,3 +1,4 @@
+import CoachSkeleton from "@/components/coach/CoachSkeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { memo, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams, type NavigateFunction } from "react-router-dom";
@@ -17,7 +18,6 @@ import { withNetworkRetry } from "@/lib/retry";
 import { toast } from "sonner";
 import { useCoachProgram, todaySessionOf, type CoachProgram } from "@/hooks/use-coach-program";
 import { useDailyPlan } from "@/hooks/use-daily-plan";
-import { Block } from "@/components/skeletons/PageSkeleton";
 import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
 import MoodSnapshot from "@/components/coach/MoodSnapshot";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
@@ -34,22 +34,6 @@ import { useOnboardingTrigger } from "@/components/onboarding/onboarding-context
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
 const DISCLAIMER = "AI coach · not a medical professional";
-
-/** Mirrors the redesigned Coach: the bar, the beat, the brief hero, the plan,
- *  then quiet rows. (CoachSkeleton in PageSkeleton.tsx is the route fallback.) */
-const CoachPageSkeleton = () => (
-  <div className="animate-fade-in">
-    <div className="h-11 safe-top" />
-    <div className="px-4 pt-3 pb-6">
-      <Block height={28} className="w-3/4 !rounded-lg" />
-      <Block height={12} delay={40} className="w-44 mt-2 !rounded-md" />
-      <Block height={236} delay={80} className="mt-4 !rounded-3xl" />
-      <Block height={168} delay={140} className="mt-3" />
-      <Block height={96} delay={200} className="mt-3" />
-      <Block height={64} delay={260} className="mt-3" />
-    </div>
-  </div>
-);
 
 const Coach = () => {
   // Contextual onboarding: first /coach mount → the AI-transparency intro
@@ -96,7 +80,7 @@ const Coach = () => {
     setOnboardSkipped(true);
   };
 
-  if (loading || isLoading || athleteLoading) return <CoachPageSkeleton />;
+  if (loading || isLoading || athleteLoading) return <CoachSkeleton />;
 
   // Surface real backend errors instead of looping the skeleton or silently
   // pushing users into the onboarding flow when the underlying table isn't

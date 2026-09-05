@@ -1,8 +1,6 @@
 import { useLocation } from "react-router-dom";
 import {
   Block,
-  CheckinSkeleton,
-  CoachSkeleton,
   FeedSkeleton,
   HomeSkeleton,
   LeaderboardSkeleton,
@@ -12,6 +10,8 @@ import {
   SettingsSkeleton,
   SubPageSkeleton,
 } from "@/components/skeletons/PageSkeleton";
+import CheckinSkeleton from "@/components/checkin/CheckinSkeleton";
+import CoachSkeleton from "@/components/coach/CoachSkeleton";
 
 /**
  * Suspense fallback for lazy routes — a skeleton matched to the destination

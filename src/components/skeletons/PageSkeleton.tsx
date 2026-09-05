@@ -97,14 +97,6 @@ export const FeedSkeleton = () => (
   </div>
 );
 
-export const CheckinSkeleton = () => (
-  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
-    <Block height={120} />
-    <Block height={220} delay={80} />
-    <Block height={140} delay={160} />
-  </div>
-);
-
 /** Data-phase skeleton for board-style lists (podium + rows) — no page
  *  padding, drops inline where the data will render. */
 export const BoardRowsSkeleton = () => (
@@ -113,17 +105,6 @@ export const BoardRowsSkeleton = () => (
     {Array.from({ length: 6 }).map((_, i) => (
       <Block key={i} height={64} delay={60 + i * 30} />
     ))}
-  </div>
-);
-
-/** Coach page skeleton — hero strip + plan card + chat CTA (the previous
- *  Profile-shaped fallback caused a visible layout jump on every open). */
-export const CoachSkeleton = () => (
-  <div className="px-4 pt-4 pb-8 space-y-3 animate-fade-in">
-    <Block height={96} />
-    <Block height={200} delay={80} />
-    <Block height={72} delay={160} />
-    <Block height={120} delay={220} />
   </div>
 );
 

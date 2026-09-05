@@ -1,40 +1,46 @@
 import { useLocation } from "react-router-dom";
 import {
+  Block,
+  CheckinSkeleton,
+  CoachSkeleton,
+  FeedSkeleton,
   HomeSkeleton,
   LeaderboardSkeleton,
-  ProfileSkeleton,
-  FeedSkeleton,
-  CheckinSkeleton,
   ListSkeleton,
   NutritionSkeleton,
+  ProfileSkeleton,
+  SettingsSkeleton,
+  SubPageSkeleton,
 } from "@/components/skeletons/PageSkeleton";
 
 /**
- * Route-aware fallback. Renders a skeleton that mirrors the destination
+ * Suspense fallback for lazy routes — a skeleton matched to the destination
  * screen's layout so the route swap is visually continuous (no generic
- * loading flash).
- *
- * Falls back to `ListSkeleton` for unknown routes — never a blank screen.
+ * loading flash). Every route family maps to a silhouette; unknown routes
+ * get the sub-page one — never a blank screen or a spinner.
  */
 const RouteFallback = () => {
   const { pathname } = useLocation();
+  const is = (...prefixes: string[]) => prefixes.some((p) => pathname.startsWith(p));
 
   if (pathname === "/") return <HomeSkeleton />;
-  if (pathname.startsWith("/checkin")) return <CheckinSkeleton />;
-  if (pathname.startsWith("/nutrition")) return <NutritionSkeleton />;
-  if (pathname.startsWith("/leaderboard")) return <LeaderboardSkeleton />;
-  if (pathname.startsWith("/profile") || pathname.startsWith("/user/"))
-    return <ProfileSkeleton />;
-  if (pathname.startsWith("/feed") || pathname.startsWith("/squad"))
-    return <FeedSkeleton />;
-  if (
-    pathname.startsWith("/messages") ||
-    pathname.startsWith("/tribes") ||
-    pathname.startsWith("/battles")
-  )
-    return <ListSkeleton />;
-
-  return <ListSkeleton />;
+  if (is("/checkin")) return <CheckinSkeleton />;
+  if (is("/nutrition")) return <NutritionSkeleton />;
+  if (is("/leaderboard")) return <LeaderboardSkeleton />;
+  if (is("/coach")) return <CoachSkeleton />;
+  if (is("/profile", "/user/")) return <ProfileSkeleton />;
+  if (is("/feed", "/squad")) return <FeedSkeleton />;
+  if (is("/settings", "/memory", "/notifications", "/blocked", "/admin")) return <SettingsSkeleton />;
+  if (is("/paywall")) {
+    return (
+      <div className="px-4 pt-6 pb-8 animate-fade-in">
+        <Block height={64} className="w-16 mx-auto !rounded-2xl" />
+        <Block height={440} delay={80} className="mt-6 !rounded-3xl" />
+      </div>
+    );
+  }
+  if (is("/messages", "/tribes", "/battles", "/friends", "/recipes", "/exercises", "/vault")) return <ListSkeleton />;
+  return <SubPageSkeleton />;
 };
 
 export default RouteFallback;

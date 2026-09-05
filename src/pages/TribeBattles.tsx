@@ -141,7 +141,7 @@ const TribeBattles = () => {
   return (
     <div className="min-h-full">
       <PageBar onBack={() => navigate(`/tribes/${id}`)} />
-      <div className="px-4 pt-4 pb-6">
+      <div className="home-rise px-4 pt-4 pb-6">
 
       {/* Hero — anchored by the tribe's collective war-flame.
           The bigger the combined member streak, the hotter & taller the

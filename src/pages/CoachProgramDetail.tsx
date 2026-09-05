@@ -42,7 +42,7 @@ const CoachProgramDetail = () => {
     <div className="min-h-full">
       <PageBar title="Training program" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6 space-y-4">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-4">
         {isLoading && <PageSkeleton />}
 
         {/* Free user, no program — upsell */}
@@ -50,7 +50,7 @@ const CoachProgramDetail = () => {
           <button
             type="button"
             onClick={() => navigate("/paywall")}
-            className="w-full text-left rounded-3xl border border-gold/35 bg-gradient-to-b from-gold/[0.06] via-card/95 to-card p-5 active:scale-[0.99] transition-transform"
+            className="press w-full text-left rounded-3xl border border-gold/35 bg-gradient-to-b from-gold/[0.06] via-card/95 to-card p-5 transition-transform"
           >
             <div className="flex items-center gap-2 mb-2">
               <Crown size={12} className="text-gold" />
@@ -114,7 +114,7 @@ const CoachProgramDetail = () => {
               <button
                 type="button"
                 onClick={() => setShowRegen(true)}
-                className="eyebrow w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-card/40 px-4 py-3 text-gold/90 active:scale-[0.99] transition-transform"
+                className="eyebrow w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-gold/30 bg-card/40 px-4 py-3 text-gold/90 transition-transform"
               >
                 <RefreshCw size={13} /> Generate a new block
               </button>

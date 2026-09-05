@@ -97,7 +97,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                 onClick={() => { hapticSelection(); setBatch(b); }}
                 aria-pressed={batch === b}
                 className={cn(
-                  "flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all active:scale-[0.97]",
+                  "press flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all ",
                   batch === b ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
@@ -273,7 +273,7 @@ const RecipeList = () => {
               <button
                 key={r.id}
                 onClick={() => { hapticImpact("light"); navigate(`/recipes/${r.id}`); }}
-                className="text-left rounded-2xl overflow-hidden border border-border/60 bg-card active:scale-[0.98] transition-transform"
+                className="press text-left rounded-2xl overflow-hidden border border-border/60 bg-card transition-transform"
               >
                 <RecipePhoto id={r.id} variant="tile" className="w-full aspect-square" />
                 <div className="p-2.5">

@@ -205,7 +205,7 @@ const NutritionRecipeEditor = () => {
           void submit();
         }}
       >
-        <div className="animate-reveal space-y-3">
+        <div className="home-rise space-y-3">
           <label className="block">
             <span className="sr-only">Recipe name</span>
             <input
@@ -237,12 +237,12 @@ const NutritionRecipeEditor = () => {
           </div>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <p className="text-[12px] font-bold text-muted-foreground mb-2">Per serving</p>
           <NutrientPreview nutrition={preview.per} dim={!servingsOk || preview.rows.length === 0} />
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-2">
+        <div className="home-rise home-rise-2">
           <div className="flex items-center justify-between gap-3 mb-1">
             <p className="text-[12px] font-bold text-muted-foreground">Ingredients</p>
             <Button type="button" variant="ghost" size="xs" onClick={() => setPickerOpen(true)}>
@@ -277,7 +277,7 @@ const NutritionRecipeEditor = () => {
                       type="button"
                       aria-label={`Remove ${f?.name ?? it.name}`}
                       onClick={() => setItems((rows) => rows.filter((r) => r.key !== it.key))}
-                      className="shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground active:scale-95 transition-transform"
+                      className="press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground transition-transform"
                     >
                       <X size={16} />
                     </button>
@@ -293,7 +293,7 @@ const NutritionRecipeEditor = () => {
           )}
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-3 flex gap-2">
+        <div className="home-rise home-rise-3 flex gap-2">
           {saved && (
             <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => setLogOpen(true)}>
               Log 1 serving
@@ -332,7 +332,7 @@ const NutritionRecipeEditor = () => {
                     hapticSelection();
                     setLogSlot(s.key);
                   }}
-                  className={cn("flex-1 h-11 rounded-lg text-[12px] font-black transition-all active:scale-[0.97]", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-all ", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>

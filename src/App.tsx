@@ -1,3 +1,4 @@
+import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
@@ -234,6 +235,7 @@ const AppRoutes = () => {
     <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
+      <ScrollContainerProvider value={scrollContainerRef}>
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden momentum-scroll">
         {/* RouteFallback renders a layout-matched skeleton for the destination
             route (HomeSkeleton on /, FeedSkeleton on /feed, etc.) so the lazy-
@@ -335,6 +337,7 @@ const AppRoutes = () => {
           </ErrorBoundary>
         </Suspense>
       </div>
+      </ScrollContainerProvider>
       <BottomNav />
       {user && <TierPromotionCelebration />}
       <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />

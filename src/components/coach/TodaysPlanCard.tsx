@@ -61,7 +61,7 @@ const MissionRow = ({
       onClick={() => onComplete(mission)}
       disabled={isDone || isBusy}
       className={cn(
-        "w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all active:scale-[0.99]",
+        "press w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all ",
         isDone
           ? "border-xp-green/30 bg-xp-green/[0.06]"
           : "border-border/50 bg-card/50 hover:border-gold/30",
@@ -194,7 +194,7 @@ const TodaysPlanCard = () => {
       <button
         type="button"
         onClick={() => navigate("/paywall")}
-        className="w-full text-left surface-card p-4 active:scale-[0.99] transition-transform"
+        className="press w-full text-left surface-card p-4 transition-transform"
       >
         <div className="flex items-center gap-2 mb-1">
           <Sparkles size={14} className="text-gold" />
@@ -214,7 +214,7 @@ const TodaysPlanCard = () => {
       <button
         type="button"
         onClick={regenerate}
-        className="w-full text-left surface-card p-4 active:scale-[0.99] transition-transform"
+        className="press w-full text-left surface-card p-4 transition-transform"
       >
         <div className="flex items-center gap-2 mb-1">
           <Sparkles size={14} className="text-gold" />
@@ -241,7 +241,7 @@ const TodaysPlanCard = () => {
               type="button"
               onClick={regenerate}
               disabled={generating}
-              className="eyebrow shrink-0 inline-flex items-center gap-1 text-muted-foreground/70 active:scale-95 transition disabled:opacity-40"
+              className="press eyebrow shrink-0 inline-flex items-center gap-1 text-muted-foreground/70 transition disabled:opacity-40"
               aria-label="Regenerate plan"
             >
               <RotateCw size={11} className={cn(generating && "animate-spin")} /> Refresh

@@ -20,7 +20,7 @@ const ProgressionSummaryCard = () => {
     <button
       type="button"
       onClick={() => navigate("/coach/program")}
-      className="w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.07] via-card/95 to-card p-4 active:scale-[0.99] transition-transform"
+      className="press w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/[0.07] via-card/95 to-card p-4 transition-transform"
     >
       <div className="flex items-center gap-2 mb-2">
         <TrendingUp size={13} className="text-gold" />

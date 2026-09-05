@@ -192,7 +192,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
                   aria-label={`Rate effort ${value} out of 10`}
                   className={cn(
                     "h-11 rounded-lg border text-[13px] font-black tabular-nums",
-                    "transition-colors active:scale-[0.96] disabled:opacity-50",
+                    "press transition-colors disabled:opacity-50",
                     "border-border/60 bg-secondary/40 text-muted-foreground",
                     "hover:border-gold/40 hover:text-gold",
                   )}

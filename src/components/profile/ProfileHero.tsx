@@ -51,7 +51,7 @@ const ProfileHero = ({
 
   return (
     <div className={cn(
-      "animate-reveal relative mb-6 overflow-hidden rounded-3xl border p-6 pt-8 pb-7",
+      "home-rise relative mb-6 overflow-hidden rounded-3xl border p-6 pt-8 pb-7",
       surface.bgClass,
     )}>
       {/* Top vignette glow */}
@@ -68,7 +68,7 @@ const ProfileHero = ({
         type="button"
         onClick={onShare}
         aria-label="Share profile"
-        className="absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/50 border border-border/60 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 active:scale-95 transition before:absolute before:-inset-1 before:content-['']"
+        className="press absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/50 border border-border/60 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 transition before:absolute before:-inset-1 before:content-['']"
       >
         <Share2 aria-hidden size={15} />
       </button>
@@ -103,7 +103,7 @@ const ProfileHero = ({
               onClick={() => avatarInputRef.current?.click()}
               disabled={uploadingAvatar}
               aria-label="Change profile photo"
-              className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 active:scale-95"
+              className="press absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 "
             >
               {uploadingAvatar ? (
                 <span className="text-[11px] text-gold animate-pulse">…</span>

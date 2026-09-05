@@ -25,7 +25,7 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
       onClick={() => onVote(battle.id, votedFor)}
       disabled={!!myVote}
       className={cn(
-        "w-full py-2 rounded-lg text-xs font-bold transition-all active:scale-95 border",
+        "w-full py-2 rounded-lg text-xs font-bold transition-all border",
         mine
           ? "bg-gold/20 border-gold/40 text-gold"
           : myVote

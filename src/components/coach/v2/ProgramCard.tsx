@@ -64,7 +64,7 @@ const ProgramCard = () => {
     <button
       type="button"
       onClick={() => navigate("/coach/program")}
-      className="w-full text-left surface-card p-5 active:scale-[0.99] transition-transform"
+      className="w-full text-left surface-card p-5 transition-transform"
     >
       <div className="flex items-center gap-2 mb-2">
         <Dumbbell size={12} className="text-gold" />

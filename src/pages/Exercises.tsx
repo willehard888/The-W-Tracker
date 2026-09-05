@@ -30,7 +30,7 @@ const GROUPS: Array<{ label: string; match: (m: string) => boolean }> = [
 const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () => void }) => (
   <div className="min-h-full">
     <PageBar onBack={onBack} />
-    <div className="px-4 pt-4 pb-6">
+    <div className="home-rise px-4 pt-4 pb-6">
     <IllustrationHero ex={ex} className="mb-4" />
 
     <h1 className="font-display text-xl font-black tracking-tight leading-tight">{ex.title}</h1>
@@ -86,7 +86,7 @@ const Exercises = () => {
     <div className="min-h-full">
       <PageBar title="Exercise library" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6">
+      <div className="home-rise px-4 pt-4 pb-6">
         {/* Search */}
         <div className="relative mb-3">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -113,7 +113,7 @@ const Exercises = () => {
                   key={g ?? "all"}
                   onClick={() => { hapticImpact("light"); setGroup(g); }}
                   className={cn(
-                    "shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-all active:scale-95",
+                    "press shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-all ",
                     active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
                   )}
                 >
@@ -130,7 +130,7 @@ const Exercises = () => {
               key={ex.slug}
               onClick={() => { hapticImpact("light"); setSelected(ex); }}
               style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 80px" }}
-              className="w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
+              className="press w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 transition-transform"
             >
               <div className="flex items-center gap-3">
                 <IllustrationThumb ex={ex} size={56} eager={i < 10} />

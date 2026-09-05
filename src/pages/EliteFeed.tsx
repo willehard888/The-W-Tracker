@@ -757,7 +757,7 @@ const EliteFeed = () => {
                 aria-label={showReported ? "Hide flagged posts" : "Show flagged posts"}
                 aria-pressed={showReported}
                 className={cn(
-                  "h-9 w-9 rounded-full flex items-center justify-center transition-colors active:scale-95",
+                  "press h-9 w-9 rounded-full flex items-center justify-center transition-colors ",
                   showReported
                     ? "bg-destructive/15 text-destructive"
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
@@ -770,7 +770,7 @@ const EliteFeed = () => {
                 aria-label="Pending reports"
                 aria-pressed={showReportsPanel}
                 className={cn(
-                  "relative h-9 w-9 rounded-full flex items-center justify-center transition-colors active:scale-95",
+                  "press relative h-9 w-9 rounded-full flex items-center justify-center transition-colors ",
                   showReportsPanel
                     ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
@@ -800,7 +800,7 @@ const EliteFeed = () => {
 
       {/* Admin Reports Panel */}
       {isAdmin && showReportsPanel && (
-        <div className="animate-reveal surface-card border-[hsl(var(--purple))]/30 p-4 mb-6">
+        <div className="home-rise surface-card border-[hsl(var(--purple))]/30 p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck aria-hidden size={16} className="text-[hsl(var(--purple))]" />
             <h2 className="font-display text-sm font-bold">Pending Reports</h2>
@@ -927,14 +927,14 @@ const EliteFeed = () => {
                   <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold active:scale-95"
+                    className="press flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold "
                   >
                     <Image aria-hidden size={14} />
                     Photo
                   </button>
                   <button
                     onClick={() => videoRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold active:scale-95"
+                    className="press flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold "
                   >
                     <Video aria-hidden size={14} />
                     Video
@@ -956,7 +956,7 @@ const EliteFeed = () => {
             <button
               type="button"
               onClick={() => { hapticSelection(); setComposerOpen(true); }}
-              className="w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform active:scale-[0.99]"
+              className="press w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform "
             >
               <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[11px] font-black text-primary-foreground shrink-0">
                 {composerInitial}

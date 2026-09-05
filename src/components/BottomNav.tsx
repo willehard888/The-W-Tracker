@@ -157,7 +157,6 @@ const BottomNav = () => {
                 "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl min-w-[44px]",
                 "transition-[transform,color,opacity] duration-150 will-change-transform",
                 "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
-                "active:scale-[0.92]",
                 active ? c.text : "text-muted-foreground/80",
               )}
               style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}

@@ -541,7 +541,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <button onClick={() => toggleLike.mutate()}
               aria-label={post.liked ? "Remove fire" : "Give fire"}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
                 post.liked
                   ? "bg-streak-orange/15 text-streak-orange"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -553,7 +553,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <button onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(!showComments); }}
             aria-label="Toggle comments"
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
               showComments ? "bg-[hsl(var(--ember))]/12 text-[hsl(var(--ember))]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}>
             <MessageCircle aria-hidden size={15} fill={showComments ? "currentColor" : "none"} />
@@ -574,7 +574,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               aria-label={post.kudosed ? "Remove kudos" : "Give kudos"}
               title={`${kudosRemaining}/2 kudos remaining this month`}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
                 post.kudosed
                   ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                   : kudosRemaining > 0

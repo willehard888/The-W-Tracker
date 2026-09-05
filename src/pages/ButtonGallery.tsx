@@ -89,7 +89,7 @@ const ButtonGallery = () => {
       <div className="flex items-center gap-3 mb-6">
         <Link
           to="/"
-          className="h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors active:scale-95"
+          className="press h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
           aria-label="Back"
         >
           <ArrowLeft size={18} />

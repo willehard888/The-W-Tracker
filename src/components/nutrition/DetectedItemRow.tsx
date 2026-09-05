@@ -130,7 +130,7 @@ const DetectedItemRow = ({
                   hapticSelection();
                   onGramsChange(item.id, toGrams(q));
                 }}
-                className={cn("flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-all active:scale-[0.97]", shown === q ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-all ", shown === q ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {q}
               </button>

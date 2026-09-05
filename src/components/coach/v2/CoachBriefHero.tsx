@@ -40,7 +40,7 @@ const CoachBriefHero = ({
     return (
       <button
         onClick={onOpenChat}
-        className="w-full text-left rounded-3xl border border-gold/35 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5 active:scale-[0.99] transition-transform shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)]"
+        className="press w-full text-left rounded-3xl border border-gold/35 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5 transition-transform shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.45)]"
       >
         <div className="flex items-center gap-2 mb-1.5">
           <Sparkles size={14} className="text-gold" />
@@ -99,7 +99,7 @@ const CoachBriefHero = ({
             <button
               key={i}
               onClick={() => onAsk(q)}
-              className="w-full flex items-center gap-2 rounded-xl border border-gold/20 bg-gold/[0.04] px-3 py-2.5 text-left active:scale-[0.99] transition-transform"
+              className="press w-full flex items-center gap-2 rounded-xl border border-gold/20 bg-gold/[0.04] px-3 py-2.5 text-left transition-transform"
             >
               <MessageCircle size={13} className="text-gold/70 shrink-0" />
               <span className="text-[12px] font-semibold text-foreground/85 leading-snug">{q}</span>
@@ -111,7 +111,7 @@ const CoachBriefHero = ({
       {/* Primary CTA — open the live coach */}
       <button
         onClick={onOpenChat}
-        className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gold py-3 text-[13px] font-black text-primary-foreground shadow-[0_3px_14px_-2px_hsl(42_78%_50%/0.45)] active:scale-[0.98] transition-transform"
+        className="press mt-4 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gold py-3 text-[13px] font-black text-primary-foreground shadow-[0_3px_14px_-2px_hsl(42_78%_50%/0.45)] transition-transform"
       >
         <Send size={15} /> Ask your coach anything
       </button>

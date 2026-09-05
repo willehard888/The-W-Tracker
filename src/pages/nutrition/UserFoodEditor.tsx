@@ -210,7 +210,7 @@ const UserFoodEditor = () => {
         }}
         noValidate
       >
-        <div className="animate-reveal space-y-3">
+        <div className="home-rise space-y-3">
           {fromLabel && <p className="text-[12px] text-muted-foreground leading-snug">Read from a label photo — check every number before saving.</p>}
           <label className="block">
             <span className="sr-only">Food name</span>
@@ -246,7 +246,7 @@ const UserFoodEditor = () => {
           </div>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <p className="text-[12px] font-bold text-muted-foreground mb-2">Per 100 g</p>
           <MacroRow nutrition={{ calories: kcal, protein: n0(nutrients.protein_g), carbs: n0(nutrients.carbs_g), fat: n0(nutrients.fat_g) }} />
           {sanity && (
@@ -256,7 +256,7 @@ const UserFoodEditor = () => {
           )}
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-2 space-y-3">
+        <div className="home-rise home-rise-2 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             {REQUIRED.map((k) => (
               <NumField key={k} label={PRIMARY_LABEL[k]} unit={unitOf(k)} required value={nutrients[k] ?? ""} onChange={(v) => setNutrient(k, v)} error={errors.nutrients[k]} />
@@ -278,7 +278,7 @@ const UserFoodEditor = () => {
           </MoreSection>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-3">
+        <div className="home-rise home-rise-3">
           <div className="flex items-center justify-between gap-3 mb-1">
             <p className="text-[12px] font-bold text-muted-foreground">Servings</p>
             <Button type="button" variant="ghost" size="xs" onClick={() => setServings((r) => [...r, newServing()])}>
@@ -312,7 +312,7 @@ const UserFoodEditor = () => {
                         hapticSelection();
                         updateServing(s.key, { is_default: !s.is_default });
                       }}
-                      className={cn("shrink-0 h-11 w-11 flex items-center justify-center rounded-xl active:scale-95 transition-transform", s.is_default ? "text-gold" : "text-muted-foreground/50")}
+                      className={cn("press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-transform", s.is_default ? "text-gold" : "text-muted-foreground/50")}
                     >
                       <Star size={16} fill={s.is_default ? "currentColor" : "none"} />
                     </button>
@@ -320,7 +320,7 @@ const UserFoodEditor = () => {
                       type="button"
                       aria-label="Remove serving"
                       onClick={() => setServings((rows) => rows.filter((r) => r.key !== s.key))}
-                      className="shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground active:scale-95 transition-transform"
+                      className="press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground transition-transform"
                     >
                       <X size={16} />
                     </button>
@@ -336,7 +336,7 @@ const UserFoodEditor = () => {
           )}
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-4">
+        <div className="home-rise home-rise-4">
           <Button type="submit" size="lg" className="w-full" loading={busy || saving} disabled={busy || saving}>
             {id ? "Save changes" : "Save food"}
           </Button>

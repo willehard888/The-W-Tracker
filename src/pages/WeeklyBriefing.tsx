@@ -165,7 +165,7 @@ const WeeklyBriefing = () => {
   return (
     <div className="min-h-full">
       <PageBar onBack={() => navigate(-1)} />
-      <div className="px-4 pt-4 pb-6 relative">
+      <div className="home-rise px-4 pt-4 pb-6 relative">
       {/* Ambient gold glow */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"

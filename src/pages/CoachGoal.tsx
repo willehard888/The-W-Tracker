@@ -15,7 +15,7 @@ const CoachGoal = () => {
     <div className="min-h-full">
       <PageBar title="North Star goal" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6 space-y-4">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-4">
         {/* Intro */}
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-2">

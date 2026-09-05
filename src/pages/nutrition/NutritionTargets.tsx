@@ -154,7 +154,7 @@ const NutritionTargets = () => {
       <PageBar title="Nutrition targets" onBack={() => navigate(-1)} />
 
       <div className="px-4 pt-4 pb-6 space-y-6">
-        <div className="animate-reveal">
+        <div className="home-rise">
           <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
             {targets ? (
               <>
@@ -178,7 +178,7 @@ const NutritionTargets = () => {
           </div>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <p className="text-[12px] font-bold text-muted-foreground mb-1.5">Activity</p>
           <div className={SEGMENT_TRACK} role="group" aria-label="Activity level">
             {ACTIVITY.map((a) => (
@@ -190,7 +190,7 @@ const NutritionTargets = () => {
                   hapticSelection();
                   setActivityChoice(a.key);
                 }}
-                className={cn("flex-1 h-11 rounded-lg text-[11px] font-black transition-all active:scale-[0.97]", activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[11px] font-black transition-all ", activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {a.label}
               </button>
@@ -198,11 +198,11 @@ const NutritionTargets = () => {
           </div>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-2 space-y-4">
+        <div className="home-rise home-rise-2 space-y-4">
           <TargetsProposal result={result} sexAssumed={result.ok && sexAssumed} onUse={useProposal} onAdjust={openAdjust} busy={saving} />
 
           {adjusting && (
-            <div className="surface-card surface-card-quiet p-4 space-y-3 animate-reveal">
+            <div className="surface-card surface-card-quiet p-4 space-y-3 home-rise">
               <p className="text-[15px] font-bold">{result.ok ? "Adjust by hand" : "Type your targets"}</p>
               <div className="grid grid-cols-2 gap-3">
                 <NumField label="Calories" unit="kcal" mode="numeric" required value={current.kcal} onChange={(v) => setField("kcal", v)} error={errors.kcal} />
@@ -221,7 +221,7 @@ const NutritionTargets = () => {
         </div>
 
         {targets && (
-          <div className="animate-reveal animate-reveal-delay-3">
+          <div className="home-rise home-rise-3">
             <div className="flex items-baseline justify-between gap-3">
               <p className="text-[12px] font-bold text-muted-foreground">Current targets</p>
               <p className="text-[12px] text-muted-foreground">
@@ -235,7 +235,7 @@ const NutritionTargets = () => {
           </div>
         )}
 
-        <div className="animate-reveal animate-reveal-delay-4 surface-card surface-card-quiet overflow-hidden divide-y divide-border/30">
+        <div className="home-rise home-rise-4 surface-card surface-card-quiet overflow-hidden divide-y divide-border/30">
           {getPlatform() === "ios" && (
             <div className="flex items-center gap-3 px-4 py-3 min-h-11">
               <HeartPulse aria-hidden size={14} className="text-muted-foreground shrink-0" />
@@ -249,7 +249,7 @@ const NutritionTargets = () => {
           <button
             type="button"
             onClick={() => setInfoOpen(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 min-h-11 text-left hover:bg-card/60 transition-colors active:scale-[0.99]"
+            className="press w-full flex items-center gap-3 px-4 py-3 min-h-11 text-left hover:bg-card/60 transition-colors "
           >
             <Info aria-hidden size={14} className="text-muted-foreground shrink-0" />
             <span className="flex-1 min-w-0">

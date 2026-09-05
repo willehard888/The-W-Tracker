@@ -168,7 +168,7 @@ const Auth = () => {
   if (emailSent) {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
-        <div className="w-full max-w-sm animate-reveal text-center">
+        <div className="w-full max-w-sm home-rise text-center">
           <div className="h-14 w-14 mx-auto rounded-xl gradient-gold flex items-center justify-center glow-gold mb-6">
             <Mail size={24} className="text-primary-foreground" strokeWidth={2.4} />
           </div>
@@ -189,7 +189,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm animate-reveal">
+      <div className="w-full max-w-sm home-rise">
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
           <BrandLogo size={56} priority className="rounded-xl glow-gold mb-4" />
@@ -222,7 +222,7 @@ const Auth = () => {
         {showEmailForm && (
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
-            <div className="animate-reveal">
+            <div className="home-rise">
               <label className="eyebrow text-muted-foreground mb-1.5 block">
                 Username
               </label>

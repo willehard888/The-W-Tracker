@@ -109,7 +109,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
           style.surface,
           earned && style.glow,
           earned && isEpicPlus && style.conicRim,
-          earned && "hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.97]",
+          earned && "hover:-translate-y-0.5 hover:scale-[1.02] ",
           !earned && "badge-locked",
         )}
       >

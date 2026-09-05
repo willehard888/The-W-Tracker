@@ -44,7 +44,7 @@ const MediaPreview = ({ imageSrc, videoSrc, sizeBytes, onClear, progressLabel, c
           type="button"
           onClick={onClear}
           aria-label="Remove media"
-          className="absolute top-2.5 right-2.5 h-10 w-10 rounded-full bg-black/55 backdrop-blur-sm border border-white/15 text-white flex items-center justify-center active:scale-90 transition-transform"
+          className="press absolute top-2.5 right-2.5 h-10 w-10 rounded-full bg-black/55 backdrop-blur-sm border border-white/15 text-white flex items-center justify-center transition-transform"
         >
           <X size={18} />
         </button>

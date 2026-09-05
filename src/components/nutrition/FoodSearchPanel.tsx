@@ -89,7 +89,7 @@ const FoodSearchPanel = ({
             </button>
           )}
           {barcodeSupported && onScanBarcode && (
-            <button type="button" onClick={onScanBarcode} aria-label="Scan a barcode" className="h-11 w-11 flex items-center justify-center text-gold active:scale-95 transition-transform">
+            <button type="button" onClick={onScanBarcode} aria-label="Scan a barcode" className="h-11 w-11 flex items-center justify-center text-gold transition-transform">
               <ScanBarcode size={18} />
             </button>
           )}

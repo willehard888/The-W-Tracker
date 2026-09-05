@@ -39,7 +39,7 @@ const InviteCTA = ({ referralCount }: InviteCTAProps) => {
   return (
     <button
       onClick={() => navigate("/referrals")}
-      className="w-full rounded-2xl glass-card-gold p-4 text-left active:scale-[0.99] transition-transform border border-gold/30 relative overflow-hidden"
+      className="w-full rounded-2xl glass-card-gold p-4 text-left transition-transform border border-gold/30 relative overflow-hidden"
     >
       <div
         className="absolute -top-12 -right-12 w-32 h-32 rounded-full pointer-events-none"

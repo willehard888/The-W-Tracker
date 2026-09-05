@@ -107,7 +107,7 @@ const Journey = () => {
     <div className="min-h-full">
       <PageBar title="Your journey" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6 space-y-4">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-4">
         {!isLoading && !hasAnyData && (
           <EmptyState
             icon={Compass}

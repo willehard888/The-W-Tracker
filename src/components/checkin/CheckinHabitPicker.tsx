@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Check, Lock, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -37,14 +36,6 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
   useEffect(() => {
     if (open) setDraft(new Set(selectedKeys));
   }, [open, selectedKeys]);
-
-  // Lock background scroll while open (smoother, no bleed-through scroll).
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [open]);
 
   const grouped = useMemo(() => {
     const map = new Map<CheckinPillar, CheckinHabit[]>();
@@ -83,61 +74,23 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
 
   // Portal to <body> so the fixed overlay is viewport-relative. Rendered inline
   // in the page tree, an ancestor's transform / will-change (e.g. the global
-  // button `will-change: transform`, animate-reveal) creates a containing block
+  // button `will-change: transform`, home-rise) creates a containing block
   // that traps `position: fixed` inside the content area — which clipped the
   // header under the app bar and hid the Save button behind the bottom nav.
-  return createPortal(
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Build your check-in"
-          className="fixed inset-0 z-[var(--z-celebration)] flex flex-col"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {/* Backdrop — solid (no backdrop-filter, which iOS WKWebView mis-composites) */}
-          <div className="absolute inset-0 bg-black/70" onClick={() => onOpenChange(false)} />
-
-          {/* Panel — slides up from the bottom, leaves a peek of backdrop on top */}
-          <motion.div
-            className="relative mt-auto flex flex-col w-full max-h-[93vh] rounded-t-[28px] border-t border-white/10 bg-[hsl(255_14%_7%)] shadow-[0_-20px_60px_-12px_hsl(0_0%_0%/0.7)] overflow-hidden"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 380, damping: 38 }}
-            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
-          >
-            {/* Grab handle */}
-            <div className="flex justify-center pt-2.5 pb-1 shrink-0">
-              <div className="h-1 w-10 rounded-full bg-white/15" />
-            </div>
-
-            {/* Header */}
-            <div className="px-5 pt-1 pb-3 border-b border-border/60 shrink-0">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-display text-xl font-black tracking-tight">Build your check-in</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {coreCount} core · {optionalCount} added
-                    <span className="text-muted-foreground/75"> (bonus max +{OPTIONAL_XP_CAP} XP/day)</span>
-                  </p>
-                </div>
-                <button
-                  onClick={() => onOpenChange(false)}
-                  className="shrink-0 h-9 w-9 -mr-1 flex items-center justify-center rounded-full bg-secondary/70 text-muted-foreground active:scale-90 transition-transform"
-                  aria-label="Close"
-                >
-                  <X aria-hidden size={18} />
-                </button>
-              </div>
-            </div>
-
-            {/* Scrollable habit library */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-6">
+  return (
+    <BottomSheet
+      open={open}
+      onClose={() => onOpenChange(false)}
+      label="Build your check-in"
+      title="Build your check-in"
+      subtitle={<>{coreCount} core · {optionalCount} added · bonus max +{OPTIONAL_XP_CAP} XP/day</>}
+      footer={
+        <Button variant="ember" size="lg" className="w-full" onClick={handleSave}>
+          Save my habits
+        </Button>
+      }
+    >
+            <div className="pt-3 space-y-6">
               {PILLAR_ORDER.map((pillar) => {
                 const habits = grouped.get(pillar);
                 if (!habits?.length) return null;
@@ -156,7 +109,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                             aria-pressed={on}
                             disabled={h.core}
                             className={cn(
-                              "flex items-center gap-3 w-full rounded-2xl border p-3.5 text-left transition-all active:scale-[0.98]",
+                              "press flex items-center gap-3 w-full rounded-2xl border p-3.5 text-left transition-all ",
                               on ? "border-gold/40 bg-gold/[0.07]" : "border-border bg-card hover:bg-secondary/50",
                             )}
                           >
@@ -192,18 +145,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                 marked habits can be auto-verified by Apple Health.
               </p>
             </div>
-
-            {/* Footer */}
-            <div className="px-5 pt-3 border-t border-border/60 shrink-0">
-              <Button variant="ember" size="lg" className="w-full" onClick={handleSave}>
-                Save my habits
-              </Button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>,
-    document.body,
+    </BottomSheet>
   );
 };
 

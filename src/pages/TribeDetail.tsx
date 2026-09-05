@@ -609,7 +609,7 @@ const TribeDetail = () => {
     return (
       <div className="min-h-full">
         <PageBar onBack={() => navigate("/squad?tab=tribes")} />
-        <div className="px-4 pt-4 pb-6">
+        <div className="home-rise px-4 pt-4 pb-6">
         <div className="surface-card p-6 text-center">
           <div className="mx-auto h-12 w-12 rounded-2xl bg-secondary/50 border border-border/60 flex items-center justify-center mb-3">
             <Lock size={20} className="text-muted-foreground" />
@@ -642,7 +642,7 @@ const TribeDetail = () => {
   return (
     <div ref={scrollRef} className="min-h-full relative">
       <PageBar onBack={() => { hapticSelection(); navigate("/squad?tab=tribes"); }} />
-      <div className="px-4 pt-4 pb-6">
+      <div className="home-rise px-4 pt-4 pb-6">
       {/* Subtle page tint toward the tribe's tier color */}
       {pageTint && (
         <div

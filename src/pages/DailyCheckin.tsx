@@ -71,7 +71,7 @@ const HabitToggle = ({
     onClick={() => { hapticSelection(); onToggle(); }}
     aria-pressed={active}
     className={cn(
-      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200 active:scale-[0.985]",
+      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200 ",
       active
         ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
         : "surface-card hover:bg-secondary/50",
@@ -677,7 +677,7 @@ const DailyCheckin = () => {
   if (!canCheckin && !submitted) {
     return (
       <div className="min-h-full flex flex-col items-center justify-center px-6 text-center pb-4">
-        <div className="animate-reveal">
+        <div className="home-rise">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
             <Moon aria-hidden size={36} className="text-muted-foreground" />
           </div>
@@ -766,7 +766,7 @@ const DailyCheckin = () => {
         type="button"
         onClick={() => { hapticSelection(); setSickToday((v) => !v); }}
         className={cn(
-          "mt-2 mb-1 w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.99]",
+          "press mt-2 mb-1 w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[transform,background-color,border-color,box-shadow,color] ",
           sickToday ? "border-teal/45 bg-teal/[0.08]" : "border-border/50 bg-card/40",
         )}
         aria-pressed={sickToday}
@@ -810,7 +810,7 @@ const DailyCheckin = () => {
 
       {/* First-run onboarding — make personalization obvious (non-blocking). */}
       {showOnboard && (
-        <div className="mt-3 mb-4 rounded-2xl border border-gold/35 bg-gradient-to-b from-gold/10 to-gold/[0.03] p-4 text-center animate-reveal">
+        <div className="mt-3 mb-4 rounded-2xl border border-gold/35 bg-gradient-to-b from-gold/10 to-gold/[0.03] p-4 text-center home-rise">
           <Sparkles size={24} className="text-gold mx-auto mb-1" aria-hidden />
           <p className="font-display text-lg font-black tracking-tight">Make it yours</p>
           <p className="text-xs text-muted-foreground mt-1 mb-3 max-w-[280px] mx-auto">
@@ -927,7 +927,7 @@ const DailyCheckin = () => {
               aria-pressed={Boolean(workout) && !isRestDay}
               onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
               className={cn(
-                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97] inline-flex items-center justify-center gap-1.5",
+                "press rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] inline-flex items-center justify-center gap-1.5",
                 workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
               )}
             >
@@ -938,7 +938,7 @@ const DailyCheckin = () => {
               aria-pressed={isRestDay}
               onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
               className={cn(
-                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
+                "press rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] ",
                 isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
               )}
             >
@@ -961,7 +961,7 @@ const DailyCheckin = () => {
                     aria-pressed={sportCategory === sport.id}
                     onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                     className={cn(
-                      "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
+                      "press flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 ",
                       sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                     )}
                   >
@@ -1011,7 +1011,7 @@ const DailyCheckin = () => {
                     aria-pressed={sportCategory === sport.id}
                     onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
                     className={cn(
-                      "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
+                      "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 ",
                       sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                     )}
                   >
@@ -1046,7 +1046,7 @@ const DailyCheckin = () => {
                         aria-pressed={sportCategory === sport.id}
                     onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                         className={cn(
-                          "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
+                          "press flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 ",
                           sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                         )}
                       >
@@ -1114,7 +1114,7 @@ const DailyCheckin = () => {
       <div className="mt-1 mb-4">
         <button
           onClick={() => { hapticSelection(); setMoreOpen((o) => !o); }}
-          className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left active:scale-[0.99]"
+          className="press w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left "
         >
           <span className="text-sm font-semibold flex items-center gap-2">
             <Plus aria-hidden size={16} className="text-gold" />
@@ -1148,7 +1148,7 @@ const DailyCheckin = () => {
 
           {/* Proof photo — available to everyone (all app users are paid) */}
           <div>
-            <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
+            <label className="press flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors cursor-pointer">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera aria-hidden size={20} /></div>
               <div className="text-left flex-1">
                 <p className="font-semibold text-sm">Add proof photo</p>
@@ -1194,7 +1194,7 @@ const DailyCheckin = () => {
             aria-checked={honest === true}
             onClick={() => { hapticSelection(); setHonest(true); }}
             className={cn(
-              "flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
+              "press flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] ",
               honest === true
                 ? "border-gold/50 bg-gold/12 text-gold shadow-[0_0_14px_-4px_hsl(var(--gold)/0.5)]"
                 : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
@@ -1206,7 +1206,7 @@ const DailyCheckin = () => {
             aria-checked={honest === false}
             onClick={() => { hapticSelection(); setHonest(false); }}
             className={cn(
-              "flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
+              "press flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] ",
               honest === false
                 ? "border-destructive/50 bg-destructive/12 text-destructive"
                 : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",

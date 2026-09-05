@@ -123,7 +123,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
       <button
         onClick={() => onAsk ? onAsk(`Help me improve my ${pillarMeta.name.toLowerCase()} this week — one concrete change.`) : navigate("/coach")}
         className={cn(
-          "mt-4 w-full flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 transition-colors active:scale-[0.98]",
+          "mt-4 w-full flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 transition-colors ",
           pillarMeta.tint.border,
           "bg-card/40 hover:bg-card/70",
         )}

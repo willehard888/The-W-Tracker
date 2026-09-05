@@ -46,7 +46,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
           <button
             type="button"
             onClick={() => navigate(`/user/${data.above!.user_id}`)}
-            className="w-full flex items-center gap-3 surface-card p-2.5 active:scale-[0.99] transition-transform"
+            className="press w-full flex items-center gap-3 surface-card p-2.5 transition-transform"
           >
             <StatusAvatar
               src={data.above.avatar_url}
@@ -76,7 +76,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
             type="button"
             onClick={() => navigate(`/user/${data.below!.user_id}`)}
             className={cn(
-              "w-full flex items-center gap-3 rounded-xl border p-2.5 active:scale-[0.99] transition-transform",
+              "press w-full flex items-center gap-3 rounded-xl border p-2.5 transition-transform",
               heatBelow
                 ? "border-destructive/40 bg-destructive/5 shadow-[0_0_18px_hsl(var(--destructive)/0.2)]"
                 : "border-border/40 bg-card/40",

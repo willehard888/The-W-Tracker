@@ -28,7 +28,7 @@ const CoachMemoryScreen = () => {
     <div className="min-h-full">
       <PageBar title="Coach memory" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6 space-y-3">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-3">
         <p className="text-xs text-muted-foreground">
           Facts the Coach remembers about you. Capped at 30. Edit, delete, or add anything you want it to know.
         </p>

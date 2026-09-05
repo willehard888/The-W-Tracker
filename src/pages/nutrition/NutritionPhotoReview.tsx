@@ -344,7 +344,7 @@ const NutritionPhotoReview = () => {
   let body: ReactNode;
   if (!file) {
     body = (
-      <div className="animate-reveal pt-6">
+      <div className="home-rise pt-6">
         <EmptyState icon={Camera} title="Scan a meal" description="Point at the plate. You confirm every item before anything is saved." action={fileInput("Take or choose a photo")} />
         <Button variant="ghost" className="w-full mt-3 min-h-11" onClick={manual}>
           Log manually instead
@@ -353,7 +353,7 @@ const NutritionPhotoReview = () => {
     );
   } else if (status === "preparing" || status === "analyzing") {
     body = (
-      <div className="animate-reveal space-y-4">
+      <div className="home-rise space-y-4">
         {photo(
           <div
             aria-hidden
@@ -373,7 +373,7 @@ const NutritionPhotoReview = () => {
   } else if (status === "error" && failure) {
     const copy = FAILURE_COPY[failure.reason];
     body = (
-      <div className="animate-reveal space-y-4">
+      <div className="home-rise space-y-4">
         {photo(<div className="absolute inset-0 bg-background/55" aria-hidden />)}
         <div role="alert">
           <p className="font-display font-black text-[22px] leading-tight tracking-tight">{copy.title}</p>
@@ -407,7 +407,7 @@ const NutritionPhotoReview = () => {
     const basis = label.per_basis === "100ml" ? "Per 100 ml" : label.per_basis === "serving" ? `Per serving${label.serving_label ? ` (${label.serving_label})` : ""}` : "Per 100 g";
     const rows = LABEL_KEYS.filter((k) => label.values[k] != null).map((k) => [LABEL_NAMES[k], `${label.values[k]} ${k === "kcal" ? "kcal" : "g"}`] as const);
     body = (
-      <div className="animate-reveal space-y-4">
+      <div className="home-rise space-y-4">
         {photo()}
         <div role="status">
           <p className="font-display font-black text-[22px] leading-tight tracking-tight">Read from the label — nothing saved yet.</p>
@@ -440,7 +440,7 @@ const NutritionPhotoReview = () => {
     );
   } else if (status === "done" && result?.not_food) {
     body = (
-      <div className="animate-reveal space-y-4">
+      <div className="home-rise space-y-4">
         {photo(<div className="absolute inset-0 bg-background/55" aria-hidden />)}
         <div role="status">
           <p className="font-display font-black text-[22px] leading-tight tracking-tight">No food found in this photo.</p>
@@ -460,7 +460,7 @@ const NutritionPhotoReview = () => {
     const pct = Math.round(result.overall_confidence * 100);
     body = (
       <div className="space-y-6">
-        <div className="animate-reveal">
+        <div className="home-rise">
           {photo(
             <span className="eyebrow absolute left-3 bottom-3 inline-flex items-center rounded-full border border-border/60 bg-background/80 backdrop-blur-sm px-2.5 py-1 tabular-nums">
               Estimated · {pct} % confident
@@ -477,7 +477,7 @@ const NutritionPhotoReview = () => {
           {result.scene_notes && <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{result.scene_notes}</p>}
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <div className="divide-y divide-border/35">
             {items.map((i) => (
               <DetectedItemRow key={i.id} item={i} onGramsChange={onGramsChange} onCountChange={onCountChange} onPickCandidate={onPickCandidate} onReplace={(id) => setPicker({ itemId: id })} onRemove={onRemove} />
@@ -488,12 +488,12 @@ const NutritionPhotoReview = () => {
           </Button>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-2">
+        <div className="home-rise home-rise-2">
           <p className="text-[12px] font-bold text-muted-foreground mb-2">This meal</p>
           <NutrientPreview nutrition={totals} dim={items.length === 0} note={unresolved > 0 ? "Totals leave out items without a match." : null} />
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-3 space-y-4">
+        <div className="home-rise home-rise-3 space-y-4">
           <div>
             <p className="text-[12px] font-bold text-muted-foreground mb-1.5">Meal</p>
             <div className={SEGMENT_TRACK} role="group" aria-label="Meal slot">
@@ -506,7 +506,7 @@ const NutritionPhotoReview = () => {
                     hapticSelection();
                     setSlot(s.key);
                   }}
-                  className={cn("flex-1 h-11 rounded-lg text-[12px] font-black transition-all active:scale-[0.97]", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-all ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>
@@ -528,7 +528,7 @@ const NutritionPhotoReview = () => {
     );
   } else {
     body = (
-      <div className="animate-reveal space-y-4">
+      <div className="home-rise space-y-4">
         {photo()}
         <p className="text-[12px] text-muted-foreground leading-snug">A fork or your hand next to the plate, shot from about 45°, makes the portions far more accurate.</p>
         <input
@@ -549,7 +549,7 @@ const NutritionPhotoReview = () => {
                 type="button"
                 aria-pressed={plateCm === cm}
                 onClick={() => void choosePlate(cm)}
-                className={cn("flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-all active:scale-[0.97]", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-all ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {PLATE_LABEL[cm]} {cm}
               </button>

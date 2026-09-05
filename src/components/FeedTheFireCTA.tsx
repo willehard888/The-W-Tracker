@@ -56,7 +56,7 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
       onClick={() => navigate("/checkin")}
       className={cn(
         "relative w-full rounded-xl p-3 mb-4 border flex items-center gap-3 text-left",
-        "transition-transform active:scale-[0.99]",
+        "transition-transform ",
         className,
       )}
       style={{

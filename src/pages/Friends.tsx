@@ -96,7 +96,7 @@ const Friends = () => {
         }
       />
 
-      <div className="px-4 pt-4 pb-6 space-y-5">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-5">
         {/* Search / add */}
         <div>
           <div className="relative">

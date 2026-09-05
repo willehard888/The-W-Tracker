@@ -472,7 +472,7 @@ const Profile = () => {
           {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton-block h-[62px] rounded-2xl" />)}
         </div>
       ) : (
-      <div className="grid grid-cols-2 gap-2 animate-reveal animate-reveal-delay-1">
+      <div className="grid grid-cols-2 gap-2 home-rise home-rise-1">
         {[
           { icon: CalendarCheck, label: "Check-ins", value: checkinTotal ?? 0, accent: "text-gold" },
           { icon: Flame, label: "Best streak", value: `${profile.longest_streak ?? 0}d`, accent: "text-[hsl(var(--ember))]" },
@@ -501,7 +501,7 @@ const Profile = () => {
           <button
             type="button"
             onClick={() => navigate("/journey")}
-            className="w-full text-left surface-card p-4 flex items-center gap-4 animate-reveal animate-reveal-delay-1 active:scale-[0.99] transition-transform"
+            className="w-full text-left surface-card p-4 flex items-center gap-4 home-rise home-rise-1 transition-transform"
           >
             <div className="shrink-0">
               <p className="font-display font-black text-3xl leading-none text-gold tabular-nums">{latest.overall}</p>
@@ -526,7 +526,7 @@ const Profile = () => {
 
       {/* Rank Position */}
       {rankData && (
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <RankPressureCard
             tier={tier}
             rank={rankData.rank}
@@ -539,66 +539,66 @@ const Profile = () => {
       )}
 
       {/* Live Rivals — who's ahead, who's behind */}
-      <div className="animate-reveal animate-reveal-delay-1">
+      <div className="home-rise home-rise-1">
         <LiveRivals userId={profile.user_id} myScore={Number(profile.rank_score) || 0} />
       </div>
 
       {/* Your Journey — the growth mirror: trends + reflection diary */}
-      <div className="animate-reveal animate-reveal-delay-2">
+      <div className="home-rise home-rise-2">
         <JourneyCard />
       </div>
 
       {/* Strength progression — PRs + climbing lifts this week */}
-      <div className="animate-reveal animate-reveal-delay-2">
+      <div className="home-rise home-rise-2">
         <ProgressionSummaryCard />
       </div>
 
       {/* Recovery — last night's sleep + heart rate, causal "why" via coach */}
-      <div className="animate-reveal animate-reveal-delay-2">
+      <div className="home-rise home-rise-2">
         <RecoveryCard />
       </div>
 
       {/* Your Blueprint — Coach's read of who you are. Renders null when
           the user hasn't completed AthleteProfileOnboarding yet. */}
-      <div className="animate-reveal animate-reveal-delay-2">
+      <div className="home-rise home-rise-2">
         <ErrorBoundary fallback={<></>}>
           <YourBlueprintCard />
         </ErrorBoundary>
       </div>
 
       {/* Coach voice: one-line read of the week through Coach's eyes. */}
-      <div className="animate-reveal animate-reveal-delay-2">
+      <div className="home-rise home-rise-2">
         <ErrorBoundary fallback={<></>}>
           <ProfileCoachLine />
         </ErrorBoundary>
       </div>
 
       {/* Tier Ladder — full progression map */}
-      <div className="animate-reveal animate-reveal-delay-3">
+      <div className="home-rise home-rise-3">
         <TierLadder currentTier={profile.status_tier || "recruit"} />
       </div>
 
       {/* Road to Elite — earned-status progress (moved here from Settings) */}
-      <div className="animate-reveal animate-reveal-delay-3">
+      <div className="home-rise home-rise-3">
         <RoadToElite />
       </div>
 
       {/* Verified Performer — connect HealthKit to earn unfakeable status.
           Self-hides on non-iOS / when probing (component handles it). */}
-      <div className="animate-reveal animate-reveal-delay-3">
+      <div className="home-rise home-rise-3">
         <HealthKitConnectCard />
       </div>
 
       {/* Weekly Sleep — recovery context / XP multiplier (moved here from Settings) */}
       {weeklySleep && (
-        <div className="animate-reveal animate-reveal-delay-3">
+        <div className="home-rise home-rise-3">
           <WeeklySleepCard data={weeklySleep} />
         </div>
       )}
 
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-4">
+        <div className="home-rise home-rise-4">
           <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPostsTotal})</h2>
           <div className="space-y-3">
             {userPosts.map((post) => (
@@ -625,7 +625,7 @@ const Profile = () => {
       {/* ─────────────────────── BADGES TAB ─────────────────────── */}
       {profileTab === "badges" && (
         <div className="space-y-3">
-          <div className="animate-reveal animate-reveal-delay-1">
+          <div className="home-rise home-rise-1">
             <BadgeVault
               allBadges={allBadges || []}
               earnedBadgeIds={earnedBadgeIds || []}
@@ -644,7 +644,7 @@ const Profile = () => {
 
           {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
           {isElite && (
-            <div className="animate-reveal animate-reveal-delay-1 surface-card p-3 flex items-center gap-3">
+            <div className="home-rise home-rise-1 surface-card p-3 flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-xp-green/10 border border-xp-green/30 flex items-center justify-center shrink-0">
                 <CreditCard aria-hidden size={14} className="text-xp-green" />
               </div>
@@ -702,7 +702,7 @@ const Profile = () => {
           </SettingsGroup>
 
           {/* Account actions — destructive looks destructive */}
-          <div className="flex gap-2 pt-2 animate-reveal animate-reveal-delay-1">
+          <div className="flex gap-2 pt-2 home-rise home-rise-1">
             <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
               <LogOut aria-hidden size={14} />
               Sign Out

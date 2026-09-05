@@ -33,7 +33,7 @@ const BadgeShowcase = ({ badges, onBadgeClick, className, totalEarned }: BadgeSh
           key={badge.id}
           type="button"
           onClick={() => onBadgeClick?.(badge)}
-          className="relative cursor-pointer transition-transform duration-300 hover:scale-110 active:scale-95"
+          className="press relative cursor-pointer transition-transform duration-300 hover:scale-110 "
           style={{ animation: `float-subtle 3.5s ease-in-out ${idx * 200}ms infinite` }}
           aria-label={`${badge.name} badge`}
         >

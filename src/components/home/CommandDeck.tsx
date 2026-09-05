@@ -151,7 +151,7 @@ const CommandDeck = ({
           lockTimer.current = setTimeout(() => navigate("/checkin"), 150);
         }}
         className={cn(
-          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.99]",
+          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 ",
           locking && "cta-locking",
         )}
         style={{

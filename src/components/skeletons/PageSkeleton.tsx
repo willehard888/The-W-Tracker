@@ -127,6 +127,29 @@ export const CoachSkeleton = () => (
   </div>
 );
 
+/** Pushed screen: the 44 pt PageBar row, then a detail-shaped body. */
+export const SubPageSkeleton = () => (
+  <div className="animate-fade-in">
+    <div className="h-11 safe-top" />
+    <div className="px-4 pt-4 pb-8">
+      <DetailSkeleton />
+    </div>
+  </div>
+);
+
+/** Settings / memory / notifications: the PageBar row, then grouped rows. */
+export const SettingsSkeleton = () => (
+  <div className="animate-fade-in">
+    <div className="h-11 safe-top" />
+    <div className="px-4 pt-4 pb-8 space-y-2">
+      <Block height={12} className="w-24 !rounded-md" />
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Block key={i} height={56} delay={i * 40} />
+      ))}
+    </div>
+  </div>
+);
+
 export const ListSkeleton = () => (
   <div className="px-4 pt-4 pb-8 space-y-2 animate-fade-in">
     {Array.from({ length: 7 }).map((_, i) => (

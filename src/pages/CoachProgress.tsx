@@ -41,7 +41,7 @@ const CoachProgress = () => {
     <div className="min-h-full">
       <PageBar title="Progress" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6 space-y-4">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-4">
         {/* Top summary — never blank, always computed from local data */}
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -77,7 +77,7 @@ const CoachProgress = () => {
               <button
                 type="button"
                 onClick={() => navigate("/coach/program")}
-                className="w-full rounded-2xl border border-dashed border-gold/30 bg-card/30 p-4 text-left hover:bg-gold/[0.04] transition-colors active:scale-[0.99]"
+                className="press w-full rounded-2xl border border-dashed border-gold/30 bg-card/30 p-4 text-left hover:bg-gold/[0.04] transition-colors "
               >
                 <p className="text-[12px] font-bold mb-0.5">Add a training program</p>
                 <p className="text-[11px] text-muted-foreground">
@@ -90,7 +90,7 @@ const CoachProgress = () => {
           <button
             type="button"
             onClick={() => navigate("/paywall")}
-            className="w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-card p-4 active:scale-[0.99] transition-transform"
+            className="press w-full text-left rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.06] to-card p-4 transition-transform"
           >
             <p className="eyebrow text-gold mb-1">
               AI Coach · Premium

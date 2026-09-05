@@ -1,3 +1,4 @@
+import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
 import { fmtInt } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -240,11 +241,7 @@ export default function AdminMetrics() {
   });
 
   if (isAdmin === null) {
-    return (
-      <div className="min-h-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
   if (!isAdmin) return <Navigate to="/" replace />;
 

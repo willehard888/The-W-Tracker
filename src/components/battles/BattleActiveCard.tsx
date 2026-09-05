@@ -135,7 +135,7 @@ const BattleActiveCard = ({
               <button
                 onClick={() => onRequestUpload(battle.id)}
                 disabled={isUploading}
-                className="w-full aspect-square rounded-lg border-2 border-dashed border-destructive/40 bg-destructive/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-destructive/10 active:scale-95 animate-pulse"
+                className="press w-full aspect-square rounded-lg border-2 border-dashed border-destructive/40 bg-destructive/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-destructive/10 animate-pulse"
               >
                 {isUploading ? (
                   <span className="text-[11px] text-muted-foreground animate-pulse">Uploading…</span>

@@ -611,7 +611,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         </div>
         <button
           onClick={() => navigate("/tribes/leaderboard")}
-          className="pb-2 inline-flex items-center gap-1 text-[12px] font-bold text-gold/85 active:scale-95 transition-transform"
+          className="press pb-2 inline-flex items-center gap-1 text-[12px] font-bold text-gold/85 transition-transform"
         >
           <Trophy aria-hidden size={11} /> Leaderboard <ChevronRight aria-hidden size={11} className="-ml-0.5" />
         </button>
@@ -656,7 +656,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             </div>
           </div>
           {openGroup && (
-            <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar animate-reveal">
+            <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar home-rise">
               <div className="flex gap-1.5 w-max">
                 {(TRIBE_ACTIVITY_GROUPS.find((g) => g.label === openGroup)?.items ?? []).map((a) => {
                   const active = activityFilter === a.name;
@@ -732,7 +732,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           <button
             type="button"
             onClick={() => navigate("/tribes/new")}
-            className="w-full py-3.5 inline-flex items-center justify-center gap-1.5 text-[13px] font-bold text-muted-foreground hover:text-gold active:scale-[0.98] transition-[color,transform]"
+            className="press w-full py-3.5 inline-flex items-center justify-center gap-1.5 text-[13px] font-bold text-muted-foreground hover:text-gold transition-[color,transform]"
           >
             <Plus aria-hidden size={14} /> Start your own tribe
           </button>

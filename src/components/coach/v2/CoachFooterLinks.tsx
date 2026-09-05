@@ -28,7 +28,7 @@ const CoachFooterLinks = () => {
           key={l.path}
           type="button"
           onClick={() => navigate(l.path)}
-          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors active:scale-[0.99] ${
+          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors ${
             i > 0 ? "border-t border-border/30" : ""
           }`}
         >

@@ -313,7 +313,7 @@ const PremiumHero = ({
         {status === "error" && errorMessage && (
           <div
             role="alert"
-            className="mb-3 rounded-xl border border-destructive/50 bg-destructive/10 px-3.5 py-2.5 animate-reveal"
+            className="mb-3 rounded-xl border border-destructive/50 bg-destructive/10 px-3.5 py-2.5 home-rise"
           >
             <p className="eyebrow text-destructive mb-0.5">
               Purchase failed

@@ -240,7 +240,7 @@ const Leaderboard = () => {
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
       
 
-      <div className="animate-reveal mb-4 relative">
+      <div className="home-rise mb-4 relative">
         <div className="absolute -inset-x-8 -top-6 -bottom-6 pointer-events-none -z-10"
              style={{
                background:
@@ -276,7 +276,7 @@ const Leaderboard = () => {
       </div>
 
       {/* Season banner */}
-      <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-4 glow-gold-sm">
+      <div className="home-rise home-rise-1 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-4 glow-gold-sm">
         <div
           /* !absolute: .glass-3d > * forces children position:relative, which
              pulled this decorative glow into flow and left a 128px void above
@@ -310,7 +310,7 @@ const Leaderboard = () => {
 
 
       {profile && (
-        <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-5 glow-gold-sm">
+        <div className="home-rise home-rise-2 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-5 glow-gold-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
@@ -352,7 +352,7 @@ const Leaderboard = () => {
 
       {/* Podium — top 3, hero treatment */}
       {currentLeaders.length >= 1 && (
-        <div className="relative mb-5 animate-reveal animate-reveal-delay-2">
+        <div className="relative mb-5 home-rise home-rise-2">
           {/* Spotlight glow behind #1 */}
           <div
             className="absolute left-1/2 -translate-x-1/2 top-0 w-56 h-56 pointer-events-none -z-10 opacity-70"
@@ -408,7 +408,7 @@ const Leaderboard = () => {
           below the podium, so a sparse/first-run board never shows an orphan
           header. A truly empty board gets a proper empty state instead. */}
       {currentLeaders.length > 3 && (
-      <div className="mt-4 animate-reveal animate-reveal-delay-3">
+      <div className="mt-4 home-rise home-rise-3">
         <div className="flex items-center gap-2 mb-3 px-1">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
           <p className="eyebrow">The Chase</p>
@@ -434,7 +434,7 @@ const Leaderboard = () => {
                     : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }
                 }
                 className={cn(
-                  "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all active:scale-[0.99]",
+                  "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all ",
                   // The board landed as one solid block, while its own loading
                   // skeleton staggered — the real content arrived flatter than
                   // the placeholder it replaced. Only the first screenful
@@ -511,7 +511,7 @@ const Leaderboard = () => {
           Gated on the ACTIVE mode's loading state so a cold cache doesn't flash
           "the board is warming up" for ~500ms before data lands. */}
       {currentLeaders.length === 0 && !(mode === "season" ? seasonLoading || !activeSeason : allTimeLoading) && (
-        <div className="mt-4 animate-reveal animate-reveal-delay-3">
+        <div className="mt-4 home-rise home-rise-3">
           <EmptyState
             icon={Trophy}
             title="The board is warming up"
@@ -526,7 +526,7 @@ const Leaderboard = () => {
           come first — this used to push the podium a full card down. */}
       <button
         onClick={() => navigate("/battles")}
-        className="animate-reveal mt-4 w-full text-left surface-card p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
+        className="home-rise mt-4 w-full text-left surface-card p-3.5 flex items-center gap-3 transition-transform"
       >
         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[hsl(var(--ember))] to-[hsl(var(--ember-dark))] flex items-center justify-center shrink-0">
           <Swords aria-hidden size={18} className="text-white" strokeWidth={2.4} />
@@ -546,7 +546,7 @@ const Leaderboard = () => {
       </MoreSection>
 
       {championData?.recent?.length ? (
-        <div className="mt-6 rounded-xl border border-border glass-3d p-4 animate-reveal animate-reveal-delay-3">
+        <div className="mt-6 rounded-xl border border-border glass-3d p-4 home-rise home-rise-3">
           <div className="flex items-center gap-2 mb-3">
             <Trophy aria-hidden size={16} className="text-gold" />
             <h2 className="font-display font-bold text-base">Hall of Champions</h2>
@@ -590,7 +590,7 @@ const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCar
     <button
       onClick={onClick}
       className={cn(
-        "relative rounded-2xl border overflow-visible flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
+        "relative rounded-2xl border overflow-visible flex flex-col items-center px-2 text-center transition-transform ",
         heightClass,
         accent,
         isMe && "ring-2 ring-gold/60",
@@ -682,7 +682,7 @@ interface ModeTabsProps {
 const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
   const isSeason = mode === "season";
   return (
-    <div className="animate-reveal animate-reveal-delay-1 mb-4">
+    <div className="home-rise home-rise-1 mb-4">
       <div
         className="relative grid grid-cols-2 rounded-full border border-gold/30 bg-card/70 backdrop-blur-md p-1 shadow-[0_8px_24px_-12px_hsl(var(--gold)/0.35)]"
         role="tablist"
@@ -703,7 +703,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={isSeason}
           onClick={() => onChange("season")}
           className={cn(
-            "eyebrow relative z-10 py-2 min-h-11 font-display transition-colors active:scale-[0.97]",
+            "eyebrow relative z-10 py-2 min-h-11 font-display transition-colors ",
             isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -717,7 +717,7 @@ const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
           aria-selected={!isSeason}
           onClick={() => onChange("all_time")}
           className={cn(
-            "eyebrow relative z-10 py-2 min-h-11 font-display transition-colors active:scale-[0.97]",
+            "press eyebrow relative z-10 py-2 min-h-11 font-display transition-colors ",
             !isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >

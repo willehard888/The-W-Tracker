@@ -77,7 +77,7 @@ const CoachStrip = (_props: CoachStripProps) => {
     // hiding the coach's actual line. The content reads itself in order.
     <button
       onClick={() => navigate("/coach")}
-      className="w-full surface-card surface-card-quiet px-4 py-3.5 text-left active:scale-[0.99] transition-transform overflow-hidden group"
+      className="w-full surface-card surface-card-quiet px-4 py-3.5 text-left transition-transform overflow-hidden group"
     >
       <div className="relative">
         <div className="flex items-center gap-1.5 mb-1.5">

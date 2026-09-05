@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
-import { Portal } from "@/components/ui/Portal";
-import { X, Search, Flame, ChevronRight, UserPlus } from "lucide-react";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
+import { Search, Flame, ChevronRight, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFriends, type Friend } from "@/hooks/use-friends";
 import { cn } from "@/lib/utils";
@@ -32,32 +32,9 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
       .filter((f) => f.username?.toLowerCase().includes(q.trim().toLowerCase()));
   }, [friends, excludeIds, q]);
 
-  if (!open) return null;
-
   return (
-    <Portal>
-    <div className="fixed inset-0 z-[var(--z-celebration)] flex flex-col justify-end">
-      <button
-        aria-label="Close"
-        onClick={() => onOpenChange(false)}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in"
-      />
-      <div className="relative z-10 mx-auto w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card max-h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-200">
-        <div className="flex items-start gap-3 p-4 pb-3 border-b border-border/40">
-          <div className="flex-1 min-w-0">
-            <h2 className="font-display text-base font-black tracking-tight">{title}</h2>
-            {subtitle && <p className="text-[12px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
-          </div>
-          <button
-            aria-label="Close"
-            onClick={() => onOpenChange(false)}
-            className="h-8 w-8 min-h-11 min-w-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="p-4 pb-2">
+    <BottomSheet open={open} onClose={() => onOpenChange(false)} label={title} title={title} subtitle={subtitle}>
+        <div className="pt-1 pb-2">
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -69,7 +46,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-1.5">
+        <div className="space-y-1.5">
           {isLoading ? (
             <div className="h-16 rounded-xl bg-card/60 animate-pulse" />
           ) : list.length === 0 ? (
@@ -97,7 +74,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 key={f.user_id}
                 disabled={busyId === f.user_id}
                 onClick={() => onPick(f)}
-                className="w-full flex items-center gap-3 surface-card p-2.5 text-left active:scale-[0.99] transition-transform disabled:opacity-50"
+                className="press w-full flex items-center gap-3 surface-card p-2.5 text-left transition-transform disabled:opacity-50"
               >
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center text-[13px] font-black text-gold shrink-0">
                   {f.avatar_url ? (
@@ -126,9 +103,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
             ))
           )}
         </div>
-      </div>
-    </div>
-    </Portal>
+    </BottomSheet>
   );
 };
 

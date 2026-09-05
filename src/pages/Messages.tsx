@@ -149,7 +149,7 @@ const Messages = () => {
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
 
       {/* Search */}
-      <div className="animate-reveal mb-4">
+      <div className="home-rise mb-4">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
           <Input
@@ -168,7 +168,7 @@ const Messages = () => {
 
       {/* Search Results */}
       {searchQuery.trim().length >= 2 && searchResults && searchResults.length > 0 && (
-        <div className="animate-reveal mb-4">
+        <div className="home-rise mb-4">
           <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
             <Search size={12} /> Results
           </p>
@@ -177,7 +177,7 @@ const Messages = () => {
               <button
                 key={u.user_id}
                 onClick={() => { setSearchQuery(""); navigate(`/chat/${u.user_id}`); }}
-                className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
+                className="press w-full flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all card-depth"
               >
                 <StatusAvatar src={u.avatar_url} name={u.username} tier={u.status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
@@ -197,7 +197,7 @@ const Messages = () => {
       )}
 
       {searchQuery.trim().length >= 2 && searchResults && searchResults.length === 0 && (
-        <div className="mb-4 animate-reveal">
+        <div className="mb-4 home-rise">
           <EmptyState
             size="compact"
             icon={SearchX}
@@ -209,7 +209,7 @@ const Messages = () => {
 
       {/* Pending Friend Requests */}
       {pendingRequests && pendingRequests.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-4">
+        <div className="home-rise home-rise-1 mb-4">
           <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
             <UserPlus size={12} /> Friend Requests
           </p>
@@ -249,7 +249,7 @@ const Messages = () => {
 
       {/* Friends Section */}
       {(friends && friends.length > 0) && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-4">
+        <div className="home-rise home-rise-1 mb-4">
           <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
             <UserCheck size={12} /> Friends
           </p>
@@ -264,7 +264,7 @@ const Messages = () => {
               <button
                 key={friend.user_id}
                 onClick={() => navigate(`/chat/${friend.user_id}`)}
-                className="w-full flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/15 bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
+                className="press w-full flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/15 bg-card p-4 text-left transition-all card-depth"
               >
                 <StatusAvatar src={friend.avatar_url} name={friend.username} tier={friend.status_tier || 'recruit'} size="sm" animated={false} />
                 <div className="flex-1 min-w-0">
@@ -299,7 +299,7 @@ const Messages = () => {
 
       {/* Other Conversations */}
       {otherConvos.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-2">
+        <div className="home-rise home-rise-2">
           {friends && friends.length > 0 && (
             <p className="eyebrow text-muted-foreground mb-2">Others</p>
           )}
@@ -312,7 +312,7 @@ const Messages = () => {
       )}
 
       {!isLoading && (!conversations || conversations.length === 0) && (!friends || friends.length === 0) && (
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <EmptyState
             icon={MessageCircle}
             title="No messages yet"
@@ -329,7 +329,7 @@ const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; user
   <button
     onClick={() => navigate(`/chat/${conv.partnerId}`)}
     className={cn(
-      "w-full flex items-center gap-3 rounded-xl border p-4 text-left transition-all active:scale-[0.98] card-depth",
+      "w-full flex items-center gap-3 rounded-xl border p-4 text-left transition-all card-depth",
       conv.unread > 0
         ? "border-gold/30 bg-gold/5"
         : isFriend

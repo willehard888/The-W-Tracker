@@ -375,7 +375,7 @@ const Battles = () => {
         }}
       />
 
-      <p className="animate-reveal mb-4 text-sm text-muted-foreground">Challenge others. Prove your discipline.</p>
+      <p className="home-rise mb-4 text-sm text-muted-foreground">Challenge others. Prove your discipline.</p>
 
       {/* One battles home: 1v1 | Tribes (tribe battles used to hide in a
           "More" drawer on the 1v1 page AND live on a separate tribe page). */}
@@ -396,7 +396,7 @@ const Battles = () => {
       ) : (
         <>
       {/* Create Battle CTA — one flow: pick a friend → the shared challenge modal */}
-      <div className="animate-reveal animate-reveal-delay-1 rounded-xl border border-gold/20 p-6 text-center mb-6 glass-3d depth-realistic">
+      <div className="home-rise home-rise-1 rounded-xl border border-gold/20 p-6 text-center mb-6 glass-3d depth-realistic">
         <div className="h-16 w-16 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4">
           <Swords size={30} className="text-primary-foreground" />
         </div>
@@ -426,7 +426,7 @@ const Battles = () => {
 
       {/* Incoming Challenges */}
       {pendingBattles.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-6">
+        <div className="home-rise home-rise-1 mb-6">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
             <UserPlus size={14} className="text-gold" />
             Incoming Challenges
@@ -448,7 +448,7 @@ const Battles = () => {
 
       {/* Active Battles */}
       {activeBattles.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-6">
+        <div className="home-rise home-rise-2 mb-6">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
             <Flame size={14} className="text-[hsl(var(--streak-orange))]" />
             Active Battles
@@ -497,7 +497,7 @@ const Battles = () => {
 
       {/* Pending (sent by me) */}
       {myPending.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-6">
+        <div className="home-rise home-rise-2 mb-6">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
             <Clock size={14} className="text-muted-foreground" />
             Awaiting Response
@@ -519,7 +519,7 @@ const Battles = () => {
           battle vanished from the page entirely for its participants (not
           active, not completed, and excluded from the community list). */}
       {myVotingBattles.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-6">
+        <div className="home-rise home-rise-2 mb-6">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
             <Vote size={14} className="text-gold" />
             Tie — Community Is Voting
@@ -547,7 +547,7 @@ const Battles = () => {
 
       {/* Community Voting — Tied Battles */}
       {(communityVotingBattles && communityVotingBattles.length > 0) && (
-        <div className="animate-reveal animate-reveal-delay-2 mb-6">
+        <div className="home-rise home-rise-2 mb-6">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
             <Vote size={14} className="text-gold" />
             Community Vote — Tied Battles
@@ -570,7 +570,7 @@ const Battles = () => {
 
       {/* Completed Battles */}
       {completedBattles.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-3">
+        <div className="home-rise home-rise-3">
           <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Battle History</h2>
           <div className="space-y-2">
             {completedBattles.map((battle: any) => (
@@ -594,7 +594,7 @@ const Battles = () => {
 
       {/* Empty state */}
       {!isLoading && (!battles || battles.length === 0) && !showCreate && (
-        <div className="animate-reveal animate-reveal-delay-2">
+        <div className="home-rise home-rise-2">
           <EmptyState
             icon={Swords}
             title="No battles yet"

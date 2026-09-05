@@ -38,7 +38,7 @@ const Squad = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="px-4 pt-3 pb-2">
+      <div className="home-rise px-4 pt-3 pb-2">
         <div ref={squadTargetRef} className={SEGMENT_TRACK}>
           {SUB.map((s) => (
             <button

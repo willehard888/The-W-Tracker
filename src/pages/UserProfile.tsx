@@ -479,7 +479,7 @@ const UserProfile = () => {
 
       {/* Champion History */}
       {championHistory && championHistory.wins > 0 && (
-        <div className="mb-6 animate-reveal animate-reveal-delay-1">
+        <div className="mb-6 home-rise home-rise-1">
           <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 glow-gold-sm">
             <div className="flex items-center gap-2 mb-3">
               <Medal size={18} className="text-gold" />
@@ -499,7 +499,7 @@ const UserProfile = () => {
       )}
 
       {/* Earned Badges */}
-      <div className="animate-reveal animate-reveal-delay-2">
+      <div className="home-rise home-rise-2">
         <h2 className="font-display font-bold text-sm mb-3 tracking-tight">
           Badges ({earnedBadges.length})
         </h2>

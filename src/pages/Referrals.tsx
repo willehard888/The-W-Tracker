@@ -83,7 +83,7 @@ const Referrals = () => {
       <PageBar title="Referrals" onBack={() => navigate(-1)} />
 
       <div className="px-4 pt-4 pb-6">
-      <div className="flex items-center gap-3 mb-6 animate-reveal">
+      <div className="flex items-center gap-3 mb-6 home-rise">
         <BrandLogo size={32} className="rounded-lg" alt="W" />
         <div>
           <h2 className="font-display text-2xl font-black tracking-tight">Recruit your way to Legend</h2>
@@ -92,7 +92,7 @@ const Referrals = () => {
       </div>
 
       {/* Hero invite — code + link + two primary share actions (precision) */}
-      <div className="animate-reveal animate-reveal-delay-1 surface-card p-5 mb-4">
+      <div className="home-rise home-rise-1 surface-card p-5 mb-4">
         <p className="eyebrow text-gold/80 mb-1">Your invite</p>
         <p className="text-[13px] text-muted-foreground leading-snug mb-4">
           Your friends get a <span className="text-foreground font-semibold">14-day free trial</span>. You get a <span className="text-gold font-semibold">free month for every 3</span> who go paid — no cap.
@@ -101,7 +101,7 @@ const Referrals = () => {
         {/* Big tappable code */}
         <button
           onClick={handleCopy}
-          className="w-full rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-3 mb-2 flex items-center gap-3 active:scale-[0.99] transition-transform"
+          className="press w-full rounded-xl border border-gold/30 bg-gold/[0.06] px-4 py-3 mb-2 flex items-center gap-3 transition-transform"
         >
           <div className="flex-1 min-w-0 text-left">
             <p className="eyebrow-sm text-gold/60 mb-0.5">Invite code</p>
@@ -124,7 +124,7 @@ const Referrals = () => {
       </div>
 
       {/* Next free month — the ONE progress that matters */}
-      <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/25 bg-card p-5 mb-6">
+      <div className="home-rise home-rise-2 relative overflow-hidden rounded-2xl border border-gold/25 bg-card p-5 mb-6">
         <div className="relative flex items-center gap-4">
           {/* Progress ring — this 3-friend cycle */}
           <div className="relative shrink-0" style={{ width: ringSize, height: ringSize }}>
@@ -184,7 +184,7 @@ const Referrals = () => {
       </div>
 
       {/* Stats — signups, paid, months earned */}
-      <div className="animate-reveal animate-reveal-delay-2 grid grid-cols-3 gap-2.5 mb-6">
+      <div className="home-rise home-rise-2 grid grid-cols-3 gap-2.5 mb-6">
         <div className="rounded-xl border border-border bg-card p-3 text-center">
           <Users size={18} className="text-gold mx-auto mb-1" />
           <p className="text-xl font-black font-display text-gold leading-none">{stats?.signupCount ?? 0}</p>
@@ -206,7 +206,7 @@ const Referrals = () => {
       {toNextMonth === 1 && (
         <button
           onClick={() => setShareCardOpen(true)}
-          className="animate-reveal w-full text-left mb-4 rounded-xl border border-gold/45 bg-gradient-to-r from-gold/[0.12] via-gold/[0.05] to-transparent p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
+          className="press home-rise w-full text-left mb-4 rounded-xl border border-gold/45 bg-gradient-to-r from-gold/[0.12] via-gold/[0.05] to-transparent p-3.5 flex items-center gap-3 transition-transform"
         >
           <Gift size={24} className="text-gold shrink-0" aria-hidden />
           <div className="flex-1 min-w-0">
@@ -221,7 +221,7 @@ const Referrals = () => {
 
       {/* Recent recruits — social proof + who hasn't converted yet */}
       {(recruits?.length ?? 0) > 0 && (
-        <div className="animate-reveal mb-6">
+        <div className="home-rise mb-6">
           <h2 className="font-display font-bold text-sm tracking-tight mb-3">Your recruits</h2>
           <div className="space-y-1.5">
             {recruits!.map((r, i) => (
@@ -251,7 +251,7 @@ const Referrals = () => {
       )}
 
       {/* How it works — 3 steps (trust + clarity) */}
-      <div className="animate-reveal animate-reveal-delay-3 mb-6">
+      <div className="home-rise home-rise-3 mb-6">
         <h2 className="font-display font-bold text-sm tracking-tight mb-3">How it works</h2>
         <div className="grid grid-cols-3 gap-2.5">
           {[
@@ -271,7 +271,7 @@ const Referrals = () => {
       </div>
 
       {/* Badge milestones — bragging rights, never credits or status */}
-      <div className="animate-reveal animate-reveal-delay-3">
+      <div className="home-rise home-rise-3">
         <div className="flex items-end justify-between mb-3">
           <h2 className="font-display font-bold text-sm tracking-tight">Badge milestones</h2>
           <p className="eyebrow text-gold/70">Paid friends</p>
@@ -321,7 +321,7 @@ const Referrals = () => {
       </div>
 
       {/* Top Inviters — social proof & competition */}
-      <div className="mt-6 animate-reveal animate-reveal-delay-4">
+      <div className="mt-6 home-rise home-rise-4">
         <TopInvitersWidget hideEmptyCta />
       </div>
 

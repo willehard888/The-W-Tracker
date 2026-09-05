@@ -105,7 +105,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
                 className={cn(
-                  "group relative w-full flex items-center gap-3 rounded-xl border p-3 text-left active:scale-[0.99] transition-all overflow-hidden",
+                  "group relative w-full flex items-center gap-3 rounded-xl border p-3 text-left transition-all overflow-hidden",
                   style.height,
                   style.base,
                   // Calm "current" treatment — static gold ring + glow, no shimmer

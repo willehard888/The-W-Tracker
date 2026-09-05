@@ -1,3 +1,4 @@
+import { Block } from "@/components/skeletons/PageSkeleton";
 import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
@@ -228,7 +229,7 @@ const Paywall = () => {
       )}
 
       {creditsActive && (
-        <div className="animate-reveal mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
+        <div className="home-rise mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
           <p className="text-xs font-bold text-gold tracking-wide">
             Free membership until {creditsUntilLabel}
           </p>
@@ -239,16 +240,16 @@ const Paywall = () => {
       )}
 
       {/* Header */}
-      <div className="text-center mb-4 mt-2 animate-reveal">
+      <div className="text-center mb-4 mt-2 home-rise">
         <BrandLogo size={isNative ? 56 : 64} priority className="mx-auto rounded-2xl glow-gold" />
       </div>
 
       {isNative && rcLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 size={24} className="animate-spin text-gold" />
+        <div className="home-rise home-rise-1">
+          <Block height={440} className="!rounded-3xl" />
         </div>
       ) : (
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <PremiumHero
             monthlyPriceLabel={monthlyLabel}
             yearlyPriceLabel={yearlyLabel}
@@ -274,7 +275,7 @@ const Paywall = () => {
       )}
 
       {/* Restore */}
-      <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
+      <div className="text-center mt-6 home-rise home-rise-3">
         <button
           onClick={handleRestore}
           className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"
@@ -285,7 +286,7 @@ const Paywall = () => {
 
       {/* Pilot testers redeem free access here instead of purchasing, so the
           paywall and the real store flow stay live during the pilot. */}
-      <div className="animate-reveal animate-reveal-delay-3">
+      <div className="home-rise home-rise-3">
         <PilotCodeRedeem />
       </div>
 

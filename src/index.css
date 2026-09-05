@@ -826,10 +826,6 @@
     opacity: 0.85;
   }
 
-  .animate-reveal {
-    animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
   /* COMMIT POP — the one shared "your choice landed" motion.
 
      The app had press feedback almost everywhere (active:scale on nearly
@@ -854,11 +850,6 @@
   @media (prefers-reduced-motion: reduce) {
     .commit-pop { animation: none; }
   }
-
-  .animate-reveal-delay-1 { animation-delay: 80ms; }
-  .animate-reveal-delay-2 { animation-delay: 160ms; }
-  .animate-reveal-delay-3 { animation-delay: 240ms; }
-  .animate-reveal-delay-4 { animation-delay: 320ms; }
 
   /* HOME ENTRANCE — the screen settling into place on open. One authored
      grammar for the first-viewport cascade: a short blur-rise, spring-eased,
@@ -1217,17 +1208,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .price-swap { animation: none; }
-}
-
-@keyframes reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
 }
 
 /* Home first-viewport entrance — blur-rise settle. Emil's blur-to-mask on
@@ -1755,23 +1735,6 @@
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* Reduce Motion for .animate-reveal — the OTHER entrance system.
-   .reveal-on-scroll is already handled further down, inside
-   `@media (pointer: coarse), (prefers-reduced-motion: reduce)`; note that OR
-   means it is switched off on every touch device, so its entrance only ever
-   plays on desktop.
-
-   .animate-reveal had no guard at all, and it is what animates the top of
-   Home — the status strip, the First-W card and the check-in deck — plus the
-   expanded "More" body. It animated for reduced-motion users.
-   (.animate-fade-in-up already has its own !important guard further down,
-   next to the stagger helpers — don't re-add it here.) */
-@media (prefers-reduced-motion: reduce) {
-  .animate-reveal {
-    animation: none;
-  }
 }
 
 /* === Realistic depth utility v2 — premium 3D card lift with side rims, contact shadow,
@@ -2557,13 +2520,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
-  .animate-scale-in-soft,
-  .animate-stagger-1,
-  .animate-stagger-2,
-  .animate-stagger-3,
-  .animate-stagger-4,
-  .animate-stagger-5,
-  .animate-stagger-6 {
+  .animate-scale-in-soft {
     animation: none !important;
   }
 }

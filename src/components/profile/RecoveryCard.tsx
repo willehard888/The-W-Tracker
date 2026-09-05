@@ -35,7 +35,7 @@ const RecoveryCard = () => {
       <button
         type="button"
         onClick={() => navigate("/coach")}
-        className="w-full text-left rounded-2xl border border-border/50 bg-card/50 p-4 active:scale-[0.99] transition-transform"
+        className="w-full text-left rounded-2xl border border-border/50 bg-card/50 p-4 transition-transform"
       >
         <div className="flex items-center gap-2 mb-1">
           <HeartPulse size={13} className="text-[hsl(var(--ember))]" />
@@ -185,7 +185,7 @@ const RecoveryCard = () => {
               type="button"
               onClick={() => toggleFactor(f)}
               className={cn(
-                "rounded-full px-2.5 py-1 text-[11px] font-bold border transition-all active:scale-95 capitalize",
+                "press rounded-full px-2.5 py-1 text-[11px] font-bold border transition-all capitalize",
                 on ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
               )}
             >
@@ -198,7 +198,7 @@ const RecoveryCard = () => {
       <button
         type="button"
         onClick={() => navigate("/coach")}
-        className="eyebrow w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/40 border border-border/50 py-2 text-gold/90 active:scale-[0.99] transition-transform"
+        className="eyebrow w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/40 border border-border/50 py-2 text-gold/90 transition-transform"
       >
         Ask coach why <ChevronRight size={13} />
       </button>

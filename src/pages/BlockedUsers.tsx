@@ -46,7 +46,7 @@ const BlockedUsers = () => {
     <div className="min-h-full">
       <PageBar title="Blocked users" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6">
+      <div className="home-rise px-4 pt-4 pb-6">
       {isLoading ? (
         <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="skeleton-block h-16 rounded-2xl" />)}</div>
       ) : !rows?.length ? (

@@ -168,7 +168,7 @@ const MyTribeBattles = () => {
         key={b.id}
         onClick={() => navigate(`/tribes/${myTribeId}/battles`)}
         className={cn(
-          "w-full text-left rounded-xl border p-3 transition-transform active:scale-[0.99]",
+          "w-full text-left rounded-xl border p-3 transition-transform ",
           b.status === "active" &&
             "border-[hsl(var(--ember))]/45 bg-gradient-to-br from-[hsl(var(--ember))]/[0.07] to-card/60 shadow-[0_0_18px_hsl(var(--ember)/0.12)]",
           b.status === "pending" && "border-gold/40 bg-gradient-to-br from-gold/[0.05] to-card/60",

@@ -274,7 +274,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleReaction(post.id)}
           aria-label={liked ? "Remove fire" : "Give fire"}
           className={cn(
-            "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
             liked
               ? "bg-streak-orange/15 text-streak-orange commit-pop"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -287,7 +287,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleComments(post.id)}
           aria-label="Toggle comments"
           className={cn(
-            "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
             isCommentsOpen
               ? "bg-gold/10 text-gold"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -311,7 +311,7 @@ const FeedPostCard = memo(function FeedPostCard({
             disabled={giveKudosPending}
             aria-label={hasGivenKudos ? "Remove kudos" : "Give kudos"}
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all active:scale-95",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
               hasGivenKudos
                 ? "bg-purple/15 text-purple ring-1 ring-purple/30 commit-pop"
                 : kudosRemaining > 0
@@ -436,7 +436,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   disabled={!commentText.trim() || addCommentPending}
                   aria-label={replyTo ? "Send reply" : "Send comment"}
                   className={cn(
-                    "h-9 w-9 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0",
+                    "h-9 w-9 rounded-full flex items-center justify-center transition-all shrink-0",
                     commentText.trim()
                       ? "gradient-gold text-primary-foreground glow-gold"
                       : "bg-secondary text-muted-foreground/75 cursor-not-allowed"

@@ -222,7 +222,7 @@ const BadgeVault = ({
           className={cn(
             "group w-full mb-4 p-3 rounded-2xl border relative overflow-hidden text-left glass-3d depth-realistic",
             "border-gold/25",
-            "transition-all duration-300 hover:border-gold/45 active:scale-[0.99]"
+            "transition-all duration-300 hover:border-gold/45 "
           )}
         >
           <div className="flex items-center gap-3">

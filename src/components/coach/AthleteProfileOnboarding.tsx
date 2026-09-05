@@ -307,7 +307,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                   type="button"
                   onClick={() => { hapticImpact("light"); toggle("equipment", p.id); }}
                   className={cn(
-                    "rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.97]",
+                    "press rounded-2xl border px-3 py-2.5 text-left transition-all ",
                     draft.equipment.includes(p.id)
                       ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)]"
                       : "surface-card hover:bg-card/60",

@@ -89,7 +89,7 @@ const ImageLightbox = ({
         <button
           onClick={onClose}
           aria-label="Close image"
-          className="h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors active:scale-95"
+          className="press h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
         >
           <X size={18} />
         </button>

@@ -66,7 +66,7 @@ const FoodResultRow = ({
             onToggleFavorite(food);
           }}
           className={cn(
-            "shrink-0 min-h-11 min-w-11 flex items-center justify-center active:scale-95 transition-transform",
+            "press shrink-0 min-h-11 min-w-11 flex items-center justify-center transition-transform",
             food.isFavorite ? "text-gold" : "text-muted-foreground/50",
           )}
         >

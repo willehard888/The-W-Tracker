@@ -133,7 +133,7 @@ const TribeLeaderboard = () => {
     <div className="min-h-full">
       <PageBar title="Tribe leaderboard" onBack={() => navigate("/squad?tab=tribes")} />
       {/* pb-32 clears this page's fixed "your tribe" footer. */}
-      <div className="px-4 pt-4 pb-32">
+      <div className="home-rise px-4 pt-4 pb-32">
       <p className="text-[13px] text-muted-foreground mb-4">
         {period === "weekly" ? "Ranked by XP earned this week" : "Ranked by all-time XP"}
       </p>

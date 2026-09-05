@@ -94,7 +94,7 @@ const TribeNew = () => {
     <div className="min-h-full">
       <PageBar title="Create a tribe" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-6">
+      <div className="home-rise px-4 pt-4 pb-6">
 
       {/* Live preview — the tribe takes shape as you type */}
       <div className="relative rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.09] via-card/95 to-card overflow-hidden mb-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)]">
@@ -242,7 +242,7 @@ const TribeNew = () => {
                 type="button"
                 onClick={() => setVisibility(o.v)}
                 className={cn(
-                  "rounded-xl border p-3 text-left transition-all active:scale-[0.98]",
+                  "press rounded-xl border p-3 text-left transition-all ",
                   visibility === o.v ? "border-gold/50 bg-gold/[0.07]" : "border-border/60 bg-card/40",
                 )}
               >

@@ -72,10 +72,10 @@ const BadgeCompare = () => {
       <PageBar title="Badge compare" onBack={() => navigate("/profile")} />
 
       <div className="px-4 pt-4 pb-6">
-      <p className="text-xs text-muted-foreground mb-4 animate-reveal">See how your collection stacks up</p>
+      <p className="text-xs text-muted-foreground mb-4 home-rise">See how your collection stacks up</p>
 
       {/* Search */}
-      <div className="relative mb-4 animate-reveal animate-reveal-delay-1">
+      <div className="relative mb-4 home-rise home-rise-1">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="text"
@@ -91,7 +91,7 @@ const BadgeCompare = () => {
 
       {/* Search Results */}
       {!selectedUser && users && users.length > 0 && (
-        <div className="mb-4 rounded-xl border border-border bg-card overflow-hidden animate-reveal">
+        <div className="mb-4 rounded-xl border border-border bg-card overflow-hidden home-rise">
           {users.map((u) => (
             <button
               key={u.user_id}
@@ -99,7 +99,7 @@ const BadgeCompare = () => {
                 setSelectedUser(u);
                 setSearchQuery(u.username);
               }}
-              className="flex items-center gap-3 w-full p-3 hover:bg-secondary/50 transition-colors text-left active:scale-[0.98] border-b border-border last:border-0"
+              className="press flex items-center gap-3 w-full p-3 hover:bg-secondary/50 transition-colors text-left border-b border-border last:border-0"
             >
               <div className="h-8 w-8 rounded-full bg-gold/10 flex items-center justify-center text-sm font-bold text-gold">
                 {u.username.charAt(0).toUpperCase()}
@@ -112,7 +112,7 @@ const BadgeCompare = () => {
 
       {/* Comparison */}
       {selectedUser && (
-        <div className="animate-reveal">
+        <div className="home-rise">
           {/* Score Header */}
           <div className="flex items-center justify-between mb-4 p-4 rounded-xl border border-border bg-card">
             <div className="text-center flex-1">
@@ -177,7 +177,7 @@ const BadgeCompare = () => {
 
       {/* Empty State */}
       {!selectedUser && (!users || users.length === 0) && (
-        <div className="flex flex-col items-center justify-center text-center mt-16 animate-reveal">
+        <div className="flex flex-col items-center justify-center text-center mt-16 home-rise">
           <Shield size={48} className="text-muted-foreground/30 mb-4" />
           <p className="text-sm text-muted-foreground">Search for a user to compare badges</p>
         </div>

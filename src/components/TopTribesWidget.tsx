@@ -48,7 +48,7 @@ const TopTribesWidget = () => {
     n >= 1000 ? `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1)}k` : `${n}`;
 
   return (
-    <div className="rounded-2xl border border-[hsl(var(--ember))]/30 bg-gradient-to-br from-[hsl(var(--ember))]/[0.06] via-card to-card p-4 animate-reveal animate-reveal-delay-3">
+    <div className="rounded-2xl border border-[hsl(var(--ember))]/30 bg-gradient-to-br from-[hsl(var(--ember))]/[0.06] via-card to-card p-4 home-rise home-rise-3">
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Crown size={15} className="text-[hsl(var(--ember))] shrink-0" />
@@ -97,7 +97,7 @@ const TopTribesWidget = () => {
               <button
                 key={r.tribe_id}
                 onClick={() => navigate(`/tribes/${r.tribe_id}`)}
-                className="w-full text-left flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 p-2.5 hover:border-[hsl(var(--ember))]/30 transition-colors active:scale-[0.99]"
+                className="press w-full text-left flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 p-2.5 hover:border-[hsl(var(--ember))]/30 transition-colors "
               >
                 <div
                   className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border"

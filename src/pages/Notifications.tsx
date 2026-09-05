@@ -169,7 +169,7 @@ const Notifications = () => {
       <div className="px-4 pt-4 pb-6">
       {/* ── Needs your response ── */}
       {actionCount > 0 && (
-        <div className="animate-reveal mb-6">
+        <div className="home-rise mb-6">
           <p className="eyebrow text-gold/85 mb-2 px-1">Needs your response · {actionCount}</p>
           <div className="surface-card divide-y divide-border/35 overflow-hidden">
             {(friendRequests ?? []).map((r) => (
@@ -261,7 +261,7 @@ const Notifications = () => {
                 key={n.id}
                 onClick={() => openNotification(n)}
                 className={cn(
-                  "w-full flex items-start gap-3 p-3 text-left rounded-xl border transition-colors active:scale-[0.99]",
+                  "press w-full flex items-start gap-3 p-3 text-left rounded-xl border transition-colors ",
                   isUnread ? "border-gold/25 bg-gold/[0.05]" : "border-border/50 bg-card/40",
                 )}
               >

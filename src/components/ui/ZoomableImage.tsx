@@ -1,3 +1,4 @@
+import { useScrollLock } from "@/contexts/ScrollContainerContext";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -47,12 +48,11 @@ const ZoomableImage = forwardRef<ZoomableImageHandle, ZoomableImageProps>(
 
     useImperativeHandle(ref, () => ({ zoomBy, reset }), []);
 
+    useScrollLock(true);
     useEffect(() => {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
       const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
       window.addEventListener("keydown", onKey);
-      return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+      return () => window.removeEventListener("keydown", onKey);
     }, [onClose]);
 
     const onTouchStart = (e: React.TouchEvent) => {

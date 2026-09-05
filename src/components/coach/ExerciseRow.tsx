@@ -239,7 +239,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                       key={c.label}
                       type="button"
                       onClick={() => fill(c.w, last.reps ?? null)}
-                      className="rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-[11px] font-bold text-gold active:scale-95 transition-transform"
+                      className="press rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-[11px] font-bold text-gold transition-transform"
                     >
                       {c.label}
                     </button>
@@ -277,7 +277,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                   type="button"
                   onClick={save}
                   disabled={logSet.isPending}
-                  className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-2 text-[12px] font-black text-primary-foreground disabled:opacity-60 active:scale-95 transition-transform"
+                  className="press shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-2 text-[12px] font-black text-primary-foreground disabled:opacity-60 transition-transform"
                 >
                   {logSet.isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
                   {logged ? "Update" : "Save"}

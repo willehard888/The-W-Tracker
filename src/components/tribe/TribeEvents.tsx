@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video, Layers, ChevronDown } from "lucide-react";
-import { Portal } from "@/components/ui/Portal";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { format, isToday, isTomorrow } from "date-fns";
@@ -499,22 +499,18 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
   const sessionCount = sessions.filter((s) => s.trim()).length;
 
   return (
-    <Portal>
-    <div className="fixed inset-0 z-[var(--z-celebration)] flex flex-col justify-end">
-      <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div className="relative z-10 mx-auto w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card max-h-[88vh] overflow-y-auto p-4 pb-8 animate-in slide-in-from-bottom duration-200">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display text-base font-black tracking-tight">Host a meetup</h2>
-          <Button
-            variant="secondary"
-            size="icon-sm"
-            className="min-h-11 min-w-11 rounded-full text-muted-foreground"
-            aria-label="Close"
-            onClick={onClose}
-          >
-            <X size={16} />
-          </Button>
-        </div>
+    <BottomSheet
+      open
+      onClose={onClose}
+      label="Host a meetup"
+      title="Host a meetup"
+      footer={
+        <Button variant="ember" size="lg" className="w-full" loading={busy} onClick={submit}>
+          {kind === "series" ? `Post series${sessionCount ? ` · ${sessionCount} session${sessionCount === 1 ? "" : "s"}` : ""}` : "Post meetup"}
+        </Button>
+      }
+    >
+      <div className="pt-1">
 
         {/* Single event vs multi-session series. Selected state is gold-outline
             everywhere on this surface — same language as the RSVP row and the
@@ -630,17 +626,9 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
             )}
           </div>
           <textarea value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={280} placeholder="Details (optional)" rows={2} className={cn(field, "resize-none")} />
-          {/* The sheet's one primary action, at the size the ember treatment was
-              drawn for. It was a flat full-width bg-gold slab — the largest
-              untreated surface in the tribe screens, and the loudest thing
-              reading as unfinished next to the system's machined buttons. */}
-          <Button variant="ember" size="lg" className="w-full" loading={busy} onClick={submit}>
-            {kind === "series" ? `Post series${sessionCount ? ` · ${sessionCount} session${sessionCount === 1 ? "" : "s"}` : ""}` : "Post meetup"}
-          </Button>
         </div>
       </div>
-    </div>
-    </Portal>
+    </BottomSheet>
   );
 };
 

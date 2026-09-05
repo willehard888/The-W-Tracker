@@ -176,7 +176,7 @@ const Vault = () => {
 
       <div className="px-4 pt-4 pb-6">
       {/* Hero — clean & precise (calm canvas, one gold accent, sharp type) */}
-      <div className="relative mb-5 animate-reveal animate-reveal-delay-1 surface-card px-5 pt-7 pb-5 text-center">
+      <div className="relative mb-5 home-rise home-rise-1 surface-card px-5 pt-7 pb-5 text-center">
         <div className="mx-auto mb-3 h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_6px_20px_-6px_hsl(var(--gold)/0.5)]">
           <Sparkles size={26} className="text-background" strokeWidth={2.4} />
         </div>
@@ -209,7 +209,7 @@ const Vault = () => {
       </div>
 
       {/* Banner — calm, single hairline */}
-      <div className="mb-5 surface-card px-4 py-3 animate-reveal animate-reveal-delay-2 flex items-start gap-3">
+      <div className="mb-5 surface-card px-4 py-3 home-rise home-rise-2 flex items-start gap-3">
         <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/30">
           <Flame size={15} className="text-gold" strokeWidth={2.4} />
         </div>
@@ -225,7 +225,7 @@ const Vault = () => {
       </div>
 
       {/* Categories */}
-      <div className="space-y-3 animate-reveal animate-reveal-delay-3">
+      <div className="space-y-3 home-rise home-rise-3">
         {CATEGORIES.map((cat) => (
           <VaultCategoryBlock
             key={cat.id}
@@ -283,7 +283,7 @@ const VaultCategoryBlock = ({
           hapticImpact("light");
           setExpanded((v) => !v);
         }}
-        className="relative block w-full text-left active:scale-[0.995] transition-transform"
+        className="press relative block w-full text-left transition-transform"
       >
         {/* Premium cover banner — hand-crafted SVG art per category */}
         <div className="relative aspect-[16/7] overflow-hidden">
@@ -324,7 +324,7 @@ const VaultCategoryBlock = ({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); navigate("/recipes"); }}
-              className="w-full text-left rounded-xl border border-gold/35 bg-gradient-to-br from-gold/[0.1] via-card/90 to-card p-3.5 active:scale-[0.99] transition-transform"
+              className="press w-full text-left rounded-xl border border-gold/35 bg-gradient-to-br from-gold/[0.1] via-card/90 to-card p-3.5 transition-transform"
             >
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0">
@@ -355,7 +355,7 @@ const VaultCategoryBlock = ({
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/[0.06] px-3 py-1.5 text-[12px] font-bold text-gold active:scale-95 transition"
+                className="press inline-flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/[0.06] px-3 py-1.5 text-[12px] font-bold text-gold transition"
               >
                 Try again
               </button>
@@ -377,7 +377,7 @@ const VaultCategoryBlock = ({
                     e.stopPropagation();
                     onOpenArticle(a);
                   }}
-                  className="w-full text-left rounded-xl border border-border/50 bg-background/40 hover:border-border hover:bg-background/60 p-3 transition active:scale-[0.99]"
+                  className="press w-full text-left rounded-xl border border-border/50 bg-background/40 hover:border-border hover:bg-background/60 p-3 transition "
                   style={
                     done
                       ? {

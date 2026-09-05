@@ -101,7 +101,7 @@ const EmojiRow = ({
           className={`flex-1 h-10 rounded-xl text-lg transition border ${
             active
               ? "bg-gold/15 border-gold/60 scale-[1.04]"
-              : "bg-card/40 border-border/40 active:scale-95"
+              : "press bg-card/40 border-border/40 "
           }`}
           aria-pressed={active}
           aria-label={`Rate ${v} of 5`}

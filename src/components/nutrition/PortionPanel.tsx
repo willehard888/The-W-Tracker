@@ -99,7 +99,7 @@ const PortionPanel = ({
                 hapticSelection();
                 onSlotChange(s.key);
               }}
-              className={cn("flex-1 h-11 rounded-lg text-[12px] font-black transition-all active:scale-[0.97]", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+              className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-all ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {s.label}
             </button>

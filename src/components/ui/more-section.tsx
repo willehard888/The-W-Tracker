@@ -32,7 +32,7 @@ export const MoreSection = ({ label = "More", defaultOpen = false, children, cla
       </button>
       {/* No space-y here: children carry their own bottom margins, and the two
           compounded into ~36px gaps inside a page laid out on a 16px rhythm. */}
-      {open && <div className="pt-1 animate-reveal">{children}</div>}
+      {open && <div className="pt-1 home-rise">{children}</div>}
     </div>
   );
 };

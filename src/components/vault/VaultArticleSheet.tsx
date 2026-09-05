@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import ReactMarkdown from "react-markdown";
 import {
   Clock,
@@ -65,19 +64,14 @@ const VaultArticleSheet = ({
     setQuizScore(null);
   }, [article?.id]);
 
-  // Lock body scroll while open, escape-to-close
+  // Escape-to-close (the BottomSheet owns the scroll lock)
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
+    return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
   const handleComplete = async () => {
@@ -93,59 +87,17 @@ const VaultArticleSheet = ({
     }
   };
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <AnimatePresence>
-      {open && article && (
-        <motion.div
-          key="vault-sheet-root"
-          className="fixed inset-0 z-[var(--z-top)]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
-        >
-          {/* Backdrop */}
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            className="absolute inset-0 bg-black/[0.72] backdrop-blur-md"
-          />
-
-          {/* Sheet panel */}
-          <motion.div
-            key="vault-sheet-panel"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 32, stiffness: 320, mass: 0.9 }}
-            className="absolute inset-x-0 bottom-0 h-[90dvh] bg-background border-t border-border/40 rounded-t-3xl overflow-hidden flex flex-col shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.6)]"
-            role="dialog"
-            aria-modal="true"
-            aria-label={article.title}
-          >
-            {/* Drag handle */}
-            <div className="flex justify-center pt-2 pb-1 shrink-0">
-              <div className="h-1 w-10 rounded-full bg-border/70" />
-            </div>
-
+  return (
+    <BottomSheet open={open && !!article} onClose={onClose} label={article?.title ?? "Article"} height="tall">
+      {article && (
+        <>
             {/* Hero */}
             <div
-              className="relative px-5 pt-3 pb-4 shrink-0 border-b border-border/40"
+              className="relative -mx-4 px-5 pt-3 pb-4 border-b border-border/40"
               style={{
                 background: `linear-gradient(180deg, ${accent}22 0%, transparent 100%)`,
               }}
             >
-              <button
-                onClick={onClose}
-                className="absolute top-2 right-3 h-8 w-8 rounded-full flex items-center justify-center bg-card/80 border border-border/60 before:absolute before:-inset-2 before:content-['']"
-                aria-label="Close"
-              >
-                <X size={14} />
-              </button>
 
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
@@ -184,7 +136,7 @@ const VaultArticleSheet = ({
 
             {/* Scrollable body */}
             <div
-              className="flex-1 overflow-y-auto px-5 py-5 space-y-5"
+              className="py-5 space-y-5"
               style={{
                 WebkitOverflowScrolling: "touch",
                 paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)",
@@ -367,7 +319,7 @@ const VaultArticleSheet = ({
                 type="button"
                 onClick={handleComplete}
                 disabled={completeLesson.isPending || isCompleted}
-                className="eyebrow w-full rounded-2xl py-3 transition active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="press eyebrow w-full rounded-2xl py-3 transition disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
                   background: isCompleted ? `${accent}20` : accent,
                   color: isCompleted ? accent : "hsl(var(--background))",
@@ -386,11 +338,9 @@ const VaultArticleSheet = ({
                 Educational content — not a substitute for medical advice.
               </p>
             </div>
-          </motion.div>
-        </motion.div>
+        </>
       )}
-    </AnimatePresence>,
-    document.body,
+    </BottomSheet>
   );
 };
 

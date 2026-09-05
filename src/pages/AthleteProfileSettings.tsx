@@ -76,7 +76,7 @@ const AthleteProfileSettings = () => {
         }
       />
 
-      <div className="px-4 pt-4 pb-6 space-y-5">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-5">
         {profile.i_am && (
           <div className="rounded-2xl px-4 py-4 border border-[hsl(var(--gold)/0.4)] bg-[hsl(var(--gold)/0.05)]">
             <p className="eyebrow text-gold mb-1">Identity</p>

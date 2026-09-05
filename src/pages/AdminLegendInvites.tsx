@@ -1,3 +1,4 @@
+import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
 import { fmtRelative } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
@@ -65,11 +66,7 @@ export default function AdminLegendInvites() {
   });
 
   if (isAdmin === null) {
-    return (
-      <div className="min-h-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
   if (!isAdmin) return <Navigate to="/" replace />;
 

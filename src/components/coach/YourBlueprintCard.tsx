@@ -68,7 +68,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
       onClick={() => navigate("/coach/profile")}
       className={cn(
         "w-full text-left rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card",
-        "p-5 active:scale-[0.99] transition-transform shadow-[0_18px_48px_-24px_hsl(var(--gold)/0.4)]",
+        "p-5 transition-transform shadow-[0_18px_48px_-24px_hsl(var(--gold)/0.4)]",
         className,
       )}
       aria-label="Edit your AI Coach blueprint"

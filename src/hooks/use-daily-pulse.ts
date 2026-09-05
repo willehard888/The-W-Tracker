@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface DailyPulse {
@@ -18,13 +18,21 @@ interface SnapshotShape {
 /**
  * Compares today's rank vs. the last snapshot stored on profiles.last_rank_snapshot.
  * Updates the snapshot once per day on first load.
+ *
+ * `snapshot` is the profile column AuthContext already holds (no second
+ * `profiles` read). It is read through a ref, NOT a dependency: the daily
+ * write lands back on the profile via realtime, and re-running against
+ * today's fresh snapshot would zero the "climbed today" delta on the spot.
  */
 export const useDailyPulse = (
   userId: string | undefined,
   currentRank: number | undefined,
   currentScore: number | undefined,
   totalUsers: number | undefined,
+  snapshot: unknown,
 ) => {
+  const snapshotRef = useRef(snapshot);
+  snapshotRef.current = snapshot;
   const [state, setState] = useState<DailyPulse>({
     rankDelta: 0,
     scoreDelta: 0,
@@ -44,13 +52,7 @@ export const useDailyPulse = (
         return;
       }
 
-      const { data: profileRow } = await supabase
-        .from("profiles")
-        .select("last_rank_snapshot")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      const snap = profileRow?.last_rank_snapshot as SnapshotShape | null;
+      const snap = (snapshotRef.current ?? null) as SnapshotShape | null;
       const now = new Date();
       const todayKey = now.toISOString().slice(0, 10);
       const snapKey = snap?.timestamp ? snap.timestamp.slice(0, 10) : null;

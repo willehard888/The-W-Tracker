@@ -25,7 +25,6 @@ export default defineConfig({
         "src/lib/route-preload.ts",
         "src/lib/streak-notifications.ts",
         "src/lib/health/**",
-        "src/lib/wind.ts",
         "src/lib/downscale-image.ts",
         "src/lib/observability.ts",
         "src/lib/sentry-lite.ts",

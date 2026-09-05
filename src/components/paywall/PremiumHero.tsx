@@ -333,24 +333,23 @@ const PremiumHero = ({
           </div>
         )}
 
-        {/* CTA */}
-        <Button
-          size="xl"
-          variant="ember"
-          className={cn(
-            "w-full font-black text-base tracking-wide h-14",
-            !busy && "breathing-glow",
-          )}
-          disabled={busy}
-          onClick={() => onCta(plan)}
-        >
-          {busy ? (
-            <Loader2 size={20} className="animate-spin" />
-          ) : (
-            <ShieldCheck size={20} strokeWidth={2.8} />
-          )}
-          {ctaLabel}
-        </Button>
+        {/* CTA — the glow lives on a wrapper: the button clips its overflow */}
+        <div className={cn("rounded-lg", !busy && "breathing-glow")}>
+          <Button
+            size="xl"
+            variant="ember"
+            className="w-full font-black text-base tracking-wide h-14"
+            disabled={busy}
+            onClick={() => onCta(plan)}
+          >
+            {busy ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <ShieldCheck size={20} strokeWidth={2.8} />
+            )}
+            {ctaLabel}
+          </Button>
+        </div>
 
         <p className="text-[11px] text-muted-foreground/85 text-center mt-2.5 tracking-wide">
           {footnote}

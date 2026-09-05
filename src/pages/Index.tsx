@@ -149,12 +149,13 @@ const Index = () => {
     rankData?.rank,            // undefined until loaded — do NOT coerce to 0 (poisons the snapshot)
     Number(profile?.rank_score) || 0,
     rankData?.totalUsers,
+    profile?.last_rank_snapshot,
   );
 
   // ── Checkin-derived values (hooks must be before any early return) ────────
   // Shared with DailyCheckin — the window is the LOCAL CALENDAR DAY, so the
   // card unlocks at midnight (not 24h after the last check-in).
-  const { canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
+  const { canCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
   // Fuel — today's kcal and protein against target. Both queries are cheap
   // and cached (30 s / 5 min); a failed read with nothing cached hides the
@@ -299,7 +300,6 @@ const Index = () => {
           longestStreak={profile.longest_streak}
           lastCheckinAt={lastCheckin?.checked_in_at}
           canCheckin={canCheckin}
-          timeUntilCheckin={timeUntilCheckin}
           tier={tier}
         />
       </div>

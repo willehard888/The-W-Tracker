@@ -48,3 +48,5 @@ migration/
 
 # Nutrition ingestion resume state (scripts/nutrition) — local only
 .nutrition-ingest-state.json
+# local simulator derived data
+ios/App/build-*/

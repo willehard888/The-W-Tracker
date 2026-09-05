@@ -29,7 +29,6 @@ import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { useCommitPop } from "@/hooks/use-commit-pop";
-import { triggerGust } from "@/lib/wind";
 import CheckinTierHeader from "@/components/CheckinTierHeader";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
 import { useHealthKit } from "@/hooks/use-healthkit";
@@ -38,6 +37,7 @@ import { checkinReactionKey, fetchCheckinReaction } from "@/lib/checkin-reaction
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
+import { MidnightCountdown } from "@/components/MidnightCountdown";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import CheckinHabitPicker from "@/components/checkin/CheckinHabitPicker";
 import ShieldEarnedSheet from "@/components/checkin/ShieldEarnedSheet";
@@ -188,7 +188,7 @@ const DailyCheckin = () => {
 
   // Local-day window + midnight rollover, shared with the home screen so the
   // two can't disagree about when the check-in reopens.
-  const { todayStr, canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
+  const { todayStr, canCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
   // ── Core state ──────────────────────────────────────────────────────────
   const [sleep, setSleep] = useState(8);
@@ -491,7 +491,7 @@ const DailyCheckin = () => {
         } catch { /* summary is best-effort */ }
         setSubmitted(true);
         setSubmitting(false);
-        try { hapticNotification("success"); triggerGust(0.95); } catch { /* cosmetic */ }
+        void hapticNotification("success");
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
         try { await refreshProfile(); } catch { /* non-critical */ }
       };
@@ -572,7 +572,7 @@ const DailyCheckin = () => {
 
       setSubmitted(true);
       setSubmitting(false);
-      try { hapticNotification("success"); triggerGust(0.95); } catch { /* cosmetic */ }
+      void hapticNotification("success");
 
       // Activation funnel: every completed check-in, plus streak milestones.
       void track(FUNNEL.checkinCompleted, {
@@ -683,7 +683,7 @@ const DailyCheckin = () => {
           </div>
           <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already logged today</h1>
           <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
-          <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in {timeUntilCheckin}</p>
+          <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in <MidnightCountdown /></p>
           <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
         </div>
       </div>

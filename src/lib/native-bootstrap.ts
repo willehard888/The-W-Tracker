@@ -5,7 +5,7 @@ import { isNativePlatform, getPlatform } from "@/lib/platform";
  *
  *  • StatusBar: dark content on dark gold/obsidian background, no white notch patch.
  *  • Keyboard: native resize set to "none" so layout doesn't jolt; we reveal the
- *    focused input ourselves (`scrollIntoView`) for a smooth iOS-native feel.
+ *    focused input ourselves only when the keyboard actually covers it.
  *  • Body classes: adds `is-native` + `is-ios` so CSS can target safe-area /
  *    keyboard tweaks without runtime branching in components.
  *
@@ -40,17 +40,21 @@ export const initNativeShell = async (): Promise<void> => {
   // nothing broken). If we need the polish back later we can ship a tiny
   // custom plugin or wait for upstream to switch keyboard to pure Swift.
   //
-  // Lightweight fallback: focus → scrollIntoView ourselves on every input
-  // focus event. Works on every platform, no native plugin needed.
-  if (typeof document !== "undefined") {
-    document.addEventListener("focusin", (e) => {
-      const el = e.target as HTMLElement | null;
+  // Keyboard reveal: WKWebView shrinks the VISUAL viewport (not the layout)
+  // when the keyboard opens, so a field near the bottom can end up under it.
+  // Scroll only when the focused field is actually covered, and instantly —
+  // the old focusin + 250 ms smooth scrollIntoView fired on EVERY focus and
+  // fought the keyboard's own animation.
+  const vv = typeof window !== "undefined" ? window.visualViewport : null;
+  if (vv) {
+    vv.addEventListener("resize", () => {
+      const el = document.activeElement as HTMLElement | null;
       if (!el) return;
       const tag = el.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable) {
-        window.setTimeout(() => {
-          el.scrollIntoView({ block: "nearest", behavior: "smooth" });
-        }, 250);
+      if (tag !== "INPUT" && tag !== "TEXTAREA" && !el.isContentEditable) return;
+      const r = el.getBoundingClientRect();
+      if (r.bottom > vv.offsetTop + vv.height - 8 || r.top < vv.offsetTop) {
+        el.scrollIntoView({ block: "center", behavior: "auto" });
       }
     });
   }

@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "css:dead": "node scripts/css-dead.mjs",
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",

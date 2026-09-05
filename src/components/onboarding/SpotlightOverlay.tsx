@@ -94,12 +94,19 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
     window.addEventListener("resize", onMove);
     window.addEventListener("scroll", onMove, true);
     // SPA navigation moves/hides targets without firing scroll or resize —
-    // a slow heartbeat keeps the overlay honest (one rect read per tick).
-    const heartbeat = setInterval(measure, 300);
+    // the observers catch it (display:none reads as a 0×0 resize), so no
+    // 300 ms polling timer runs for the life of the card.
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(onMove) : null;
+    ro?.observe(target);
+    const io = typeof IntersectionObserver === "function"
+      ? new IntersectionObserver(onMove, { threshold: [0, 0.25, 0.5, 0.75, 1] })
+      : null;
+    io?.observe(target);
     return () => {
       window.removeEventListener("resize", onMove);
       window.removeEventListener("scroll", onMove, true);
-      clearInterval(heartbeat);
+      ro?.disconnect();
+      io?.disconnect();
       cancelAnimationFrame(frame.current);
     };
   }, [target]);

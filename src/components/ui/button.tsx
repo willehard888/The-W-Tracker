@@ -62,9 +62,8 @@ const buttonVariants = cva(
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     // Inner content (text + icons) lifts ABOVE the gloss/glint overlays so it stays crisp,
     // and settles down 0.5px on press for tactile feel
-    // Keep only real button content above overlays; exclude molten lava layers.
-    "[&>*:not(.aurum-lava-layer):not(.aurum-lava-layer--fast):not(.aurum-lava-glow)]:relative [&>*:not(.aurum-lava-layer):not(.aurum-lava-layer--fast):not(.aurum-lava-glow)]:z-[3]",
-    "[&>span:not(.aurum-lava-layer):not(.aurum-lava-layer--fast):not(.aurum-lava-glow)]:transition-transform [&>span:not(.aurum-lava-layer):not(.aurum-lava-layer--fast):not(.aurum-lava-glow)]:duration-150 [&:active>span:not(.aurum-lava-layer):not(.aurum-lava-layer--fast):not(.aurum-lava-glow)]:translate-y-[0.5px]",
+    "[&>*]:relative [&>*]:z-[3]",
+    "[&>span]:transition-transform [&>span]:duration-150 [&:active>span]:translate-y-[0.5px]",
   ].join(" "),
   {
     variants: {

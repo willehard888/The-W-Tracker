@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Mirrors the server gate has_active_access(): a flat 14 days for everyone
@@ -30,13 +30,6 @@ interface TrialAccess {
  */
 export const useTrialAccess = (): TrialAccess => {
   const { profile, isElite, loading } = useAuth();
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    if (isElite || !profile) return;
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, [isElite, profile]);
 
   return useMemo(() => {
     if (loading || !profile) {
@@ -63,6 +56,10 @@ export const useTrialAccess = (): TrialAccess => {
       };
     }
 
+    // Read at compute time: the value refreshes whenever a consumer re-renders
+    // (navigation, the 5-minute profile refetch) — day/hour accuracy for a
+    // chip, without a 60 s interval re-rendering every consumer on Home.
+    const now = Date.now();
     const startedAtRaw = profile.trial_started_at
       ? new Date(profile.trial_started_at).getTime()
       : new Date(profile.created_at).getTime();
@@ -88,5 +85,5 @@ export const useTrialAccess = (): TrialAccess => {
       isExpired,
       loading: false,
     };
-  }, [profile, isElite, loading, now]);
+  }, [profile, isElite, loading]);
 };

@@ -12,7 +12,6 @@ import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { cancelLapsedReengagement } from "@/lib/streak-notifications";
-import { startWind } from "@/lib/wind";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -208,15 +207,6 @@ const AppRoutes = () => {
     if (!user) return;
     cancelLapsedReengagement();
   }, [user]);
-
-  // Ambient wind for every flame in the app. The CSS plumbing (--wind-x /
-  // --wind-gust in the flame keyframes) shipped long ago but nothing ever
-  // started the loop — the fire has been standing still since day one.
-  // Reduced-motion users keep still flames: their flame animations are off,
-  // so the vars are never read.
-  useEffect(() => {
-    startWind();
-  }, []);
 
   // Every page lands at the top. The main scroll container persists across
   // route changes (it lives outside <Routes>), so without this its scroll

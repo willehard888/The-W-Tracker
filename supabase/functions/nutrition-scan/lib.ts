@@ -131,6 +131,8 @@ export interface Candidate {
   rank: number;
   default_serving_grams: number | null;
   default_serving_label: string | null;
+  /** food_sources.code (fineli, usda_*, off, user); generic sources win ties against branded OFF rows. */
+  source?: string | null;
   is_favorite: boolean;
   per_100g: { kcal: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null };
 }
@@ -468,6 +470,7 @@ export function toCandidateFields(row: unknown): Candidate | null {
     default_serving_grams: numOrNull(row.default_serving_grams),
     default_serving_label: typeof row.default_serving_label === "string" ? row.default_serving_label : null,
     is_favorite: row.is_favorite === true,
+    source: typeof row.source === "string" ? row.source : null,
     per_100g: {
       kcal: numOrNull(row.kcal),
       protein_g: numOrNull(row.protein_g),
@@ -476,6 +479,11 @@ export function toCandidateFields(row: unknown): Candidate | null {
     },
   };
 }
+
+// A branded OFF row whose name happens to equal the model's term ("Grilled Chicken Breast", 1.4 kcal)
+// must not beat the generic USDA/Fineli entry the diary should really use.
+const GENERIC_SOURCES = new Set(["fineli", "usda_foundation", "usda_sr_legacy"]);
+export const candidateScore = (c: Candidate): number => c.rank + (c.source && GENERIC_SOURCES.has(c.source) ? 0.2 : 0);
 
 export function pickCandidate(
   cands: Candidate[],
@@ -486,7 +494,7 @@ export function pickCandidate(
     const prev = best.get(c.food_id);
     if (!prev || c.rank > prev.rank) best.set(c.food_id, c);
   }
-  const candidates = [...best.values()].sort((a, b) => b.rank - a.rank);
+  const candidates = [...best.values()].sort((a, b) => candidateScore(b) - candidateScore(a));
   const top = candidates[0];
   const second = candidates[1];
   const auto =

@@ -33,6 +33,7 @@ export interface IngestServing {
 }
 
 export interface IngestFood {
+  is_active?: boolean;
   source: "off" | "usda_branded";
   source_id: string;
   name: string;

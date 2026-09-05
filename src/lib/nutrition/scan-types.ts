@@ -22,6 +22,7 @@ export interface ScanCandidate {
   brand: string | null;
   /** Text match quality 0..1 — shown as "match". */
   similarity: number;
+  source?: string | null;
   rank: number;
   default_serving_grams: number | null;
   default_serving_label: string | null;
@@ -116,6 +117,7 @@ const parseCandidate = (v: unknown): ScanCandidate | null => {
     name: v.name,
     brand: typeof v.brand === "string" ? v.brand : null,
     similarity: clamp01(v.similarity),
+    source: typeof v.source === "string" ? v.source : null,
     rank: num(v.rank, 0),
     default_serving_grams: numOrNull(v.default_serving_grams),
     default_serving_label: typeof v.default_serving_label === "string" ? v.default_serving_label : null,

@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { buildNutrientMaps } from "../../../supabase/functions/nutrition-lookup/map";
 import { ingestBatch, seedNutrientDefinitions, type FoodPayload } from "../../../scripts/nutrition/lib.mts";
-import { countryTags, mapLine, plausible, scanOff } from "../../../scripts/nutrition/off.mts";
+import { countryTags, mapLine, plausible, scanOff , kcalConsistent } from "../../../scripts/nutrition/off.mts";
 
 const FIXTURE = resolve(__dirname, "../nutrition/__fixtures__/off-sample.jsonl");
 // The same definitions the script uses without a service key: the migration seed.
@@ -87,5 +87,13 @@ describe("ingestBatch concurrency", () => {
     expect(r.batches).toBe(3);
     expect(seen).toEqual(["c4", "c5"]);
     vi.restoreAllMocks();
+  });
+});
+
+describe("kcalConsistent", () => {
+  it("flags kcal that is far below what the macros imply, tolerates zero-macro foods", () => {
+    expect(kcalConsistent({ kcal: 1.4, protein_g: 31, fat_g: 3.6, carbs_g: 0 })).toBe(false);
+    expect(kcalConsistent({ kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0 })).toBe(true);
+    expect(kcalConsistent({ kcal: 100, protein_g: 10, fat_g: 5, carbs_g: 8 })).toBe(true);
   });
 });

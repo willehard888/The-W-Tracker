@@ -312,6 +312,7 @@ describe("toCandidateFields", () => {
   it("reads match_score as similarity and keeps rank and serving fields", () => {
     expect(toCandidateFields(row)).toEqual({
       food_id: "f1", name: "Ruisleipä", brand: "Fazer", similarity: 0.77, rank: 0.42, default_serving_grams: 30, default_serving_label: "1 slice", is_favorite: true,
+      source: null,
       per_100g: { kcal: 250, protein_g: 8, carbs_g: 45, fat_g: 3 },
     });
   });
@@ -557,5 +558,20 @@ describe("schemas — Google AI Studio compatibility (bisected in prod 2026-09-0
     walk(buildRefineToolSchema(), "refine");
     walk(buildLabelToolSchema(), "label");
     expect(offenders).toEqual([]);
+  });
+});
+
+describe("pickCandidate — generic sources beat branded name coincidences", () => {
+  const cand = (name: string, source: string, rank: number, similarity: number): Candidate => ({
+    food_id: `${source}:${name}`, name, brand: null, similarity, rank, default_serving_grams: null, default_serving_label: null,
+    is_favorite: false, source, per_100g: { kcal: null, protein_g: null, carbs_g: null, fat_g: null },
+  });
+  it("orders a USDA row above an OFF row whose name matches exactly but ranks within 0.2", () => {
+    const r = pickCandidate([cand("Grilled Chicken Breast", "off", 1.0, 1), cand("Chicken, breast, grilled", "usda_sr_legacy", 0.9, 0.9)], 0.95);
+    expect(r.candidates[0].source).toBe("usda_sr_legacy");
+  });
+  it("still lets a clearly better branded match through", () => {
+    const r = pickCandidate([cand("Valio Oltermanni 17 %", "off", 1.0, 1), cand("Cheese, edam", "usda_sr_legacy", 0.5, 0.5)], 0.95);
+    expect(r.candidates[0].source).toBe("off");
   });
 });

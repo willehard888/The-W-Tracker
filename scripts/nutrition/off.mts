@@ -40,6 +40,13 @@ export function countryTags(codes?: string[]): Set<string> {
 export const plausible = (n: Record<string, number>): boolean =>
   n.kcal <= MAX_KCAL && MACROS.every((k) => (n[k] ?? 0) <= 100);
 
+/** kcal must be at least a quarter of what the macros imply once they imply > 30 kcal — OFF rows
+ *  with kcal entered per serving (or 0) next to real macros are ingested but deactivated. */
+export const kcalConsistent = (n: Record<string, number>): boolean => {
+  const macros = 4 * (n.protein_g ?? 0) + 4 * (n.carbs_g ?? 0) + 9 * (n.fat_g ?? 0) + 7 * (n.alcohol_g ?? 0);
+  return macros <= 30 || (n.kcal ?? 0) >= 0.25 * macros;
+};
+
 export interface Mapped {
   modified: number;
   food: IngestFood | null;
@@ -64,7 +71,7 @@ export function mapLine(line: string, tags: Set<string>, maps: NutrientMaps, sin
   if (!food) return skip("no_kcal");
   if (!food.barcodes.length) return skip("no_barcode");
   if (!plausible(food.nutrients)) return skip("implausible");
-  return { modified, food, skip: null };
+  return { modified, food: kcalConsistent(food.nutrients) ? food : { ...food, is_active: false }, skip: null };
 }
 
 export interface ScanResult {
@@ -123,7 +130,7 @@ async function main(): Promise<void> {
   const skipped = Object.entries(scan.skipped).map(([k, v]) => `${v} ${k}`).join(" · ") || "none";
   console.log(
     `scanned ${scan.lines} lines · ${scan.matched} in ${[...tags].join(",")} · ${scan.foods.length} usable` +
-      ` · skipped: ${skipped} · ${scan.badJson} bad json · ${elapsed(t0)}`,
+      ` · skipped: ${skipped} · ${scan.foods.filter((f) => f.is_active === false).length} deactivated (kcal vs macros) · ${scan.badJson} bad json · ${elapsed(t0)}`,
   );
 
   const r = await runIngest(client, "off", scan.foods, flags);

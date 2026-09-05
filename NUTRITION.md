@@ -118,6 +118,8 @@ credit UI is not built. The attribution sheet in the app is generated from `food
 
 ## Troubleshooting
 
+- `permission denied to set parameter "pg_trgm.word_similarity_threshold"` on `db push`: a migration that (re)creates a function with a `SET pg_trgm.*` clause must first call any pg_trgm function (`SELECT extensions.similarity('a','a');`) so the GUC exists in that session; the local dry run runs as superuser and never sees this.
+
 - `similarity()` / `unaccent` "does not exist" in a new SQL function → the function must
   `SET search_path = public, extensions` (the extensions live in the `extensions` schema).
 - `ingest_foods` rejects a batch with an unknown nutrient key → the script's mapping and

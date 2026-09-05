@@ -16,6 +16,12 @@
 --   used to compute client-side by paging every row through PostgREST.
 -- ============================================================
 
+-- Load pg_trgm BEFORE the CREATE FUNCTION below: its SET pg_trgm.word_similarity_threshold
+-- clause is validated at creation time, and in a fresh session that GUC is still a
+-- placeholder, which a non-superuser (the db push role) may not set — SQLSTATE 42501.
+-- Any pg_trgm C function call loads the library and registers the parameter.
+SELECT extensions.similarity('trgm', 'trgm');
+
 DROP FUNCTION IF EXISTS public.search_foods(text, int, text, text);
 CREATE FUNCTION public.search_foods(
   p_query   text,

@@ -1277,33 +1277,42 @@ export type Database = {
         Row: {
           completed: boolean
           day_index: number
+          duration_sec: number | null
           id: string
           logged_at: string
           notes: string | null
           perceived_rpe: number | null
           program_id: string
+          started_at: string | null
+          status: string
           user_id: string
           week: number
         }
         Insert: {
           completed?: boolean
           day_index: number
+          duration_sec?: number | null
           id?: string
           logged_at?: string
           notes?: string | null
           perceived_rpe?: number | null
           program_id: string
+          started_at?: string | null
+          status?: string
           user_id: string
           week: number
         }
         Update: {
           completed?: boolean
           day_index?: number
+          duration_sec?: number | null
           id?: string
           logged_at?: string
           notes?: string | null
           perceived_rpe?: number | null
           program_id?: string
+          started_at?: string | null
+          status?: string
           user_id?: string
           week?: number
         }
@@ -3524,6 +3533,7 @@ export type Database = {
           program_id: string | null
           reps: number | null
           rpe: number | null
+          set_index: number
           updated_at: string
           user_id: string
           week: number | null
@@ -3539,6 +3549,7 @@ export type Database = {
           program_id?: string | null
           reps?: number | null
           rpe?: number | null
+          set_index?: number
           updated_at?: string
           user_id: string
           week?: number | null
@@ -3554,6 +3565,7 @@ export type Database = {
           program_id?: string | null
           reps?: number | null
           rpe?: number | null
+          set_index?: number
           updated_at?: string
           user_id?: string
           week?: number | null

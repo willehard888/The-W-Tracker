@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { dayFocus, isRestDay, blockCount, isTrainingDay, daySummary } from "@/lib/training/session";
+import {
+  dayFocus,
+  isRestDay,
+  blockCount,
+  isTrainingDay,
+  daySummary,
+  startOfLocalDayISO,
+  isToday,
+} from "@/lib/training/session";
 
 /**
  * The bug these lock down: /coach's ProgramCard tested `day.rest === true`,
@@ -114,5 +122,63 @@ describe("daySummary", () => {
   it("returns nothing for a missing day", () => {
     expect(daySummary(null)).toBe("");
     expect(daySummary(undefined)).toBe("");
+  });
+});
+
+/**
+ * The day boundary decides whether a session the athlete actually did counts
+ * toward today's check-in. Getting it wrong is invisible — the workout is
+ * logged, it just silently lands on the wrong day for half the year.
+ */
+describe("startOfLocalDayISO", () => {
+  it("is local midnight, not UTC midnight", () => {
+    const evening = new Date(2026, 8, 5, 21, 30, 0); // 5 Sep 2026, 21:30 local
+    const start = new Date(startOfLocalDayISO(evening));
+    expect(start.getFullYear()).toBe(2026);
+    expect(start.getMonth()).toBe(8);
+    expect(start.getDate()).toBe(5);
+    expect(start.getHours()).toBe(0);
+    expect(start.getMinutes()).toBe(0);
+  });
+
+  it("does not mutate the date it is given", () => {
+    const now = new Date(2026, 8, 5, 21, 30, 0);
+    const before = now.getTime();
+    startOfLocalDayISO(now);
+    expect(now.getTime()).toBe(before);
+  });
+
+  it("returns a parseable ISO string", () => {
+    expect(Number.isNaN(new Date(startOfLocalDayISO()).getTime())).toBe(false);
+  });
+});
+
+describe("isToday", () => {
+  const now = new Date(2026, 8, 5, 12, 0, 0);
+
+  it("accepts a session logged late the same local evening", () => {
+    // The case that a UTC comparison gets wrong.
+    expect(isToday(new Date(2026, 8, 5, 23, 45, 0).toISOString(), now)).toBe(true);
+  });
+
+  it("accepts one logged just after local midnight this morning", () => {
+    expect(isToday(new Date(2026, 8, 5, 0, 5, 0).toISOString(), now)).toBe(true);
+  });
+
+  it("rejects yesterday and tomorrow", () => {
+    expect(isToday(new Date(2026, 8, 4, 23, 59, 0).toISOString(), now)).toBe(false);
+    expect(isToday(new Date(2026, 8, 6, 0, 1, 0).toISOString(), now)).toBe(false);
+  });
+
+  it("rejects the same date in another month or year", () => {
+    expect(isToday(new Date(2026, 7, 5, 12, 0, 0).toISOString(), now)).toBe(false);
+    expect(isToday(new Date(2025, 8, 5, 12, 0, 0).toISOString(), now)).toBe(false);
+  });
+
+  it("is false for missing or unparseable input rather than throwing", () => {
+    expect(isToday(null, now)).toBe(false);
+    expect(isToday(undefined, now)).toBe(false);
+    expect(isToday("", now)).toBe(false);
+    expect(isToday("not a date", now)).toBe(false);
   });
 });

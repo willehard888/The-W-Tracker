@@ -1,3 +1,4 @@
+import { useSessionDoneToday } from "@/hooks/use-session-done-today";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -222,6 +223,9 @@ const DailyCheckin = () => {
   const stepsPrefilled = useRef(false);
   const proteinPrefilled = useRef(false);
   const sportPrefilled = useRef(false);
+  // Separate from sportPrefilled so the HealthKit and program-session prefills
+  // never cancel each other out — whichever arrives first wins, once.
+  const sessionPrefilled = useRef(false);
   // Smart picker: search + one-open-group accordion + the For-you shortlist.
   const [sportQuery, setSportQuery] = useState("");
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -306,6 +310,29 @@ const DailyCheckin = () => {
       setCompleted((c) => ({ ...c, protein: true }));
     }
   }, [diaryDay, nutritionTargets]);
+
+  // ── Program session auto-detect ─────────────────────────────────────────
+  // The app prescribed a session, the athlete finished it and tapped Done —
+  // and until now they still had to come here and separately declare that they
+  // had trained, or earn nothing for it. Training and the reward economy have
+  // never been connected; this is that bridge.
+  //
+  // Prefill, not auto-submit. The check-in is the athlete's own report of their
+  // day: the app filling it in silently would be presumptuous, and a stale row
+  // could inflate a streak nobody earned. They see it, and they can change it —
+  // the same contract the HealthKit prefill honours above.
+  const { done: sessionDoneToday } = useSessionDoneToday();
+  useEffect(() => {
+    if (!sessionDoneToday) return;
+    // Marks the habit as verified, exactly as a confirmed HealthKit workout does.
+    setDetected((d) => (d.workout ? d : { ...d, workout: true }));
+    // Never override a choice already made. "Rest day" sets "none" on purpose,
+    // and an async lookup must not turn that back into a workout.
+    if (!sessionPrefilled.current && !sportTouched.current) {
+      sessionPrefilled.current = true;
+      setSportCategory((cur) => (cur === "none" ? "gym" : cur));
+    }
+  }, [sessionDoneToday]);
 
   // Is a verifiable habit backed by a live Health signal right now?
   const isDetected = (h: CheckinHabit): boolean => {

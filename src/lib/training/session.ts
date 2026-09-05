@@ -57,6 +57,31 @@ export const blockCount = (day?: ProgramDayShape | null): number =>
 export const isTrainingDay = (day?: ProgramDayShape | null): boolean =>
   !!day && !isRestDay(day) && blockCount(day) > 0;
 
+/**
+ * Local midnight, as an ISO string for querying.
+ *
+ * Deliberately local rather than UTC. A 21:00 session in Helsinki is written
+ * after UTC midnight for half the year, so a UTC day boundary would credit it
+ * to tomorrow — the athlete would train, and the check-in would not know.
+ */
+export const startOfLocalDayISO = (now: Date = new Date()): string => {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+};
+
+/** Was this timestamp written today, in the athlete's own timezone? */
+export const isToday = (iso?: string | null, now: Date = new Date()): boolean => {
+  if (!iso) return false;
+  const t = new Date(iso);
+  if (Number.isNaN(t.getTime())) return false;
+  return (
+    t.getFullYear() === now.getFullYear() &&
+    t.getMonth() === now.getMonth() &&
+    t.getDate() === now.getDate()
+  );
+};
+
 /** Display label for a day, e.g. "Push · 45 min · 5 exercises". */
 export const daySummary = (day?: ProgramDayShape | null): string => {
   if (!day) return "";

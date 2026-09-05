@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
+import { Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
@@ -90,19 +91,10 @@ const TribeNew = () => {
   };
 
   return (
-    <div className="min-h-full pb-10 px-4 pt-3">
-      <div className="flex items-center gap-2 mb-4">
-        <Button
-          variant="outline"
-          size="icon-sm"
-          className="h-9 w-9 rounded-full text-muted-foreground"
-          onClick={() => navigate(-1)}
-          aria-label="Back"
-        >
-          <ArrowLeft size={16} />
-        </Button>
-        <h1 className="font-display text-base font-black tracking-tight">Create a Tribe</h1>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Create a tribe" onBack={() => navigate(-1)} />
+
+      <div className="px-4 pt-4 pb-6">
 
       {/* Live preview — the tribe takes shape as you type */}
       <div className="relative rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.09] via-card/95 to-card overflow-hidden mb-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)]">
@@ -277,6 +269,7 @@ const TribeNew = () => {
           {submitting ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
           Create Tribe
         </Button>
+      </div>
       </div>
     </div>
   );

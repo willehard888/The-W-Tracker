@@ -93,7 +93,7 @@ const PublicProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center">
+      <div className="min-h-full flex items-center justify-center">
         <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
       </div>
     );
@@ -101,7 +101,7 @@ const PublicProfile = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center px-6 text-center">
+      <div className="min-h-full flex flex-col items-center justify-center px-6 text-center">
         <Lock size={32} className="text-muted-foreground/40 mb-3" />
         <h1 className="font-display text-xl font-black mb-2">User not found</h1>
         <p className="text-sm text-muted-foreground mb-6">@{username} doesn't exist on Whealth Factory</p>
@@ -114,7 +114,7 @@ const PublicProfile = () => {
   const isApexSubscriber = Boolean(profile.is_apex_subscriber);
 
   return (
-    <div className="min-h-[100dvh] relative pb-10">
+    <div className="min-h-full relative pb-10">
       {/* Back button */}
       <button
         onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}

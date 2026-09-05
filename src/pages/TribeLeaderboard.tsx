@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Crown, Users, Lock, Zap, Flame } from "lucide-react";
-import PageHeader from "@/components/ui/page-header";
+import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import {
@@ -129,12 +129,13 @@ const TribeLeaderboard = () => {
   };
 
   return (
-    <div className="min-h-full pb-32 px-4 pt-4">
-      <PageHeader
-        title="Tribe Leaderboard"
-        subtitle={period === "weekly" ? "Ranked by XP earned this week" : "Ranked by all-time XP"}
-        onBack={() => navigate("/squad?tab=tribes")}
-      />
+    <div className="min-h-full">
+      <PageBar title="Tribe leaderboard" onBack={() => navigate("/squad?tab=tribes")} />
+      {/* pb-32 clears this page's fixed "your tribe" footer. */}
+      <div className="px-4 pt-4 pb-32">
+      <p className="text-[13px] text-muted-foreground mb-4">
+        {period === "weekly" ? "Ranked by XP earned this week" : "Ranked by all-time XP"}
+      </p>
 
       {/* Period segment */}
       <div className={cn(SEGMENT_TRACK, "mb-4")}>
@@ -225,6 +226,7 @@ const TribeLeaderboard = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

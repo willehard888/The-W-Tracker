@@ -483,16 +483,16 @@ const Stepper = ({
     <div>
       <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
       <div className="flex items-center gap-2 surface-card surface-card-quiet px-2 py-2">
-        <button type="button" onClick={dec}
-          className="h-10 w-10 surface-card surface-card-quiet rounded-xl flex items-center justify-center active:scale-95 transition">
+        <button type="button" onClick={dec} aria-label="Decrease"
+          className="min-h-11 min-w-11 surface-card surface-card-quiet rounded-xl flex items-center justify-center">
           <Minus size={16} />
         </button>
         <div className="flex-1 text-center">
           <span className="font-display text-2xl font-black tabular-nums">{value}</span>
           <span className="text-xs text-muted-foreground ml-1.5">{unit}</span>
         </div>
-        <button type="button" onClick={inc}
-          className="h-10 w-10 surface-card surface-card-quiet rounded-xl flex items-center justify-center active:scale-95 transition">
+        <button type="button" onClick={inc} aria-label="Increase"
+          className="min-h-11 min-w-11 surface-card surface-card-quiet rounded-xl flex items-center justify-center">
           <Plus size={16} />
         </button>
       </div>

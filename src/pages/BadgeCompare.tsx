@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ChevronLeft, Search, Shield } from "lucide-react";
+import { Search, Shield } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -66,18 +67,11 @@ const BadgeCompare = () => {
   const theirCount = theirBadgeIds?.length || 0;
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-4">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6 animate-reveal">
-        <button onClick={() => navigate("/profile")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
-          <ChevronLeft size={20} />
-        </button>
-        
-        <div>
-          <h1 className="font-display text-2xl font-black tracking-tight">Badge Compare</h1>
-          <p className="text-xs text-muted-foreground">See how your collection stacks up</p>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Badge compare" onBack={() => navigate("/profile")} />
+
+      <div className="px-4 pt-4 pb-6">
+      <p className="text-xs text-muted-foreground mb-4 animate-reveal">See how your collection stacks up</p>
 
       {/* Search */}
       <div className="relative mb-4 animate-reveal animate-reveal-delay-1">
@@ -187,6 +181,7 @@ const BadgeCompare = () => {
           <p className="text-sm text-muted-foreground">Search for a user to compare badges</p>
         </div>
       )}
+      </div>
     </div>
   );
 };

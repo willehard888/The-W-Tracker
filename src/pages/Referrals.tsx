@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Copy, Check, Users, Share2, ChevronLeft, Image as ImageIcon, CreditCard, Gift, CalendarCheck, Flame } from "lucide-react";
+import { Copy, Check, Users, Share2, Image as ImageIcon, CreditCard, Gift, CalendarCheck, Flame } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -77,14 +78,14 @@ const Referrals = () => {
   const ringOffset = ringCirc - cycleProgress * ringCirc;
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-4">
+    <div className="min-h-full">
+      <PageBar title="Referrals" onBack={() => navigate(-1)} />
+
+      <div className="px-4 pt-4 pb-6">
       <div className="flex items-center gap-3 mb-6 animate-reveal">
-        <button onClick={() => navigate(-1)} aria-label="Back" className="shrink-0 -ml-1 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform">
-          <ChevronLeft size={20} />
-        </button>
         <BrandLogo size={32} className="rounded-lg" alt="W" />
         <div>
-          <h1 className="font-display text-2xl font-black tracking-tight">Recruit Your Way to Legend</h1>
+          <h2 className="font-display text-2xl font-black tracking-tight">Recruit your way to Legend</h2>
           <p className="text-xs text-muted-foreground">Every 3 paid friends = 1 month free. No cap.</p>
         </div>
       </div>
@@ -330,6 +331,7 @@ const Referrals = () => {
         referralCode={referralCode}
         referralLink={referralLink}
       />
+      </div>
     </div>
   );
 };

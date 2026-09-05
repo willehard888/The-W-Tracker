@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { getPlatform } from "@/lib/platform";
 import { disableMealWrite, enableMealWrite, hasMealWriteConsent } from "@/lib/health/meal-write";
-import NutritionPageBar from "@/components/nutrition/NutritionPageBar";
+import PageBar from "@/components/ui/page-bar";
 import NutritionSheet from "@/components/nutrition/NutritionSheet";
 import NutritionInfoSheet from "@/components/nutrition/NutritionInfoSheet";
 import NumField from "@/components/nutrition/NumField";
@@ -64,8 +64,8 @@ const NutritionTargets = () => {
 
   if (profileLoading || targetsLoading) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <NutritionPageBar title="Nutrition targets" onBack={() => navigate(-1)} />
+      <div className="min-h-full">
+        <PageBar title="Nutrition targets" onBack={() => navigate(-1)} />
         <div className="px-4 pt-4 pb-8">
           <Block height={28} className="w-3/4 !rounded-lg" />
           <Block height={44} delay={40} className="mt-4" />
@@ -150,10 +150,10 @@ const NutritionTargets = () => {
   ].filter(Boolean);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <NutritionPageBar title="Nutrition targets" onBack={() => navigate(-1)} />
+    <div className="min-h-full">
+      <PageBar title="Nutrition targets" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-28 space-y-6">
+      <div className="px-4 pt-4 pb-6 space-y-6">
         <div className="animate-reveal">
           <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
             {targets ? (

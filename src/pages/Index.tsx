@@ -241,7 +241,7 @@ const Index = () => {
     : "radial-gradient(ellipse 90% 70% at center top, hsl(var(--gold) / 0.075) 0%, hsl(var(--gold) / 0.025) 45%, transparent 80%)";
 
   return (
-    <div className="h-full pb-6 px-4 pt-3 relative overflow-y-auto overflow-x-hidden">
+    <div className="min-h-full pb-6 px-4 pt-3 relative">
       {milestoneConfetti && (
         <Portal>
           <div className="fixed inset-0 pointer-events-none z-[var(--z-toast)]">

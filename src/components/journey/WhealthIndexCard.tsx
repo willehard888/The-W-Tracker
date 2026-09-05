@@ -114,7 +114,7 @@ const WhealthIndexCard = ({
                 type="button"
                 onClick={onShare}
                 aria-label="Share your Whealth Index"
-                className="h-8 w-8 rounded-full flex items-center justify-center bg-secondary/60 border border-border/50 text-muted-foreground active:scale-95 transition"
+                className="relative h-8 w-8 rounded-full flex items-center justify-center bg-secondary/60 border border-border/50 text-muted-foreground before:absolute before:-inset-2 before:content-['']"
               >
                 <Share2 size={13} />
               </button>

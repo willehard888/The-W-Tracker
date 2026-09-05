@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
+import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 
 const Messages = () => {
   const { user } = useAuth();
@@ -138,13 +140,11 @@ const Messages = () => {
   );
 
   return (
-    <div ref={scrollRef} className="min-h-full pb-4 px-4 pt-6" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div ref={scrollRef} className="min-h-full" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <PageBar title="Messages" onBack={() => navigate("/squad")} />
+
+      <div className="px-4 pt-4 pb-6">
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
-      
-      <div className="animate-reveal mb-6">
-        <h1 className="font-display text-2xl font-black tracking-tight leading-none py-[10px]">Messages</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Direct messages</p>
-      </div>
 
       {/* Search */}
       <div className="animate-reveal mb-4">
@@ -224,7 +224,9 @@ const Messages = () => {
                   />
                   <p className="text-[11px] text-muted-foreground">Wants to be friends</p>
                 </div>
-                <button
+                <Button
+                  variant="outline"
+                  size="xs"
                   onClick={async () => {
                     const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", req.id);
                     if (error) { toast.error("Could not accept — try again."); return; }
@@ -233,21 +235,24 @@ const Messages = () => {
                     queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["conversations"] });
                   }}
-                  className="h-7 px-3 rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] text-[11px] font-bold border border-[hsl(var(--teal))]/30 active:scale-95 transition-transform"
+                  className="rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] border-[hsl(var(--teal))]/30"
                 >
                   Accept
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  aria-label="Decline"
                   onClick={async () => {
                     const { error } = await supabase.from("friendships").update({ status: "declined" }).eq("id", req.id);
                     if (error) { toast.error("Could not decline — try again."); return; }
                     queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
                     queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
                   }}
-                  className="h-7 px-2 rounded-full bg-secondary text-muted-foreground text-[11px] font-bold border border-border active:scale-95 transition-transform"
+                  className="rounded-full text-muted-foreground"
                 >
                   ✕
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -327,6 +332,7 @@ const Messages = () => {
           />
         </div>
       )}
+      </div>
     </div>
   );
 };

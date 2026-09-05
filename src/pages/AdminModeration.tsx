@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +14,7 @@ import AppImage from "@/components/ui/app-image";
 
 export default function AdminModeration() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
@@ -113,12 +115,10 @@ export default function AdminModeration() {
   };
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-6">
+    <div className="min-h-full">
+      <PageBar title="Moderation queue" onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <ShieldCheck className="h-5 w-5 text-gold" />
-          <h1 className="font-display text-2xl font-black tracking-tight">Moderation Queue</h1>
-        </div>
         <p className="text-sm text-muted-foreground">
           Low-confidence AI blocks waiting for human review.
         </p>
@@ -218,6 +218,7 @@ export default function AdminModeration() {
             </div>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );

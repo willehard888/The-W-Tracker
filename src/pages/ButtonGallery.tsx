@@ -84,7 +84,7 @@ const ButtonGallery = () => {
   const [picked, setPicked] = useState<VariantId | null>(null);
 
   return (
-    <div className="min-h-full pb-24 px-4 pt-4 max-w-md mx-auto">
+    <div className="min-h-full pb-6 px-4 pt-4 max-w-md mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, RefreshCw, Trash2 } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { getPlatform } from "@/lib/platform";
 import {
   clearIosDebug,
@@ -36,14 +37,10 @@ const IosDebug = () => {
   const logs = useMemo(() => [...state.logs].reverse().slice(0, 40), [state.logs]);
 
   return (
-    <div className="min-h-full pb-6 px-4 pt-6 safe-top space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
+    <div className="min-h-full">
+      <PageBar title="iOS debug" onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6 space-y-4">
+      <div className="flex items-center justify-end gap-2">
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -60,8 +57,7 @@ const IosDebug = () => {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-4">
-        <h1 className="font-display text-xl font-bold">iOS Debug</h1>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground">
           Platform: <span className="font-semibold text-foreground">{platform}</span> • Updated: {state.updatedAt}
         </p>
       </div>
@@ -116,6 +112,7 @@ const IosDebug = () => {
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 };

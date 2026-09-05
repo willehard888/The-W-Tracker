@@ -6,7 +6,7 @@ import EmptyState from "@/components/ui/empty-state";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
-import NutritionPageBar from "@/components/nutrition/NutritionPageBar";
+import PageBar from "@/components/ui/page-bar";
 import { useUserRecipes } from "@/hooks/use-user-recipes";
 import { fmtQty } from "@/lib/nutrition/format";
 import { recipePerServing } from "@/lib/nutrition/queries";
@@ -36,8 +36,8 @@ const NutritionRecipes = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <NutritionPageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
+      <div className="min-h-full">
+        <PageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
         <div className="px-4 pt-4 pb-8">
           <Block height={28} className="w-2/3 !rounded-lg" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -49,9 +49,9 @@ const NutritionRecipes = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <NutritionPageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
-      <div className="px-4 pt-4 pb-28">
+    <div className="min-h-full">
+      <PageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
+      <div className="px-4 pt-4 pb-6">
         {recipes.length === 0 ? (
           <div className="animate-reveal pt-6">
             <EmptyState

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { cn } from "@/lib/utils";
 import {
   Moon, Dumbbell, Droplets, Camera, Zap,
@@ -680,7 +681,7 @@ const DailyCheckin = () => {
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
             <Moon aria-hidden size={36} className="text-muted-foreground" />
           </div>
-          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already Logged Today</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already logged today</h1>
           <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
           <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in {timeUntilCheckin}</p>
           <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
@@ -726,7 +727,9 @@ const DailyCheckin = () => {
   }
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-0">
+    <div className="min-h-full">
+      <PageBar onBack={() => navigate("/")} />
+      <div className="px-4 pb-6">
       <ModerationGate
         state={moderation.state}
         message={moderation.message}
@@ -742,7 +745,6 @@ const DailyCheckin = () => {
         totalXp={totalXp}
         completedCount={completedCount}
         maxCount={maxCount}
-        onBack={() => navigate("/")}
       />
 
       {/* The "why" anchor — reframes the whole check-in from "earn XP" to
@@ -1240,6 +1242,7 @@ const DailyCheckin = () => {
             <Sparkles aria-hidden size={12} className="text-gold" /> {maxCount} habits · your personal standard
           </p>
         )}
+      </div>
       </div>
     </div>
   );

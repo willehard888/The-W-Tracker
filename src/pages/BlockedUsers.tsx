@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, UserX } from "lucide-react";
+import { UserX } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBlockActions } from "@/hooks/use-blocking";
@@ -42,14 +43,10 @@ const BlockedUsers = () => {
   });
 
   return (
-    <div className="min-h-full max-w-md mx-auto px-4 py-4 safe-top">
-      <div className="flex items-center gap-2 mb-5">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} className="-ml-2 rounded-full" aria-label="Back">
-          <ChevronLeft size={20} />
-        </Button>
-        <h1 className="font-display font-black text-lg tracking-tight">Blocked users</h1>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Blocked users" onBack={() => navigate(-1)} />
 
+      <div className="px-4 pt-4 pb-6">
       {isLoading ? (
         <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="skeleton-block h-16 rounded-2xl" />)}</div>
       ) : !rows?.length ? (
@@ -67,6 +64,7 @@ const BlockedUsers = () => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, BarChart3, Sparkles, Calendar, Flame, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BarChart3, Sparkles, Calendar, Flame, Trophy } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { useAuth } from "@/contexts/AuthContext";
 import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import ProgressDashboard from "@/components/coach/ProgressDashboard";
@@ -38,20 +38,10 @@ const CoachProgress = () => {
   const workoutsThisWeek = recent?.filter((r) => r.workout).length ?? 0;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-            <BarChart3 size={14} className="text-gold" />
-          </div>
-          <h1 className="font-display text-base font-black">Progress</h1>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Progress" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8 space-y-4">
+      <div className="px-4 pt-4 pb-6 space-y-4">
         {/* Top summary — never blank, always computed from local data */}
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-3">

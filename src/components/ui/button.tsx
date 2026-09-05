@@ -42,6 +42,13 @@ const PRIMARY_EMBER = [
   "disabled:grayscale-[0.3] disabled:before:hidden disabled:after:hidden",
 ].join(" ");
 
+// Variants whose ::before is free (no surface sheen) — these get the invisible
+// hit-area expansion for icon-sm / xs / icon via compoundVariants below.
+const HIT_AREA_VARIANTS = [
+  "obsidian", "destructive", "outline", "secondary", "ghost", "link",
+  "gold-outline", "glass", "tier", "success", "warning", "danger-outline", "gold-icon",
+] as const;
+
 const buttonVariants = cva(
   [
     "relative inline-flex items-center justify-center gap-2.5 whitespace-nowrap",
@@ -53,7 +60,6 @@ const buttonVariants = cva(
     "focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.18)]",
     "disabled:pointer-events-none disabled:opacity-50 disabled:saturate-[0.6] disabled:cursor-not-allowed",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-    "active:scale-[0.985]",
     // Inner content (text + icons) lifts ABOVE the gloss/glint overlays so it stays crisp,
     // and settles down 0.5px on press for tactile feel
     // Keep only real button content above overlays; exclude molten lava layers.
@@ -211,12 +217,12 @@ const buttonVariants = cva(
          * hand-rolled: four near-identical class strings in TribePostCard alone.
          *
          * 28px is BELOW the 44pt tap floor by necessity — it has to be, to sit
-         * on a comment meta line. ALWAYS pair it with a hit-area expansion:
-         *   className="relative before:absolute before:-inset-2 before:content-['']"
-         * …EXCEPT on variants that own ::before for their surface (ember/
-         * default, ember-outline): there the expansion is clipped by their
-         * overflow-hidden and skews the sheen geometry — use min-h-11
-         * min-w-11 on those instead.
+         * on a comment meta line. The 44 pt hit area comes from the
+         * compoundVariants below (an invisible ::before, like icon-sm/icon)
+         * on every variant that doesn't own ::before for its surface. On the
+         * surface-owning variants (default/ember, ember-outline, ember-glass,
+         * coal-outline, gold-soft) the expansion would be clipped by their
+         * overflow-hidden and skew the sheen — use min-h-11 min-w-11 there.
          *
          * gap-1 (both hops: root for asChild, inner span otherwise) keeps a
          * Reply · Edit · Delete meta row at its hand-rolled 4px density.
@@ -232,6 +238,14 @@ const buttonVariants = cva(
         pill: "h-9 min-h-9 px-5 rounded-full text-xs gap-1.5 [&>span]:gap-1.5",
       },
     },
+    // Invisible 44 pt hit area for the three sub-floor sizes. Only variants
+    // WITHOUT a ::before surface layer — the ember/gold surfaces own ::before
+    // for their sheen and clip it with overflow-hidden.
+    compoundVariants: [
+      { variant: [...HIT_AREA_VARIANTS], size: "icon-sm", class: "before:absolute before:-inset-1.5 before:content-['']" },
+      { variant: [...HIT_AREA_VARIANTS], size: "xs", class: "before:absolute before:-inset-2 before:content-['']" },
+      { variant: [...HIT_AREA_VARIANTS], size: "icon", class: "before:absolute before:-inset-0.5 before:content-['']" },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",

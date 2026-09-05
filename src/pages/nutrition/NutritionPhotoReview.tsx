@@ -12,7 +12,7 @@ import { hapticSelection } from "@/lib/haptics";
 import { track } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import NutritionPageBar from "@/components/nutrition/NutritionPageBar";
+import PageBar from "@/components/ui/page-bar";
 import DetectedItemRow from "@/components/nutrition/DetectedItemRow";
 import NutrientPreview from "@/components/nutrition/NutrientPreview";
 import FoodPickerSheet from "@/components/nutrition/FoodPickerSheet";
@@ -577,9 +577,9 @@ const NutritionPhotoReview = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <NutritionPageBar title="Photo scan" onBack={leave} />
-      <div className="px-4 pt-4 pb-28">{body}</div>
+    <div className="min-h-full">
+      <PageBar title="Photo scan" onBack={leave} />
+      <div className="px-4 pt-4 pb-6">{body}</div>
 
       <FoodPickerSheet
         open={picker !== null}

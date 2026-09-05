@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -169,6 +170,7 @@ const FunnelBars = ({ steps, byStep }: { steps: ReadonlyArray<readonly [string, 
 
 export default function AdminMetrics() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -249,12 +251,10 @@ export default function AdminMetrics() {
   const steps = funnel?.unique_users_by_step ?? {};
 
   return (
-    <div className="min-h-full pb-12 px-4 pt-6 max-w-lg mx-auto">
+    <div className="min-h-full">
+      <PageBar title="Metrics" onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <BarChart3 className="h-5 w-5 text-gold" />
-          <h1 className="font-display text-2xl font-black tracking-tight">Command Center</h1>
-        </div>
         <p className="text-sm text-muted-foreground">
           The numbers the machine is steered by. Activity, retention, funnel, virality.
         </p>
@@ -494,6 +494,7 @@ export default function AdminMetrics() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

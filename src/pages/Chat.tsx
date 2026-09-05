@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, Send, MoreVertical, Ban, Flag } from "lucide-react";
+import { Send, MoreVertical, Ban, Flag } from "lucide-react";
 import { toast } from "sonner";
 import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
@@ -155,29 +156,13 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header — sticky, themed with subtle gold sheen */}
-      <div className="shrink-0 relative border-b border-border/60 bg-card/80 backdrop-blur-xl px-4 py-3 safe-top">
-        <div
-          className="absolute inset-0 pointer-events-none opacity-40"
-          style={{
-            background:
-              "linear-gradient(180deg, hsl(var(--gold) / 0.06) 0%, transparent 100%)",
-          }}
-          aria-hidden
-        />
-        <div className="relative flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => navigate("/messages")}
-            className="-ml-2 rounded-full"
-            aria-label="Back"
-          >
-            <ChevronLeft size={20} />
-          </Button>
+      <PageBar
+        sticky={false}
+        onBack={() => navigate("/messages")}
+        title={
           <button
             onClick={() => navigate(`/user/${partnerId}`)}
-            className="flex items-center gap-2.5 flex-1 min-w-0 active:opacity-70 transition-opacity"
+            className="flex items-center gap-2.5 w-full min-w-0 active:opacity-70 transition-opacity"
           >
             <StatusAvatar
               src={partner?.avatar_url}
@@ -199,11 +184,13 @@ const Chat = () => {
               </p>
             </div>
           </button>
+        }
+        action={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button aria-label="Conversation options" className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground active:scale-90 transition">
+              <Button variant="ghost" size="icon" aria-label="Conversation options" className="rounded-full text-muted-foreground">
                 <MoreVertical size={18} />
-              </button>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[180px]">
               <DropdownMenuItem
@@ -219,8 +206,8 @@ const Chat = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      </div>
+        }
+      />
 
       {/* Messages */}
       <div

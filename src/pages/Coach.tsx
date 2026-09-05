@@ -1,12 +1,13 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Send, ArrowLeft, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain, AlertTriangle } from "lucide-react";
+import { useNavigate, useSearchParams, type NavigateFunction } from "react-router-dom";
+import { Send, X, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain, AlertTriangle } from "lucide-react";
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { hapticImpact } from "@/lib/haptics";
 import { withNetworkRetry } from "@/lib/retry";
 import { toast } from "sonner";
@@ -89,7 +90,7 @@ const Coach = () => {
     if (typeof console !== "undefined") console.error("AI Coach failed to load:", err);
     return (
       <div className="flex flex-col h-full">
-        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
+        <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
         <div className="flex-1 flex items-center justify-center px-6 text-center">
           <div className="max-w-sm space-y-4">
             <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto" aria-hidden><AlertTriangle size={32} className="text-muted-foreground" /></div>
@@ -112,8 +113,8 @@ const Coach = () => {
   // an explicit "Skip for now" escape so they're never trapped at the wall.
   if (!athlete?.onboarded && !onboardSkipped && !hasSeed) {
     return (
-      <div className="flex flex-col h-full">
-        <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
+      <div className="min-h-full">
+        <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
         <div className="w-full flex justify-end px-6 pt-2">
           <button
             onClick={skipOnboarding}
@@ -143,29 +144,18 @@ const Coach = () => {
   );
 };
 
-// ── Standard W page header (matches /profile, /leaderboard, /checkin) ──────────
-// Replaces the previous bespoke topbar with three competing icons. The user
-// fed back that opening /coach felt like switching apps; making the header
-// match every other W destination is half the fix. Trainer-profile + memory
-// links live one tap deeper inside a small dropdown menu rather than fighting
-// for header real-estate alongside the back arrow.
-const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }) => {
+// The PageBar's one action: trainer-profile + memory links live one tap deeper
+// inside a small menu rather than fighting for bar real-estate.
+const CoachMenu = ({ navigate }: { navigate: NavigateFunction }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30 relative">
-      <Button variant="ghost" size="icon-sm" className="h-11 w-11" onClick={onBack} aria-label="Back">
-        <ArrowLeft size={18} />
-      </Button>
-      <div className="text-center">
-        <h1 className="font-display text-base font-black tracking-tight">AI Coach</h1>
-        <p className="text-[10px] leading-tight text-muted-foreground">AI coach · not a medical professional</p>
-      </div>
+    <div className="relative">
       <Button
         variant="ghost"
-        size="icon-sm"
-        className="h-11 w-11"
+        size="icon"
         onClick={() => setMenuOpen((v) => !v)}
         aria-label="Coach settings"
+        aria-expanded={menuOpen}
       >
         <MoreVertical size={16} />
       </Button>
@@ -176,7 +166,7 @@ const CoachHeader = ({ onBack, navigate }: { onBack: () => void; navigate: any }
             onClick={() => setMenuOpen(false)}
             aria-hidden
           />
-          <div className="absolute right-3 top-12 z-40 w-48 surface-glass rounded-2xl overflow-hidden">
+          <div className="absolute right-0 top-11 z-40 w-48 surface-glass rounded-2xl overflow-hidden">
             <button
               type="button"
               onClick={() => { setMenuOpen(false); navigate("/coach/profile"); }}
@@ -229,10 +219,13 @@ const CoachShell = ({ session, program, navigate }: any) => {
   };
 
   return (
+    // Root stays h-full: the ChatSheet is absolute to it (backdrop + drawer),
+    // so the body scrolls inside rather than the app container.
     <div className="flex flex-col h-full relative">
-      <CoachHeader onBack={() => navigate(-1)} navigate={navigate} />
+      <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-8 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-6 space-y-3">
+        <p className="text-[11px] text-muted-foreground">AI coach · not a medical professional</p>
         {/* The AI leads — proactive daily brief, the centre of the experience. */}
         <CoachBriefHero onOpenChat={() => openChat()} onAsk={(q) => openChat(q)} />
         {/* The adaptive daily plan — readiness + missions, the coach's real
@@ -612,7 +605,7 @@ const ChatSheet = ({
         </div>
 
       <div className="shrink-0 px-3 pt-1 pb-2 flex items-center justify-between border-b border-border/30 bg-background/97">
-        <Button variant="ghost" size="icon-sm" className="h-11 w-11" onClick={newChat} aria-label="New chat" title="New chat">
+        <Button variant="ghost" size="icon-sm" onClick={newChat} aria-label="New chat" title="New chat">
           <Plus size={18} />
         </Button>
         <div className="text-center">
@@ -622,7 +615,7 @@ const ChatSheet = ({
           </div>
           <p className="text-[10px] leading-tight text-muted-foreground">AI coach · not a medical professional</p>
         </div>
-        <Button variant="ghost" size="icon-sm" className="h-11 w-11" onClick={onClose} aria-label="Close">
+        <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close">
           <X size={18} />
         </Button>
       </div>

@@ -141,7 +141,7 @@ const VaultArticleSheet = ({
             >
               <button
                 onClick={onClose}
-                className="absolute top-2 right-3 h-8 w-8 rounded-full flex items-center justify-center bg-card/80 border border-border/60 active:scale-95 transition"
+                className="absolute top-2 right-3 h-8 w-8 rounded-full flex items-center justify-center bg-card/80 border border-border/60 before:absolute before:-inset-2 before:content-['']"
                 aria-label="Close"
               >
                 <X size={14} />

@@ -10,9 +10,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ArrowLeft,
   Crown,
   Loader2,
   Send,
@@ -604,12 +604,9 @@ const TribeDetail = () => {
     // to one lands here. Offer the request path instead of a dead end
     // (join_tribe is SECURITY DEFINER; it works even when the row is hidden).
     return (
-      <div className="px-4 pt-4 pb-8">
-        {/* One back-button treatment across the tribe screens. There were
-            three, and one of them had no press feedback at all. */}
-        <Button variant="ghost" size="sm" className="-ml-3 mb-8 text-muted-foreground" onClick={() => navigate("/squad?tab=tribes")}>
-          <ArrowLeft size={14} /> Tribes
-        </Button>
+      <div className="min-h-full">
+        <PageBar onBack={() => navigate("/squad?tab=tribes")} />
+        <div className="px-4 pt-4 pb-6">
         <div className="surface-card p-6 text-center">
           <div className="mx-auto h-12 w-12 rounded-2xl bg-secondary/50 border border-border/60 flex items-center justify-center mb-3">
             <Lock size={20} className="text-muted-foreground" />
@@ -621,6 +618,7 @@ const TribeDetail = () => {
           <Button variant="ember" size="lg" className="mt-4" onClick={handleJoin}>
             Request to join
           </Button>
+        </div>
         </div>
       </div>
     );
@@ -639,7 +637,9 @@ const TribeDetail = () => {
     : null;
 
   return (
-    <div ref={scrollRef} className="pb-8 px-4 pt-4 relative">
+    <div ref={scrollRef} className="min-h-full relative">
+      <PageBar onBack={() => { hapticSelection(); navigate("/squad?tab=tribes"); }} />
+      <div className="px-4 pt-4 pb-6">
       {/* Subtle page tint toward the tribe's tier color */}
       {pageTint && (
         <div
@@ -700,15 +700,6 @@ const TribeDetail = () => {
         </div>
         </Portal>
       )}
-
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 mb-4 relative text-muted-foreground"
-        onClick={() => { hapticSelection(); navigate("/squad?tab=tribes"); }}
-      >
-        <ArrowLeft size={14} /> Tribes
-      </Button>
 
       {/* HERO — the tribe's one cinematic card: fire, identity, actions */}
       <TribeHero
@@ -961,6 +952,7 @@ const TribeDetail = () => {
           )}
         </>
       )}
+      </div>
     </div>
   );
 };

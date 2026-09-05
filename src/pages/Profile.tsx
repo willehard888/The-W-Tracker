@@ -399,7 +399,6 @@ const Profile = () => {
         <Button
           variant="ghost"
           size="icon-sm"
-          className="h-11 w-11"
           aria-label="Account menu"
           onClick={() => setQuickMenuOpen((v) => !v)}
         >

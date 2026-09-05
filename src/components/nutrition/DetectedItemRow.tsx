@@ -94,7 +94,7 @@ const DetectedItemRow = ({
           variant="ghost"
           size="icon-sm"
           aria-label={`Remove ${item.name}`}
-          className="relative before:absolute before:-inset-2 before:content-[''] text-muted-foreground shrink-0"
+          className="text-muted-foreground shrink-0"
           onClick={() => onRemove(item.id)}
         >
           <X />
@@ -141,13 +141,13 @@ const DetectedItemRow = ({
 
       {item.count != null && (
         <div className="mt-1 flex items-center gap-1" role="group" aria-label={`Pieces of ${item.name}`}>
-          <Button variant="ghost" size="icon" aria-label="One piece fewer" className="min-h-11 min-w-11 text-muted-foreground" onClick={() => step(-1)}>
+          <Button variant="ghost" size="icon" aria-label="One piece fewer" className="text-muted-foreground" onClick={() => step(-1)}>
             <Minus />
           </Button>
           <span className="text-[13px] font-bold tabular-nums min-w-12 text-center">
             {item.count} pcs
           </span>
-          <Button variant="ghost" size="icon" aria-label="One piece more" className="min-h-11 min-w-11 text-muted-foreground" onClick={() => step(1)}>
+          <Button variant="ghost" size="icon" aria-label="One piece more" className="text-muted-foreground" onClick={() => step(1)}>
             <Plus />
           </Button>
           {item.unit_g && <span className="text-[11px] text-muted-foreground">≈ {item.unit_g} g each</span>}
@@ -166,7 +166,7 @@ const DetectedItemRow = ({
             <ChevronDown size={14} className={cn("transition-transform", open && "rotate-180")} />
           </button>
         )}
-        <Button variant="ghost" size="xs" className="ml-auto relative before:absolute before:-inset-2 before:content-['']" onClick={() => onReplace(item.id)}>
+        <Button variant="ghost" size="xs" className="ml-auto" onClick={() => onReplace(item.id)}>
           <Search aria-hidden /> Search instead
         </Button>
       </div>

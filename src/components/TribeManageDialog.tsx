@@ -242,7 +242,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     disabled={busy}
-                    className="h-8 px-2.5 rounded-md bg-background/85 backdrop-blur border border-border text-[12px] font-bold inline-flex items-center gap-1 hover:bg-background transition-colors disabled:opacity-40"
+                    className="relative h-8 px-2.5 rounded-md bg-background/85 backdrop-blur border border-border text-[12px] font-bold inline-flex items-center gap-1 hover:bg-background transition-colors disabled:opacity-40 before:absolute before:-inset-2 before:content-['']"
                   >
                     <Upload size={11} /> Change
                   </button>
@@ -250,7 +250,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     type="button"
                     onClick={handleRemoveCover}
                     disabled={busy}
-                    className="h-8 w-8 rounded-md bg-background/85 backdrop-blur border border-border text-destructive inline-flex items-center justify-center hover:bg-destructive/10 transition-colors disabled:opacity-40"
+                    className="relative h-8 w-8 rounded-md bg-background/85 backdrop-blur border border-border text-destructive inline-flex items-center justify-center hover:bg-destructive/10 transition-colors disabled:opacity-40 before:absolute before:-inset-2 before:content-['']"
                     aria-label="Remove cover"
                   >
                     <Trash2 size={12} />
@@ -391,11 +391,11 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       <Loader2 size={14} className="animate-spin text-muted-foreground" />
                     ) : isAdmin ? (
                       <>
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]"
+                        <Button size="xs" variant="ghost"
                           onClick={() => handleRoleChange(m.user_id, "member")}>
                           <ShieldOff size={12} /> Demote
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-destructive hover:text-destructive"
+                        <Button size="xs" variant="ghost" className="text-destructive hover:text-destructive" aria-label="Remove member"
                           onClick={() => handleRemove(m.user_id, m.username)}>
                           <UserMinus size={12} />
                         </Button>
@@ -403,16 +403,16 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     ) : (
                       <>
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="ghost"
-                          className="h-7 px-2 text-[11px] text-gold hover:text-gold disabled:opacity-40"
+                          className="text-gold hover:text-gold disabled:opacity-40"
                           disabled={promoteDisabled}
                           onClick={() => handleRoleChange(m.user_id, "admin")}
                           title={promoteDisabled ? "Max 2 admins reached" : "Promote to admin"}
                         >
                           <Shield size={12} /> Promote
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-destructive hover:text-destructive"
+                        <Button size="xs" variant="ghost" className="text-destructive hover:text-destructive" aria-label="Remove member"
                           onClick={() => handleRemove(m.user_id, m.username)}>
                           <UserMinus size={12} />
                         </Button>

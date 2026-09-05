@@ -9,7 +9,6 @@ import {
   Wind as WindIcon,
   Sparkles,
   Hourglass,
-  ArrowLeft,
   Crown,
   Clock,
   Flame,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/ui/empty-state";
+import PageBar from "@/components/ui/page-bar";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
 import { useTrialAccess } from "@/hooks/use-trial-access";
@@ -161,24 +161,20 @@ const Vault = () => {
   ];
 
   return (
-    <div className="min-h-full pb-12 px-4 pt-3">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 animate-reveal">
-        <button
-          onClick={() => navigate(-1)}
-          className="shrink-0 -ml-1 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
-          aria-label="Back"
-        >
-          <ArrowLeft size={16} />
-        </button>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/40 shadow-[0_0_18px_hsl(var(--gold)/0.25)]">
-          <Crown size={11} className="text-gold" strokeWidth={2.6} />
-          <span className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
-            Premium
-          </span>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar
+        onBack={() => navigate(-1)}
+        action={
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/40 shadow-[0_0_18px_hsl(var(--gold)/0.25)]">
+            <Crown size={11} className="text-gold" strokeWidth={2.6} />
+            <span className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
+              Premium
+            </span>
+          </div>
+        }
+      />
 
+      <div className="px-4 pt-4 pb-6">
       {/* Hero — clean & precise (calm canvas, one gold accent, sharp type) */}
       <div className="relative mb-5 animate-reveal animate-reveal-delay-1 surface-card px-5 pt-7 pb-5 text-center">
         <div className="mx-auto mb-3 h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_6px_20px_-6px_hsl(var(--gold)/0.5)]">
@@ -256,6 +252,7 @@ const Vault = () => {
         open={!!openArticle}
         onClose={() => setOpenArticle(null)}
       />
+      </div>
     </div>
   );
 };

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Flame, Brain, Users, Swords, BarChart3, RotateCcw,
+  Flame, Brain, Users, Swords, BarChart3, RotateCcw,
   Minus, Plus, BellOff, BellRing,
 } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { AppLauncher } from "@capacitor/app-launcher";
@@ -132,15 +133,10 @@ const NotificationSettings = () => {
   const previewKey = tone;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 px-4 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
-        <Button variant="ghost" size="icon-sm" className="h-11 w-11" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <h1 className="font-display text-base font-black">Notifications</h1>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Notification settings" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10 space-y-5">
+      <div className="px-4 pt-4 pb-6 space-y-5">
 
         {/* ── Delivery status ── */}
         {perm === "granted" && (

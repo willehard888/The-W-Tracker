@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, Brain, Sparkles } from "lucide-react";
+import { Plus, Trash2, Brain, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { Input } from "@/components/ui/input";
 import EmptyState from "@/components/ui/empty-state";
 import { useCoachMemory } from "@/hooks/use-coach-memory";
@@ -23,20 +24,10 @@ const CoachMemoryScreen = () => {
   const [draft, setDraft] = useState("");
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-            <Brain size={14} className="text-gold" />
-          </div>
-          <h1 className="font-display text-base font-black">Coach memory</h1>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Coach memory" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8 space-y-3">
+      <div className="px-4 pt-4 pb-6 space-y-3">
         <p className="text-xs text-muted-foreground">
           Facts the Coach remembers about you. Capped at 30. Edit, delete, or add anything you want it to know.
         </p>
@@ -49,7 +40,7 @@ const CoachMemoryScreen = () => {
           <div className="flex gap-2">
             <Input value={draft} onChange={e => setDraft(e.target.value.slice(0, 200))}
               placeholder="e.g. I race a 10k in October" />
-            <Button variant="ember" size="icon-sm" aria-label="Add fact" disabled={!draft.trim()}
+            <Button variant="ember" size="icon-sm" className="min-h-11 min-w-11" aria-label="Add fact" disabled={!draft.trim()}
               onClick={async () => {
                 try {
                   const id = await add(draft.trim());

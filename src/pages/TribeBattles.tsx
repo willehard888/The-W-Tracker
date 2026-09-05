@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Plus, Swords, Clock, History } from "lucide-react";
+import { Loader2, Plus, Swords, Clock, History } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import TribeBattleCard, { type TribeBattle } from "@/components/TribeBattleCard";
@@ -138,17 +139,9 @@ const TribeBattles = () => {
   }
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-4">
-      {/* This one had no press feedback at all — the third of three different
-          back buttons across the tribe screens. */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 mb-4 text-muted-foreground"
-        onClick={() => navigate(`/tribes/${id}`)}
-      >
-        <ArrowLeft size={14} /> {tribe.name}
-      </Button>
+    <div className="min-h-full">
+      <PageBar onBack={() => navigate(`/tribes/${id}`)} />
+      <div className="px-4 pt-4 pb-6">
 
       {/* Hero — anchored by the tribe's collective war-flame.
           The bigger the combined member streak, the hotter & taller the
@@ -263,6 +256,7 @@ const TribeBattles = () => {
         challengerTribeId={id!}
         onCreated={load}
       />
+      </div>
     </div>
   );
 };

@@ -831,27 +831,31 @@ const EliteFeed = () => {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {/* Approve (unreport) */}
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={async () => {
                           if (report.post_id) await unreportPost.mutateAsync(report.post_id);
                           resolveReport.mutate({ reportId: report.id, action: "approve" });
                         }}
-                        className="h-7 px-2.5 rounded-lg bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] text-[11px] font-bold hover:bg-[hsl(var(--xp-green))]/25 transition-colors flex items-center gap-1"
+                        className="bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] hover:bg-[hsl(var(--xp-green))]/25"
                       >
                         <CheckCircle aria-hidden size={12} />
                         Keep
-                      </button>
+                      </Button>
                       {/* Delete post */}
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={async () => {
                           if (report.post_id) await adminDeletePost.mutateAsync(report.post_id);
                           resolveReport.mutate({ reportId: report.id, action: "delete" });
                         }}
-                        className="h-7 px-2.5 rounded-lg bg-destructive/15 text-destructive text-[11px] font-bold hover:bg-destructive/25 transition-colors flex items-center gap-1"
+                        className="bg-destructive/15 text-destructive hover:bg-destructive/25"
                       >
                         <Trash2 aria-hidden size={12} />
                         Remove
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -886,14 +890,16 @@ const EliteFeed = () => {
                 />
                 {/* Close only offers itself while there is nothing to lose. */}
                 {!hasDraft && (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => { hapticSelection(); setComposerOpen(false); }}
                     aria-label="Close composer"
-                    className="self-start -mr-1.5 -mt-1.5 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-secondary transition-colors shrink-0"
+                    className="self-start -mr-1.5 -mt-1.5 rounded-full text-muted-foreground/70 shrink-0"
                   >
                     <X aria-hidden size={14} />
-                  </button>
+                  </Button>
                 )}
               </div>
 

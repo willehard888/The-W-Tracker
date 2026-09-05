@@ -3,7 +3,6 @@ import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   TrendingUp,
   AlertTriangle,
   Trophy,
@@ -15,6 +14,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 import BriefingShareCard from "@/components/BriefingShareCard";
@@ -153,7 +153,7 @@ const WeeklyBriefing = () => {
 
   if (loading || !briefing) {
     return (
-      <div className="h-full px-4 pt-4">
+      <div className="min-h-full px-4 pt-4">
         <DetailSkeleton />
       </div>
     );
@@ -162,7 +162,9 @@ const WeeklyBriefing = () => {
   const stats = briefing.stats_snapshot ?? {};
 
   return (
-    <div className="h-full overflow-y-auto pb-8 px-4 pt-4 relative">
+    <div className="min-h-full">
+      <PageBar onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6 relative">
       {/* Ambient gold glow */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"
@@ -173,13 +175,6 @@ const WeeklyBriefing = () => {
       />
 
       <div className="relative z-10">
-        <button
-          onClick={() => navigate(-1)}
-          className="shrink-0 -ml-1 mb-2 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -316,6 +311,7 @@ const WeeklyBriefing = () => {
           workouts={stats.workouts ?? 0}
           daysCheckedIn={stats.days_checked_in ?? 0}
         />
+      </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -26,6 +27,7 @@ type LegendInvite = {
 
 export default function AdminLegendInvites() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [code, setCode] = useState("");
@@ -106,12 +108,10 @@ export default function AdminLegendInvites() {
   };
 
   return (
-    <div className="min-h-full pb-12 px-4 pt-6">
+    <div className="min-h-full">
+      <PageBar title="Legend invites" onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Crown className="h-5 w-5 text-gold" fill="currentColor" />
-          <h1 className="font-display text-2xl font-black tracking-tight">Legend Invites</h1>
-        </div>
         <p className="text-sm text-muted-foreground">
           Invite-only access to the Legend tier. Each code is single-use.
         </p>
@@ -228,6 +228,7 @@ export default function AdminLegendInvites() {
         {!isLoading && invites && invites.length === 0 && (
           <EmptyState size="compact" icon={Mail} title="No invites yet" />
         )}
+      </div>
       </div>
     </div>
   );

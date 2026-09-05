@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dumbbell, Sparkles, Crown, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sparkles, Crown, RefreshCw } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import WeekStrip from "@/components/coach/WeekStrip";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
 import TodaySessionCard from "@/components/coach/TodaySessionCard";
@@ -39,20 +39,10 @@ const CoachProgramDetail = () => {
   useEffect(() => { loadExerciseLibrary(); }, []);
 
   return (
-    <div className="flex flex-col">
-      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-            <Dumbbell size={14} className="text-gold" />
-          </div>
-          <h1 className="font-display text-base font-black">Training program</h1>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Training program" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-4 pb-28 space-y-4">
+      <div className="px-4 pt-4 pb-6 space-y-4">
         {isLoading && <PageSkeleton />}
 
         {/* Free user, no program — upsell */}

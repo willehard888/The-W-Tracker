@@ -1,8 +1,9 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Swords, ArrowLeft, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -355,8 +356,10 @@ const Battles = () => {
   if (!profile) return null;
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-6">
-      
+    <div className="min-h-full">
+      <PageBar title="Battles" onBack={() => navigate(-1)} />
+
+      <div className="px-4 pt-4 pb-6">
       <input
         ref={fileInputRef}
         type="file"
@@ -372,20 +375,7 @@ const Battles = () => {
         }}
       />
 
-      <div className="animate-reveal mb-6 flex items-center gap-3">
-        {/* Pushed page (entered from Ranks) — needs its own way back. */}
-        <button
-          onClick={() => navigate(-1)}
-          className="shrink-0 -ml-1 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
-          aria-label="Back"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div>
-          <h1 className="font-display text-2xl font-black tracking-tight">Battles</h1>
-          <p className="text-sm text-muted-foreground mt-1">Challenge others. Prove your discipline.</p>
-        </div>
-      </div>
+      <p className="animate-reveal mb-4 text-sm text-muted-foreground">Challenge others. Prove your discipline.</p>
 
       {/* One battles home: 1v1 | Tribes (tribe battles used to hide in a
           "More" drawer on the 1v1 page AND live on a separate tribe page). */}
@@ -623,6 +613,7 @@ const Battles = () => {
         subtitle="Battle one of your friends."
         onPick={(f) => { setOpponent({ user_id: f.user_id, username: f.username }); setPickerOpen(false); setShowCreate(true); }}
       />
+      </div>
     </div>
   );
 };

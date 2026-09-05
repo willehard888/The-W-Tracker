@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import {
-  Bell, Check, X, ChevronLeft, Swords, Users, Trophy, MessageSquare,
+  Bell, Check, X, Swords, Users, Trophy, MessageSquare,
   Gift, Flame, Crown, CheckCheck, UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
 import StatusAvatar from "@/components/StatusAvatar";
 import { supabase } from "@/integrations/supabase/client";
@@ -151,33 +152,20 @@ const Notifications = () => {
   const unread = (notifications ?? []).filter((n) => !n.read_at).length;
 
   return (
-    <div className="min-h-full pb-6 px-4 pt-3">
-      <div className="page-header-premium px-0 pt-0 pb-2 flex items-center gap-2 mb-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Back">
-          <ChevronLeft size={20} />
-        </Button>
-        <h1 className="font-display text-base font-black tracking-tight">Notifications</h1>
-        <div className="ml-auto flex items-center gap-2">
-          {unread > 0 && (
-            <button
-              onClick={markAllRead}
-              className="inline-flex items-center gap-1 text-[12px] font-bold text-gold active:opacity-70"
-            >
-              <CheckCheck size={13} /> Mark all read
-            </button>
-          )}
-          {/* Friends management lives behind the bell now — the Squad-header
-              UserPlus button this replaces was the page's only door. */}
-          <button
-            onClick={() => navigate("/friends")}
-            aria-label="Add friends"
-            className="h-9 w-9 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 active:scale-95 transition-transform"
-          >
+    <div className="min-h-full">
+      <PageBar
+        title="Notifications"
+        onBack={() => navigate(-1)}
+        action={
+          /* Friends management lives behind the bell now — the Squad-header
+             UserPlus button this replaces was the page's only door. */
+          <Button variant="secondary" size="icon" aria-label="Add friends" className="rounded-full" onClick={() => navigate("/friends")}>
             <UserPlus size={15} />
-          </button>
-        </div>
-      </div>
+          </Button>
+        }
+      />
 
+      <div className="px-4 pt-4 pb-6">
       {/* ── Needs your response ── */}
       {actionCount > 0 && (
         <div className="animate-reveal mb-6">
@@ -196,14 +184,16 @@ const Notifications = () => {
                   onClick={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added")}>
                   <Check size={13} /> Accept
                 </Button>
-                <button
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
                   disabled={busy === r.friendship_id}
                   aria-label="Decline request"
                   onClick={() => guard(r.friendship_id, () => declineRequest(r.friendship_id))}
-                  className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
+                  className="rounded-full text-muted-foreground shrink-0"
                 >
                   <X size={15} />
-                </button>
+                </Button>
               </div>
             ))}
 
@@ -220,14 +210,16 @@ const Notifications = () => {
                   onClick={() => respondTribeInvite(inv.id, true, inv.tribe_id, inv.tribeName)}>
                   <Check size={13} /> Join
                 </Button>
-                <button
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
                   disabled={busy === inv.id}
                   aria-label="Decline invite"
                   onClick={() => respondTribeInvite(inv.id, false, inv.tribe_id, inv.tribeName)}
-                  className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
+                  className="rounded-full text-muted-foreground shrink-0"
                 >
                   <X size={15} />
-                </button>
+                </Button>
               </div>
             ))}
 
@@ -243,14 +235,16 @@ const Notifications = () => {
                 <Button size="sm" variant="ember" disabled={busy === b.id} onClick={() => respondBattle(b.id, true)}>
                   <Check size={13} /> Accept
                 </Button>
-                <button
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
                   disabled={busy === b.id}
                   aria-label="Decline battle"
                   onClick={() => respondBattle(b.id, false)}
-                  className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
+                  className="rounded-full text-muted-foreground shrink-0"
                 >
                   <X size={15} />
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -258,7 +252,14 @@ const Notifications = () => {
       )}
 
       {/* ── Activity ── */}
-      <p className="eyebrow mb-2 px-1">Activity</p>
+      <div className="flex items-center justify-between mb-2 px-1">
+        <p className="eyebrow">Activity</p>
+        {unread > 0 && (
+          <Button variant="ghost" size="xs" className="text-gold" onClick={markAllRead}>
+            <CheckCheck aria-hidden /> Mark all read
+          </Button>
+        )}
+      </div>
       {isLoading ? (
         <div className="space-y-1.5">
           {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-card/60 skeleton-block" />)}
@@ -304,6 +305,7 @@ const Notifications = () => {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 };

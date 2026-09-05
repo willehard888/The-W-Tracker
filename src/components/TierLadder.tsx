@@ -294,7 +294,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   type="button"
                   onClick={() => setOpenTier(null)}
                   aria-label="Close tier details"
-                  className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-[background,color,box-shadow] duration-200 hover:bg-[hsl(0_0%_100%/0.06)] hover:text-foreground hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),inset_0_-1px_0_hsl(var(--border-strong)/0.7)] focus:outline-none"
+                  className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted before:absolute before:-inset-2 before:content-[''] transition-[background,color,box-shadow] duration-200 hover:bg-[hsl(0_0%_100%/0.06)] hover:text-foreground hover:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),inset_0_-1px_0_hsl(var(--border-strong)/0.7)] focus:outline-none"
                 >
                   <X className="h-4 w-4" />
                 </button>

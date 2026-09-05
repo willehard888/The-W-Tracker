@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Target, Sparkles, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sparkles, BookOpen } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import GoalTrackerCard from "@/components/coach/GoalTrackerCard";
 
 /**
@@ -12,20 +12,10 @@ import GoalTrackerCard from "@/components/coach/GoalTrackerCard";
 const CoachGoal = () => {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-            <Target size={14} className="text-gold" />
-          </div>
-          <h1 className="font-display text-base font-black">North Star goal</h1>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="North Star goal" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8 space-y-4">
+      <div className="px-4 pt-4 pb-6 space-y-4">
         {/* Intro */}
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
           <div className="flex items-center gap-2 mb-2">

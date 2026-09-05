@@ -30,7 +30,7 @@ const ShieldEarnedSheet = ({ shieldsBanked, onClose }: ShieldEarnedSheetProps) =
       <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in" />
       <div className="relative w-full max-w-md rounded-t-3xl border-t border-border bg-card shadow-2xl animate-in slide-in-from-bottom-8 duration-300 pb-[calc(env(safe-area-inset-bottom)+20px)]">
         <div className="flex justify-center pt-2.5 pb-1"><div className="h-1 w-10 rounded-full bg-white/15" /></div>
-        <button onClick={onClose} aria-label="Close" className="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full bg-secondary/70 text-muted-foreground active:scale-90 transition-transform"><X aria-hidden size={16} /></button>
+        <button onClick={onClose} aria-label="Close" className="absolute top-3 right-3 h-9 w-9 flex items-center justify-center rounded-full bg-secondary/70 text-muted-foreground before:absolute before:-inset-1.5 before:content-['']"><X aria-hidden size={16} /></button>
 
         <div className="px-6 pt-4 text-center">
           {/* Hero shield */}

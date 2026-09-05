@@ -38,25 +38,10 @@ const PRESSURE_QUOTES = [
   "Let the streak speak",
 ];
 
-const HIDDEN_ROUTES = new Set([
-  "/landing",
-  "/auth",
-  "/onboarding",
-  "/apple-username",
-  "/choose-username",
-  "/apple-auth-launch",
-  "/paywall",
-  "/reset-password",
-  "/privacy",
-  "/terms",
-  "/ios-debug",
-  // Check-in is a focused full-screen flow with its own header/back — the
-  // global brand bar on top was a double header eating vertical space.
-  "/checkin",
-  // NOTE: /profile is NOT hidden — it gets the sticky brand strip like every
-  // other tab (identity row stays Home/Leaderboard-only via showIdentity, so
-  // the hero below is still the single identity block).
-]);
+// The brand strip belongs to the four tab roots only. Every sub-page owns its
+// own PageBar (back + title + safe-top), so an allowlist replaces the old
+// ever-growing hidden-routes list — a new route is a sub-page by default.
+const BRAND_ROUTES = new Set(["/", "/squad", "/leaderboard", "/profile"]);
 
 const StatusHeader = () => {
   const { user, profile, isElite } = useAuth();
@@ -97,14 +82,7 @@ const StatusHeader = () => {
   });
 
   if (!user || !profile) return null;
-  if (HIDDEN_ROUTES.has(location.pathname)) return null;
-  if (
-    location.pathname.startsWith("/oauth") ||
-    location.pathname.startsWith("/callback") ||
-    location.pathname.startsWith("/~oauth") ||
-    location.pathname.startsWith("/u/")
-  )
-    return null;
+  if (!BRAND_ROUTES.has(location.pathname)) return null;
 
   // Canonical id — legacy 'normal' rows must behave exactly like recruit in
   // every ladder computation below (indexOf on the raw value returned -1).

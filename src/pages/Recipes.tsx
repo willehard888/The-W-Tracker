@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Clock, Snowflake, Refrigerator, Search, X, Utensils, Layers,
+  Clock, Snowflake, Refrigerator, Search, X, Utensils, Layers,
 } from "lucide-react";
 import { recipeThumb, recipeSquare } from "@/lib/recipe-images";
 import { fmtQty } from "@/lib/recipe-scaling";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
@@ -53,9 +54,9 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
   const totalMin = recipe.prepMin + recipe.cookMin;
 
   return (
-    <div className="flex flex-col">
-      {/* Photo runs edge to edge behind a floating back button — no header bar
-          competing with it for the top of a phone screen. */}
+    <div className="min-h-full">
+      <PageBar onBack={() => navigate("/recipes")} />
+      {/* Photo runs edge to edge under the bar; the fade hands off to the copy. */}
       <div className="relative">
         <RecipePhoto id={recipe.id} className="w-full aspect-[4/3]" />
         <div
@@ -63,18 +64,9 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
           className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
           style={{ background: "linear-gradient(to top, hsl(var(--background)), transparent)" }}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/recipes")}
-          aria-label="Back to recipes"
-          className="absolute left-3 top-3 rounded-full bg-background/70 backdrop-blur-sm"
-        >
-          <ArrowLeft size={18} />
-        </Button>
       </div>
 
-      <div className="home-rise px-4 pb-28 -mt-6 relative space-y-5">
+      <div className="home-rise px-4 pb-6 -mt-6 relative space-y-5">
         <div>
           <h1 className="font-display text-[26px] font-black tracking-tight leading-tight">{recipe.title}</h1>
           <p className="text-[13px] text-muted-foreground leading-snug mt-1.5">{recipe.blurb}</p>
@@ -223,15 +215,10 @@ const RecipeList = () => {
   }, [query, tag]);
 
   return (
-    <div className="flex flex-col">
-      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Back">
-          <ArrowLeft size={18} />
-        </Button>
-        <h1 className="font-display text-base font-black tracking-tight">Meal-prep recipes</h1>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Meal-prep recipes" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-3 pb-28">
+      <div className="px-4 pt-4 pb-6">
         {/* Search covers ingredients too — "what can I make with salmon" is the
             question people actually arrive with. */}
         <div className="relative">

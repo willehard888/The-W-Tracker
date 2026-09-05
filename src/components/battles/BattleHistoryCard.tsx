@@ -43,7 +43,7 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
         {isAdmin && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button aria-label="Battle options" className="p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground">
+              <button aria-label="Battle options" className="relative p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground before:absolute before:-inset-3 before:content-['']">
                 <MoreHorizontal size={14} />
               </button>
             </DropdownMenuTrigger>

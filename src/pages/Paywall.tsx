@@ -3,6 +3,7 @@ import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import {
   Crown, ArrowLeft, Loader2, ShieldCheck, Sparkles,
 } from "lucide-react";
@@ -106,7 +107,9 @@ const Paywall = () => {
   // ─── Already a member ────────────────────────────────────────
   if (isElite) {
     return (
-      <div className="min-h-full pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
+      <div className="min-h-full flex flex-col">
+        <PageBar onBack={() => navigate(-1)} />
+        <div className="flex-1 px-4 pt-4 pb-6 flex flex-col items-center justify-center text-center">
         <div className="h-20 w-20 rounded-full flex items-center justify-center mb-4 gradient-gold glow-gold">
           <Sparkles size={36} className="text-primary-foreground" strokeWidth={2.4} />
         </div>
@@ -131,6 +134,7 @@ const Paywall = () => {
           <Button variant="ember" onClick={() => navigate("/")}>
             <Crown size={14} /> Enter app
           </Button>
+        </div>
         </div>
       </div>
     );
@@ -210,17 +214,12 @@ const Paywall = () => {
 
   // ─── Render ──────────────────────────────────────────────────
   return (
-    <div className="min-h-full pb-8 px-4 pt-6 safe-top">
-      {/* Escape hatch — the bottom nav and header are hidden on /paywall, so
-          without this the page is a hard dead end (trial users tapping the
-          header pill were stuck). */}
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-2 h-10 w-10 rounded-full flex items-center justify-center bg-card/70 border border-border/60 active:scale-95 transition"
-        aria-label="Back"
-      >
-        <ArrowLeft size={18} />
-      </button>
+    <div className="min-h-full">
+      {/* The bar's back is the escape hatch — the bottom nav and brand header
+          are hidden on /paywall, so without it the page is a hard dead end. */}
+      <PageBar onBack={() => navigate(-1)} />
+
+      <div className="px-4 pt-4 pb-6">
 
       {subscriptionLoading && !isElite && (
         <div className="mb-4 flex items-center justify-center gap-2 rounded-xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground">
@@ -312,6 +311,7 @@ const Paywall = () => {
         >
           Terms of Use
         </button>
+      </div>
       </div>
     </div>
   );

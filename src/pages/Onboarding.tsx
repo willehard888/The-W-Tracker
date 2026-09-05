@@ -9,6 +9,7 @@ import { track, FUNNEL } from "@/lib/analytics";
 import { hapticNotification } from "@/lib/haptics";
 import { usePushControls } from "@/hooks/use-push-notifications";
 import ConfettiBurst from "@/components/ConfettiBurst";
+import { Button } from "@/components/ui/button";
 import OnboardingQuestion from "@/components/onboarding/OnboardingQuestion";
 import {
   WelcomeSlide,
@@ -162,12 +163,14 @@ const Onboarding = () => {
             {qIndex >= 0 && (
               <span className="eyebrow shrink-0">{qIndex + 1}/{QUESTION_STEPS.length}</span>
             )}
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => finish(true)}
-              className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-1 py-1 shrink-0"
+              className="min-h-11 -mr-3 text-xs font-medium text-muted-foreground shrink-0"
             >
               Skip
-            </button>
+            </Button>
           </>
         ) : null}
       </div>

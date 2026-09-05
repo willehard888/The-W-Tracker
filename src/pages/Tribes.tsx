@@ -596,7 +596,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 onClick={() => { tabTouched.current = true; void hapticSelection(); setTab(t); }}
                 aria-pressed={active}
                 className={cn(
-                  "relative pb-2 text-[12px] font-black uppercase tracking-wider transition-colors",
+                  "relative min-h-11 inline-flex items-end pb-2 text-[12px] font-black uppercase tracking-wider transition-colors",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground/80",
                 )}
               >

@@ -10,6 +10,7 @@ import BattleChallengeModal from "@/components/battles/BattleChallengeModal";
 import ImageLightbox from "@/components/ImageLightbox";
 import GridMedia from "@/components/feed/GridMedia";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import BadgeCard from "@/components/BadgeCard";
 import EmptyState from "@/components/ui/empty-state";
 import HeadToHead from "@/components/HeadToHead";
@@ -225,10 +226,21 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-full pb-6 relative">
+      <PageBar
+        onBack={() => navigate(-1)}
+        action={
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-full border border-border/50 bg-card/40 backdrop-blur-sm"
+          >
+            <Share2 size={12} /> Share
+          </button>
+        }
+      />
       {/* Hero — full-bleed variant of the shared tier surface */}
       <div
         className={cn(
-          "relative px-4 pt-12 pb-6 overflow-hidden border-x-0 border-t-0 rounded-none",
+          "relative px-4 pt-6 pb-6 overflow-hidden border-x-0 border-t-0 rounded-none",
           heroSurface.bgClass,
         )}
       >
@@ -237,21 +249,6 @@ const UserProfile = () => {
           className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-64 blur-3xl opacity-60"
           style={{ background: heroSurface.glowStyle }}
         />
-
-        <div className="relative z-10 flex items-center justify-between mb-6 safe-top">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft size={16} /> Back
-          </button>
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-full border border-border/50 bg-card/40 backdrop-blur-sm"
-          >
-            <Share2 size={12} /> Share
-          </button>
-        </div>
 
         <div className="relative z-10 text-center">
           {/* Shared identity block — identical to /profile (page owns the

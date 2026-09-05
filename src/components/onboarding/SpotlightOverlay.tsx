@@ -180,7 +180,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
               onSkip();
             }}
             aria-label="Skip"
-            className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors"
+            className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
           >
             <X size={15} />
           </button>

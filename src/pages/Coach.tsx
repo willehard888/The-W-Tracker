@@ -46,13 +46,13 @@ const Coach = () => {
   const [hasSeed] = useState(() => {
     try { return !!new URLSearchParams(window.location.search).get("seed"); } catch { return false; }
   });
+  // `logs`, `currentWeek` and `todayDayIndex` were destructured here and never
+  // read once — this screen links to the program, it does not render it.
+  // ProgramCard pulls its own copy from the same cached query.
   const {
     isLoading,
     error: programError,
     program,
-    logs,
-    currentWeek,
-    todayDayIndex,
     refetch,
   } = useCoachProgram();
   const {

@@ -1,3 +1,4 @@
+import { isRestDay } from "@/lib/training/session";
 import { useMemo, useState } from "react";
 import { Check, ChevronDown, Loader2, Wind } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,18 +42,27 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
   const alreadyLogged = !!todayLog;
 
   if (!day) return null;
-  const isRest = day.focus.toLowerCase() === "rest";
+  const isRest = isRestDay(day);
 
   const markDone = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("coach_program_logs").insert({
-      user_id: user.id,
-      program_id: program.id,
-      week: currentWeek,
-      day_index: todayDayIndex,
-      completed: true,
-    });
+    // Upsert, not insert. The table carries UNIQUE(program_id, week, day_index),
+    // so a plain insert 409s on any second attempt — which is what a retry after
+    // a flaky connection is, and what a stale `todayLog` would cause. The button
+    // is disabled once logged, so the conflict never surfaced as a visible bug,
+    // but it made the one write path in the training feature fragile for the
+    // exact case it most needed to survive: bad gym wifi.
+    const { error } = await supabase.from("coach_program_logs").upsert(
+      {
+        user_id: user.id,
+        program_id: program.id,
+        week: currentWeek,
+        day_index: todayDayIndex,
+        completed: true,
+      },
+      { onConflict: "program_id,week,day_index" },
+    );
     setSaving(false);
     if (error) { toast.error("Couldn't log session."); return; }
     hapticNotification("success");

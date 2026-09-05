@@ -1,3 +1,4 @@
+import { isRestDay } from "@/lib/training/session";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
@@ -27,19 +28,22 @@ const WeekStrip = ({ program, currentWeek, todayDayIndex, logs, onSelect }: Prop
         {week.days.map((d, i) => {
           const done = logs.some((l) => l.week === currentWeek && l.day_index === i && l.completed);
           const isToday = i === todayDayIndex;
-          const isRest = d.focus.toLowerCase() === "rest";
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => { hapticImpact("light"); onSelect?.(i); }}
-              className={cn(
-                "rounded-xl p-2 text-center border transition-all",
-                isToday
-                  ? "border-gold/60 bg-gradient-to-b from-gold/15 to-transparent"
-                  : "border-border/30 bg-background/30",
-              )}
-            >
+          const isRest = isRestDay(d);
+          // Only a real handler makes these buttons. `CoachProgramDetail`
+          // renders the strip WITHOUT `onSelect`, so every one of the seven
+          // days was a focusable, haptic-firing button that did nothing —
+          // it announced itself to a screen reader as actionable and then
+          // ignored the tap. Without a handler it is what it actually is:
+          // a read-only week overview.
+          const label = `${SHORT[i]}${isToday ? " · today" : ""}${done ? " · done" : isRest ? " · rest" : ""}`;
+          const className = cn(
+            "rounded-xl p-2 text-center border transition-all",
+            isToday
+              ? "border-gold/60 bg-gradient-to-b from-gold/15 to-transparent"
+              : "border-border/30 bg-background/30",
+          );
+          const inner = (
+            <>
               <p className={cn(
                 "text-[10px] font-black uppercase tracking-widest mb-0.5",
                 isToday ? "text-gold" : "text-muted-foreground/70",
@@ -52,7 +56,23 @@ const WeekStrip = ({ program, currentWeek, todayDayIndex, logs, onSelect }: Prop
                   done ? "bg-gold shadow-[0_0_6px_hsl(var(--gold))]" : isRest ? "bg-muted-foreground/30" : "bg-foreground/40",
                 )} />
               </div>
+            </>
+          );
+
+          return onSelect ? (
+            <button
+              key={i}
+              type="button"
+              aria-label={label}
+              onClick={() => { hapticImpact("light"); onSelect(i); }}
+              className={cn(className, "active:scale-95")}
+            >
+              {inner}
             </button>
+          ) : (
+            <div key={i} aria-label={label} className={className}>
+              {inner}
+            </div>
           );
         })}
       </div>

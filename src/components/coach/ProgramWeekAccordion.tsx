@@ -1,3 +1,4 @@
+import { isRestDay } from "@/lib/training/session";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
@@ -73,7 +74,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                   </p>
                 )}
                 {(week.days ?? []).map((day, di) => {
-                  const isRest = (day.focus ?? "").toLowerCase() === "rest";
+                  const isRest = isRestDay(day);
                   const isLogged = logs.some((l) => l.week === week.week && l.day_index === di && l.completed);
                   const dayKey = `${week.week}-${di}`;
                   const dayOpen = openDay === dayKey;

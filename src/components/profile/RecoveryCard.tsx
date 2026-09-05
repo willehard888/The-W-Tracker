@@ -35,7 +35,7 @@ const RecoveryCard = () => {
       <button
         type="button"
         onClick={() => navigate("/coach")}
-        className="w-full text-left rounded-2xl border border-border/50 bg-card/50 p-4 transition-transform"
+        className="w-full text-left surface-card surface-card-quiet p-4"
       >
         <div className="flex items-center gap-2 mb-1">
           <HeartPulse size={13} className="text-[hsl(var(--ember))]" />
@@ -101,13 +101,7 @@ const RecoveryCard = () => {
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border p-4",
-        underRecovered ? "border-[hsl(var(--ember))]/40 bg-gradient-to-br from-[hsl(var(--ember))]/[0.07] via-card/95 to-card"
-          : "border-xp-green/35 bg-gradient-to-br from-xp-green/[0.06] via-card/95 to-card",
-      )}
-    >
+    <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-center gap-2 mb-2.5">
         <HeartPulse size={13} className={underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green"} />
         <p className="eyebrow text-muted-foreground/80">Recovery · last night</p>
@@ -155,7 +149,7 @@ const RecoveryCard = () => {
       {/* 14-night RHR trajectory — proof of getting fitter over time, not just
           last night. Falling line = improving; labeled so DOWN reads as good. */}
       {rhrTrend.length >= 5 && (
-        <div className="mb-3 surface-card surface-card-quiet px-3 py-2">
+        <div className="mb-3 surface-inset rounded-xl px-3 py-2">
           <div className="flex items-center justify-between mb-1">
             <p className="eyebrow-sm text-muted-foreground/60">
               Resting HR · {rhrTrend.length} nights
@@ -185,7 +179,7 @@ const RecoveryCard = () => {
               type="button"
               onClick={() => toggleFactor(f)}
               className={cn(
-                "press rounded-full px-2.5 py-1 text-[11px] font-bold border transition-all capitalize",
+                "relative min-h-9 rounded-full px-3 text-[11px] font-bold border transition-colors capitalize before:absolute before:-inset-1 before:content-['']",
                 on ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
               )}
             >
@@ -198,7 +192,7 @@ const RecoveryCard = () => {
       <button
         type="button"
         onClick={() => navigate("/coach")}
-        className="eyebrow w-full inline-flex items-center justify-center gap-1 rounded-xl bg-secondary/40 border border-border/50 py-2 text-gold/90 transition-transform"
+        className="eyebrow w-full min-h-11 inline-flex items-center justify-center gap-1 surface-inset rounded-xl text-foreground/85"
       >
         Ask coach why <ChevronRight size={13} />
       </button>

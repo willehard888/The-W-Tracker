@@ -66,26 +66,20 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
     <button
       type="button"
       onClick={() => navigate("/coach/profile")}
-      className={cn(
-        "w-full text-left rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.05] via-card/95 to-card",
-        "p-5 transition-transform shadow-[0_18px_48px_-24px_hsl(var(--gold)/0.4)]",
-        className,
-      )}
+      className={cn("w-full text-left surface-card surface-card-quiet p-4", className)}
       aria-label="Edit your AI Coach blueprint"
     >
       <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shrink-0 shadow-[0_0_14px_hsl(var(--gold)/0.4)]">
-          <Sparkles size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} aria-hidden />
-        </div>
+        <Sparkles size={14} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
         <div className="min-w-0 flex-1">
-          <p className="eyebrow text-gold/80">
+          <p className="eyebrow">
             Your blueprint
           </p>
           <p className="text-sm font-bold text-foreground">
             How the Coach sees you
           </p>
         </div>
-        <ChevronRight size={16} className="text-gold/60 shrink-0 mt-1.5" aria-hidden />
+        <ChevronRight size={14} className="text-muted-foreground/75 shrink-0 mt-0.5" aria-hidden />
       </div>
 
       {/* The "why" — the identity the user is training toward. Headline of the
@@ -93,7 +87,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
           detail. Falls back gracefully when not yet authored. */}
       {why && (
         <div className="mt-4">
-          <p className="eyebrow-sm text-gold/70 mb-1">
+          <p className="eyebrow-sm mb-1">
             Who I'm becoming
           </p>
           <p className="font-display text-[17px] font-black leading-snug tracking-tight text-foreground">
@@ -114,7 +108,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
       {hobbies.length > 0 && (
         <div className="mt-3 flex items-center gap-2 flex-wrap">
           <span className="eyebrow inline-flex items-center gap-1 text-muted-foreground/70">
-            <Heart size={12} className="text-gold/70" aria-hidden /> Joy
+            <Heart size={12} aria-hidden /> Joy
           </span>
           {hobbies.map((h) => (
             <span
@@ -128,7 +122,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
       )}
 
       {lifeContext && (
-        <p className="mt-3 text-[12px] italic text-muted-foreground/85 leading-relaxed border-l-2 border-gold/40 pl-3 line-clamp-2">
+        <p className="mt-3 text-[12px] italic text-muted-foreground/85 leading-relaxed line-clamp-2">
           "{lifeContext}"
         </p>
       )}
@@ -145,9 +139,9 @@ const Row = ({
   label: string;
   value: string;
 }) => (
-  <div className="rounded-2xl border border-border/40 bg-card/60 px-3 py-2 min-w-0">
+  <div className="surface-inset rounded-xl px-3 py-2 min-w-0">
     <div className="flex items-center gap-1 text-muted-foreground/70 mb-0.5">
-      <span className="text-gold/80 shrink-0">{icon}</span>
+      <span className="shrink-0">{icon}</span>
       <p className="eyebrow-sm">{label}</p>
     </div>
     <p className="text-[12px] font-bold text-foreground/95 leading-tight truncate">{value}</p>

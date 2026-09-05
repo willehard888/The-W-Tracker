@@ -1,14 +1,10 @@
-
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { fmtRelative } from "@/lib/format";
-import { fmtInt } from "@/lib/format";
-import { Flame, Award, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, CalendarCheck, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils } from "lucide-react";
+import { fmtInt, fmtRelative } from "@/lib/format";
+import { Flame, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils, Compass } from "lucide-react";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsList";
-import { isNativePlatform } from "@/lib/platform";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import RecoveryCard from "@/components/profile/RecoveryCard";
-import JourneyCard from "@/components/profile/JourneyCard";
 import ProfileHero from "@/components/profile/ProfileHero";
 import AppImage from "@/components/ui/app-image";
 import { downscaleImage } from "@/lib/downscale-image";
@@ -18,7 +14,6 @@ import BadgeVault from "@/components/BadgeVault";
 import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -92,9 +87,6 @@ const Profile = () => {
   // (sign-out + delete + subscription management). The hero card above
   // stays always visible because it's the identity.
   const [profileTab, setProfileTab] = useState<"stats" | "badges" | "settings">("stats");
-  // Always-visible "…" menu — user feedback: logout buttons "disappeared"
-  // because they're inside the Settings tab. This menu makes them reachable
-  // in one tap from any tab.
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -389,34 +381,37 @@ const Profile = () => {
 
   const tier = profile.status_tier || 'recruit';
   const tierConfig = getTierConfig(tier);
-  // Hero gradient now comes from the shared getTierHeroSurface ladder
-  // (inside ProfileHero) — one tier ladder for every profile hero.
+  // Opening beat — identity, earned, stated once. Day one gets its own line
+  // instead of "Lv 1. 0-day best."
+  const best = profile.longest_streak ?? 0;
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-6">
-      {/* Always-visible quick menu — Sign Out + Delete Account are also in
-          the Settings tab, but users frequently miss them. This kebab menu
-          surfaces them in one tap from any tab. */}
-      <div className="flex justify-end mb-2">
+    <div className="min-h-full px-4 pt-4 pb-6">
+      {/* ── OPENING BEAT + the one action. Sign Out sits in this menu too:
+             users kept missing it inside the Settings tab. ── */}
+      <header className="home-rise flex items-center justify-between gap-3 mb-4">
+        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          {best > 0 ? `Lv ${profile.level ?? 1}. ${best}-day best.` : "Recruit. Day one."}
+        </h1>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="Account menu">
+            <Button variant="ghost" size="icon-sm" aria-label="Account menu" className="shrink-0">
               <MoreVertical aria-hidden size={18} />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuItem onClick={() => { hapticSelection(); setProfileTab("settings"); }}>
-              <SettingsIcon aria-hidden size={14} className="mr-2 text-gold" /> Open Settings
+              <SettingsIcon aria-hidden size={14} className="mr-2 text-muted-foreground" /> Open Settings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { hapticSelection(); signOut(); }}>
-              <LogOut aria-hidden size={14} className="mr-2 text-gold" /> Sign Out
+              <LogOut aria-hidden size={14} className="mr-2 text-muted-foreground" /> Sign Out
             </DropdownMenuItem>
             {/* Delete Account lives ONLY in Settings behind the
                 type-to-confirm dialog — no quick path to a destructive
                 action from a kebab menu. */}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </header>
 
       <BadgeUnlockModal badge={previewBadge} onClose={() => setPreviewBadge(null)} />
       <StoryShareModal
@@ -426,8 +421,7 @@ const Profile = () => {
         badgeData={shareModal.badgeData}
       />
 
-
-      {/* Profile Header — cinematic hero card, themed by tier */}
+      {/* ── HERO — the identity card, themed by tier. ── */}
       <ProfileHero
         profile={profile}
         isApexSubscriber={isApexSubscriber}
@@ -446,13 +440,13 @@ const Profile = () => {
       />
 
       {/* Tabs — the app-wide segmented control language */}
-      <div className={cn(SEGMENT_TRACK, "mb-4")}>
+      <div className={cn(SEGMENT_TRACK, "home-rise home-rise-2 mb-5")}>
         {(["stats", "badges", "settings"] as const).map((t) => (
           <button
             key={t}
             onClick={() => { void hapticSelection(); setProfileTab(t); }}
             className={cn(
-              "eyebrow flex-1 py-2 rounded-lg transition-all",
+              "eyebrow flex-1 min-h-11 rounded-lg transition-colors",
               profileTab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -465,68 +459,62 @@ const Profile = () => {
       {profileTab === "stats" && (
       <div className="space-y-3">
 
-      {/* Hard numbers first — the lifetime scoreboard. Gated on the queries
-          so the tiles never flash plausible-looking zeros while loading. */}
+      {/* ── STANDING — the lifetime scoreboard as one quiet line, not four
+             tiles. Gated on the queries so it never flashes plausible zeros. ── */}
       {(checkinTotal === undefined || battleStats === undefined || kudosReceived === undefined) ? (
-        <div className="grid grid-cols-2 gap-2">
-          {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton-block h-[62px] rounded-2xl" />)}
-        </div>
+        <div className="skeleton-block h-[46px] rounded-2xl" />
       ) : (
-      <div className="grid grid-cols-2 gap-2 home-rise home-rise-1">
-        {[
-          { icon: CalendarCheck, label: "Check-ins", value: checkinTotal ?? 0, accent: "text-gold" },
-          { icon: Flame, label: "Best streak", value: `${profile.longest_streak ?? 0}d`, accent: "text-[hsl(var(--ember))]" },
-          { icon: Award, label: "Battles won", value: battleStats?.won || 0, accent: "text-[hsl(var(--rose))]" },
-          { icon: Trophy, label: "Kudos received", value: kudosReceived || 0, accent: "text-gold" },
-        ].map((s) => (
-          <div key={s.label} className="surface-card p-3.5 flex items-center gap-3">
-            <s.icon aria-hidden size={16} className={cn("shrink-0", s.accent)} />
-            <div className="min-w-0">
-              <p className="font-display font-black text-lg leading-none tabular-nums">{s.value}</p>
-              <p className="eyebrow mt-1">{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        <div className="home-rise home-rise-1 surface-card surface-card-quiet flex items-baseline gap-x-4 gap-y-0.5 flex-wrap px-4 py-3">
+          <Standing value={checkinTotal} label={checkinTotal === 1 ? "check-in" : "check-ins"} />
+          <Standing value={battleStats.won} label={battleStats.won === 1 ? "battle won" : "battles won"} />
+          <Standing value={kudosReceived} label="kudos" />
+        </div>
       )}
 
-      {/* Whealth Index — the headline metric, from the nightly snapshot */}
-      {whealthSnapshots && whealthSnapshots.length > 0 && (() => {
+      {/* ── W-INDEX — the one felt number; the door to /journey. Without a
+             snapshot yet, the same door is a quiet row. ── */}
+      {whealthSnapshots && whealthSnapshots.length > 0 ? (() => {
         const latest = whealthSnapshots[0];
         const series = [...whealthSnapshots].reverse();
         const points = series
           .map((s, i) => `${(i / Math.max(1, series.length - 1)) * 100},${34 - (s.overall / 100) * 30}`)
           .join(" ");
         return (
-          <button
-            type="button"
-            onClick={() => navigate("/journey")}
-            className="w-full text-left surface-card p-4 flex items-center gap-4 home-rise home-rise-1 transition-transform"
-          >
-            <div className="shrink-0">
-              <p className="font-display font-black text-3xl leading-none text-gold tabular-nums">{latest.overall}</p>
-              <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
-            </div>
-            <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
-              <polyline
-                points={points}
-                fill="none"
-                stroke="hsl(var(--gold))"
-                strokeOpacity="0.7"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-            <ChevronRight aria-hidden size={16} className="text-muted-foreground/75 shrink-0" />
-          </button>
+          <div className="home-rise home-rise-2">
+            <button
+              type="button"
+              onClick={() => navigate("/journey")}
+              className="w-full text-left surface-card surface-card-quiet p-4 flex items-center gap-4"
+            >
+              <div className="shrink-0">
+                <p className="font-display font-black text-3xl leading-none text-gold glow-gold-text tabular-nums">{latest.overall}</p>
+                <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
+              </div>
+              <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
+                <polyline
+                  points={points}
+                  fill="none"
+                  stroke="hsl(var(--gold))"
+                  strokeOpacity="0.7"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+              <ChevronRight aria-hidden size={16} className="text-muted-foreground/75 shrink-0" />
+            </button>
+          </div>
         );
-      })()}
+      })() : (
+        <div className="home-rise home-rise-2 surface-card surface-card-quiet overflow-hidden">
+          <SettingsRow icon={Compass} label="Your journey" sub="Trends, momentum & your reflection diary" onClick={() => navigate("/journey")} />
+        </div>
+      )}
 
       {/* Rank Position */}
       {rankData && (
-        <div className="home-rise home-rise-1">
+        <div className="home-rise home-rise-3">
           <RankPressureCard
             tier={tier}
             rank={rankData.rank}
@@ -539,77 +527,54 @@ const Profile = () => {
       )}
 
       {/* Live Rivals — who's ahead, who's behind */}
-      <div className="home-rise home-rise-1">
+      <div className="home-rise home-rise-3">
         <LiveRivals userId={profile.user_id} myScore={Number(profile.rank_score) || 0} />
       </div>
 
-      {/* Your Journey — the growth mirror: trends + reflection diary */}
-      <div className="home-rise home-rise-2">
-        <JourneyCard />
-      </div>
-
       {/* Strength progression — PRs + climbing lifts this week */}
-      <div className="home-rise home-rise-2">
-        <ProgressionSummaryCard />
-      </div>
+      <ProgressionSummaryCard />
 
       {/* Recovery — last night's sleep + heart rate, causal "why" via coach */}
-      <div className="home-rise home-rise-2">
-        <RecoveryCard />
-      </div>
+      <RecoveryCard />
 
       {/* Your Blueprint — Coach's read of who you are. Renders null when
           the user hasn't completed AthleteProfileOnboarding yet. */}
-      <div className="home-rise home-rise-2">
-        <ErrorBoundary fallback={<></>}>
-          <YourBlueprintCard />
-        </ErrorBoundary>
-      </div>
+      <ErrorBoundary fallback={<></>}>
+        <YourBlueprintCard />
+      </ErrorBoundary>
 
       {/* Coach voice: one-line read of the week through Coach's eyes. */}
-      <div className="home-rise home-rise-2">
-        <ErrorBoundary fallback={<></>}>
-          <ProfileCoachLine />
-        </ErrorBoundary>
-      </div>
+      <ErrorBoundary fallback={<></>}>
+        <ProfileCoachLine />
+      </ErrorBoundary>
 
       {/* Tier Ladder — full progression map */}
-      <div className="home-rise home-rise-3">
-        <TierLadder currentTier={profile.status_tier || "recruit"} />
-      </div>
+      <TierLadder currentTier={profile.status_tier || "recruit"} />
 
-      {/* Road to Elite — earned-status progress (moved here from Settings) */}
-      <div className="home-rise home-rise-3">
-        <RoadToElite />
-      </div>
+      {/* Road to Elite — earned-status progress */}
+      <RoadToElite />
 
       {/* Verified Performer — connect HealthKit to earn unfakeable status.
           Self-hides on non-iOS / when probing (component handles it). */}
-      <div className="home-rise home-rise-3">
-        <HealthKitConnectCard />
-      </div>
+      <HealthKitConnectCard />
 
-      {/* Weekly Sleep — recovery context / XP multiplier (moved here from Settings) */}
-      {weeklySleep && (
-        <div className="home-rise home-rise-3">
-          <WeeklySleepCard data={weeklySleep} />
-        </div>
-      )}
+      {/* Weekly Sleep — recovery context / XP multiplier */}
+      {weeklySleep && <WeeklySleepCard data={weeklySleep} />}
 
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
-        <div className="home-rise home-rise-4">
+        <div>
           <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPostsTotal})</h2>
           <div className="space-y-3">
             {userPosts.map((post) => (
-              <div key={post.id} className="surface-card p-4">
+              <div key={post.id} className="surface-card surface-card-quiet p-4">
                 {post.content && <p className="text-base mb-2">{post.content}</p>}
                 {post.image_url && (
                   <AppImage src={post.image_url} width={600} alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart aria-hidden size={12} /> {post.likes_count}</span>
-                  <span className="flex items-center gap-1"><Trophy aria-hidden size={12} className="text-gold" /> {post.kudos_count}</span>
+                  <span className="flex items-center gap-1"><Trophy aria-hidden size={12} /> {post.kudos_count}</span>
                   <span className="flex items-center gap-1"><MessageSquare aria-hidden size={12} /> {post.comments_count}</span>
                   <span className="ml-auto">{fmtRelative(post.created_at)}</span>
                 </div>
@@ -624,17 +589,15 @@ const Profile = () => {
 
       {/* ─────────────────────── BADGES TAB ─────────────────────── */}
       {profileTab === "badges" && (
-        <div className="space-y-3">
-          <div className="home-rise home-rise-1">
-            <BadgeVault
-              allBadges={allBadges || []}
-              earnedBadgeIds={earnedBadgeIds || []}
-              progress={badgeProgress}
-              featuredBadgeId={profile.featured_badge_id}
-              onBadgeClick={(b) => setPreviewBadge(b)}
-              onSetFeatured={handleSetFeatured}
-            />
-          </div>
+        <div className="home-rise home-rise-1">
+          <BadgeVault
+            allBadges={allBadges || []}
+            earnedBadgeIds={earnedBadgeIds || []}
+            progress={badgeProgress}
+            featuredBadgeId={profile.featured_badge_id}
+            onBadgeClick={(b) => setPreviewBadge(b)}
+            onSetFeatured={handleSetFeatured}
+          />
         </div>
       )}
 
@@ -644,10 +607,8 @@ const Profile = () => {
 
           {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
           {isElite && (
-            <div className="home-rise home-rise-1 surface-card p-3 flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-xp-green/10 border border-xp-green/30 flex items-center justify-center shrink-0">
-                <CreditCard aria-hidden size={14} className="text-xp-green" />
-              </div>
+            <div className="home-rise home-rise-1 surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
+              <CreditCard aria-hidden size={14} className="text-xp-green shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="eyebrow text-xp-green/90">
                   Membership active
@@ -775,6 +736,14 @@ const Profile = () => {
     </div>
   );
 };
+
+/** One inline number + label of the standing line. */
+const Standing = ({ value, label }: { value: number; label: string }) => (
+  <span className="inline-flex items-baseline gap-1">
+    <span className="font-display font-black text-[17px] tabular-nums leading-none">{fmtInt(value)}</span>
+    <span className="text-[11px] text-muted-foreground">{label}</span>
+  </span>
+);
 
 /** Scoped Coach line on Profile — null when hook is loading or empty. */
 const ProfileCoachLine = () => {

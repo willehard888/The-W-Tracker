@@ -51,7 +51,7 @@ const ProfileHero = ({
 
   return (
     <div className={cn(
-      "home-rise relative mb-6 overflow-hidden rounded-3xl border p-6 pt-8 pb-7",
+      "home-rise home-rise-1 relative mb-6 overflow-hidden rounded-3xl border p-6 pt-8 pb-7",
       surface.bgClass,
     )}>
       {/* Top vignette glow */}
@@ -103,7 +103,7 @@ const ProfileHero = ({
               onClick={() => avatarInputRef.current?.click()}
               disabled={uploadingAvatar}
               aria-label="Change profile photo"
-              className="press absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-all hover:bg-gold/10 "
+              className="absolute -bottom-1 -right-1 h-10 w-10 rounded-full bg-background border border-gold/40 flex items-center justify-center transition-colors hover:bg-gold/10 before:absolute before:-inset-1 before:content-['']"
             >
               {uploadingAvatar ? (
                 <span className="text-[11px] text-gold animate-pulse">…</span>

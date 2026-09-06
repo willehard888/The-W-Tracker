@@ -223,6 +223,10 @@ const DailyCheckin = () => {
   // Apple Health auto-detected signals for today (workout / steps / sleep / mindful).
   const [detected, setDetected] = useState<Partial<Record<VerifySignal, boolean>>>({});
   const [detectedWorkoutMin, setDetectedWorkoutMin] = useState<number | null>(null);
+  // Where the workout signal came from: Health saw one, or the app's own
+  // runner finished a session. The banner names the right source.
+  const [healthWorkout, setHealthWorkout] = useState(false);
+  const [sessionLogged, setSessionLogged] = useState(false);
   const sleepPrefilled = useRef(false);
   const stepsPrefilled = useRef(false);
   const proteinPrefilled = useRef(false);
@@ -287,6 +291,7 @@ const DailyCheckin = () => {
       const mindDone = (snap.mindful_minutes ?? 0) > 0;
       const sleepKnown = snap.sleep_hours != null && snap.sleep_hours > 0;
       setDetected((d) => ({ ...d, workout: workoutDone, steps: stepsDone, mindfulness: mindDone, sleep: sleepKnown }));
+      if (workoutDone) setHealthWorkout(true);
       if (snap.workout_minutes) setDetectedWorkoutMin(snap.workout_minutes);
       // Prefill sleep slider from HealthKit once (user can still adjust).
       if (sleepKnown && !sleepPrefilled.current) {
@@ -334,6 +339,7 @@ const DailyCheckin = () => {
     if (!sessionDoneToday) return;
     // Marks the habit as verified, exactly as a confirmed HealthKit workout does.
     setDetected((d) => (d.workout ? d : { ...d, workout: true }));
+    setSessionLogged(true);
     // Never override a choice already made. "Rest day" sets "none" on purpose,
     // and an async lookup must not turn that back into a workout.
     if (!sessionPrefilled.current && !sportTouched.current) {
@@ -882,10 +888,14 @@ const DailyCheckin = () => {
             <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
             <p className="text-xs text-foreground/90 leading-snug">
               <span className="font-semibold text-teal">
-                {detected.workout || detected.steps || detected.mindfulness || detected.sleep ? "Apple Health synced." : "Verified."}
+                {healthWorkout || detected.steps || detected.mindfulness || detected.sleep
+                  ? "Apple Health synced."
+                  : sessionLogged ? "Your session is logged." : "Verified."}
               </span>{" "}
               {[
-                detected.workout && `a ${detectedWorkoutMin ?? ""}${detectedWorkoutMin ? "-min " : ""}workout`,
+                detected.workout && (healthWorkout
+                  ? `a ${detectedWorkoutMin ?? ""}${detectedWorkoutMin ? "-min " : ""}workout`
+                  : "today's session"),
                 detected.steps && "8k+ steps",
                 detected.mindfulness && "meditation",
                 detected.sleep && "your sleep",

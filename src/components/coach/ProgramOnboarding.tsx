@@ -81,6 +81,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
             block,
             goal: profile.primary_goal,
             equipment: profile.equipment,
+            injuries: profile.injuries,
           });
           try { localStorage.removeItem(DRAFT_KEY); } catch {}
           hapticNotification("success");

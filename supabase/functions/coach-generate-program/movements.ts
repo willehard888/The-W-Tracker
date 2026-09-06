@@ -4,6 +4,9 @@
 // equipment and contraindications, then injects the allowed names into the
 // prompt so the model can only choose realistic, safe movements.
 
+import type { InjuryTag } from "../_shared/program-safety.ts";
+export type { InjuryTag };
+
 export type Pattern =
   | "squat" | "hinge"
   | "horizontal_push" | "vertical_push"
@@ -15,9 +18,6 @@ export type EquipmentTag =
   | "bodyweight" | "dumbbells" | "barbell" | "kettlebell"
   | "bands" | "machines" | "cable" | "pullup_bar"
   | "bench" | "rower" | "bike" | "treadmill" | "outdoor";
-
-export type InjuryTag =
-  | "lower_back" | "knee" | "shoulder" | "elbow" | "wrist" | "hip" | "neck" | "ankle";
 
 export interface Movement {
   name: string;
@@ -157,7 +157,6 @@ const EQUIPMENT_SYNONYMS: Record<string, EquipmentTag[]> = {
   rower: ["rower"],
   bike: ["bike"],
   treadmill: ["treadmill"],
-  outdoor: ["outdoor"],
   gym: ["barbell", "dumbbells", "kettlebell", "machines", "cable", "bench", "pullup_bar", "rower", "bike"],
   "full-gym": ["barbell", "dumbbells", "kettlebell", "machines", "cable", "bench", "pullup_bar", "rower", "bike"],
   // ── New onboarding presets (2026-05-21 simplification) ─────────────────
@@ -168,22 +167,33 @@ const EQUIPMENT_SYNONYMS: Record<string, EquipmentTag[]> = {
   combat_sport: ["bodyweight"], // bag/mat work — closest existing tag
 };
 
+// Matched at word START on lowercased text ("\bknee" hits "knee", "knees",
+// "kneecap"; not "whiplash" → hip), so Finnish stems cover their inflections.
+// MIRRORED in src/lib/training/injuries.ts — keep in sync (parity test).
 const INJURY_SYNONYMS: Record<string, InjuryTag[]> = {
   back: ["lower_back"],
-  "lower back": ["lower_back"],
-  "low back": ["lower_back"],
   lumbar: ["lower_back"],
+  selkä: ["lower_back"],
+  alaselkä: ["lower_back"],
+  lanne: ["lower_back"],
   knee: ["knee"],
-  knees: ["knee"],
+  polv: ["knee"],
   shoulder: ["shoulder"],
-  shoulders: ["shoulder"],
   rotator: ["shoulder"],
+  olkapä: ["shoulder"],
+  kiertäjäkalvosin: ["shoulder"],
   elbow: ["elbow"],
+  kyynärpä: ["elbow"],
   wrist: ["wrist"],
+  ranne: ["wrist"],
+  rante: ["wrist"],
   hip: ["hip"],
-  hips: ["hip"],
+  lonk: ["hip"],
   neck: ["neck"],
+  niska: ["neck"],
+  kaula: ["neck"],
   ankle: ["ankle"],
+  nilk: ["ankle"],
 };
 
 export const normalizeEquipment = (raw: string[] | null | undefined): Set<EquipmentTag> => {
@@ -196,15 +206,19 @@ export const normalizeEquipment = (raw: string[] | null | undefined): Set<Equipm
   return set;
 };
 
-export const normalizeInjuries = (raw: string[] | null | undefined): Set<InjuryTag> => {
+/**
+ * Free text → injury tags. Accepts the profile's text[] or one string, so
+ * "Knee", "Left knee (ACL 2019)" and "polvivamma" all land on `knee`. The old
+ * version needed the whole entry to equal a synonym, which the onboarding
+ * chips satisfied and nothing typed by hand ever did.
+ */
+export const normalizeInjuries = (raw: string | string[] | null | undefined): Set<InjuryTag> => {
   const set = new Set<InjuryTag>();
-  for (const r of raw ?? []) {
-    const key = String(r).trim().toLowerCase();
-    const mapped = INJURY_SYNONYMS[key];
-    if (mapped) mapped.forEach((t) => set.add(t));
-    // also try direct match if user typed e.g. "knee"
-    if (!mapped && (INJURY_SYNONYMS as any)[key.replace(/s$/, "")]) {
-      (INJURY_SYNONYMS as any)[key.replace(/s$/, "")].forEach((t: InjuryTag) => set.add(t));
+  const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  for (const item of items) {
+    const text = String(item).toLowerCase();
+    for (const [key, tags] of Object.entries(INJURY_SYNONYMS)) {
+      if (new RegExp(`\\b${key}`).test(text)) tags.forEach((t) => set.add(t));
     }
   }
   return set;
@@ -261,6 +275,8 @@ export const validateProgram = (
     allowedNames?: Set<string>;
     /** When provided, blocks are validated by `slug` against this set. */
     allowedSlugs?: Set<string>;
+    /** Slugs removed for this athlete's injuries/experience — named as such in violations. */
+    bannedSlugs?: Set<string>;
   },
 ): string[] => {
   const v: string[] = [];
@@ -301,7 +317,10 @@ export const validateProgram = (
       for (const b of blocks) {
         if (opts.allowedSlugs) {
           if (!b?.slug || !opts.allowedSlugs.has(String(b.slug))) {
-            v.push(`Week ${wk.week} ${day.day}: "${b?.name ?? b?.slug ?? "?"}" is not in the allowed exercise catalog (set a valid slug).`);
+            const why = opts.bannedSlugs?.has(String(b?.slug))
+              ? "is contraindicated for this athlete"
+              : "is not in the allowed exercise catalog (set a valid slug)";
+            v.push(`Week ${wk.week} ${day.day}: "${b?.name ?? b?.slug ?? "?"}" ${why}.`);
           }
         } else if (!b?.name || !opts.allowedNames?.has(String(b.name))) {
           v.push(`Week ${wk.week} ${day.day}: "${b?.name ?? "?"}" is not in the allowed movement list.`);

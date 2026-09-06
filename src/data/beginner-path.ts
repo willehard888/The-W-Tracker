@@ -41,6 +41,8 @@
  * meets a movement without a picture and real instruction, by construction.
  */
 
+import type { InjuryTag } from "@/lib/training/injuries";
+
 /** One movement, pinned to all three vocabularies at once. */
 export interface PathMovement {
   /**
@@ -84,6 +86,18 @@ export const PATH_MOVEMENTS = {
 } as const satisfies Record<string, PathMovement>;
 
 export type PathMovementKey = keyof typeof PATH_MOVEMENTS;
+
+/**
+ * What a movement becomes when the athlete's profile names an injury it loads.
+ * Targets are path movements too, so the three-vocabulary guarantee (photo,
+ * drawing, coaching) holds after a swap. A swap that duplicates a movement
+ * already in the session is dropped by `buildBeginnerPlan` — a knee on file
+ * gives "Full body C" one leg press, not two.
+ */
+export const PATH_SUBSTITUTIONS: Partial<Record<InjuryTag, Partial<Record<PathMovementKey, PathMovementKey>>>> = {
+  lower_back: { squat: "legPress", hinge: "legCurl" },
+  knee: { lunge: "legPress", stepUp: "legPress" },
+};
 
 /** One training day's movement order. Rest days are simply absent. */
 export interface PathSession {

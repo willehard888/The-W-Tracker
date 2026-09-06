@@ -1,8 +1,10 @@
 // coach-generate-program — Premium-only. Designs a fully personalized 4-week program
 // using the user's athlete profile, last 30d check-ins, last 14d reflections and active goals.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { validateProgram } from "./movements.ts";
-import { filterCatalog } from "../_shared/exercise-catalog.ts";
+import { validateProgram, normalizeInjuries } from "./movements.ts";
+import { EXERCISE_CATALOG, filterCatalog } from "../_shared/exercise-catalog.ts";
+import { PRIORITY_SLUGS } from "../_shared/illustrated-catalog.ts";
+import { bannedSlugs, stripUnallowedBlocks, thinDays } from "../_shared/program-safety.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -269,6 +271,8 @@ Deno.serve(async (req) => {
     const equipment_arr: string[] = profile.equipment ?? [];
     const equipment = equipment_arr.length ? equipment_arr.join(", ") : "Bodyweight only";
     const injuries: string[] = profile.injuries ?? [];
+    const injuryTags = normalizeInjuries(injuries);
+    const experience: string | null = profile.training_experience ?? null;
     const dietary: string[] = profile.dietary ?? [];
     const tone = String(profile.tone_pref ?? "calm_mentor");
     const horizon = profile.target_horizon_weeks ?? 12;
@@ -312,11 +316,21 @@ Deno.serve(async (req) => {
     const periodization = GOAL_PERIODIZATION[goal] ?? GOAL_PERIODIZATION.all;
     const toneRule = TONE_INSTRUCTIONS[tone] ?? TONE_INSTRUCTIONS.calm_mentor;
 
-    // Exercise catalog grounded to this athlete's equipment. Every exercise the
-    // AI picks maps to a real library entry (photo + step-by-step instructions)
-    // on the client, so programs are illustrated and self-explanatory.
-    const catalogItems = filterCatalog(equipment_arr, 200);
+    // Exercise catalog grounded to this athlete's equipment, minus anything
+    // contraindicated for their injuries or beyond their experience — those
+    // slugs never reach the model — and with the movements the app can
+    // demonstrate (drawing + rep animation + coaching) ordered first so they
+    // survive the 200 cap. Every exercise the AI picks maps to a real library
+    // entry on the client, so programs are illustrated and self-explanatory.
+    const banned = bannedSlugs(EXERCISE_CATALOG, injuryTags, experience);
+    const catalogItems = filterCatalog(equipment_arr, 200, { exclude: banned, priority: PRIORITY_SLUGS });
     const allowedSlugs = new Set(catalogItems.map((c) => c.slug));
+    const safetyLine = banned.size
+      ? `\n- ${banned.size} movements are excluded for this athlete (${[
+          injuryTags.size ? `contraindicated for: ${[...injuryTags].join(", ")}` : "",
+          `experience: ${experience ?? "not reported"}`,
+        ].filter(Boolean).join("; ")}) — already removed from the catalog below; do not invent substitutes outside it.`
+      : "";
     const catalogText = catalogItems
       .map((e) => `- ${e.slug} | ${e.name} | ${e.equipment} | ${e.mechanic} | ${e.primary}`)
       .join("\n");
@@ -332,7 +346,7 @@ NON-NEGOTIABLE COMPLETENESS (violating any = failure):
 - Training sessions ONLY on: ${train_days}. Every OTHER weekday MUST be focus="Rest", duration_min=0, blocks=[].
 - Each TRAINING day MUST have 4–6 working exercises in "blocks" — never 1–3, never shortcut.
 - duration_min ≤ ${session_min} on every training day.
-- Pick EVERY exercise ONLY from the catalog below. For each block, copy the catalog's slug into "slug" and its name into "name" — both EXACT, character for character. Never invent exercises or slugs. Don't repeat the same primary (first) lift on two consecutive training days in a week.
+- Pick EVERY exercise ONLY from the catalog below. For each block, copy the catalog's slug into "slug" and its name into "name" — both EXACT, character for character. Never invent exercises or slugs. Don't repeat the same primary (first) lift on two consecutive training days in a week.${safetyLine}
 
 HYPERTROPHY-FIRST GYM DESIGN (this athlete trains for real muscle growth):
 - Periodization for the goal: ${periodization}
@@ -491,9 +505,27 @@ the overload every week and explain it. Address the athlete in their preferred v
         trainDayNames,
         sessionMinCap: session_min,
         allowedSlugs,
+        bannedSlugs: banned,
       });
       if (violations.length) {
         console.warn("Program validation warnings (accepted anyway):", violations.slice(0, 5));
+      }
+      // A block outside the safe catalog is dropped, not shipped: the athlete
+      // must never be sent to a lunge with a knee on file. If that leaves a
+      // training day under 3 exercises the plan is refused — there is no
+      // second generation (two model calls blow the worker resource limit).
+      const stripped = stripUnallowedBlocks(parsed.plan, allowedSlugs);
+      if (stripped.removed.length) {
+        console.warn("Blocks outside the safe catalog removed:", stripped.removed);
+      }
+      parsed.plan = stripped.plan;
+      const thin = thinDays(parsed.plan);
+      if (thin.length) {
+        console.error("Program unsafe after strip — thin days:", thin);
+        return new Response(JSON.stringify({ error: "Coach couldn't build a safe day — try again" }), {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     } else {
       lastErr = result.rawErr ?? "unknown";
@@ -528,7 +560,11 @@ the overload every week and explain it. Address the athlete in their preferred v
         days_per_week,
         equipment,
         body_focus,
-        constraints: block_notes,
+        // The injury tags the catalog was filtered on travel with the row, so
+        // the program screen can say what the plan was built around.
+        constraints: [block_notes, injuryTags.size ? `injuries: ${[...injuryTags].join(", ")}` : ""]
+          .filter(Boolean)
+          .join("\n"),
         plan_json: planWithSig,
         ai_summary: parsed.ai_summary,
       })

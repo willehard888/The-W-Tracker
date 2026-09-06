@@ -11,6 +11,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 import { PATH_MOVEMENTS, type PathMovement } from "@/data/beginner-path";
+import type { InjuryTag } from "@/lib/training/injuries";
 import { findIllustrated } from "@/data/exercises-illustrated";
 import { coachingFor } from "@/data/exercise-coaching";
 
@@ -119,6 +120,50 @@ describe("beginner plan — block differences", () => {
     const w = buildBeginnerPlan(1).weeks;
     expect(w[0].days[0].blocks[0].rpe).toBeLessThan(w[3].days[0].blocks[0].rpe);
     expect(w[0].days[0].blocks[0].sets).toBeLessThan(w[3].days[0].blocks[0].sets);
+  });
+});
+
+describe("beginner plan — injuries", () => {
+  const slugsOn = (block: BeginnerBlock, dayIdx: number, injuries?: Set<InjuryTag>) =>
+    buildBeginnerPlan(block, injuries).weeks[0].days[dayIdx].blocks.map((b) => b.slug);
+
+  it("knee: lunges and step-ups become a leg press, never doubled in one session", () => {
+    const knee = new Set<InjuryTag>(["knee"]);
+    // Full body B: the lunge becomes a leg press.
+    expect(slugsOn(1, 2, knee)).toEqual(["Romanian_Deadlift", "Seated_Barbell_Military_Press", "Full_Range-Of-Motion_Lat_Pulldown", "Leg_Press"]);
+    // Full body C already has a leg press, so the swapped step-up is dropped rather than repeated.
+    expect(slugsOn(1, 4, knee)).toEqual(["Leg_Press", "Pushups", "Seated_Cable_Rows"]);
+    expect(slugsOn(2, 4, knee)).toEqual(["Leg_Press", "Pushups", "Pullups", "Crunches"]);
+  });
+
+  it("lower back: squat becomes a leg press and the hinge a leg curl", () => {
+    const back = new Set<InjuryTag>(["lower_back"]);
+    expect(slugsOn(1, 0, back)).toEqual(["Leg_Press", "Barbell_Bench_Press_-_Medium_Grip", "Seated_Cable_Rows", "Crunches"]);
+    expect(slugsOn(1, 2, back)[0]).toBe("Seated_Leg_Curl");
+    // Both at once, and an injury the path has no rule for, are handled together.
+    expect(slugsOn(1, 2, new Set<InjuryTag>(["shoulder", "lower_back", "knee"]))).toEqual(["Seated_Leg_Curl", "Seated_Barbell_Military_Press", "Full_Range-Of-Motion_Lat_Pulldown", "Leg_Press"]);
+  });
+
+  it("no injuries, or one without a rule, leaves the path as written", () => {
+    expect(slugsOn(1, 0)).toEqual(slugsOn(1, 0, new Set<InjuryTag>(["shoulder"])));
+    expect(slugsOn(1, 0)).toEqual(["Barbell_Squat", "Barbell_Bench_Press_-_Medium_Grip", "Seated_Cable_Rows", "Crunches"]);
+  });
+
+  it("every swapped block still has a picture and coaching", () => {
+    const plan = buildBeginnerPlan(2, new Set<InjuryTag>(["knee", "lower_back"]));
+    for (const w of plan.weeks) for (const d of w.days) for (const b of d.blocks) {
+      const m = byName.get(b.name);
+      expect(m, b.name).toBeTruthy();
+      expect(findIllustrated(b.name)?.slug).toBe(m!.illustratedSlug);
+      expect(coachingFor(m!.illustratedSlug)).toBeTruthy();
+    }
+  });
+
+  it("createBeginnerProgram normalises the profile's injury text itself", async () => {
+    await createBeginnerProgram({ userId: "u1", block: 1, injuries: ["Knee"] });
+    const inserted = db.insert.mock.calls[0][0] as { plan_json: ReturnType<typeof buildBeginnerPlan> };
+    expect(inserted.plan_json.weeks[0].days[2].blocks.map((b) => b.slug)).toContain("Leg_Press");
+    expect(inserted.plan_json.weeks[0].days[2].blocks.map((b) => b.slug)).not.toContain("Dumbbell_Lunges");
   });
 });
 

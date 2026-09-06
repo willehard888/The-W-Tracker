@@ -1,13 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import {
   PATH_MOVEMENTS,
+  PATH_SUBSTITUTIONS,
   BLOCK_1_SESSIONS,
   BLOCK_2_SESSIONS,
   BLOCK_1_WEEKS,
   BLOCK_2_WEEKS,
+  type PathMovementKey,
   type PathSession,
   type PathWeek,
 } from "@/data/beginner-path";
+import { normalizeInjuries, type InjuryTag } from "@/lib/training/injuries";
 
 /**
  * Turns the written beginner path into a program row.
@@ -53,12 +56,24 @@ type PlanDay = {
   conditioning: string;
 };
 
-const buildDay = (day: string, session: PathSession | null, week: PathWeek): PlanDay => {
+/** The session's movements with injury swaps applied; a swap that lands on a movement already in the session is dropped. */
+const substituteMovements = (keys: readonly PathMovementKey[], injuries?: Set<InjuryTag>): PathMovementKey[] => {
+  const swapped = keys.map((key) => {
+    for (const tag of injuries ?? []) {
+      const to = PATH_SUBSTITUTIONS[tag]?.[key];
+      if (to) return to;
+    }
+    return key;
+  });
+  return [...new Set(swapped)];
+};
+
+const buildDay = (day: string, session: PathSession | null, week: PathWeek, injuries?: Set<InjuryTag>): PlanDay => {
   if (!session) {
     return { day, focus: "Rest", duration_min: 0, blocks: [], conditioning: "" };
   }
 
-  const blocks = session.movements.map((key) => {
+  const blocks = substituteMovements(session.movements, injuries).map((key) => {
     const m = PATH_MOVEMENTS[key];
     return {
       // The catalog slug fetches the photo, the instructions and the logging
@@ -83,13 +98,13 @@ const buildDay = (day: string, session: PathSession | null, week: PathWeek): Pla
   return { day, focus: session.focus, duration_min, blocks, conditioning: "" };
 };
 
-const buildWeek = (week: PathWeek, sessions: PathSession[]) => ({
+const buildWeek = (week: PathWeek, sessions: PathSession[], injuries?: Set<InjuryTag>) => ({
   week: week.week,
   theme: week.theme,
   progression_note: week.progression_note,
   days: WEEK_DAYS.map((day, i) => {
     const trainIdx = TRAIN_DAY_INDEXES.indexOf(i as (typeof TRAIN_DAY_INDEXES)[number]);
-    return buildDay(day, trainIdx >= 0 ? sessions[trainIdx] : null, week);
+    return buildDay(day, trainIdx >= 0 ? sessions[trainIdx] : null, week, injuries);
   }),
   nutrition: {
     protein_g_per_kg: 1.6,
@@ -104,8 +119,8 @@ const buildWeek = (week: PathWeek, sessions: PathSession[]) => ({
   },
 });
 
-/** The whole 4-week block, in the shape the AI generator emits. */
-export const buildBeginnerPlan = (block: BeginnerBlock) => {
+/** The whole 4-week block, in the shape the AI generator emits. `injuries` swaps movements per `PATH_SUBSTITUTIONS`. */
+export const buildBeginnerPlan = (block: BeginnerBlock, injuries?: Set<InjuryTag>) => {
   const weeks = block === 1 ? BLOCK_1_WEEKS : BLOCK_2_WEEKS;
   const sessions = block === 1 ? BLOCK_1_SESSIONS : BLOCK_2_SESSIONS;
 
@@ -118,7 +133,7 @@ export const buildBeginnerPlan = (block: BeginnerBlock) => {
       // A number nobody reaches stops meaning anything by week two.
       perfect_days: 3,
     },
-    weeks: weeks.map((w) => buildWeek(w, sessions)),
+    weeks: weeks.map((w) => buildWeek(w, sessions, injuries)),
   };
 };
 
@@ -157,6 +172,8 @@ export const createBeginnerProgram = async (opts: {
   block: BeginnerBlock;
   goal?: string | null;
   equipment?: string[] | null;
+  /** The profile's free-text injuries; normalised here so the caller passes them through as-is. */
+  injuries?: string[] | null;
 }) => {
   const { userId, block } = opts;
 
@@ -180,7 +197,7 @@ export const createBeginnerProgram = async (opts: {
       body_focus: [],
       constraints: null,
       weeks: 4,
-      plan_json: buildBeginnerPlan(block),
+      plan_json: buildBeginnerPlan(block, normalizeInjuries(opts.injuries)),
       ai_summary: SUMMARY[block],
       generated_with: "written_beginner_path_v1",
     })

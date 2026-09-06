@@ -10,7 +10,22 @@ const EQUIP_ALIAS: Record<string, string[]> = {
   barbell: ["barbell"], dumbbell: ["dumbbell","dumbbells"], dumbbells: ["dumbbell","dumbbells"],
   kettlebell: ["kettlebells"], kettlebells: ["kettlebells"], machine: ["machine"],
   cable: ["cable","cables"], bands: ["bands","resistance bands"], bodyweight: ["bodyweight"], "body only": ["bodyweight"],
+  // The four onboarding presets (AthleteProfileOnboarding.tsx). Until these
+  // were mapped, "Full gym" matched no catalog equipment at all and the model
+  // was handed an EMPTY catalog — every slug it wrote was invented.
+  full_gym: ["barbell","dumbbell","machine","cable","kettlebells","bodyweight"],
+  home_minimal: ["dumbbell","bands","bodyweight"],
+  outdoor: ["bodyweight"],
+  combat_sport: ["bodyweight"],
 };
+
+/** Optional shaping of the pool — see `filterCatalog`. */
+export interface FilterCatalogOpts {
+  /** Slugs dropped before bucketing: contraindicated or beyond the athlete's experience. */
+  exclude?: Set<string>;
+  /** Slugs ordered first inside every bucket — the ones the app can demonstrate. */
+  priority?: string[];
+}
 
 /** Loaded / external-resistance equipment — the default for a gym program. */
 const WEIGHTED = new Set(["barbell", "dumbbell", "machine", "cable", "kettlebells"]);
@@ -22,21 +37,29 @@ const WEIGHTED = new Set(["barbell", "dumbbell", "machine", "cable", "kettlebell
  * COMPOUND staples (pull-ups, dips, chin-ups…), never the backbone — because the
  * athlete trains with external load and progresses by ADDING weight.
  * Falls back to bodyweight only when no weighted equipment is available at all.
+ *
+ * Each bucket is sliced to its cap, so ORDER decides what the model ever sees.
+ * Without `opts.priority` that order is the catalog's own (alphabetical), which
+ * put Clean from Blocks in front of Leg Press. With it, the priority slugs come
+ * first and the rest keep their alphabetical place (the sort is stable).
  */
-export function filterCatalog(equipment: string[] | null | undefined, cap = 200): CatalogItem[] {
+export function filterCatalog(equipment: string[] | null | undefined, cap = 200, opts: FilterCatalogOpts = {}): CatalogItem[] {
   const have = new Set<string>();
   for (const raw of equipment ?? []) {
     const key = String(raw).toLowerCase().trim();
     (EQUIP_ALIAS[key] ?? [key]).forEach((v) => have.add(v));
   }
-  const hasWeighted = [...have].some((e) => WEIGHTED.has(e));
   // No equipment listed → assume a fully-equipped gym (loaded movements available).
   const assumeFullGym = !equipment || equipment.length === 0;
 
   const equipOk = (e: CatalogItem) =>
-    assumeFullGym ? true : have.has(e.equipment);
+    (assumeFullGym || have.has(e.equipment)) && !opts.exclude?.has(e.slug);
 
-  const pool = EXERCISE_CATALOG.filter(equipOk);
+  const rank = new Map((opts.priority ?? []).map((s, i) => [s, i] as const));
+  const unranked = rank.size;
+  const pool = opts.priority
+    ? EXERCISE_CATALOG.filter(equipOk).sort((a, b) => (rank.get(a.slug) ?? unranked) - (rank.get(b.slug) ?? unranked))
+    : EXERCISE_CATALOG.filter(equipOk);
   const weighted = pool.filter((e) => WEIGHTED.has(e.equipment));
   const bodyweight = pool.filter((e) => !WEIGHTED.has(e.equipment));
 

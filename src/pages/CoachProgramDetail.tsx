@@ -141,9 +141,12 @@ const CoachProgramDetail = () => {
               />
             )}
 
+            {/* While the reveal speaks, nothing else does — the today card's
+                own ember would otherwise sit right under the reveal's. */}
+            {!justGenerated && (<>
             {/* The block is over: the next one is the screen's action, so it
                 sits up here as the ember and the quiet door below stays away. */}
-            {weekState.readyForNext && !justGenerated && isElite && !showRegen && (
+            {weekState.readyForNext && isElite && !showRegen && (
               <Button variant="ember" size="lg" className="w-full" onClick={() => setShowRegen(true)}>
                 Build my next block
               </Button>
@@ -183,6 +186,7 @@ const CoachProgramDetail = () => {
               // "what changed and why" is the whole question there too.
               <ProgramOnboarding onGenerated={onRegenerated} />
             )}
+            </>)}
           </div>
         )}
       </div>

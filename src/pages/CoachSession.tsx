@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
-import { useDaySets, useExerciseHistory, useLogSet } from "@/hooks/use-workout-log";
+import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from "@/hooks/use-workout-log";
+import { useCommitPop } from "@/hooks/use-commit-pop";
+import { useWakeLock } from "@/hooks/use-wake-lock";
 import { resolveIllustration } from "@/lib/exercise-match";
 import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
@@ -16,12 +19,15 @@ import SessionSkeleton from "@/components/coach/session/SessionSkeleton";
 import PageBar from "@/components/ui/page-bar";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 import { dayFocus } from "@/lib/training/session";
-import { fmtUnit } from "@/lib/format";
+import { fmtInt, fmtUnit, NBSP } from "@/lib/format";
 import {
   buildSessionPlan,
   sessionProgress,
   suggestedLoad,
   sessionVolume,
+  sessionPRs,
+  stepWeight,
+  stepReps,
 } from "@/lib/training/runner";
 
 /**
@@ -43,6 +49,54 @@ import {
  * kept only in memory is gone by the time they come back.
  */
 
+/** "62.5 kg" keeps its half; fmtInt would round a plate pair away. */
+const fmtKg = (n: number) => (Number.isInteger(n) ? fmtUnit(n, "kg") : `${n}${NBSP}kg`);
+const setLine = (w: string, r: string) =>
+  `${w === "" ? "—" : fmtKg(Number(w))} × ${r === "" ? "—" : fmtInt(Number(r))}`;
+
+/** `[−] value unit [+]` — two 44 pt targets around a typed field. */
+const Stepper = ({
+  value,
+  unit,
+  inputMode,
+  label,
+  stepLabel,
+  onChange,
+  onStep,
+}: {
+  value: string;
+  unit: string;
+  inputMode: "decimal" | "numeric";
+  label: string;
+  /** e.g. "2.5 kg" → "Add 2.5 kg" / "Remove 2.5 kg". */
+  stepLabel: string;
+  onChange: (v: string) => void;
+  onStep: (dir: 1 | -1) => void;
+}) => (
+  <div className="flex items-center gap-0.5">
+    <Button variant="ghost" size="icon" aria-label={`Remove ${stepLabel}`} onClick={() => onStep(-1)}>
+      <Minus size={16} aria-hidden />
+    </Button>
+    <input
+      type="number"
+      inputMode={inputMode}
+      value={value}
+      aria-label={label}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-[4.25rem] min-h-11 rounded-lg border border-border/50 bg-background/60 px-1 text-center text-[16px] font-bold tabular-nums outline-none focus:border-gold/50"
+    />
+    <Button variant="ghost" size="icon" aria-label={`Add ${stepLabel}`} onClick={() => onStep(1)}>
+      <Plus size={16} aria-hidden />
+    </Button>
+    <span className="w-8 text-[12px] font-semibold text-muted-foreground">{unit}</span>
+  </div>
+);
+
+/**
+ * One prescribed set. Only the set being done right now is open: weight and
+ * reps with plate-pair steppers and the Log button. A done set folds to one
+ * line (Edit reopens it); a set still ahead is a number and a dash.
+ */
 const SetRow = ({
   index,
   done,
@@ -57,57 +111,94 @@ const SetRow = ({
   isCurrent: boolean;
   weight: string;
   reps: string;
-  onLog: (weight: string, reps: string) => void;
+  onLog: (weight: string, reps: string) => Promise<void>;
   saving: boolean;
 }) => {
   const [w, setW] = useState(weight);
   const [r, setR] = useState(reps);
+  const [editing, setEditing] = useState(false);
   // Re-seed when the suggestion changes (a new set, or history arriving late).
   useEffect(() => { setW(weight); setR(reps); }, [weight, reps]);
+  // Springs once, on the set that just landed — never on rows loaded as done.
+  const pop = useCommitPop(done);
+  const expanded = (isCurrent && !done) || editing;
+
+  const badge = (
+    <span
+      className={cn(
+        "shrink-0 h-8 w-8 rounded-full text-[12px] font-black flex items-center justify-center",
+        done
+          ? "bg-xp-green/15 text-xp-green"
+          : isCurrent
+            ? "bg-gold/15 text-gold"
+            : "border border-border/50 text-muted-foreground",
+        pop && "commit-pop",
+      )}
+    >
+      {done ? <Check size={14} aria-hidden /> : index}
+    </span>
+  );
+
+  if (!expanded) {
+    return (
+      <div className="flex items-center gap-3 min-h-12 px-1">
+        {badge}
+        {done ? (
+          <>
+            <span className="flex-1 min-w-0 text-[15px] font-bold tabular-nums">{setLine(weight, reps)}</span>
+            <Button variant="ghost" size="sm" className="min-h-11 text-muted-foreground" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+          </>
+        ) : (
+          <span className="text-[15px] font-bold text-muted-foreground/50">—</span>
+        )}
+      </div>
+    );
+  }
+
+  const step = (apply: () => void) => { hapticImpact("light"); apply(); };
 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-        done
-          ? "border-border/30 bg-background/20"
-          : isCurrent
-            ? "border-gold/45 bg-gold/[0.05]"
-            : "border-border/40 bg-background/30",
+        "rounded-2xl border px-2.5 py-2",
+        done ? "border-border/50 bg-background/30" : "border-gold/45 bg-gold/[0.05]",
       )}
     >
-      <span
-        className={cn(
-          "shrink-0 h-7 w-7 rounded-full text-[12px] font-black flex items-center justify-center",
-          done ? "bg-xp-green/15 text-xp-green" : "bg-gold/15 text-gold",
-        )}
-      >
-        {done ? <Check size={13} aria-hidden /> : index}
-      </span>
-
-      <input
-        type="number" inputMode="decimal" value={w} placeholder="kg"
-        aria-label={`Set ${index} weight in kilograms`}
-        onChange={(e) => setW(e.target.value)}
-        className="w-full min-w-0 flex-1 min-h-11 rounded-lg border border-border/50 bg-background/60 px-2 text-[14px] text-center outline-none focus:border-gold/50"
-      />
-      <span className="text-muted-foreground text-xs font-black shrink-0">×</span>
-      <input
-        type="number" inputMode="numeric" value={r} placeholder="reps"
-        aria-label={`Set ${index} reps`}
-        onChange={(e) => setR(e.target.value)}
-        className="w-full min-w-0 flex-1 min-h-11 rounded-lg border border-border/50 bg-background/60 px-2 text-[14px] text-center outline-none focus:border-gold/50"
-      />
-
-      <Button
-        variant={done ? "outline" : "ember"}
-        size="sm"
-        className="min-h-11 shrink-0"
-        disabled={saving}
-        onClick={() => onLog(w, r)}
-      >
-        {saving ? <Loader2 size={13} className="animate-spin" /> : done ? "Edit" : "Log"}
-      </Button>
+      <div className="flex items-center gap-2">
+        {badge}
+        <Stepper
+          value={w}
+          unit="kg"
+          inputMode="decimal"
+          label={`Set ${index} weight in kilograms`}
+          stepLabel="2.5 kg"
+          onChange={setW}
+          onStep={(d) => step(() => setW(String(stepWeight(w, d))))}
+        />
+      </div>
+      <div className="mt-1 flex items-center gap-2">
+        <span className="w-8 shrink-0" aria-hidden />
+        <Stepper
+          value={r}
+          unit="reps"
+          inputMode="numeric"
+          label={`Set ${index} reps`}
+          stepLabel="1 rep"
+          onChange={setR}
+          onStep={(d) => step(() => setR(String(stepReps(r, d))))}
+        />
+        <Button
+          variant="ember"
+          size="sm"
+          className="ml-auto min-h-11 min-w-16 shrink-0"
+          disabled={saving}
+          onClick={async () => { await onLog(w, r); setEditing(false); }}
+        >
+          {saving ? <Loader2 size={13} className="animate-spin" /> : done ? "Save" : "Log"}
+        </Button>
+      </div>
     </div>
   );
 };
@@ -121,6 +212,7 @@ const CoachSession = () => {
   const { program, isLoading: programLoading } = useCoachProgram();
   const { session, isLoading: sessionLoading, start, finish, isFinishing } = useWorkoutSession(program?.id, week, day);
   const { data: daySets } = useDaySets(program?.id, week, day);
+  const { data: recent } = useRecentWorkoutLogs();
   const logSet = useLogSet();
 
   const [restFor, setRestFor] = useState<number | null>(null);
@@ -129,6 +221,7 @@ const CoachSession = () => {
   // an equal value is a no-op and left the previous deadline running).
   const [restToken, setRestToken] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
+  const [finishAsk, setFinishAsk] = useState(false);
 
   const planDay = program?.plan_json?.weeks?.find((w) => w.week === week)?.days?.[day];
   const plan = useMemo(() => buildSessionPlan(planDay?.blocks), [planDay]);
@@ -140,6 +233,10 @@ const CoachSession = () => {
   const illustrated = useMemo(() => (current ? resolveIllustration(current.slug, current.name) : null), [current]);
 
   const { data: history } = useExerciseHistory(current?.slug ?? null);
+
+  // The phone lies on the bench with a set count on it: no auto-lock while a
+  // session is on stage.
+  useWakeLock(!programLoading && plan.length > 0 && !summaryShown);
 
   // Guidance. The provider owns eligibility, the per-launch cap and the seen
   // state — these only say when the moment is right. FIRST_WORKOUT_INTRO chains
@@ -182,6 +279,7 @@ const CoachSession = () => {
   if (summaryShown) {
     const volume = sessionVolume(logged);
     const mins = session?.duration_sec ? Math.max(1, Math.round(session.duration_sec / 60)) : null;
+    const prs = sessionPRs(recent, logged, new Date().toLocaleDateString("en-CA"));
     return (
       <div className="home-rise px-5 pt-8">
         <p className="eyebrow text-gold mb-2">Session complete</p>
@@ -202,6 +300,21 @@ const CoachSession = () => {
             </div>
           ))}
         </div>
+
+        {prs.length > 0 && (
+          <div className="commit-pop flex flex-wrap gap-2 mb-5">
+            {prs.map((p) => (
+              <span
+                key={p.slug}
+                className="inline-flex items-center gap-1.5 min-h-8 rounded-full border border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.08] px-3 text-[12px] font-bold text-[hsl(var(--teal))]"
+              >
+                <TrendingUp size={13} aria-hidden />
+                <span className="sr-only">Personal record: </span>
+                {p.name} · est. 1RM {fmtUnit(Math.round(p.e1rm), "kg")}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-transparent px-4 py-3 mb-5">
           <p className="text-[13px] text-foreground/90 leading-snug">
@@ -328,8 +441,8 @@ const CoachSession = () => {
               />
             )}
 
-            <div className="space-y-2" ref={loggingTargetRef}>
-              <p className="eyebrow text-gold/85">Sets</p>
+            <div className="space-y-1" ref={loggingTargetRef}>
+              <p className="eyebrow text-gold/85 mb-1">Sets</p>
               {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
                 const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);
                 const isDone = !!existing;
@@ -356,16 +469,26 @@ const CoachSession = () => {
           </>
         )}
 
-        {/* Finishing early is a normal thing to do, not a failure. */}
+        {/* Finishing early is a normal thing to do, not a failure. Open sets
+            get one question; a fully logged day goes straight to the summary. */}
         <Button
           variant="ghost"
           size="lg"
           className="w-full text-muted-foreground"
-          onClick={() => setShowSummary(true)}
+          onClick={() => (progress.doneSets >= progress.totalSets ? setShowSummary(true) : setFinishAsk(true))}
         >
           Finish session
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={finishAsk}
+        onOpenChange={setFinishAsk}
+        title="Finish with sets still open?"
+        description="Your logged sets are saved."
+        actionLabel="Finish"
+        onConfirm={() => { setFinishAsk(false); setShowSummary(true); }}
+      />
     </div>
   );
 };

@@ -26,7 +26,7 @@ const SAFE_ROUTES = new Set<string>([
   "/coach/memory", "/coach/goal", "/coach/reflect",
   "/coach/progress", "/coach/profile",
 ]);
-const SAFE_PREFIXES = ["/briefing/", "/chat/", "/tribes/", "/user/"];
+const SAFE_PREFIXES = ["/briefing/", "/chat/", "/tribes/", "/user/", "/coach/session/"];
 export const isSafeRoute = (r: unknown): r is string => {
   if (typeof r !== "string" || !r.startsWith("/")) return false;
   // Match on the pathname only — "/squad?tab=tribes" must pass the "/squad"

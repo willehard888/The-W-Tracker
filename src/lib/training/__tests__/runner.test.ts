@@ -6,6 +6,10 @@ import {
   suggestedLoad,
   formatRest,
   sessionVolume,
+  stepWeight,
+  stepReps,
+  e1rm,
+  sessionPRs,
   DEFAULT_REST_SEC,
   type SessionExercise,
   type LoggedSet,
@@ -196,5 +200,84 @@ describe("sessionVolume", () => {
 
   it("is zero for an empty session", () => {
     expect(sessionVolume({})).toBe(0);
+  });
+});
+
+describe("stepWeight / stepReps", () => {
+  it("steps weight by a plate pair, from a string or a number", () => {
+    expect(stepWeight("60", 1)).toBe(62.5);
+    expect(stepWeight(62.5, -1)).toBe(60);
+    expect(stepWeight("", 1)).toBe(2.5);
+    expect(stepWeight(null, 1)).toBe(2.5);
+  });
+
+  it("never steps weight below zero and stays float-clean", () => {
+    expect(stepWeight("1", -1)).toBe(0);
+    expect(stepWeight(0, -1)).toBe(0);
+    expect(stepWeight("0.1", 1)).toBe(2.6);
+    expect(stepWeight("abc", 1)).toBe(2.5);
+  });
+
+  it("steps reps by one, never below zero, from whole numbers", () => {
+    expect(stepReps("8", 1)).toBe(9);
+    expect(stepReps("8.7", -1)).toBe(7);
+    expect(stepReps("", 1)).toBe(1);
+    expect(stepReps(0, -1)).toBe(0);
+    expect(stepReps(undefined, -1)).toBe(0);
+  });
+});
+
+describe("sessionPRs", () => {
+  const today = "2026-09-06";
+  const row = (slug: string, weight: number | null, reps: number | null, logged_on: string, name?: string) =>
+    ({ exercise_slug: slug, exercise_name: name ?? slug, weight, reps, logged_on });
+
+  it("uses Epley", () => {
+    expect(e1rm(100, 1)).toBeCloseTo(103.33, 2);
+    expect(e1rm(60, 8)).toBe(76);
+  });
+
+  it("is not a PR on a first-ever lift", () => {
+    // Nothing to beat: a baseline, not a record.
+    expect(sessionPRs([], { bench: [set(1, 60, 8)] }, today)).toEqual([]);
+    expect(sessionPRs(undefined, { bench: [set(1, 60, 8)] }, today)).toEqual([]);
+  });
+
+  it("is not a PR on a tie", () => {
+    expect(sessionPRs([row("bench", 60, 8, "2026-09-01")], { bench: [set(1, 60, 8)] }, today)).toEqual([]);
+  });
+
+  it("calls the improvement, with the previous best beside it", () => {
+    const history = [row("bench", 60, 8, "2026-09-01", "Bench press"), row("bench", 55, 10, "2026-08-25")];
+    const prs = sessionPRs(history, { bench: [set(1, 62.5, 8)] }, today);
+    expect(prs).toHaveLength(1);
+    expect(prs[0]).toMatchObject({ slug: "bench", name: "Bench press" });
+    expect(prs[0].e1rm).toBeCloseTo(e1rm(62.5, 8), 6);
+    expect(prs[0].prevBest).toBe(76);
+  });
+
+  it("ignores today's own row in the history feed", () => {
+    // recent_workout_logs already holds today's top set by summary time; it
+    // must not compete with itself.
+    const history = [row("bench", 62.5, 8, today), row("bench", 60, 8, "2026-09-01")];
+    expect(sessionPRs(history, { bench: [set(1, 62.5, 8)] }, today)).toHaveLength(1);
+  });
+
+  it("reports one record per exercise, from the best set of the day", () => {
+    const history = [row("bench", 60, 8, "2026-09-01")];
+    const prs = sessionPRs(history, { bench: [set(1, 62.5, 8), set(2, 65, 8), set(3, 60, 8)] }, today);
+    expect(prs).toHaveLength(1);
+    expect(prs[0].e1rm).toBeCloseTo(e1rm(65, 8), 6);
+  });
+
+  it("skips sets and rows without a weight, and counts a missing rep count as one", () => {
+    expect(sessionPRs([row("bench", 60, 8, "2026-09-01")], { bench: [set(1, null, 8)] }, today)).toEqual([]);
+    expect(sessionPRs([row("bench", null, 8, "2026-09-01")], { bench: [set(1, 60, 8)] }, today)).toEqual([]);
+    expect(sessionPRs([row("bench", 60, null, "2026-09-01")], { bench: [set(1, 70, null)] }, today)).toHaveLength(1);
+  });
+
+  it("falls back to the slug when no row carries a name", () => {
+    const history = [{ exercise_slug: "bench", weight: 60, reps: 8, logged_on: "2026-09-01" }];
+    expect(sessionPRs(history, { bench: [set(1, 70, 8)] }, today)[0].name).toBe("bench");
   });
 });

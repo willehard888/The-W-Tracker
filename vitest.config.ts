@@ -24,6 +24,7 @@ export default defineConfig({
         "src/lib/oauth-session.ts",
         "src/lib/route-preload.ts",
         "src/lib/streak-notifications.ts",
+        "src/lib/rest-notification.ts",
         "src/lib/health/**",
         "src/lib/downscale-image.ts",
         "src/lib/observability.ts",

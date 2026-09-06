@@ -96,6 +96,21 @@ export const useDaySets = (programId?: string | null, week?: number, day?: numbe
     },
   });
 
+/**
+ * The heaviest set per exercise per day, newest first (one RPC). The runner's
+ * summary compares today against these to call a personal record.
+ */
+export const useRecentWorkoutLogs = () =>
+  useQuery<WorkoutSetLog[]>({
+    queryKey: ["recent-workout-logs"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("recent_workout_logs", { p_limit: 120 });
+      if (error) throw error;
+      return (data as WorkoutSetLog[]) ?? [];
+    },
+  });
+
 export interface LogSetInput {
   programId?: string | null;
   week?: number;
@@ -138,6 +153,7 @@ export const useLogSet = () => {
       qc.invalidateQueries({ queryKey: ["day-logs", p.programId, p.week, p.day] });
       qc.invalidateQueries({ queryKey: ["day-sets", p.programId, p.week, p.day] });
       qc.invalidateQueries({ queryKey: ["exercise-history", p.slug] });
+      qc.invalidateQueries({ queryKey: ["recent-workout-logs"] });
     },
   });
 };

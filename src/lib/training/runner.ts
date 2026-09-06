@@ -193,3 +193,76 @@ export const sessionVolume = (logged: Record<string, LoggedSet[]>): number => {
   }
   return Math.round(total);
 };
+
+const asNumber = (v: string | number | null | undefined): number => {
+  if (v == null || v === "") return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+/** One plate-pair step. Never below zero; float-clean (60 + 2.5 stays 62.5). */
+export const stepWeight = (v: string | number | null | undefined, dir: 1 | -1): number =>
+  Math.max(0, Math.round((asNumber(v) + dir * 2.5) * 100) / 100);
+
+/** One rep. Never below zero; a typed "8.7" steps from 8. */
+export const stepReps = (v: string | number | null | undefined, dir: 1 | -1): number =>
+  Math.max(0, Math.trunc(asNumber(v)) + dir);
+
+/** Epley estimated one-rep max — the same formula the Whealth Index and the coach use. */
+export const e1rm = (weight: number, reps: number): number => weight * (1 + reps / 30);
+
+/** A historical top set, as `recent_workout_logs` returns it. */
+export interface HistoryRow {
+  exercise_slug: string | null;
+  exercise_name?: string | null;
+  weight: number | null;
+  reps: number | null;
+  /** YYYY-MM-DD. */
+  logged_on: string;
+}
+
+export interface SessionPR {
+  slug: string;
+  name: string;
+  /** Today's best estimated 1RM. */
+  e1rm: number;
+  /** The best from any earlier day. */
+  prevBest: number;
+}
+
+const bestE1rm = (sets: Array<{ weight?: number | null; reps?: number | null }>): number => {
+  let best = -Infinity;
+  for (const s of sets) {
+    if (s.weight == null) continue;
+    best = Math.max(best, e1rm(s.weight, s.reps ?? 1));
+  }
+  return best;
+};
+
+/**
+ * Which of today's lifts beat every earlier day.
+ *
+ * A first-ever lift is a baseline, not a record; a tie is not a record either.
+ * Only rows dated before `today` count as "earlier" — the history feed already
+ * contains today's top set by the time the summary renders.
+ */
+export const sessionPRs = (
+  history: HistoryRow[] | undefined,
+  logged: Record<string, Array<LoggedSet & { exercise_name?: string | null }>>,
+  today: string,
+): SessionPR[] => {
+  const out: SessionPR[] = [];
+  for (const [slug, sets] of Object.entries(logged ?? {})) {
+    const bestToday = bestE1rm(sets ?? []);
+    if (!Number.isFinite(bestToday)) continue;
+    const prior = (history ?? []).filter((h) => h.exercise_slug === slug && h.logged_on < today);
+    if (prior.length === 0) continue;
+    const prevBest = bestE1rm(prior);
+    if (!Number.isFinite(prevBest) || bestToday <= prevBest) continue;
+    const name = sets.find((s) => s.exercise_name)?.exercise_name
+      ?? prior.find((h) => h.exercise_name)?.exercise_name
+      ?? slug;
+    out.push({ slug, name, e1rm: bestToday, prevBest });
+  }
+  return out;
+};

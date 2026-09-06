@@ -3,6 +3,7 @@ import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticNotification, hapticImpact } from "@/lib/haptics";
 import { formatRest } from "@/lib/training/runner";
+import { cancelRestDone, scheduleRestDone } from "@/lib/rest-notification";
 
 /**
  * Rest between sets.
@@ -49,14 +50,28 @@ const RestTimer = ({
         onDoneRef.current?.();
       }
     };
+    // Hidden mid-rest: the OS says "Rest is up" when the clock would have.
+    // Back in front: the screen is the timer again, so the pending one goes
+    // and the number is recomputed before the next interval fires.
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (endsAt > Date.now()) void scheduleRestDone(new Date(endsAt), window.location.pathname);
+      } else {
+        void cancelRestDone();
+        tick();
+      }
+    };
     tick();
+    // A new deadline while already hidden ("+30 s") re-arms for the new time.
+    if (document.visibilityState === "hidden") onVisibility();
     const id = window.setInterval(tick, 250);
-    // Recompute the moment the tab is foregrounded again, so the number is
-    // right before the next interval fires.
-    document.addEventListener("visibilitychange", tick);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.clearInterval(id);
-      document.removeEventListener("visibilitychange", tick);
+      document.removeEventListener("visibilitychange", onVisibility);
+      // Dismissed, next set logged, or a new deadline: whatever was pending is
+      // for a rest that no longer exists.
+      void cancelRestDone();
     };
   }, [endsAt]);
 

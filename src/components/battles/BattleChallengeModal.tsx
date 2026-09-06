@@ -32,7 +32,7 @@ const BattleChallengeModal = ({
   <Portal>
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-md bg-card border-t border-border rounded-t-3xl p-6 animate-reveal"
+        className="w-full max-w-md bg-card border-t border-border rounded-t-3xl p-6 home-rise"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-10 h-1 rounded-full bg-border mx-auto mb-4" />
@@ -47,7 +47,7 @@ const BattleChallengeModal = ({
                 key={bt.id}
                 onClick={() => setBattleType(bt.id)}
                 className={cn(
-                  "flex items-center gap-2 rounded-xl border p-3 text-left transition-all active:scale-[0.97]",
+                  "press flex items-center gap-2 rounded-xl border p-3 text-left transition-all ",
                   selected ? "border-gold/40 bg-gold/5" : "border-border bg-secondary/30 hover:bg-secondary/60",
                 )}
               >
@@ -68,7 +68,7 @@ const BattleChallengeModal = ({
               key={d}
               onClick={() => setDuration(d)}
               className={cn(
-                "flex-1 rounded-lg border py-2 text-xs font-bold transition-all active:scale-95",
+                "press flex-1 rounded-lg border py-2 text-xs font-bold transition-all ",
                 duration === d ? "border-gold/40 bg-gold/10 text-gold" : "border-border bg-secondary/30",
               )}
             >
@@ -79,7 +79,7 @@ const BattleChallengeModal = ({
 
         <Button variant="ember" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
           <Swords size={14} />
-          {creating ? "Sending..." : "Send Challenge"}
+          {creating ? "Sending…" : "Send Challenge"}
         </Button>
       </div>
     </div>

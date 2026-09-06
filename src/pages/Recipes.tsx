@@ -1,11 +1,13 @@
+import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Clock, Snowflake, Refrigerator, Search, X, Utensils, Layers,
+  Clock, Snowflake, Refrigerator, Search, X, Utensils, Layers,
 } from "lucide-react";
 import { recipeThumb, recipeSquare } from "@/lib/recipe-images";
 import { fmtQty } from "@/lib/recipe-scaling";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
@@ -53,9 +55,9 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
   const totalMin = recipe.prepMin + recipe.cookMin;
 
   return (
-    <div className="flex flex-col">
-      {/* Photo runs edge to edge behind a floating back button — no header bar
-          competing with it for the top of a phone screen. */}
+    <div className="min-h-full">
+      <PageBar onBack={() => navigate("/recipes")} />
+      {/* Photo runs edge to edge under the bar; the fade hands off to the copy. */}
       <div className="relative">
         <RecipePhoto id={recipe.id} className="w-full aspect-[4/3]" />
         <div
@@ -63,24 +65,15 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
           className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
           style={{ background: "linear-gradient(to top, hsl(var(--background)), transparent)" }}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/recipes")}
-          aria-label="Back to recipes"
-          className="absolute left-3 top-3 rounded-full bg-background/70 backdrop-blur-sm"
-        >
-          <ArrowLeft size={18} />
-        </Button>
       </div>
 
-      <div className="home-rise px-4 pb-28 -mt-6 relative space-y-5">
+      <div className="home-rise px-4 pb-6 -mt-6 relative space-y-5">
         <div>
           <h1 className="font-display text-[26px] font-black tracking-tight leading-tight">{recipe.title}</h1>
           <p className="text-[13px] text-muted-foreground leading-snug mt-1.5">{recipe.blurb}</p>
           <div className="flex flex-wrap items-center gap-1.5 mt-3">
             {recipe.tags.map((t) => (
-              <span key={t} className="rounded-full border border-border/60 bg-secondary/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span key={t} className="eyebrow rounded-full border border-border/60 bg-secondary/40 px-2.5 py-1 text-muted-foreground">
                 {t}
               </span>
             ))}
@@ -104,7 +97,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                 onClick={() => { hapticSelection(); setBatch(b); }}
                 aria-pressed={batch === b}
                 className={cn(
-                  "flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all active:scale-[0.97]",
+                  "press flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all ",
                   batch === b ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
@@ -124,7 +117,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
           <div className="space-y-4">
             {recipe.groups.map((g) => (
               <div key={g.title}>
-                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground mb-2">{g.title}</p>
+                <p className="eyebrow text-muted-foreground mb-2">{g.title}</p>
                 <ul className="space-y-1.5">
                   {g.items.map((it, i) => (
                     <li key={i} className="flex items-baseline gap-2 text-[14px] leading-snug">
@@ -172,7 +165,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
               <Refrigerator size={15} className="text-gold/80 shrink-0" />
               <div>
                 <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.fridgeDays}d</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Fridge</p>
+                <p className="eyebrow-sm text-muted-foreground mt-0.5">Fridge</p>
               </div>
             </div>
             {recipe.mealPrep.freezerWeeks != null && (
@@ -180,7 +173,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                 <Snowflake size={15} className="text-gold/80 shrink-0" />
                 <div>
                   <p className="text-[14px] font-black tabular-nums leading-none">{recipe.mealPrep.freezerWeeks}wk</p>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Freezer</p>
+                  <p className="eyebrow-sm text-muted-foreground mt-0.5">Freezer</p>
                 </div>
               </div>
             )}
@@ -223,25 +216,20 @@ const RecipeList = () => {
   }, [query, tag]);
 
   return (
-    <div className="flex flex-col">
-      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Back">
-          <ArrowLeft size={18} />
-        </Button>
-        <h1 className="font-display text-base font-black tracking-tight">Meal-prep recipes</h1>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Meal-prep recipes" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-3 pb-28">
+      <div className="px-4 pt-4 pb-6">
         {/* Search covers ingredients too — "what can I make with salmon" is the
             question people actually arrive with. */}
         <div className="relative">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <input
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search recipes or ingredients"
             aria-label="Search recipes or ingredients"
-            className="w-full surface-inset rounded-xl h-11 pl-9 pr-9 text-[14px] outline-none focus:border-gold/50 transition-colors"
+            className="h-11 rounded-xl pl-9 pr-9 text-[14px]"
           />
           {query && (
             <button
@@ -285,7 +273,7 @@ const RecipeList = () => {
               <button
                 key={r.id}
                 onClick={() => { hapticImpact("light"); navigate(`/recipes/${r.id}`); }}
-                className="text-left rounded-2xl overflow-hidden border border-border/60 bg-card active:scale-[0.98] transition-transform"
+                className="press text-left rounded-2xl overflow-hidden border border-border/60 bg-card transition-transform"
               >
                 <RecipePhoto id={r.id} variant="tile" className="w-full aspect-square" />
                 <div className="p-2.5">

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { X, Check, ChevronRight, Loader2 } from "lucide-react";
+import { Check, ChevronRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,9 @@ import { candidatesForName } from "@/lib/exercise-match";
 import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
+import PageBar from "@/components/ui/page-bar";
 import { dayFocus } from "@/lib/training/session";
+import { fmtUnit } from "@/lib/format";
 import {
   buildSessionPlan,
   sessionProgress,
@@ -179,7 +181,7 @@ const CoachSession = () => {
     const volume = sessionVolume(logged);
     const mins = session?.duration_sec ? Math.max(1, Math.round(session.duration_sec / 60)) : null;
     return (
-      <div className="px-5 pt-8 pb-28">
+      <div className="home-rise px-5 pt-8">
         <p className="eyebrow text-gold mb-2">Session complete</p>
         <h1 className="font-display text-2xl font-black tracking-tight leading-tight mb-5">
           {dayFocus(planDay) || "Workout"} done
@@ -189,7 +191,7 @@ const CoachSession = () => {
           {[
             { label: "Exercises", value: `${progress.exercisesDone} / ${progress.totalExercises}` },
             { label: "Sets", value: `${progress.doneSets}` },
-            { label: "Volume", value: volume ? `${volume.toLocaleString()} kg` : "—" },
+            { label: "Volume", value: volume ? fmtUnit(volume, "kg") : "—" },
             { label: "Time", value: mins ? `${mins} min` : "—" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border border-border/40 bg-background/40 px-3 py-2.5">
@@ -264,33 +266,36 @@ const CoachSession = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-[100dvh]">
-      {/* Chrome: leaving is always one tap, and progress is always visible. */}
-      <div className="page-header-premium px-4 pt-3 pb-2.5 sticky top-0 z-10">
-        <div className="flex items-center gap-2 mb-2">
-          <Button variant="ghost" size="icon-sm" aria-label="Leave the workout"
-            onClick={() => navigate("/coach/program")}>
-            <X size={18} />
-          </Button>
-          <div className="flex-1 min-w-0">
+    <div className="min-h-full">
+      {/* The one sub-page bar. A node title carries the week and focus in the
+          same slot, and the exercise count rides the action slot — leaving is
+          always one 44 pt tap and it never scrolls away. */}
+      <PageBar
+        onBack={() => navigate("/coach/program")}
+        title={
+          <>
             <p className="eyebrow text-muted-foreground/70">Week {week} · {planDay.day}</p>
             <p className="font-display text-[15px] font-black truncate leading-tight">
               {dayFocus(planDay) || "Session"}
             </p>
-          </div>
-          <p className="text-[12px] font-black tabular-nums text-gold shrink-0">
+          </>
+        }
+        action={
+          <span className="pr-3 text-[12px] font-black tabular-nums text-gold">
             {progress.exercisesDone}/{progress.totalExercises}
-          </p>
-        </div>
-        <div className="h-1 rounded-full bg-border/40 overflow-hidden">
-          <div
-            className="h-full bg-gold transition-[width] duration-300"
-            style={{ width: `${Math.round(progress.fraction * 100)}%` }}
-          />
-        </div>
+          </span>
+        }
+      />
+      {/* Progress sits under the bar, sticking with it: at any moment the
+          athlete can see how much of the session is behind them. */}
+      <div className="sticky top-[var(--safe-top)] z-20 h-1 bg-border/40">
+        <div
+          className="h-full bg-gold transition-[width] duration-300"
+          style={{ width: `${Math.round(progress.fraction * 100)}%` }}
+        />
       </div>
 
-      <div className="px-4 pt-4 pb-28 space-y-4">
+      <div className="home-rise px-4 pt-4 space-y-4">
         {current && (
           <>
             {illustrated && <IllustrationPlayer ex={illustrated} />}

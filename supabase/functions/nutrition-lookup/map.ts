@@ -33,6 +33,7 @@ export interface IngestServing {
 }
 
 export interface IngestFood {
+  is_active?: boolean;
   source: "off" | "usda_branded";
   source_id: string;
   name: string;
@@ -56,13 +57,14 @@ export interface OffProduct {
   product_name?: string;
   product_name_fi?: string;
   product_name_en?: string;
-  brands?: string;
+  brands?: string | string[]; // v2 product API: "A, B"; search-a-licious: ["A", "B"]
   countries_tags?: string[];
   quantity?: string;
   product_quantity?: number | string;
   product_quantity_unit?: string;
   serving_size?: string;
   serving_quantity?: number | string;
+  serving_quantity_unit?: string;
   nutrition_data_per?: string;
   nutriments?: Record<string, unknown>;
   image_front_small_url?: string;
@@ -98,6 +100,16 @@ const OFF_QUALITY_KEYS = ["energy-kcal", "proteins", "fat", "carbohydrates", "su
 const USDA_CARBS_ID = 1005; // "Carbohydrate, by difference" — includes fibre
 const USDA_FIBER_ID = 1079;
 const USDA_COUNTRY: Record<string, string> = { "United States": "US" };
+/** OFF country tag → ISO code, in priority order (a product sold in several wins the first). */
+export const OFF_COUNTRIES: ReadonlyArray<readonly [tag: string, code: string]> = [
+  ["en:finland", "FI"],
+  ["en:sweden", "SE"],
+  ["en:norway", "NO"],
+  ["en:denmark", "DK"],
+  ["en:estonia", "EE"],
+];
+const SERVING_RE = /(\d+(?:[.,]\d+)?)\s*(g|gr|gram|grams|ml|cl|dl|l)\b/gi;
+const TO_ML: Record<string, number> = { ml: 1, cl: 10, dl: 100, l: 1000 };
 
 export function buildNutrientMaps(defs: NutrientDef[]): NutrientMaps {
   const byOff = new Map<string, NutrientRef>();
@@ -111,21 +123,32 @@ export function buildNutrientMaps(defs: NutrientDef[]): NutrientMaps {
   return { byOff, byUsda };
 }
 
+/** GS1 mod-10 check digit for a payload without its check digit (weights 3,1,3,1… from the right). */
+function gs1CheckDigit(body: string): number {
+  let sum = 0;
+  for (let i = 0; i < body.length; i++) sum += Number(body[i]) * ((body.length - i) % 2 === 1 ? 3 : 1);
+  return (10 - (sum % 10)) % 10;
+}
+const gs1Ok = (d: string) => gs1CheckDigit(d.slice(0, -1)) === Number(d[d.length - 1]);
+
 /**
- * Mirrors public.normalize_barcode: digits only; GTIN-14 with a leading 0 →
- * EAN-13; UPC-A (12) → EAN-13 with a leading 0; EAN-8 kept; mod-10 check
- * digit must hold. Anything else → null.
+ * Mirrors public.normalize_barcode and src/lib/nutrition/barcode.ts (three
+ * mirrors, change all or none): digits only; GTIN-14 → its consumer-unit
+ * GTIN-13 (indicator 9 = variable measure → null); UPC-A (12) → EAN-13 with a
+ * leading 0; a 00000-padded 13 → EAN-8; mod-10 check digit must hold.
+ * Anything else → null.
  */
 export function normalizeBarcode(raw: string | null | undefined): string | null {
   let d = (raw ?? "").replace(/\D/g, "");
-  if (d.length === 14 && d.startsWith("0")) d = d.slice(1);
-  if (d.length === 12) d = `0${d}`;
-  if (d.length !== 8 && d.length !== 13) return null;
-  let sum = 0;
-  for (let i = 0; i < d.length - 1; i++) {
-    sum += Number(d[i]) * ((d.length - 1 - i) % 2 === 1 ? 3 : 1);
+  if (d.length === 14) {
+    if (d[0] === "9" || !gs1Ok(d)) return null;
+    d = d.slice(1, 13);
+    d += gs1CheckDigit(d);
   }
-  return (10 - (sum % 10)) % 10 === Number(d[d.length - 1]) ? d : null;
+  if (d.length === 12) d = `0${d}`;
+  if (d.length === 13 && d.startsWith("00000")) d = d.slice(5);
+  if (d.length !== 8 && d.length !== 13) return null;
+  return gs1Ok(d) ? d : null;
 }
 
 function num(v: unknown): number | null {
@@ -140,6 +163,28 @@ function clip(s: string | null | undefined, max = 200): string | null {
 
 const round4 = (n: number): number => Math.round(n * 1e4) / 1e4;
 
+// ponytail: single country column — add foods.countries[] if the app ships in Sweden
+export function offCountry(tags: string[] | undefined): string | null {
+  if (!tags?.length) return null;
+  const set = new Set(tags);
+  return OFF_COUNTRIES.find(([tag]) => set.has(tag))?.[1] ?? null;
+}
+
+/**
+ * "1 slice (25 g)" → 25 g, "2 dl" → 200 ml (density 1). The LAST unit wins:
+ * OFF writes the gram weight after the household unit. null when absent or
+ * outside (0, MAX_SERVING_G].
+ */
+export function parseServingSize(s: string | null | undefined): { grams: number; unit: "g" | "ml" } | null {
+  let m: RegExpMatchArray | null = null;
+  for (const x of (s ?? "").matchAll(SERVING_RE)) m = x;
+  if (!m) return null;
+  const unit = m[2].toLowerCase();
+  const grams = round4(Number(m[1].replace(",", ".")) * (TO_ML[unit] ?? 1));
+  if (!(grams > 0) || grams > MAX_SERVING_G) return null;
+  return { grams, unit: unit in TO_ML ? "ml" : "g" };
+}
+
 /** OFF `_100g` values (grams for every mass nutrient) with the documented fallbacks filled in. */
 function offPer100g(nutriments: Record<string, unknown>): Map<string, number> {
   const out = new Map<string, number>();
@@ -148,7 +193,8 @@ function offPer100g(nutriments: Record<string, unknown>): Map<string, number> {
     const n = num(v);
     if (n !== null && n >= 0) out.set(k.slice(0, -"_100g".length), n);
   }
-  const kj = out.get("energy-kj");
+  // The dump often carries only `energy_100g`, which is kJ.
+  const kj = out.get("energy-kj") ?? out.get("energy");
   if (!out.has("energy-kcal") && kj !== undefined) out.set("energy-kcal", kj / 4.184);
   const salt = out.get("salt");
   const sodium = out.get("sodium");
@@ -178,8 +224,15 @@ export function mapOffProduct(p: OffProduct, maps: NutrientMaps, requestedCode?:
   if (nutrients[KCAL_KEY] === undefined) return null;
 
   const sq = num(p.serving_quantity);
-  const servings: IngestServing[] = sq !== null && sq > 0 && sq <= MAX_SERVING_G
-    ? [{ label: clip(p.serving_size, 80) ?? `1 serving (${sq} g)`, grams: sq, source_unit: "serving", is_default: true }]
+  const sv = sq !== null && sq > 0 && sq <= MAX_SERVING_G ? { grams: sq, unit: "g" } : parseServingSize(p.serving_size);
+  const ml = sv?.unit === "ml" || (p.serving_quantity_unit ?? "").trim().toLowerCase() === "ml";
+  const servings: IngestServing[] = sv
+    ? [{
+      label: clip(p.serving_size, 80) ?? `1 serving (${sv.grams} ${ml ? "ml" : "g"})`,
+      grams: sv.grams,
+      source_unit: ml ? "ml" : "serving",
+      is_default: true,
+    }]
     : [];
 
   const barcode = normalizeBarcode(code);
@@ -191,8 +244,8 @@ export function mapOffProduct(p: OffProduct, maps: NutrientMaps, requestedCode?:
     // search_text is built from name_fi/name_en/brand: a product with only the
     // main-language `product_name` still has to land in one of them.
     name_en: nameEn ?? (nameFi ? null : name),
-    brand: clip(p.brands?.split(",")[0], 120),
-    country: p.countries_tags?.includes("en:finland") ? "FI" : null,
+    brand: clip((Array.isArray(p.brands) ? p.brands : p.brands?.split(","))?.[0], 120),
+    country: offCountry(p.countries_tags),
     category: null,
     food_type: "branded",
     data_quality: OFF_QUALITY_KEYS.every((k) => per100.has(k)) ? 2 : 3,

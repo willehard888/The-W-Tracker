@@ -29,7 +29,7 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
         <p className="font-semibold text-sm flex items-center gap-1.5">
           vs @{opponentName}
           {won && battle.winner_verified === true && (
-            <span title="HealthKit-verified win" className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase tracking-wider text-[hsl(var(--xp-green))]">
+            <span title="HealthKit-verified win" className="eyebrow-sm inline-flex items-center gap-0.5 text-[hsl(var(--xp-green))]">
               <ShieldCheck size={11} /> Verified
             </span>
           )}
@@ -43,7 +43,7 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
         {isAdmin && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button aria-label="Battle options" className="p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground">
+              <button aria-label="Battle options" className="relative p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground before:absolute before:-inset-3 before:content-['']">
                 <MoreHorizontal size={14} />
               </button>
             </DropdownMenuTrigger>

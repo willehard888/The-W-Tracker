@@ -13,8 +13,7 @@ import { cn } from "@/lib/utils";
  * One meal slot as a SECTION, not a card: a diary is read as a whole day, and
  * a segmented control would hide three quarters of it. Header carries the
  * slot's kcal and the two actions; items render as hairline rows below.
- * `xs` buttons sit under the 44 pt floor, so both get the house hit-area
- * expansion (`before:-inset-2`).
+ * Both actions clear the 44 pt floor via Button's built-in hit area.
  */
 const DiarySlot = ({
   label,
@@ -46,7 +45,7 @@ const DiarySlot = ({
           variant="ghost"
           size="xs"
           onClick={onAdd}
-          className="relative before:absolute before:-inset-2 before:content-[''] text-foreground/80"
+          className="text-foreground/80"
         >
           <Plus aria-hidden /> Add
         </Button>
@@ -57,7 +56,7 @@ const DiarySlot = ({
                 variant="ghost"
                 size="icon-sm"
                 aria-label={`${label} options`}
-                className="relative before:absolute before:-inset-2 before:content-[''] text-muted-foreground"
+                className="text-muted-foreground"
               >
                 <MoreHorizontal />
               </Button>

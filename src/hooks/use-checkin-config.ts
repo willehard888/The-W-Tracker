@@ -14,14 +14,22 @@ import { DEFAULT_CHECKIN_KEYS } from "@/lib/checkin-habits";
  *
  */
 export const useCheckinConfig = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
+
+  // Seeded from the profile row AuthContext already holds — Home used to
+  // make a second `profiles` read for this one column on every cold start.
+  const saved = profile?.checkin_habits;
+  const seeded = profile
+    ? { keys: saved?.length ? saved : DEFAULT_CHECKIN_KEYS, customized: !!saved?.length }
+    : undefined;
 
   const query = useQuery({
     queryKey: ["checkin-config", user?.id],
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     enabled: !!user,
+    initialData: seeded,
     queryFn: async (): Promise<{ keys: string[]; customized: boolean }> => {
       if (!user) return { keys: DEFAULT_CHECKIN_KEYS, customized: false };
       const { data } = await supabase

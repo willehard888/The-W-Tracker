@@ -1,4 +1,5 @@
 
+import { fmtRelative } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
@@ -27,7 +28,6 @@ import { downscaleImage } from "@/lib/downscale-image";
 import { fetchFeedPosts } from "@/lib/feed-query";
 import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
 import MediaPreview from "@/components/media/MediaPreview";
-import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -757,7 +757,7 @@ const EliteFeed = () => {
                 aria-label={showReported ? "Hide flagged posts" : "Show flagged posts"}
                 aria-pressed={showReported}
                 className={cn(
-                  "h-9 w-9 rounded-full flex items-center justify-center transition-colors active:scale-95",
+                  "press h-9 w-9 rounded-full flex items-center justify-center transition-colors ",
                   showReported
                     ? "bg-destructive/15 text-destructive"
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
@@ -770,7 +770,7 @@ const EliteFeed = () => {
                 aria-label="Pending reports"
                 aria-pressed={showReportsPanel}
                 className={cn(
-                  "relative h-9 w-9 rounded-full flex items-center justify-center transition-colors active:scale-95",
+                  "press relative h-9 w-9 rounded-full flex items-center justify-center transition-colors ",
                   showReportsPanel
                     ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
@@ -800,7 +800,7 @@ const EliteFeed = () => {
 
       {/* Admin Reports Panel */}
       {isAdmin && showReportsPanel && (
-        <div className="animate-reveal surface-card border-[hsl(var(--purple))]/30 p-4 mb-6">
+        <div className="home-rise surface-card border-[hsl(var(--purple))]/30 p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck aria-hidden size={16} className="text-[hsl(var(--purple))]" />
             <h2 className="font-display text-sm font-bold">Pending Reports</h2>
@@ -817,7 +817,7 @@ const EliteFeed = () => {
                       <p className="text-[11px] text-muted-foreground">
                         Reported by <span className="font-semibold text-foreground">@{report.reporter?.username || "unknown"}</span>
                         {" · "}
-                        {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
+                        {fmtRelative(report.created_at)}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">{report.reason}</p>
                       {report.post && (
@@ -831,27 +831,31 @@ const EliteFeed = () => {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {/* Approve (unreport) */}
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={async () => {
                           if (report.post_id) await unreportPost.mutateAsync(report.post_id);
                           resolveReport.mutate({ reportId: report.id, action: "approve" });
                         }}
-                        className="h-7 px-2.5 rounded-lg bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] text-[11px] font-bold hover:bg-[hsl(var(--xp-green))]/25 transition-colors flex items-center gap-1"
+                        className="bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] hover:bg-[hsl(var(--xp-green))]/25"
                       >
                         <CheckCircle aria-hidden size={12} />
                         Keep
-                      </button>
+                      </Button>
                       {/* Delete post */}
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={async () => {
                           if (report.post_id) await adminDeletePost.mutateAsync(report.post_id);
                           resolveReport.mutate({ reportId: report.id, action: "delete" });
                         }}
-                        className="h-7 px-2.5 rounded-lg bg-destructive/15 text-destructive text-[11px] font-bold hover:bg-destructive/25 transition-colors flex items-center gap-1"
+                        className="bg-destructive/15 text-destructive hover:bg-destructive/25"
                       >
                         <Trash2 aria-hidden size={12} />
                         Remove
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -886,14 +890,16 @@ const EliteFeed = () => {
                 />
                 {/* Close only offers itself while there is nothing to lose. */}
                 {!hasDraft && (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => { hapticSelection(); setComposerOpen(false); }}
                     aria-label="Close composer"
-                    className="self-start -mr-1.5 -mt-1.5 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-secondary transition-colors shrink-0"
+                    className="self-start -mr-1.5 -mt-1.5 rounded-full text-muted-foreground/70 shrink-0"
                   >
                     <X aria-hidden size={14} />
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -921,14 +927,14 @@ const EliteFeed = () => {
                   <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold active:scale-95"
+                    className="press flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold "
                   >
                     <Image aria-hidden size={14} />
                     Photo
                   </button>
                   <button
                     onClick={() => videoRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold active:scale-95"
+                    className="press flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold "
                   >
                     <Video aria-hidden size={14} />
                     Video
@@ -950,7 +956,7 @@ const EliteFeed = () => {
             <button
               type="button"
               onClick={() => { hapticSelection(); setComposerOpen(true); }}
-              className="w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform active:scale-[0.99]"
+              className="press w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform "
             >
               <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[11px] font-black text-primary-foreground shrink-0">
                 {composerInitial}

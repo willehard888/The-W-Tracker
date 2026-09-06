@@ -1,17 +1,20 @@
+import { ActionRow } from "@/components/ActionRow";
+import { Input } from "@/components/ui/input";
+import { fmtInt, fmtRelative } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, UserCheck, UserPlus, Search, X, SearchX } from "lucide-react";
+import { MessageCircle, Search, X, SearchX } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import EmptyState from "@/components/ui/empty-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
+import PageBar from "@/components/ui/page-bar";
 
 const Messages = () => {
   const { user } = useAuth();
@@ -137,239 +140,158 @@ const Messages = () => {
     (f) => !conversations?.some((c) => c.partnerId === f.user_id)
   );
 
+  const unread = (conversations || []).reduce((n, c) => n + c.unread, 0);
+  const searching = searchQuery.trim().length >= 2;
+  const invalidate = (...keys: string[]) => keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+
+  // One hairline list: friends' threads, friends you haven't written to, then
+  // everyone else under the screen's single eyebrow.
+  const rows: { key: string; node: ReactNode }[] = [
+    ...friendConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} isFriend /> })),
+    ...friendsWithoutConvo.map((f) => ({ key: f.user_id, node: <PersonRow profile={f} subtitle="Start a conversation" onClick={() => navigate(`/chat/${f.user_id}`)} /> })),
+    ...(friendIds.size > 0 && otherConvos.length > 0 ? [{ key: "others", node: <p className="eyebrow pt-4 pb-1">Others</p> }] : []),
+    ...otherConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} /> })),
+  ];
+
   return (
-    <div ref={scrollRef} className="min-h-full pb-4 px-4 pt-6" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div ref={scrollRef} className="min-h-full" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <PageBar title="Messages" onBack={() => navigate("/squad")} />
+
+      <div className="px-4 pt-4 pb-6">
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
-      
-      <div className="animate-reveal mb-6">
-        <h1 className="font-display text-2xl font-black tracking-tight leading-none py-[10px]">Messages</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Direct messages</p>
+
+      {/* OPENING BEAT — who is waiting on you. Hidden, not absent, while the
+          count loads so the search box never jumps. */}
+      <header className="home-rise mb-4">
+        <h2 className={cn("font-display font-black text-[27px] leading-[1.04] tracking-tight transition-opacity duration-300", isLoading && "opacity-0")}>
+          {unread > 0 ? <><span className="text-gold glow-gold-text tabular-nums">{fmtInt(unread)}</span> unread.</> : "Quiet. Start one."}
+        </h2>
+      </header>
+
+      {/* Search is a mode: while typing, results take the list's place. */}
+      <div className="home-rise home-rise-1 mb-4 relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" aria-hidden />
+        <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search users…" className="h-11 rounded-xl pl-9 pr-11 text-[13px]" />
+        {searchQuery && (
+          <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground/50 hover:text-foreground">
+            <X size={14} />
+          </button>
+        )}
       </div>
 
-      {/* Search */}
-      <div className="animate-reveal mb-4">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search users..."
-            className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/50"
-          />
-          {searchQuery && (
-            <button aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground">
-              <X size={14} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Search Results */}
-      {searchQuery.trim().length >= 2 && searchResults && searchResults.length > 0 && (
-        <div className="animate-reveal mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
-            <Search size={12} /> Results
-          </p>
-          <div className="space-y-2">
-            {searchResults.map((u) => (
-              <button
-                key={u.user_id}
-                onClick={() => { setSearchQuery(""); navigate(`/chat/${u.user_id}`); }}
-                className="w-full flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
-              >
-                <StatusAvatar src={u.avatar_url} name={u.username} tier={u.status_tier || 'recruit'} size="sm" animated={false} />
-                <div className="flex-1 min-w-0">
-                  <TierUsername
-                    as="p"
-                    username={u.username}
-                    tier={u.status_tier || "recruit"}
-                    className="text-sm font-semibold truncate"
-                  />
-                  <p className="text-xs text-muted-foreground/50">Lv {u.level || 1}</p>
-                </div>
-                <MessageCircle size={14} className="text-muted-foreground/30" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {searchQuery.trim().length >= 2 && searchResults && searchResults.length === 0 && (
-        <div className="mb-4 animate-reveal">
-          <EmptyState
-            size="compact"
-            icon={SearchX}
-            title="No users found"
-            description={`Nothing matched "${searchQuery.trim()}". Try a different handle.`}
-          />
-        </div>
-      )}
-
-      {/* Pending Friend Requests */}
-      {pendingRequests && pendingRequests.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
-            <UserPlus size={12} /> Friend Requests
-          </p>
-          <div className="space-y-2">
-            {pendingRequests.map((req: any) => (
-              <div key={req.id} className="flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/20 bg-[hsl(var(--teal))]/5 p-3 card-depth">
-                <StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || 'recruit'} size="sm" animated={false} />
-                <div className="flex-1 min-w-0">
-                  <TierUsername
-                    as="p"
-                    username={req.profile?.username}
-                    tier={req.profile?.status_tier || "recruit"}
-                    className="text-sm font-semibold truncate"
-                  />
-                  <p className="text-[11px] text-muted-foreground">Wants to be friends</p>
-                </div>
-                <button
-                  onClick={async () => {
-                    const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", req.id);
-                    if (error) { toast.error("Could not accept — try again."); return; }
-                    queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
-                    queryClient.invalidateQueries({ queryKey: ["friends"] });
-                    queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
-                    queryClient.invalidateQueries({ queryKey: ["conversations"] });
-                  }}
-                  className="h-7 px-3 rounded-full bg-[hsl(var(--teal))]/15 text-[hsl(var(--teal))] text-[11px] font-bold border border-[hsl(var(--teal))]/30 active:scale-95 transition-transform"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={async () => {
-                    const { error } = await supabase.from("friendships").update({ status: "declined" }).eq("id", req.id);
-                    if (error) { toast.error("Could not decline — try again."); return; }
-                    queryClient.invalidateQueries({ queryKey: ["pending-friend-requests"] });
-                    queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
-                  }}
-                  className="h-7 px-2 rounded-full bg-secondary text-muted-foreground text-[11px] font-bold border border-border active:scale-95 transition-transform"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Friends Section */}
-      {(friends && friends.length > 0) && (
-        <div className="animate-reveal animate-reveal-delay-1 mb-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2 flex items-center gap-1">
-            <UserCheck size={12} /> Friends
-          </p>
-
-          {/* Friends with conversations */}
-          <div className="space-y-2">
-            {friendConvos.map((conv) => (
-              <ConversationRow key={conv.partnerId} conv={conv} userId={user?.id} navigate={navigate} isFriend />
-            ))}
-            {/* Friends without conversations */}
-            {friendsWithoutConvo.map((friend) => (
-              <button
-                key={friend.user_id}
-                onClick={() => navigate(`/chat/${friend.user_id}`)}
-                className="w-full flex items-center gap-3 rounded-xl border border-[hsl(var(--teal))]/15 bg-card p-4 text-left transition-all active:scale-[0.98] card-depth"
-              >
-                <StatusAvatar src={friend.avatar_url} name={friend.username} tier={friend.status_tier || 'recruit'} size="sm" animated={false} />
-                <div className="flex-1 min-w-0">
-                  <TierUsername
-                    as="p"
-                    username={friend.username}
-                    tier={friend.status_tier || "recruit"}
-                    className="text-sm font-semibold truncate"
-                  />
-                  <p className="text-xs text-muted-foreground/50">Start a conversation</p>
-                </div>
-                <MessageCircle size={14} className="text-muted-foreground/30" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {isLoading && (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-xl border border-border bg-card p-4 skeleton-block flex gap-3">
-              <div className="h-10 w-10 rounded-full bg-secondary" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 w-24 bg-secondary rounded" />
-                <div className="h-2 w-40 bg-secondary rounded" />
-              </div>
+      {searching ? (
+        <div className="home-rise">
+          {searchResults && searchResults.length > 0 && (
+            <div className="divide-y divide-border/35">
+              {searchResults.map((u) => (
+                <PersonRow key={u.user_id} profile={u} subtitle={`Lv ${fmtInt(u.level || 1)}`} onClick={() => { setSearchQuery(""); navigate(`/chat/${u.user_id}`); }} />
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Other Conversations */}
-      {otherConvos.length > 0 && (
-        <div className="animate-reveal animate-reveal-delay-2">
-          {friends && friends.length > 0 && (
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">Others</p>
           )}
-          <div className="space-y-2">
-            {otherConvos.map((conv) => (
-              <ConversationRow key={conv.partnerId} conv={conv} userId={user?.id} navigate={navigate} />
-            ))}
-          </div>
+          {searchResults && searchResults.length === 0 && (
+            <EmptyState size="compact" icon={SearchX} title="No users found" description={`Nothing matched "${searchQuery.trim()}". Try a different handle.`} />
+          )}
         </div>
-      )}
+      ) : (
+        <>
+          {/* REQUESTS — the one quiet card: people asking for a yes. */}
+          {pendingRequests && pendingRequests.length > 0 && (
+            <section className="home-rise home-rise-2 mb-5">
+              <h3 className="font-display text-base font-bold tracking-tight mb-2">Friend requests</h3>
+              <div className="surface-card surface-card-quiet divide-y divide-border/35 px-1">
+                {pendingRequests.map((req: any) => (
+                  <ActionRow
+                    key={req.id}
+                    leading={<StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || "recruit"} size="sm" animated={false} />}
+                    title={<TierUsername as="span" username={req.profile?.username} tier={req.profile?.status_tier || "recruit"} className="text-sm font-semibold" />}
+                    subtitle="Wants to be friends"
+                    onAccept={async () => {
+                      const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", req.id);
+                      if (error) { toast.error("Could not accept — try again."); return; }
+                      invalidate("pending-friend-requests", "friends", "friend-requests", "conversations");
+                    }}
+                    onDecline={async () => {
+                      const { error } = await supabase.from("friendships").update({ status: "declined" }).eq("id", req.id);
+                      if (error) { toast.error("Could not decline — try again."); return; }
+                      invalidate("pending-friend-requests", "friend-requests");
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-      {!isLoading && (!conversations || conversations.length === 0) && (!friends || friends.length === 0) && (
-        <div className="animate-reveal animate-reveal-delay-1">
-          <EmptyState
-            icon={MessageCircle}
-            title="No messages yet"
-            description="Open someone's profile and tap Message to start a conversation."
-          />
-        </div>
+          {/* THE LIST — hairline rows, no card per thread. Entrance on the
+              wrapper div so the row's own press still fires. */}
+          {rows.length > 0 && (
+            <div className="divide-y divide-border/35">
+              {rows.map((row, i) => (
+                <div key={row.key} className="animate-fade-in-up" style={{ animationDelay: `${210 + Math.min(i, 8) * 40}ms` }}>{row.node}</div>
+              ))}
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="divide-y divide-border/35" aria-hidden>
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 py-3 skeleton-block">
+                  <div className="h-9 w-9 rounded-full bg-secondary" />
+                  <div className="flex-1 space-y-2"><div className="h-3 w-24 bg-secondary rounded" /><div className="h-2 w-40 bg-secondary rounded" /></div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoading && rows.length === 0 && (
+            <div className="home-rise home-rise-2">
+              <EmptyState icon={MessageCircle} title="No messages yet" description="Open someone's profile and tap Message to start a conversation." />
+            </div>
+          )}
+        </>
       )}
+      </div>
     </div>
   );
 };
 
-const ConversationRow = ({ conv, userId, navigate, isFriend }: { conv: any; userId?: string; navigate: any; isFriend?: boolean }) => (
-  <button
-    onClick={() => navigate(`/chat/${conv.partnerId}`)}
-    className={cn(
-      "w-full flex items-center gap-3 rounded-xl border p-4 text-left transition-all active:scale-[0.98] card-depth",
-      conv.unread > 0
-        ? "border-gold/30 bg-gold/5"
-        : isFriend
-          ? "border-[hsl(var(--teal))]/15 bg-card"
-          : "border-border bg-card"
-    )}
-  >
-    <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || 'recruit'} size="sm" animated={false} />
+/** A person you could write to: a search hit, or a friend with no thread yet. */
+const PersonRow = ({ profile, subtitle, onClick }: {
+  profile: { username?: string | null; avatar_url?: string | null; status_tier?: string | null };
+  subtitle: string;
+  onClick: () => void;
+}) => (
+  <button type="button" onClick={onClick} className="w-full flex items-center gap-3 py-3 text-left">
+    <StatusAvatar src={profile.avatar_url} name={profile.username} tier={profile.status_tier || "recruit"} size="sm" animated={false} />
     <div className="flex-1 min-w-0">
-      <div className="flex items-center justify-between">
-        <TierUsername
-          as="p"
-          username={conv.profile?.username}
-          tier={conv.profile?.status_tier || "recruit"}
-          className={cn("text-sm font-semibold truncate", conv.unread > 0 && "text-foreground")}
-        />
-        <span className="text-[11px] text-muted-foreground shrink-0">
-          {formatDistanceToNow(new Date(conv.lastMessage.created_at), { addSuffix: true })}
-        </span>
-      </div>
-      <p className={cn(
-        "text-xs truncate mt-0.5",
-        conv.unread > 0 ? "text-foreground/80 font-medium" : "text-muted-foreground"
-      )}>
-        {conv.lastMessage.sender_id === userId && "You: "}
-        {conv.lastMessage.content}
-      </p>
+      <TierUsername as="p" username={profile.username} tier={profile.status_tier || "recruit"} className="text-sm font-semibold truncate" />
+      <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
     </div>
-    {conv.unread > 0 && (
-      <div className="h-5 min-w-5 px-1.5 rounded-full bg-ember flex items-center justify-center">
-        <span className="text-[11px] font-bold text-white">{conv.unread}</span>
-      </div>
-    )}
+    <MessageCircle size={14} className="text-muted-foreground/40 shrink-0" aria-hidden />
   </button>
 );
+
+const ConversationRow = ({ conv, userId, navigate }: { conv: any; userId?: string; navigate: any; isFriend?: boolean }) => {
+  const unread = conv.unread > 0;
+  return (
+    <button type="button" onClick={() => navigate(`/chat/${conv.partnerId}`)} className="w-full flex items-center gap-3 py-3 text-left">
+      <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} size="sm" animated={false} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline justify-between gap-2">
+          <TierUsername as="p" username={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} className={cn("text-sm truncate", unread ? "font-bold" : "font-semibold")} />
+          <span className={cn("text-[11px] tabular-nums shrink-0", unread ? "text-foreground/70" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
+        </div>
+        <p className={cn("text-xs truncate mt-0.5", unread ? "text-foreground/85 font-medium" : "text-muted-foreground")}>
+          {conv.lastMessage.sender_id === userId && "You: "}
+          {conv.lastMessage.content}
+        </p>
+      </div>
+      {unread && (
+        <span className="shrink-0 h-2.5 w-2.5 rounded-full bg-ember shadow-[0_0_10px_hsl(var(--ember)/0.55)]">
+          <span className="sr-only">{fmtInt(conv.unread)} unread</span>
+        </span>
+      )}
+    </button>
+  );
+};
 
 export default Messages;

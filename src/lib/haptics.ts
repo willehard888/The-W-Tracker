@@ -32,12 +32,6 @@ export const hapticNotification = async (type: "success" | "warning" | "error" =
   } catch {}
 };
 
-export const hapticSelection = async () => {
-  if (!isNativePlatform()) return;
-  if (shouldCoalesceTap()) return;
-  try {
-    await Haptics.selectionStart();
-    await Haptics.selectionChanged();
-    await Haptics.selectionEnd();
-  } catch {}
-};
+// One bridge call instead of three (selectionStart/Changed/End round-trips
+// serially through the Capacitor bridge); a light impact feels the same.
+export const hapticSelection = () => hapticImpact("light");

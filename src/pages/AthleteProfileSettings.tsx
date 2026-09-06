@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { sportById } from "@/lib/sports";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
 
 const Row = ({ label, value }: { label: string; value: string }) => (
   <div className="flex items-baseline justify-between py-2.5 border-b border-border/30 last:border-0">
-    <span className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+    <span className="eyebrow text-muted-foreground">{label}</span>
     <span className="text-sm text-foreground text-right max-w-[60%] truncate">{value}</span>
   </div>
 );
@@ -56,34 +57,29 @@ const AthleteProfileSettings = () => {
 
   if (editing || !profile?.onboarded) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="shrink-0 px-4 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
-          <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => editing ? setEditing(false) : navigate(-1)}>
-            <ArrowLeft size={18} />
-          </Button>
-          <h1 className="font-display text-base font-black">Athlete profile</h1>
-        </div>
+      <div className="min-h-full">
+        <PageBar title="Athlete profile" onBack={() => (editing ? setEditing(false) : navigate(-1))} />
         <AthleteProfileOnboarding onDone={() => { setEditing(false); refetch(); }} />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <h1 className="font-display text-base font-black">Athlete profile</h1>
-        <Button variant="ghost" size="icon-sm" onClick={() => setEditing(true)} aria-label="Edit">
-          <Pencil size={16} />
-        </Button>
-      </div>
+    <div className="min-h-full">
+      <PageBar
+        title="Athlete profile"
+        onBack={() => navigate(-1)}
+        action={
+          <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Edit">
+            <Pencil size={16} />
+          </Button>
+        }
+      />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8 space-y-5">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-5">
         {profile.i_am && (
           <div className="rounded-2xl px-4 py-4 border border-[hsl(var(--gold)/0.4)] bg-[hsl(var(--gold)/0.05)]">
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold mb-1">Identity</p>
+            <p className="eyebrow text-gold mb-1">Identity</p>
             <p className="text-sm leading-relaxed">{profile.i_am}</p>
           </div>
         )}
@@ -147,7 +143,7 @@ const AthleteProfileSettings = () => {
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div>
-    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-1.5 px-1">{title}</p>
+    <p className="eyebrow text-muted-foreground/70 mb-1.5 px-1">{title}</p>
     <div className="rounded-2xl bg-card/40 border border-border/30 px-4">{children}</div>
   </div>
 );

@@ -1,7 +1,8 @@
+import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Search, UserPlus, UserCheck, Clock, Check, X,
+  Search, UserPlus, UserCheck, Clock, Check, X,
   Flame, MessageCircle, Users, UserMinus,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ import {
 } from "@/hooks/use-friends";
 import { useSuggestedFriends } from "@/hooks/use-suggested-friends";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
@@ -83,27 +85,27 @@ const Friends = () => {
   const searching2 = q.trim().length >= 2;
 
   return (
-    <div className="flex flex-col">
-      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Back">
-          <ArrowLeft size={18} />
-        </Button>
-        <h1 className="font-display text-base font-black tracking-tight">Friends</h1>
-        {(friends?.length ?? 0) > 0 && (
-          <span className="ml-auto text-[12px] font-bold text-muted-foreground tabular-nums">{friends!.length}</span>
-        )}
-      </div>
+    <div className="min-h-full">
+      <PageBar
+        title="Friends"
+        onBack={() => navigate(-1)}
+        action={
+          (friends?.length ?? 0) > 0 ? (
+            <span className="min-w-10 text-center text-[12px] font-bold text-muted-foreground tabular-nums">{friends!.length}</span>
+          ) : undefined
+        }
+      />
 
-      <div className="px-4 pt-4 pb-28 space-y-5">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-5">
         {/* Search / add */}
         <div>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Add a friend by username"
-              className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+              className="h-11 rounded-xl pl-9 pr-9 text-[13px]"
             />
           </div>
 
@@ -153,7 +155,7 @@ const Friends = () => {
         {/* People you may know — members of your tribes you're not connected to */}
         {!searching2 && (suggestions?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="eyebrow text-gold/85 mb-2 px-1">
               People you may know
             </p>
             <div className="space-y-1.5">
@@ -194,7 +196,7 @@ const Friends = () => {
         {/* Incoming requests */}
         {(requests?.length ?? 0) > 0 && (
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85 mb-2 px-1">
+            <p className="eyebrow text-gold/85 mb-2 px-1">
               Friend requests · {requests!.length}
             </p>
             <div className="space-y-1.5">
@@ -227,7 +229,7 @@ const Friends = () => {
 
         {/* Your friends */}
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/70 mb-2 px-1">
+          <p className="eyebrow text-muted-foreground/70 mb-2 px-1">
             Your friends
           </p>
           {friendsLoading ? (

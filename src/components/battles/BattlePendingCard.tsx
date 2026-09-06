@@ -16,7 +16,7 @@ const BattlePendingCard = ({ battle, opponentName, typeInfo }: Props) => (
       <p className="font-semibold text-sm">@{opponentName}</p>
       <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
     </div>
-    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 rounded-full bg-secondary">
+    <span className="eyebrow text-muted-foreground px-2 py-1 rounded-full bg-secondary">
       Pending
     </span>
   </div>

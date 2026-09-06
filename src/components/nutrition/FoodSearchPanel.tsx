@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Globe, Loader2, ScanBarcode, Search, X } from "lucide-react";
+import { Camera, ChefHat, Globe, Loader2, ScanBarcode, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import FoodResultRow, { type FoodResultView } from "@/components/nutrition/FoodResultRow";
@@ -31,6 +31,8 @@ const FoodSearchPanel = ({
   onEnterBarcode,
   onCreateFood,
   onSearchOnline,
+  onScanPhoto,
+  onOpenRecipes,
   autoFocus = true,
 }: {
   query: string;
@@ -48,6 +50,10 @@ const FoodSearchPanel = ({
   onEnterBarcode?: () => void;
   onCreateFood: () => void;
   onSearchOnline?: () => void;
+  /** Opens the photo-scan review (its picker offers camera or library). */
+  onScanPhoto?: () => void;
+  /** Opens the recipe list — the only way in, so it lives where people look for "my recipes". */
+  onOpenRecipes?: () => void;
   autoFocus?: boolean;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +89,7 @@ const FoodSearchPanel = ({
             </button>
           )}
           {barcodeSupported && onScanBarcode && (
-            <button type="button" onClick={onScanBarcode} aria-label="Scan a barcode" className="h-11 w-11 flex items-center justify-center text-gold active:scale-95 transition-transform">
+            <button type="button" onClick={onScanBarcode} aria-label="Scan a barcode" className="h-11 w-11 flex items-center justify-center text-gold transition-transform">
               <ScanBarcode size={18} />
             </button>
           )}
@@ -102,9 +108,19 @@ const FoodSearchPanel = ({
             {label}
           </Button>
         ))}
-        {!barcodeSupported && onEnterBarcode && (
+        {onEnterBarcode && (
           <Button size="pill" variant="outline" className="shrink-0" onClick={onEnterBarcode}>
             <ScanBarcode aria-hidden /> Barcode
+          </Button>
+        )}
+        {onScanPhoto && (
+          <Button size="pill" variant="outline" className="shrink-0" onClick={onScanPhoto}>
+            <Camera aria-hidden /> Photo
+          </Button>
+        )}
+        {onOpenRecipes && (
+          <Button size="pill" variant="outline" className="shrink-0" onClick={onOpenRecipes}>
+            <ChefHat aria-hidden /> Recipes
           </Button>
         )}
       </div>
@@ -124,7 +140,7 @@ const FoodSearchPanel = ({
         <section aria-label="Search results" aria-busy={loading}>
           <div className="flex items-center gap-2 mt-1 mb-1">
             <span className="h-px flex-1 bg-border/50" aria-hidden />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+            <span className="eyebrow-sm text-muted-foreground/70">
               {loading ? "Searching" : `${serverOnly.length} result${serverOnly.length === 1 ? "" : "s"}`}
             </span>
             {loading && <Loader2 size={12} className="animate-spin text-muted-foreground" aria-hidden />}

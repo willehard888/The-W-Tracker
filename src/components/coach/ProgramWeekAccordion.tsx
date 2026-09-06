@@ -21,7 +21,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
     <div className="space-y-3">
       {program.ai_summary && (
         <div className="rounded-2xl border border-gold/20 bg-card/60 p-3.5">
-          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold mb-1">Overview</p>
+          <p className="eyebrow text-gold mb-1">Overview</p>
           <p className={cn("text-[12px] text-foreground/85 leading-snug", !showSummary && "line-clamp-2")}>
             {program.ai_summary}
           </p>
@@ -29,7 +29,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
             <button
               type="button"
               onClick={() => setShowSummary(v => !v)}
-              className="mt-1 text-[11px] font-black uppercase tracking-widest text-gold/80"
+              className="eyebrow mt-1 text-gold/80"
             >
               {showSummary ? "Less" : "Read more"}
             </button>
@@ -57,7 +57,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
               className="w-full flex items-center justify-between px-4 py-3 text-left"
             >
               <div className="min-w-0">
-                <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">Week {week.week}</p>
+                <p className="eyebrow text-gold">Week {week.week}</p>
                 <p className="font-display text-base font-black tracking-tight truncate">{week.theme}</p>
               </div>
               <ChevronDown
@@ -94,7 +94,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <span className={cn(
-                            "text-[11px] font-black tracking-widest uppercase w-8 shrink-0",
+                            "eyebrow w-8 shrink-0",
                             isRest ? "text-muted-foreground" : "text-gold",
                           )}>
                             {day.day}
@@ -111,7 +111,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                           </div>
                         </div>
                         {isLogged && (
-                          <span className="text-[10px] font-black tracking-widest uppercase text-gold">Done</span>
+                          <span className="eyebrow-sm text-gold">Done</span>
                         )}
                       </button>
                       {!isRest && dayOpen && (
@@ -128,7 +128,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                           ))}
                           {day.conditioning && (
                             <li className="text-[12px] text-foreground/80 pt-1">
-                              <span className="text-[11px] font-black uppercase tracking-widest text-gold mr-1.5">Conditioning</span>
+                              <span className="eyebrow text-gold mr-1.5">Conditioning</span>
                               {day.conditioning}
                             </li>
                           )}
@@ -142,7 +142,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                   <button
                     type="button"
                     onClick={() => setShowWeekDetails(v => !v)}
-                    className="w-full text-[11px] font-black uppercase tracking-widest text-muted-foreground/70 inline-flex items-center justify-center gap-1 py-1.5"
+                    className="eyebrow w-full text-muted-foreground/70 inline-flex items-center justify-center gap-1 py-1.5"
                   >
                     Week details
                     <ChevronDown size={11} className={cn("transition-transform", showWeekDetails && "rotate-180")} />
@@ -152,7 +152,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                   <div className="grid grid-cols-2 gap-2">
                     {week.nutrition && (
                       <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-gold mb-1">Nutrition</p>
+                        <p className="eyebrow text-gold mb-1">Nutrition</p>
                         <p className="text-[12px] leading-snug text-foreground/85">
                           {week.nutrition.protein_g_per_kg != null && (
                             <>Protein <b>{week.nutrition.protein_g_per_kg} g/kg</b>{week.nutrition.daily_kcal_band ? " · " : ". "}</>
@@ -164,7 +164,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                     )}
                     {week.recovery && (
                       <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-gold mb-1">Recovery</p>
+                        <p className="eyebrow text-gold mb-1">Recovery</p>
                         <p className="text-[12px] leading-snug text-foreground/85">
                           {week.recovery.sleep_target_h != null && <>Sleep <b>{week.recovery.sleep_target_h} h</b> · </>}
                           {week.recovery.mobility_min != null && <>mobility {week.recovery.mobility_min} min · </>}

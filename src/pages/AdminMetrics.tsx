@@ -1,5 +1,8 @@
+import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
+import { fmtInt } from "@/lib/format";
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -116,7 +119,7 @@ const StatTile = ({
       format={fmt}
       className={cn("font-display text-xl font-black tracking-tight", accent && "text-gold")}
     />
-    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+    <p className="eyebrow text-muted-foreground mt-0.5">
       {label}
     </p>
   </div>
@@ -128,7 +131,7 @@ const SectionHeader = ({ icon: Icon, title, sub }: { icon: typeof Users; title: 
       <Icon size={13} className="text-gold" />
     </div>
     <h2 className="font-display font-bold text-base tracking-tight">{title}</h2>
-    {sub && <span className="ml-auto text-[11px] text-muted-foreground uppercase tracking-wider">{sub}</span>}
+    {sub && <span className="eyebrow ml-auto text-muted-foreground">{sub}</span>}
   </div>
 );
 
@@ -146,7 +149,7 @@ const FunnelBars = ({ steps, byStep }: { steps: ReadonlyArray<readonly [string, 
             <div className="flex items-baseline justify-between mb-1">
               <span className="text-[12px] font-semibold text-foreground/85">{label}</span>
               <span className="text-[12px] tabular-nums text-muted-foreground">
-                {v.toLocaleString()}
+                {fmtInt(v)}
                 {stepPct != null && (
                   <span className={cn("ml-1.5 font-bold", stepPct >= 50 ? "text-xp-green" : stepPct >= 20 ? "text-gold" : "text-destructive/80")}>
                     {stepPct}%
@@ -169,6 +172,7 @@ const FunnelBars = ({ steps, byStep }: { steps: ReadonlyArray<readonly [string, 
 
 export default function AdminMetrics() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -237,11 +241,7 @@ export default function AdminMetrics() {
   });
 
   if (isAdmin === null) {
-    return (
-      <div className="min-h-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
   if (!isAdmin) return <Navigate to="/" replace />;
 
@@ -249,18 +249,16 @@ export default function AdminMetrics() {
   const steps = funnel?.unique_users_by_step ?? {};
 
   return (
-    <div className="min-h-full pb-12 px-4 pt-6 max-w-lg mx-auto">
+    <div className="min-h-full">
+      <PageBar title="Metrics" onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <BarChart3 className="h-5 w-5 text-gold" />
-          <h1 className="font-display text-2xl font-black tracking-tight">Command Center</h1>
-        </div>
         <p className="text-sm text-muted-foreground">
           The numbers the machine is steered by. Activity, retention, funnel, virality.
         </p>
         <a
           href="/admin/moderation"
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gold hover:underline"
+          className="eyebrow mt-3 inline-flex items-center gap-1.5 text-gold hover:underline"
         >
           → Moderation queue
         </a>
@@ -315,7 +313,7 @@ export default function AdminMetrics() {
         <div className="surface-card overflow-hidden">
           <table className="w-full text-[12px]">
             <thead>
-              <tr className="border-b border-border/60 text-muted-foreground uppercase tracking-wider text-[10px]">
+              <tr className="eyebrow-sm border-b border-border/60 text-muted-foreground">
                 <th className="text-left font-semibold px-3 py-2">Week</th>
                 <th className="text-right font-semibold px-2 py-2">Users</th>
                 <th className="text-right font-semibold px-2 py-2">D1</th>
@@ -351,11 +349,11 @@ export default function AdminMetrics() {
       ) : (
         <div className="space-y-5">
           <div className="surface-card p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Activation</p>
+            <p className="eyebrow text-muted-foreground mb-3">Activation</p>
             <FunnelBars steps={ACTIVATION_STEPS} byStep={steps} />
           </div>
           <div className="surface-card p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Monetization</p>
+            <p className="eyebrow text-muted-foreground mb-3">Monetization</p>
             <FunnelBars steps={MONETIZATION_STEPS} byStep={steps} />
           </div>
         </div>
@@ -397,7 +395,7 @@ export default function AdminMetrics() {
 
           {Object.keys(waitlist.goal_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Goals people chase</p>
+              <p className="eyebrow text-muted-foreground mb-3">Goals people chase</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.goal_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))
@@ -425,7 +423,7 @@ export default function AdminMetrics() {
           {/* Struggles — the "what's holding you back" answer, aggregated. */}
           {Object.keys(waitlist.struggle_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">What holds them back</p>
+              <p className="eyebrow text-muted-foreground mb-3">What holds them back</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.struggle_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))
@@ -494,6 +492,7 @@ export default function AdminMetrics() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

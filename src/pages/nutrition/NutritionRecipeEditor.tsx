@@ -10,7 +10,7 @@ import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
-import NutritionPageBar from "@/components/nutrition/NutritionPageBar";
+import PageBar from "@/components/ui/page-bar";
 import NumField from "@/components/nutrition/NumField";
 import NutrientPreview from "@/components/nutrition/NutrientPreview";
 import FoodPickerSheet from "@/components/nutrition/FoodPickerSheet";
@@ -162,8 +162,8 @@ const NutritionRecipeEditor = () => {
   const title = id ? "Recipe" : "New recipe";
   if (id && isLoading) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <NutritionPageBar title={title} onBack={() => navigate(-1)} />
+      <div className="min-h-full">
+        <PageBar title={title} onBack={() => navigate(-1)} />
         <div className="px-4 pt-4 pb-8">
           <Block height={52} className="!rounded-xl" />
           <Block height={88} delay={40} className="mt-4 !rounded-2xl" />
@@ -174,8 +174,8 @@ const NutritionRecipeEditor = () => {
   }
   if (id && !saved) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <NutritionPageBar title={title} onBack={() => navigate(-1)} />
+      <div className="min-h-full">
+        <PageBar title={title} onBack={() => navigate(-1)} />
         <div className="px-4 pt-6">
           <EmptyState title="Recipe not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition/recipes", { replace: true })}>All recipes</Button>} />
         </div>
@@ -184,13 +184,13 @@ const NutritionRecipeEditor = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <NutritionPageBar
+    <div className="min-h-full">
+      <PageBar
         title={title}
         onBack={() => navigate(-1)}
         action={
           id ? (
-            <Button variant="ghost" size="icon" aria-label="Delete recipe" className="min-h-11 min-w-11 text-muted-foreground" onClick={() => setConfirmDelete(true)}>
+            <Button variant="ghost" size="icon" aria-label="Delete recipe" className="text-muted-foreground" onClick={() => setConfirmDelete(true)}>
               <Trash2 size={18} />
             </Button>
           ) : undefined
@@ -198,14 +198,14 @@ const NutritionRecipeEditor = () => {
       />
 
       <form
-        className="px-4 pt-4 pb-28 space-y-6"
+        className="px-4 pt-4 pb-6 space-y-6"
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
           void submit();
         }}
       >
-        <div className="animate-reveal space-y-3">
+        <div className="home-rise space-y-3">
           <label className="block">
             <span className="sr-only">Recipe name</span>
             <input
@@ -237,15 +237,15 @@ const NutritionRecipeEditor = () => {
           </div>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <p className="text-[12px] font-bold text-muted-foreground mb-2">Per serving</p>
           <NutrientPreview nutrition={preview.per} dim={!servingsOk || preview.rows.length === 0} />
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-2">
+        <div className="home-rise home-rise-2">
           <div className="flex items-center justify-between gap-3 mb-1">
             <p className="text-[12px] font-bold text-muted-foreground">Ingredients</p>
-            <Button type="button" variant="ghost" size="xs" className="relative before:absolute before:-inset-2 before:content-['']" onClick={() => setPickerOpen(true)}>
+            <Button type="button" variant="ghost" size="xs" onClick={() => setPickerOpen(true)}>
               <Plus aria-hidden /> Add ingredient
             </Button>
           </div>
@@ -277,7 +277,7 @@ const NutritionRecipeEditor = () => {
                       type="button"
                       aria-label={`Remove ${f?.name ?? it.name}`}
                       onClick={() => setItems((rows) => rows.filter((r) => r.key !== it.key))}
-                      className="shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground active:scale-95 transition-transform"
+                      className="press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground transition-transform"
                     >
                       <X size={16} />
                     </button>
@@ -293,7 +293,7 @@ const NutritionRecipeEditor = () => {
           )}
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-3 flex gap-2">
+        <div className="home-rise home-rise-3 flex gap-2">
           {saved && (
             <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => setLogOpen(true)}>
               Log 1 serving
@@ -332,7 +332,7 @@ const NutritionRecipeEditor = () => {
                     hapticSelection();
                     setLogSlot(s.key);
                   }}
-                  className={cn("flex-1 h-11 rounded-lg text-[12px] font-black transition-all active:scale-[0.97]", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-all ", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>

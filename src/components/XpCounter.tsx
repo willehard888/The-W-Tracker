@@ -1,3 +1,4 @@
+import { fmtUnit } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import AnimatedNumber from "@/components/AnimatedNumber";
 
@@ -23,7 +24,7 @@ const XpCounter = ({ value, className, duration = 1200 }: XpCounterProps) => (
     value={value}
     duration={duration}
     className={cn("text-3xl", className)}
-    format={(n) => `${n.toLocaleString()} XP`}
+    format={(n) => fmtUnit(n, "XP")}
   />
 );
 

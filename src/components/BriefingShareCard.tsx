@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { forwardRef } from "react";
 import { Flame, Trophy, Sparkles } from "lucide-react";
 
@@ -97,7 +98,7 @@ const BriefingShareCard = forwardRef<HTMLDivElement, BriefingShareCardProps>(
             gap: 24,
           }}
         >
-          <Stat icon="xp" label="Week XP" value={totalXp.toLocaleString()} />
+          <Stat icon="xp" label="Week XP" value={fmtInt(totalXp)} />
           <Stat icon="perfect" label="Perfect Days" value={`${perfectDays}/7`} />
           <Stat icon="workout" label="Workouts" value={`${workouts}/7`} />
           <Stat icon="checkin" label="Check-ins" value={`${daysCheckedIn}/7`} />

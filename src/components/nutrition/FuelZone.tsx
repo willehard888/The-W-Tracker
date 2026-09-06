@@ -1,7 +1,9 @@
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Camera, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedNumber from "@/components/AnimatedNumber";
+import NutritionSheet from "@/components/nutrition/NutritionSheet";
+import { fmtKcal } from "@/lib/nutrition/format";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import type { MacroSummary } from "@/components/nutrition/MacroRow";
@@ -24,6 +26,23 @@ export interface FuelZoneProps {
 
 const kcalOf = (m: MacroSummary | null) => Math.max(0, Math.round(m?.calories ?? 0));
 
+/** One-time framing tip before the first scan; localStorage is a convenience, never a dependency. */
+const TIP_KEY = "wf.scan_tip_seen";
+const tipSeen = () => {
+  try {
+    return localStorage.getItem(TIP_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+const markTipSeen = () => {
+  try {
+    localStorage.setItem(TIP_KEY, "1");
+  } catch {
+    /* private mode — the tip simply shows again */
+  }
+};
+
 /**
  * Home's "Fuel" row: today's kcal and protein against target, and the two
  * ways in — log, or point the camera at a plate. A quiet standing-style row
@@ -33,6 +52,7 @@ const kcalOf = (m: MacroSummary | null) => Math.max(0, Math.round(m?.calories ??
  */
 const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, onOpenTargets, onLog, onPhoto }: FuelZoneProps) => {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [tipOpen, setTipOpen] = useState(false);
   if (unavailable) return null;
 
   const kcal = kcalOf(totals);
@@ -47,9 +67,7 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
     line = (
       <span className="text-[13px] text-muted-foreground">
         <span className="font-black text-foreground tabular-nums">{kcal}</span> kcal logged ·{" "}
-        <button type="button" onClick={onOpenTargets} className="font-bold text-foreground underline-offset-2 underline">
-          Set targets
-        </button>
+        <span className="font-bold text-foreground underline-offset-2 underline">Set targets</span>
       </span>
     );
   } else if (state === "empty") {
@@ -71,7 +89,7 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
       <span className="flex items-baseline gap-x-3 flex-wrap text-[11px] text-muted-foreground">
         <span className="tabular-nums">
           <span className="font-display font-black text-[17px] text-foreground">
-            <AnimatedNumber value={kcal} />
+            <AnimatedNumber value={kcal} format={fmtKcal} />
           </span>
           {targetKcal != null && ` / ${targetKcal}`} kcal
         </span>
@@ -87,10 +105,11 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
 
   return (
     <div className="surface-card surface-card-quiet flex items-center">
+      {/* No nested buttons: without targets the whole row is the "set targets" act. */}
       <button
         type="button"
-        onClick={onOpenDiary}
-        aria-label="Open your food diary"
+        onClick={state === "no_targets" ? onOpenTargets : onOpenDiary}
+        aria-label={state === "no_targets" ? "Set your nutrition targets" : "Open your food diary"}
         className="flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity"
       >
         <p className="eyebrow text-muted-foreground/75 mb-0.5">Fuel</p>
@@ -107,11 +126,30 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
           className={cn("min-h-11 min-w-11")}
           onClick={() => {
             hapticImpact("light");
+            if (!tipSeen()) {
+              setTipOpen(true);
+              return;
+            }
             fileRef.current?.click();
           }}
         >
           <Camera size={18} />
         </Button>
+        <NutritionSheet open={tipOpen} onClose={() => setTipOpen(false)} title="Before you shoot" label="Photo tip">
+          <p className="text-[15px] leading-snug">Put a fork or your hand next to the plate. Shoot from about 45°.</p>
+          <p className="text-[12px] text-muted-foreground mt-2 leading-snug">A size reference is what turns a guess into a portion.</p>
+          <Button
+            size="lg"
+            className="w-full mt-5"
+            onClick={() => {
+              markTipSeen();
+              setTipOpen(false);
+              fileRef.current?.click();
+            }}
+          >
+            Got it
+          </Button>
+        </NutritionSheet>
         <input
           ref={fileRef}
           type="file"

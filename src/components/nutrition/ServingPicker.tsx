@@ -64,7 +64,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
               aria-pressed={active}
               onClick={() => pick(p)}
               className={cn(
-                "shrink-0 min-h-11 px-4 rounded-full border text-[12px] font-bold transition-colors active:scale-[0.97]",
+                "press shrink-0 min-h-11 px-4 rounded-full border text-[12px] font-bold transition-colors ",
                 active ? "border-gold/50 bg-gold/[0.08] text-gold" : "border-border bg-transparent text-foreground",
               )}
             >
@@ -123,7 +123,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
                   hapticSelection();
                   onChange({ ...value, qty: String(q) });
                 }}
-                className={cn("flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all active:scale-[0.97]", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all ", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {massUnit ? q : fmtQty(q)}
                 {massUnit ? <span className="text-[10px] font-bold ml-0.5">{value.unit}</span> : "×"}

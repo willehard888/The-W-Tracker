@@ -82,7 +82,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       {/* Compliance */}
       <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.08] to-card p-4">
         <div className="flex items-baseline justify-between mb-2">
-          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
+          <p className="eyebrow text-gold">
             Week {currentWeek} compliance
           </p>
           <p className="font-display text-3xl font-black text-gold leading-none">{compliance}%</p>
@@ -116,7 +116,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp size={14} className="text-gold" />
-          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground">
+          <p className="eyebrow text-muted-foreground">
             XP last 28 days
           </p>
         </div>
@@ -155,7 +155,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       {/* Coach read */}
       <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold">
+          <p className="eyebrow text-gold">
             Coach's read
           </p>
           <Button variant="ghost" size="sm" onClick={fetchRead} disabled={loading} className="h-7 px-2">
@@ -188,7 +188,7 @@ const Tile = ({ label, value, target }: { label: string; value: string; target: 
       {value}
       <span className="text-[11px] font-bold text-muted-foreground">{target}</span>
     </p>
-    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</p>
+    <p className="eyebrow-sm text-muted-foreground mt-1">{label}</p>
   </div>
 );
 

@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "css:dead": "node scripts/css-dead.mjs",
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
@@ -13,6 +14,7 @@
     "test:watch": "vitest",
     "type-debt": "node scripts/type-debt.mjs",
     "type-debt:update": "node scripts/type-debt.mjs --update",
+    "perf:snapshot": "node scripts/perf-snapshot.mjs",
     "ios:clean": "bash scripts/ios-clean.sh",
     "deploy:functions": "bash scripts/deploy-backend.sh",
     "deploy:backend": "bash scripts/deploy-backend.sh --db",
@@ -21,6 +23,7 @@
     "types:gen": "supabase gen types typescript --project-id gcwuvijcuzhunkcauzom --schema public > src/integrations/supabase/types.ts",
     "nutrition:fineli": "vite-node scripts/nutrition/fineli.mts --",
     "nutrition:usda": "vite-node scripts/nutrition/usda.mts --",
+    "nutrition:off": "vite-node scripts/nutrition/off.mts --",
     "nutrition:report": "vite-node scripts/nutrition/report.mts"
   },
   "dependencies": {

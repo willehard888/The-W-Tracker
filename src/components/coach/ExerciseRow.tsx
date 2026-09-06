@@ -173,7 +173,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           ) : null}
 
           {ex && (ex.primary.length > 0 || ex.equipment) && (
-            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70">
+            <p className="eyebrow text-muted-foreground/70">
               {[ex.primary.join(", "), ex.equipment].filter(Boolean).join(" · ")}
             </p>
           )}
@@ -210,7 +210,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {block.notes && <p className="text-[12px] text-muted-foreground leading-snug">{block.notes}</p>}
           {block.alt && (
             <p className="text-[12px] text-muted-foreground/85">
-              <span className="text-gold/85 font-black uppercase tracking-widest text-[10px] mr-1">Swap</span>{block.alt}
+              <span className="eyebrow-sm text-gold/85 mr-1">Swap</span>{block.alt}
             </p>
           )}
 
@@ -218,7 +218,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {weightSeries.length >= 2 && (
             <div className="rounded-xl bg-background/40 border border-border/40 p-2.5">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70">Progression</p>
+                <p className="eyebrow text-muted-foreground/70">Progression</p>
                 <p className={cn(
                   "text-[11px] font-black tabular-nums",
                   trend > 0 ? "text-xp-green" : trend < 0 ? "text-destructive" : "text-muted-foreground",
@@ -234,7 +234,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {loggable && (
             <div className="rounded-xl bg-background/50 border border-border/50 p-2.5">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[11px] font-black uppercase tracking-widest text-gold">Log your result</p>
+                <p className="eyebrow text-gold">Log your result</p>
                 {last && (
                   <p className="text-[11px] text-muted-foreground">
                     Last: {last.weight != null ? `${last.weight}kg` : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}` : ""} · {daysAgo(last.logged_on)}
@@ -253,7 +253,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                       key={c.label}
                       type="button"
                       onClick={() => fill(c.w, last.reps ?? null)}
-                      className="rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-[11px] font-bold text-gold active:scale-95 transition-transform"
+                      className="press rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-[11px] font-bold text-gold transition-transform"
                     >
                       {c.label}
                     </button>
@@ -291,7 +291,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                   type="button"
                   onClick={save}
                   disabled={logSet.isPending}
-                  className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-2 text-[12px] font-black text-primary-foreground disabled:opacity-60 active:scale-95 transition-transform"
+                  className="press shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-2 text-[12px] font-black text-primary-foreground disabled:opacity-60 transition-transform"
                 >
                   {logSet.isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
                   {logged ? "Update" : "Save"}

@@ -84,12 +84,12 @@ const ButtonGallery = () => {
   const [picked, setPicked] = useState<VariantId | null>(null);
 
   return (
-    <div className="min-h-full pb-24 px-4 pt-4 max-w-md mx-auto">
+    <div className="min-h-full pb-6 px-4 pt-4 max-w-md mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link
           to="/"
-          className="h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors active:scale-95"
+          className="press h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
           aria-label="Back"
         >
           <ArrowLeft size={18} />
@@ -114,7 +114,7 @@ const ButtonGallery = () => {
         if (items.length === 0) return null;
         return (
           <section key={group} className="mb-7">
-            <h2 className="text-[11px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--gold-soft))] mb-3 px-1">
+            <h2 className="eyebrow text-[hsl(var(--gold-soft))] mb-3 px-1">
               {group}
             </h2>
             <div className="space-y-3">
@@ -219,7 +219,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
 
 const StateCell = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-1.5">
-    <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70 font-semibold text-center">
+    <span className="eyebrow-sm text-muted-foreground/70 text-center">
       {label}
     </span>
     {children}

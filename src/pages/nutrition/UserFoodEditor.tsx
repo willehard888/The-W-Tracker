@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import NutritionPageBar from "@/components/nutrition/NutritionPageBar";
+import PageBar from "@/components/ui/page-bar";
 import NumField from "@/components/nutrition/NumField";
 import MacroRow from "@/components/nutrition/MacroRow";
 import { useFood } from "@/hooks/use-food";
@@ -60,11 +60,23 @@ const UserFoodEditor = () => {
   const { byKey } = useNutrientDefinitions();
   const existing = useFood(id ?? null);
 
+  // A label photo (from=label) or a barcode miss pre-fills the form through the query string; every value stays editable.
+  const fromLabel = params.get("from") === "label";
   const [name, setName] = useState(params.get("name") ?? "");
-  const [brand, setBrand] = useState("");
+  const [brand, setBrand] = useState(params.get("brand") ?? "");
   const [barcode, setBarcode] = useState(params.get("barcode") ?? "");
-  const [nutrients, setNutrients] = useState<Nutrients>({});
-  const [servings, setServings] = useState<ServingRow[]>([]);
+  const [nutrients, setNutrients] = useState<Nutrients>(() => {
+    const next: Nutrients = {};
+    for (const k of BASE_KEYS) {
+      const v = params.get(k);
+      if (v && parseQty(v) !== null) next[k] = v;
+    }
+    return next;
+  });
+  const [servings, setServings] = useState<ServingRow[]>(() => {
+    const g = params.get("serving_g");
+    return g && parseQty(g) ? [{ ...newServing(params.get("serving_label") || "1 serving", g), is_default: true }] : [];
+  });
   const [errors, setErrors] = useState<Errors>({ nutrients: {}, servings: {} });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -155,8 +167,8 @@ const UserFoodEditor = () => {
   const title = id ? "Edit food" : "New food";
   if (id && existing.isLoading && !existing.food) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <NutritionPageBar title={title} onBack={() => navigate(-1)} />
+      <div className="min-h-full">
+        <PageBar title={title} onBack={() => navigate(-1)} />
         <div className="px-4 pt-4 pb-8">
           <Block height={52} className="!rounded-xl" />
           <Block height={88} delay={40} className="mt-4 !rounded-2xl" />
@@ -167,8 +179,8 @@ const UserFoodEditor = () => {
   }
   if (id && !existing.isLoading && !existing.food) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <NutritionPageBar title={title} onBack={() => navigate(-1)} />
+      <div className="min-h-full">
+        <PageBar title={title} onBack={() => navigate(-1)} />
         <div className="px-4 pt-6">
           <EmptyState title="Food not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition")}>Back to the diary</Button>} />
         </div>
@@ -177,13 +189,13 @@ const UserFoodEditor = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <NutritionPageBar
+    <div className="min-h-full">
+      <PageBar
         title={title}
         onBack={() => navigate(-1)}
         action={
           id ? (
-            <Button variant="ghost" size="icon" aria-label="Delete food" className="min-h-11 min-w-11 text-muted-foreground" onClick={() => setConfirmDelete(true)}>
+            <Button variant="ghost" size="icon" aria-label="Delete food" className="text-muted-foreground" onClick={() => setConfirmDelete(true)}>
               <Trash2 size={18} />
             </Button>
           ) : undefined
@@ -191,14 +203,15 @@ const UserFoodEditor = () => {
       />
 
       <form
-        className="px-4 pt-4 pb-28 space-y-6"
+        className="px-4 pt-4 pb-6 space-y-6"
         onSubmit={(e) => {
           e.preventDefault();
           void submit();
         }}
         noValidate
       >
-        <div className="animate-reveal space-y-3">
+        <div className="home-rise space-y-3">
+          {fromLabel && <p className="text-[12px] text-muted-foreground leading-snug">Read from a label photo — check every number before saving.</p>}
           <label className="block">
             <span className="sr-only">Food name</span>
             <input
@@ -233,7 +246,7 @@ const UserFoodEditor = () => {
           </div>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <p className="text-[12px] font-bold text-muted-foreground mb-2">Per 100 g</p>
           <MacroRow nutrition={{ calories: kcal, protein: n0(nutrients.protein_g), carbs: n0(nutrients.carbs_g), fat: n0(nutrients.fat_g) }} />
           {sanity && (
@@ -243,7 +256,7 @@ const UserFoodEditor = () => {
           )}
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-2 space-y-3">
+        <div className="home-rise home-rise-2 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             {REQUIRED.map((k) => (
               <NumField key={k} label={PRIMARY_LABEL[k]} unit={unitOf(k)} required value={nutrients[k] ?? ""} onChange={(v) => setNutrient(k, v)} error={errors.nutrients[k]} />
@@ -265,10 +278,10 @@ const UserFoodEditor = () => {
           </MoreSection>
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-3">
+        <div className="home-rise home-rise-3">
           <div className="flex items-center justify-between gap-3 mb-1">
             <p className="text-[12px] font-bold text-muted-foreground">Servings</p>
-            <Button type="button" variant="ghost" size="xs" className="relative before:absolute before:-inset-2 before:content-['']" onClick={() => setServings((r) => [...r, newServing()])}>
+            <Button type="button" variant="ghost" size="xs" onClick={() => setServings((r) => [...r, newServing()])}>
               <Plus aria-hidden /> Add serving
             </Button>
           </div>
@@ -299,7 +312,7 @@ const UserFoodEditor = () => {
                         hapticSelection();
                         updateServing(s.key, { is_default: !s.is_default });
                       }}
-                      className={cn("shrink-0 h-11 w-11 flex items-center justify-center rounded-xl active:scale-95 transition-transform", s.is_default ? "text-gold" : "text-muted-foreground/50")}
+                      className={cn("press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-transform", s.is_default ? "text-gold" : "text-muted-foreground/50")}
                     >
                       <Star size={16} fill={s.is_default ? "currentColor" : "none"} />
                     </button>
@@ -307,7 +320,7 @@ const UserFoodEditor = () => {
                       type="button"
                       aria-label="Remove serving"
                       onClick={() => setServings((rows) => rows.filter((r) => r.key !== s.key))}
-                      className="shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground active:scale-95 transition-transform"
+                      className="press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground transition-transform"
                     >
                       <X size={16} />
                     </button>
@@ -323,7 +336,7 @@ const UserFoodEditor = () => {
           )}
         </div>
 
-        <div className="animate-reveal animate-reveal-delay-4">
+        <div className="home-rise home-rise-4">
           <Button type="submit" size="lg" className="w-full" loading={busy || saving} disabled={busy || saving}>
             {id ? "Save changes" : "Save food"}
           </Button>

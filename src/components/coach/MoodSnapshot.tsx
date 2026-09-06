@@ -5,7 +5,7 @@ import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 
 /**
- * Pre-chat mood capture — shown above the chat composer when today has
+ * Pre-chat mood capture — shown above the chat body when today has
  * no `coach_reflection` row yet. Two emoji rows (energy + mood, 1..5).
  * Defaults to the user's baseline so a satisfied user can ship it in
  * one tap. On submit we:
@@ -53,14 +53,13 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
   };
 
   return (
-    <div className="px-4 pt-4 pb-3 mx-3 mb-3 rounded-2xl border border-gold/30 bg-card/60 backdrop-blur-sm">
-      <div className="flex items-baseline justify-between mb-3">
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
-          10-second check-in
-        </p>
+    <div className="surface-card surface-card-quiet mx-4 mb-3 px-4 pt-3 pb-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[13px] font-bold">Ten-second check-in</p>
         <button
+          type="button"
           onClick={() => { hapticImpact("light"); onSkip(); }}
-          className="text-[11px] font-medium text-muted-foreground/70 active:opacity-60"
+          className="press min-h-11 -mr-2 px-2 text-[12px] font-medium text-muted-foreground"
           aria-label="Skip mood snapshot"
         >
           Skip
@@ -76,7 +75,7 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
       <Button
         variant="ember"
         size="sm"
-        className="w-full mt-4"
+        className="w-full mt-4 min-h-11"
         onClick={handleSubmit}
         disabled={saving}
       >
@@ -98,10 +97,8 @@ const EmojiRow = ({
           key={v}
           type="button"
           onClick={() => { hapticImpact("light"); onChange(v); }}
-          className={`flex-1 h-10 rounded-xl text-lg transition border ${
-            active
-              ? "bg-gold/15 border-gold/60 scale-[1.04]"
-              : "bg-card/40 border-border/40 active:scale-95"
+          className={`press flex-1 h-11 rounded-xl text-lg transition-colors border ${
+            active ? "bg-gold/15 border-gold/60" : "surface-inset border-border/40"
           }`}
           aria-pressed={active}
           aria-label={`Rate ${v} of 5`}

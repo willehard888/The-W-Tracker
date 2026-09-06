@@ -19,7 +19,7 @@ const local = readFileSync(localPath, "utf8");
 const target = readFileSync(TARGET, "utf8");
 
 /** Names we are willing to import from the local schema (everything else there is a stub). */
-const ALLOW = /^(food_|foods$|nutrition_|nutrient_|meal_|recipe_|ingest_foods$|search_foods$|log_meal$|update_meal_item$|duplicate_meal$|daily_nutrition_totals$|upsert_(user_food|recipe|nutrition_targets)$|normalize_barcode$|f_unaccent$|sum_nutrition$|scale_nutrition$)/;
+const ALLOW = /^(food_|foods$|nutrition_|nutrient_|meal_|recipe_|ingest_foods$|search_foods$|log_meal$|update_meal_item$|duplicate_meal$|daily_nutrition_totals$|upsert_(user_food|recipe|nutrition_targets)$|normalize_barcode$|f_unaccent$|sum_nutrition$|scale_nutrition$|record_scan_review$|scan_user_priors$)/;
 
 /** Locate `<section>: {` inside `public: {` and return [start of inner, end index of the matching close brace]. */
 function sectionRange(src, section) {

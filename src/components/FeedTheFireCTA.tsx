@@ -56,7 +56,7 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
       onClick={() => navigate("/checkin")}
       className={cn(
         "relative w-full rounded-xl p-3 mb-4 border flex items-center gap-3 text-left",
-        "transition-transform active:scale-[0.99]",
+        "transition-transform ",
         className,
       )}
       style={{
@@ -75,7 +75,7 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] uppercase tracking-[0.18em] font-black" style={{ color: c }}>
+        <p className="eyebrow" style={{ color: c }}>
           Feed the fire
         </p>
         <p className="font-bold text-sm leading-tight truncate">

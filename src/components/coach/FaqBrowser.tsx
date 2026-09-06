@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { COACH_FAQ, FaqEntry, FaqCategory } from "@/lib/coach-faq";
 import { hapticImpact } from "@/lib/haptics";
+import { cn } from "@/lib/utils";
 
 const CATEGORIES: FaqCategory[] = ["Training", "Recovery", "Nutrition", "Mindset", "Program"];
 
@@ -10,33 +12,30 @@ interface Props {
   onClose: () => void;
 }
 
+/** The playbook, as a full overlay of the chat sheet's panel. */
 const FaqBrowser = ({ onSelect, onClose }: Props) => {
   const [active, setActive] = useState<FaqCategory | "All">("All");
   const list = active === "All" ? COACH_FAQ : COACH_FAQ.filter((f) => f.category === active);
 
   return (
-    <div className="absolute inset-0 z-50 bg-background flex flex-col">
-      <div className="shrink-0 px-3 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
-        <button
-          onClick={() => { hapticImpact("light"); onClose(); }}
-          className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-card/60"
-          aria-label="Back"
-        >
+    <div className="absolute inset-0 z-50 bg-background flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <div className="shrink-0 px-2 pt-2 pb-1 flex items-center gap-1 border-b border-border/30">
+        <Button variant="ghost" size="icon" aria-label="Back" onClick={() => { hapticImpact("light"); onClose(); }}>
           <ChevronLeft size={18} />
-        </button>
-        <p className="font-display text-sm font-black tracking-tight">Coach Playbook</p>
+        </Button>
+        <p className="font-display text-[15px] font-black tracking-tight">Coach Playbook</p>
       </div>
 
       <div className="shrink-0 px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">
         {(["All", ...CATEGORIES] as const).map((c) => (
           <button
             key={c}
+            type="button"
             onClick={() => setActive(c)}
-            className={`shrink-0 text-[12px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border transition ${
-              active === c
-                ? "border-gold/60 bg-gold/15 text-gold"
-                : "border-border/40 text-muted-foreground hover:border-border"
-            }`}
+            className={cn(
+              "press shrink-0 min-h-11 text-[12px] font-bold px-3 rounded-full border transition-colors",
+              active === c ? "border-gold/60 bg-gold/15 text-gold" : "border-border/40 text-muted-foreground",
+            )}
           >
             {c}
           </button>
@@ -47,12 +46,11 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
         {list.map((f) => (
           <button
             key={f.id}
+            type="button"
             onClick={() => { hapticImpact("light"); onSelect(f); }}
-            className="w-full text-left rounded-2xl border border-border/40 bg-card/60 p-3.5 hover:border-gold/40 hover:bg-card/80 transition"
+            className="press w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
           >
-            <p className="text-[11px] font-black uppercase tracking-widest text-gold/80 mb-1">
-              {f.category}
-            </p>
+            <p className="text-[11px] text-muted-foreground mb-0.5">{f.category}</p>
             <p className="text-sm text-foreground">{f.question}</p>
           </button>
         ))}

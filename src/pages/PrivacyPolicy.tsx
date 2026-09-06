@@ -1,16 +1,14 @@
-import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-6 max-w-2xl mx-auto">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-        <ArrowLeft size={16} /> Back
-      </button>
+    <div className="min-h-full">
+      <PageBar title="Privacy Policy" onBack={() => navigate(-1)} />
 
-      <h1 className="font-display text-2xl font-bold mb-6">Privacy Policy</h1>
+      <div className="px-4 pt-4 pb-6">
       <p className="text-xs text-muted-foreground mb-6">Last updated: June 8, 2026</p>
 
       <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
@@ -58,6 +56,7 @@ const PrivacyPolicy = () => {
           <h2 className="font-semibold text-foreground mb-2">9. Contact Us</h2>
           <p>If you have questions about this Privacy Policy, please contact us at support@wtracker.app.</p>
         </section>
+      </div>
       </div>
     </div>
   );

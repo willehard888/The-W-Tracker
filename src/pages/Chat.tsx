@@ -1,18 +1,21 @@
+import { Input } from "@/components/ui/input";
+import { fmtRelative } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, Send, MoreVertical, Ban, Flag } from "lucide-react";
+import { Send, MoreVertical, Ban, Flag } from "lucide-react";
 import { toast } from "sonner";
 import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
+import EmptyState from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 
 const Chat = () => {
   const { partnerId } = useParams<{ partnerId: string }>();
@@ -22,6 +25,8 @@ const Chat = () => {
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  // The bubble that lands with commit-pop — only the one this session just sent.
+  const [justSentId, setJustSentId] = useState<string | null>(null);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -109,11 +114,8 @@ const Chat = () => {
     try {
       // supabase-js returns { error } — it does NOT throw. Without this check
       // an RLS/DB failure cleared the input and the message never existed.
-      const { error } = await supabase.from("direct_messages").insert({
-        sender_id: user.id,
-        receiver_id: partnerId,
-        content: messageContent,
-      });
+      const { data: sent, error } = await supabase.from("direct_messages")
+        .insert({ sender_id: user.id, receiver_id: partnerId, content: messageContent }).select("id").single();
       if (error) {
         toast.error("Message didn't send — try again.");
         return; // keep the text in the input so nothing is lost
@@ -139,6 +141,7 @@ const Chat = () => {
       }
 
       setText("");
+      setJustSentId(sent?.id ?? null);
       queryClient.invalidateQueries({ queryKey: ["chat-messages", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     } catch {
@@ -155,29 +158,13 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header — sticky, themed with subtle gold sheen */}
-      <div className="shrink-0 relative border-b border-border/60 bg-card/80 backdrop-blur-xl px-4 py-3 safe-top">
-        <div
-          className="absolute inset-0 pointer-events-none opacity-40"
-          style={{
-            background:
-              "linear-gradient(180deg, hsl(var(--gold) / 0.06) 0%, transparent 100%)",
-          }}
-          aria-hidden
-        />
-        <div className="relative flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => navigate("/messages")}
-            className="-ml-2 rounded-full"
-            aria-label="Back"
-          >
-            <ChevronLeft size={20} />
-          </Button>
+      <PageBar
+        sticky={false}
+        onBack={() => navigate("/messages")}
+        title={
           <button
             onClick={() => navigate(`/user/${partnerId}`)}
-            className="flex items-center gap-2.5 flex-1 min-w-0 active:opacity-70 transition-opacity"
+            className="flex items-center gap-2.5 w-full min-w-0 active:opacity-70 transition-opacity"
           >
             <StatusAvatar
               src={partner?.avatar_url}
@@ -187,9 +174,9 @@ const Chat = () => {
             />
             <div className="text-left min-w-0">
               <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
-                @{partner?.username || "..."}
+                @{partner?.username || "…"}
                 {partnerIsElite && (
-                  <span className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
+                  <span className="eyebrow-sm text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
                     Elite
                   </span>
                 )}
@@ -199,11 +186,13 @@ const Chat = () => {
               </p>
             </div>
           </button>
+        }
+        action={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button aria-label="Conversation options" className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground active:scale-90 transition">
+              <Button variant="ghost" size="icon" aria-label="Conversation options" className="rounded-full text-muted-foreground">
                 <MoreVertical size={18} />
-              </button>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[180px]">
               <DropdownMenuItem
@@ -219,8 +208,8 @@ const Chat = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      </div>
+        }
+      />
 
       {/* Messages */}
       <div
@@ -228,14 +217,8 @@ const Chat = () => {
         className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 space-y-1.5"
       >
         {(!messages || messages.length === 0) && (
-          <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12">
-            <div className="h-14 w-14 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mb-3">
-              <Send size={20} className="text-gold/70" />
-            </div>
-            <p className="text-sm font-semibold text-foreground">Start the conversation</p>
-            <p className="text-xs text-muted-foreground/70 mt-1 max-w-[220px]">
-              Say something to @{partner?.username || "them"} — messages are private.
-            </p>
+          <div className="flex flex-col justify-center h-full">
+            <EmptyState size="compact" icon={Send} title="Start the conversation" description={`Say something to @${partner?.username || "them"}. Messages are private.`} />
           </div>
         )}
         {messages?.map((msg, idx) => {
@@ -260,21 +243,15 @@ const Chat = () => {
                 <div
                   className={cn(
                     "px-3.5 py-2 text-sm leading-relaxed break-words",
+                    msg.id === justSentId && "commit-pop origin-bottom-right",
                     isOwn
                       ? "bg-gradient-to-br from-gold/25 to-gold/10 text-foreground border border-gold/25 shadow-[0_1px_0_hsl(var(--gold)/0.25)_inset]"
                       : "bg-secondary/80 text-foreground border border-border/50",
                     // Smart bubble corners based on grouping
+                    "rounded-2xl",
                     isOwn
-                      ? cn(
-                          "rounded-2xl",
-                          sameAsPrev && "rounded-tr-md",
-                          sameAsNext && "rounded-br-md"
-                        )
-                      : cn(
-                          "rounded-2xl",
-                          sameAsPrev && "rounded-tl-md",
-                          sameAsNext && "rounded-bl-md"
-                        )
+                      ? cn(sameAsPrev && "rounded-tr-md", sameAsNext && "rounded-br-md")
+                      : cn(sameAsPrev && "rounded-tl-md", sameAsNext && "rounded-bl-md")
                   )}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -286,7 +263,7 @@ const Chat = () => {
                       isOwn ? "text-gold/50" : "text-muted-foreground/50"
                     )}
                   >
-                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                    {fmtRelative(msg.created_at)}
                     {isOwn && msg.read && <span className="ml-1">· seen</span>}
                   </p>
                 )}
@@ -299,19 +276,14 @@ const Chat = () => {
 
       {/* Input */}
       <div className="shrink-0 border-t border-border/60 bg-card/90 backdrop-blur-xl px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-        <div className="flex gap-2 items-end">
+        <div className="flex gap-2 items-center">
           <div className="flex-1 relative">
-            <input
+            <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Message..."
+              placeholder={partner?.username ? `Message @${partner.username}` : "Message…"}
               maxLength={1000}
-              className={cn(
-                "w-full h-11 px-4 rounded-full border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-all",
-                text.trim()
-                  ? "border-gold/40 focus:ring-2 focus:ring-gold/30 shadow-[0_0_0_1px_hsl(var(--gold)/0.15)]"
-                  : "border-border focus:ring-1 focus:ring-border"
-              )}
+              className="h-11 rounded-full px-4 text-sm"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

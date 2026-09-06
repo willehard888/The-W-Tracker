@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { getTierUsernameClass, formatTier } from "@/lib/status-tiers";
@@ -79,7 +80,7 @@ const IdentityCore = ({
       {/* PREMIUM ribbon — Founding Apex subscribers, one quiet style */}
       {isApexSubscriber && (
         <div className="mt-2 mb-1 flex justify-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm text-[11px] font-black uppercase tracking-[0.22em] bg-gold/15 text-gold border border-gold/40">
+          <span className="eyebrow-sm inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm bg-gold/15 text-gold border border-gold/40">
             <Crown size={11} strokeWidth={3} />
             Premium · Day-One
           </span>
@@ -121,13 +122,13 @@ const IdentityCore = ({
         ) : tier === "elite" ? (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
             <Crown size={12} className="text-gold" />
-            <span className="text-[12px] font-black text-gold tracking-wider uppercase">{formatTier("elite", division)}</span>
+            <span className="eyebrow-sm text-gold">{formatTier("elite", division)}</span>
           </span>
         ) : null}
         {championWins > 0 && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
             <Trophy size={12} className="text-gold" />
-            <span className="text-[12px] font-black text-gold tracking-wider uppercase">
+            <span className="eyebrow-sm text-gold">
               {championWins > 1 ? `${championWins}× ` : ""}Season Champion
             </span>
           </span>
@@ -135,13 +136,13 @@ const IdentityCore = ({
         {verified && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(var(--xp-green))]/45 bg-[hsl(var(--xp-green))]/10">
             <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" />
-            <span className="text-[12px] font-black text-[hsl(var(--xp-green))] tracking-wider uppercase">Verified</span>
+            <span className="eyebrow-sm text-[hsl(var(--xp-green))]">Verified</span>
           </span>
         )}
         {isLegendPinned && tier !== "legend" && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(280_70%_60%)]/45 bg-[hsl(280_70%_55%)]/10">
             <Crown size={12} className="text-[hsl(280_70%_70%)]" />
-            <span className="text-[12px] font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-[hsl(280_70%_70%)] via-gold to-[hsl(350_80%_60%)]">
+            <span className="eyebrow-sm text-[hsl(280_70%_70%)]">
               Founders Circle
             </span>
           </span>
@@ -153,16 +154,16 @@ const IdentityCore = ({
       {/* Hero XP — massive */}
       <div className="mt-6 flex flex-col items-center">
         <p className="font-display font-black text-[64px] leading-none text-gold tabular-nums">
-          {(profile.xp ?? 0).toLocaleString().replace(/,/g, " ")}
+          {fmtInt(profile.xp ?? 0)}
         </p>
-        <p className="text-[11px] font-black tracking-[0.22em] text-gold/70 mt-2">TOTAL XP</p>
+        <p className="eyebrow-sm text-gold/70 mt-2">Total XP</p>
       </div>
 
       {/* Tri-stat strip — streak (+shields), best streak, level: same on every hero */}
       <div className="mt-6 w-full grid grid-cols-3 divide-x divide-border/40 rounded-2xl border border-border/40 bg-background/30 backdrop-blur-sm py-3">
         <div className="flex flex-col items-center gap-0.5 px-1">
           <StreakFlameInline streak={profile.streak ?? 0} suffix="d" className="text-[15px]" />
-          <span className="eyebrow inline-flex items-center gap-1">
+          <span className="eyebrow-sm inline-flex items-center gap-1">
             Streak
             {shields > 0 && (
               <span className="inline-flex items-center gap-0.5 text-gold normal-case tracking-normal">
@@ -175,13 +176,13 @@ const IdentityCore = ({
           <span className="font-display font-black text-[15px] tabular-nums text-foreground/90">
             {profile.longest_streak ?? 0}d
           </span>
-          <span className="eyebrow">Best</span>
+          <span className="eyebrow-sm">Best</span>
         </div>
         <div className="flex flex-col items-center gap-0.5 px-1">
           <span className="font-display font-black text-[15px] tabular-nums text-foreground/90">
             {profile.level ?? 1}
           </span>
-          <span className="eyebrow">Level</span>
+          <span className="eyebrow-sm">Level</span>
         </div>
       </div>
 

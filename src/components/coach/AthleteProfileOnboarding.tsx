@@ -358,7 +358,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                   type="button"
                   onClick={() => { hapticImpact("light"); toggle("equipment", p.id); }}
                   className={cn(
-                    "rounded-2xl border px-3 py-2.5 text-left transition-all active:scale-[0.97]",
+                    "press rounded-2xl border px-3 py-2.5 text-left transition-all ",
                     draft.equipment.includes(p.id)
                       ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)]"
                       : "surface-card hover:bg-card/60",
@@ -469,7 +469,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
       <div className="flex items-center gap-2 mb-1">
         <Sparkles size={14} className="text-gold" />
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">Step {step + 1} of {STEPS.length}</p>
+        <p className="eyebrow text-gold">Step {step + 1} of {STEPS.length}</p>
       </div>
       <h2 className="font-display text-2xl font-black tracking-tight leading-tight">{cur.title}</h2>
       <p className="text-sm text-muted-foreground mt-1 mb-5">{cur.sub}</p>
@@ -503,7 +503,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
   ({ label, children }, ref) => (
     <div ref={ref}>
-      <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
+      <label className="eyebrow text-muted-foreground mb-2 block">{label}</label>
       {children}
     </div>
   ),
@@ -536,18 +536,18 @@ const Stepper = ({
   const inc = () => { hapticImpact("light"); onChange(Math.min(max, value + step)); };
   return (
     <div>
-      <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</label>
+      <label className="eyebrow text-muted-foreground mb-2 block">{label}</label>
       <div className="flex items-center gap-2 surface-card surface-card-quiet px-2 py-2">
-        <button type="button" onClick={dec}
-          className="h-10 w-10 surface-card surface-card-quiet rounded-xl flex items-center justify-center active:scale-95 transition">
+        <button type="button" onClick={dec} aria-label="Decrease"
+          className="min-h-11 min-w-11 surface-card surface-card-quiet rounded-xl flex items-center justify-center">
           <Minus size={16} />
         </button>
         <div className="flex-1 text-center">
           <span className="font-display text-2xl font-black tabular-nums">{value}</span>
           <span className="text-xs text-muted-foreground ml-1.5">{unit}</span>
         </div>
-        <button type="button" onClick={inc}
-          className="h-10 w-10 surface-card surface-card-quiet rounded-xl flex items-center justify-center active:scale-95 transition">
+        <button type="button" onClick={inc} aria-label="Increase"
+          className="min-h-11 min-w-11 surface-card surface-card-quiet rounded-xl flex items-center justify-center">
           <Plus size={16} />
         </button>
       </div>

@@ -68,7 +68,7 @@ const TierRiskBanner = ({ risk, className }: TierRiskBannerProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
       className={cn(
-        "w-full text-left rounded-2xl border p-3.5 relative overflow-hidden active:scale-[0.99] transition-transform",
+        "w-full text-left rounded-2xl border p-3.5 relative overflow-hidden transition-transform",
         isDanger
           ? "border-destructive/50 bg-destructive/8"
           : "border-gold/40 bg-gold/5",

@@ -173,12 +173,6 @@ const StreakFlameInline = ({
     ? "flame-aurora-hue 10s linear infinite"
     : undefined;
 
-  // Wind reactivity — same global vars as RealisticFlame.
-  // We only apply wind tilt to Warm+ (cold/hot tiers stay still — they're tiny + dense in lists).
-  const windTilt = isWarm
-    ? "rotate(calc(var(--wind-x, 0) * 2.2deg + var(--wind-gust, 0) * 2.5deg)) translateX(calc(var(--wind-x, 0) * 0.4px))"
-    : undefined;
-
   // Diamond+ adds breathing wrapper (very subtle — these are tiny).
   const breathAnim = isDiamond
     ? `, flame-breathe ${(speed * 5).toFixed(2)}s ease-in-out infinite`
@@ -194,9 +188,7 @@ const StreakFlameInline = ({
           width: flameSize,
           height: flameSize * 1.15,
           animation: loop(hueAnim ? `${hueAnim}${breathAnim}` : breathAnim ? breathAnim.slice(2) : undefined),
-          transform: windTilt,
           transformOrigin: "center bottom",
-          transition: windTilt ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)" : undefined,
         }}
         aria-hidden
       >

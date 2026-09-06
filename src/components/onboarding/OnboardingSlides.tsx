@@ -5,32 +5,12 @@ import { TIER_CONFIG, TIER_ORDER, getTierConfig } from "@/lib/status-tiers";
 import { strugglePromise, GOAL_OPTIONS } from "@/lib/onboarding";
 import { cn } from "@/lib/utils";
 
-/* Shared keyframes for the flame hero (ported from the old slide deck —
-   the flame IS the brand moment, everything else was cut). */
-export const ONBOARDING_KEYFRAMES = `
-  @keyframes float {
-    0% { transform: translateY(0) scale(1); }
-    100% { transform: translateY(-14px) scale(1.15); }
-  }
-  @keyframes pulseRing {
-    0% { transform: scale(0.6); opacity: 0.6; }
-    100% { transform: scale(1.4); opacity: 0; }
-  }
-  @keyframes flameDance {
-    0%, 100% { transform: translateY(0) scale(1); }
-    25% { transform: translateY(-6px) scale(1.05) rotate(-3deg); }
-    75% { transform: translateY(-3px) scale(1.02) rotate(3deg); }
-  }
-  @keyframes fadeSlideUp {
-    0% { opacity: 0; transform: translateY(12px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-`;
-
+/* The flame hero's keyframes (onboarding-float, pulseRing, flameDance,
+   fadeSlideUp) live at the end of src/index.css under "Auth". */
 const FloatingOrb = ({ color, size, delay, x, y }: { color: string; size: number; delay: number; x: string; y: string }) => (
   <div
     className="absolute rounded-full blur-sm opacity-60"
-    style={{ width: size, height: size, background: color, left: x, top: y, animation: `float ${3 + delay}s ease-in-out ${delay}s infinite alternate` }}
+    style={{ width: size, height: size, background: color, left: x, top: y, animation: `onboarding-float ${3 + delay}s ease-in-out ${delay}s infinite alternate` }}
   />
 );
 
@@ -141,7 +121,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
           >
             <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden><span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" /></span>
             <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
-            <span className="ml-auto text-[11px] font-black uppercase tracking-wider text-muted-foreground/70">
+            <span className="eyebrow ml-auto text-muted-foreground/70">
               {cfg.percentile}
             </span>
           </div>

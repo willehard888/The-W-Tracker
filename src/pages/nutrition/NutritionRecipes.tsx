@@ -6,7 +6,7 @@ import EmptyState from "@/components/ui/empty-state";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
-import NutritionPageBar from "@/components/nutrition/NutritionPageBar";
+import PageBar from "@/components/ui/page-bar";
 import { useUserRecipes } from "@/hooks/use-user-recipes";
 import { fmtQty } from "@/lib/nutrition/format";
 import { recipePerServing } from "@/lib/nutrition/queries";
@@ -36,8 +36,8 @@ const NutritionRecipes = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <NutritionPageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
+      <div className="min-h-full">
+        <PageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
         <div className="px-4 pt-4 pb-8">
           <Block height={28} className="w-2/3 !rounded-lg" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -49,11 +49,11 @@ const NutritionRecipes = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <NutritionPageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
-      <div className="px-4 pt-4 pb-28">
+    <div className="min-h-full">
+      <PageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
+      <div className="px-4 pt-4 pb-6">
         {recipes.length === 0 ? (
-          <div className="animate-reveal pt-6">
+          <div className="home-rise pt-6">
             <EmptyState
               icon={ChefHat}
               title="No recipes yet"
@@ -63,12 +63,12 @@ const NutritionRecipes = () => {
           </div>
         ) : (
           <>
-            <div className="animate-reveal">
+            <div className="home-rise">
               <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
                 {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"} ready to log.
               </h2>
             </div>
-            <div className="animate-reveal animate-reveal-delay-1 mt-4 divide-y divide-border/35">
+            <div className="home-rise home-rise-1 mt-4 divide-y divide-border/35">
               {recipes.map((r, i) => {
                 const ps = perServing[i]?.data;
                 const stats = ps

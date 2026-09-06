@@ -5,6 +5,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { track, FUNNEL } from "@/lib/analytics";
 import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
+import { sameProfile } from "@/lib/profile-diff";
 import { clearIosDebug } from "@/lib/ios-debug";
 import { HEALTH_CONSENT_KEY, MEAL_WRITE_CONSENT_KEY } from "@/lib/health/health-consent";
 import { queryClient } from "@/lib/query-client";
@@ -126,7 +127,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } catch { /* analytics is never load-bearing */ }
 
-        setProfile(data);
+        // Keep the previous object when nothing rendered changed — the
+        // 5-minute refetch and heartbeat columns used to re-render every
+        // profile consumer on Home for no visible reason.
+        setProfile((prev) => (prev && data && sameProfile(prev, data) ? prev : data));
         setIsElite(Boolean(data?.is_elite));
         // The username picker gate is DB-driven now: ProtectedRoute reads
         // profiles.username_is_auto straight off this profile — no
@@ -141,11 +145,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return run;
   };
 
+  // Stable identities: both read the CURRENT user through a ref, so the
+  // context value (and every consumer memo keyed on it) survives the hourly
+  // token refresh that mints a new `user` object.
+  const userRef = useRef(user);
+  userRef.current = user;
   const refreshProfile = useCallback(async () => {
-    if (user) await fetchProfile(user);
+    if (userRef.current) await fetchProfile(userRef.current);
     // fetchProfile relies only on stable refs/setters; safe to omit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, []);
 
   const checkSubscription = useCallback(async () => {
     // Subscription state lives in RevenueCat and lands on the profile row via
@@ -154,8 +163,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // check-subscription edge function; it was removed with the dormant
     // Stripe path, which also ended its eternal 5-minute error loop in web
     // sessions.)
-    if (user) await fetchProfile(user);
-  }, [user]);
+    if (userRef.current) await fetchProfile(userRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -243,7 +253,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         (payload) => {
           // An UPDATE payload on `profiles` carries the full row.
           const next = payload.new as Tables<"profiles">;
-          setProfile((prev) => (prev ? { ...prev, ...next } : next));
+          setProfile((prev) => {
+            if (!prev) return next;
+            const merged = { ...prev, ...next };
+            return sameProfile(prev, merged) ? prev : merged;
+          });
           if ("is_elite" in next) setIsElite(Boolean(next.is_elite));
         },
       )

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { dayFocus, blockCount, isRestDay } from "@/lib/training/session";
 
 export interface ProgramBlock {
   name: string;
@@ -55,6 +56,29 @@ export interface CoachProgram {
   started_on: string;
   created_at: string;
 }
+
+/**
+ * Today's session in the current week, or null.
+ *
+ * Shape handling — the `session_name` fallback older plans used, and the
+ * rest-day test — lives in `lib/training/session.ts`, which is unit-tested and
+ * shared with every other training surface. Four separate answers to "is this a
+ * rest day?" is exactly how they drifted apart before.
+ */
+export const todaySessionOf = (program: CoachProgram | null, currentWeek: number, todayDayIndex: number) => {
+  // Match on the week NUMBER, falling back to the array position. Indexing
+  // alone showed the wrong day whenever a plan's weeks arrived out of order.
+  const week = program?.plan_json?.weeks?.find((w) => w.week === currentWeek)
+    ?? program?.plan_json?.weeks?.[currentWeek - 1];
+  const day = week?.days?.[todayDayIndex];
+  if (!day) return null;
+  return {
+    focus: dayFocus(day) || "Today's session",
+    duration: day.duration_min ?? null,
+    blocks: blockCount(day) || null,
+    isRest: isRestDay(day),
+  };
+};
 
 export interface ProgramLog {
   id: string;

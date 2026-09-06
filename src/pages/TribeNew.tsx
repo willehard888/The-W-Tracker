@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
+import { Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
@@ -90,19 +91,10 @@ const TribeNew = () => {
   };
 
   return (
-    <div className="min-h-full pb-10 px-4 pt-3">
-      <div className="flex items-center gap-2 mb-4">
-        <Button
-          variant="outline"
-          size="icon-sm"
-          className="h-9 w-9 rounded-full text-muted-foreground"
-          onClick={() => navigate(-1)}
-          aria-label="Back"
-        >
-          <ArrowLeft size={16} />
-        </Button>
-        <h1 className="font-display text-base font-black tracking-tight">Create a Tribe</h1>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Create a tribe" onBack={() => navigate(-1)} />
+
+      <div className="home-rise px-4 pt-4 pb-6">
 
       {/* Live preview — the tribe takes shape as you type */}
       <div className="relative rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.09] via-card/95 to-card overflow-hidden mb-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)]">
@@ -121,11 +113,11 @@ const TribeNew = () => {
           </p>
           <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
             {activity && (
-              <span className="text-[10px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
+              <span className="eyebrow-sm text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
                 {activity}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
+            <span className="eyebrow-sm inline-flex items-center gap-1 text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
               {visibility === "public" ? <><Globe size={11} /> Open</> : <><Lock size={11} /> Approval</>}
             </span>
           </div>
@@ -137,7 +129,7 @@ const TribeNew = () => {
 
       <div className="space-y-4">
         <div>
-          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="eyebrow text-muted-foreground mb-1.5 block">
             Name
           </label>
           <div className="relative">
@@ -179,13 +171,13 @@ const TribeNew = () => {
         </div>
 
         <div>
-          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="eyebrow text-muted-foreground mb-1.5 block">
             What's it about
           </label>
           <div className="space-y-3">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground/60 mb-1.5">
+                <p className="eyebrow-sm text-muted-foreground/60 mb-1.5">
                   {group.label}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -221,7 +213,7 @@ const TribeNew = () => {
         </div>
 
         <div>
-          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="eyebrow text-muted-foreground mb-1.5 block">
             Description
           </label>
           <Textarea
@@ -237,7 +229,7 @@ const TribeNew = () => {
         </div>
 
         <div>
-          <label className="text-[12px] font-black tracking-widest uppercase text-muted-foreground mb-1.5 block">
+          <label className="eyebrow text-muted-foreground mb-1.5 block">
             Who can join
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -250,7 +242,7 @@ const TribeNew = () => {
                 type="button"
                 onClick={() => setVisibility(o.v)}
                 className={cn(
-                  "rounded-xl border p-3 text-left transition-all active:scale-[0.98]",
+                  "press rounded-xl border p-3 text-left transition-all ",
                   visibility === o.v ? "border-gold/50 bg-gold/[0.07]" : "border-border/60 bg-card/40",
                 )}
               >
@@ -277,6 +269,7 @@ const TribeNew = () => {
           {submitting ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
           Create Tribe
         </Button>
+      </div>
       </div>
     </div>
   );

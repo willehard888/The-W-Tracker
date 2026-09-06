@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { illustrationUrl, illustrationImg, illustrationThumb, type IllustratedExercise } from "@/data/exercises-illustrated";
+import { GOLD_LINES } from "./gold-lines";
 
 /**
  * Everkinetic technique illustration, rendered in brand: the source SVGs are
@@ -10,11 +11,6 @@ import { illustrationUrl, illustrationImg, illustrationThumb, type IllustratedEx
  * Whealth Factory illustration set. (Source CC BY-SA 4.0 — attribution lives
  * in the library footer.)
  */
-// Verified in-browser: full invert turns the white SVG background pure black
-// (partial invert left a muddy brown box), sepia+saturate turns the line art
-// warm gold. Tiles use a black background so the SVG's square edge is
-// seamless.
-export const GOLD_LINES = "invert(1) sepia(0.7) saturate(3) hue-rotate(-18deg) brightness(0.9)";
 
 export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: { ex: IllustratedExercise; size?: number; className?: string; eager?: boolean }) => (
   <div
@@ -135,7 +131,7 @@ export const IllustrationPlayer = ({ ex, className }: { ex: IllustratedExercise;
           type="button"
           onClick={() => setPlaying((p) => !p)}
           aria-label={playing ? "Pause the movement" : "Play the movement"}
-          className="absolute bottom-2 right-2 h-11 w-11 rounded-full bg-background/70 border border-border/60 flex items-center justify-center text-gold active:scale-95 transition-transform"
+          className="absolute bottom-2 right-2 h-11 w-11 rounded-full bg-background/70 border border-border/60 flex items-center justify-center text-gold"
         >
           {playing ? <Pause size={15} /> : <Play size={15} />}
         </button>

@@ -1,9 +1,9 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   TrendingUp,
   AlertTriangle,
   Trophy,
@@ -15,6 +15,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 import BriefingShareCard from "@/components/BriefingShareCard";
@@ -153,7 +154,7 @@ const WeeklyBriefing = () => {
 
   if (loading || !briefing) {
     return (
-      <div className="h-full px-4 pt-4">
+      <div className="min-h-full px-4 pt-4">
         <DetailSkeleton />
       </div>
     );
@@ -162,7 +163,9 @@ const WeeklyBriefing = () => {
   const stats = briefing.stats_snapshot ?? {};
 
   return (
-    <div className="h-full overflow-y-auto pb-8 px-4 pt-4 relative">
+    <div className="min-h-full">
+      <PageBar onBack={() => navigate(-1)} />
+      <div className="home-rise px-4 pt-4 pb-6 relative">
       {/* Ambient gold glow */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"
@@ -173,13 +176,6 @@ const WeeklyBriefing = () => {
       />
 
       <div className="relative z-10">
-        <button
-          onClick={() => navigate(-1)}
-          className="shrink-0 -ml-1 mb-2 h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground active:scale-90 active:text-foreground transition-transform"
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -187,7 +183,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5 }}
           className="mb-6"
         >
-          <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80 font-bold mb-2">
+          <p className="eyebrow text-gold/80 mb-2">
             Weekly Briefing · {formatDateRange(briefing.week_start, briefing.week_end)}
           </p>
           <h1 className="font-display font-black text-2xl leading-tight tracking-tight text-gradient-gold">
@@ -202,7 +198,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="grid grid-cols-2 gap-3 mb-6"
         >
-          <StatTile label="Week XP" value={(stats.total_xp ?? 0).toLocaleString()} />
+          <StatTile label="Week XP" value={fmtInt(stats.total_xp ?? 0)} />
           <StatTile label="Perfect Days" value={`${stats.perfect_days ?? 0}/7`} />
           <StatTile label="Workouts" value={`${stats.workouts ?? 0}/7`} />
           <StatTile label="Check-ins" value={`${stats.days_checked_in ?? 0}/7`} />
@@ -215,7 +211,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-6"
         >
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-bold mb-3">
+          <h2 className="eyebrow text-muted-foreground mb-3">
             Key Insights
           </h2>
           <div className="space-y-2">
@@ -245,7 +241,7 @@ const WeeklyBriefing = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="mb-6"
         >
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-bold mb-3">
+          <h2 className="eyebrow text-muted-foreground mb-3">
             Next Week Protocol
           </h2>
           <div className="space-y-2">
@@ -293,7 +289,7 @@ const WeeklyBriefing = () => {
           ) : (
             <Share2 size={18} />
           )}
-          {sharing ? "Generating..." : "Share Briefing"}
+          {sharing ? "Generating…" : "Share Briefing"}
         </Button>
       </div>
 
@@ -316,6 +312,7 @@ const WeeklyBriefing = () => {
           workouts={stats.workouts ?? 0}
           daysCheckedIn={stats.days_checked_in ?? 0}
         />
+      </div>
       </div>
     </div>
   );

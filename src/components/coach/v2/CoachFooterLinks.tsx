@@ -1,14 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import {
-  Target, Moon, BarChart3, ChevronRight,
-} from "lucide-react";
+import { Target, Moon, BarChart3 } from "lucide-react";
+import { DoorRow } from "@/components/coach/rows";
 
 /**
- * "More" footer for the Coach landing.
- *
- * Replaces the previous wall of stacked cards with explicit named doors.
- * Trainer profile + Coach memory live in the header ⋮ menu — not duplicated
- * here — so the footer holds only the doors that have no other home.
+ * The Coach landing's doors, as type-only hairline rows. Trainer profile +
+ * Coach memory live in the PageBar menu, so only the doors with no other
+ * home sit here.
  */
 const CoachFooterLinks = () => {
   const navigate = useNavigate();
@@ -19,23 +16,9 @@ const CoachFooterLinks = () => {
   ];
 
   return (
-    <div className="mt-2 surface-card overflow-hidden">
-      <p className="eyebrow px-4 pt-3 pb-2">
-        More
-      </p>
-      {links.map((l, i) => (
-        <button
-          key={l.path}
-          type="button"
-          onClick={() => navigate(l.path)}
-          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors active:scale-[0.99] ${
-            i > 0 ? "border-t border-border/30" : ""
-          }`}
-        >
-          <l.icon size={14} className="text-muted-foreground shrink-0" />
-          <span className="flex-1 text-[13px] font-semibold">{l.label}</span>
-          <ChevronRight size={14} className="text-muted-foreground/60 shrink-0" />
-        </button>
+    <div className="divide-y divide-border/35 border-t border-border/35">
+      {links.map((l) => (
+        <DoorRow key={l.path} icon={l.icon} label={l.label} onClick={() => navigate(l.path)} />
       ))}
     </div>
   );

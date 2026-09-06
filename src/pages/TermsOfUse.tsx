@@ -1,16 +1,14 @@
-import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 
 const TermsOfUse = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-6 max-w-2xl mx-auto">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-        <ArrowLeft size={16} /> Back
-      </button>
+    <div className="min-h-full">
+      <PageBar title="Terms of Use" onBack={() => navigate(-1)} />
 
-      <h1 className="font-display text-2xl font-bold mb-6">Terms of Use</h1>
+      <div className="px-4 pt-4 pb-6">
       <p className="text-xs text-muted-foreground mb-6">Last updated: March 23, 2026</p>
 
       <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
@@ -58,6 +56,7 @@ const TermsOfUse = () => {
           <h2 className="font-semibold text-foreground mb-2">9. Contact</h2>
           <p>For questions about these Terms, contact us at support@wtracker.app.</p>
         </section>
+      </div>
       </div>
     </div>
   );

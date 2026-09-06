@@ -1,12 +1,14 @@
+import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
+import { fmtRelative } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Crown, Loader2, Copy, CheckCircle2, Clock, Sparkles, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +28,7 @@ type LegendInvite = {
 
 export default function AdminLegendInvites() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [code, setCode] = useState("");
@@ -63,11 +66,7 @@ export default function AdminLegendInvites() {
   });
 
   if (isAdmin === null) {
-    return (
-      <div className="min-h-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
   if (!isAdmin) return <Navigate to="/" replace />;
 
@@ -106,12 +105,10 @@ export default function AdminLegendInvites() {
   };
 
   return (
-    <div className="min-h-full pb-12 px-4 pt-6">
+    <div className="min-h-full">
+      <PageBar title="Legend invites" onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Crown className="h-5 w-5 text-gold" fill="currentColor" />
-          <h1 className="font-display text-2xl font-black tracking-tight">Legend Invites</h1>
-        </div>
         <p className="text-sm text-muted-foreground">
           Invite-only access to the Legend tier. Each code is single-use.
         </p>
@@ -163,7 +160,7 @@ export default function AdminLegendInvites() {
         </Button>
       </div>
 
-      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+      <h3 className="eyebrow text-muted-foreground mb-3">
         All invites ({invites?.length ?? 0})
       </h3>
 
@@ -211,9 +208,9 @@ export default function AdminLegendInvites() {
                   )}
                   <p className="text-[11px] text-muted-foreground mt-1 inline-flex items-center gap-1">
                     <Clock size={12} />
-                    Created {formatDistanceToNow(new Date(inv.created_at), { addSuffix: true })}
-                    {inv.expires_at && ` · expires ${formatDistanceToNow(new Date(inv.expires_at), { addSuffix: true })}`}
-                    {inv.used_at && ` · redeemed ${formatDistanceToNow(new Date(inv.used_at), { addSuffix: true })}`}
+                    Created {fmtRelative(inv.created_at)}
+                    {inv.expires_at && ` · expires ${fmtRelative(inv.expires_at)}`}
+                    {inv.used_at && ` · redeemed ${fmtRelative(inv.used_at)}`}
                   </p>
                 </div>
                 {!isUsed && !isExpired && (
@@ -228,6 +225,7 @@ export default function AdminLegendInvites() {
         {!isLoading && invites && invites.length === 0 && (
           <EmptyState size="compact" icon={Mail} title="No invites yet" />
         )}
+      </div>
       </div>
     </div>
   );

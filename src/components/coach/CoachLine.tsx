@@ -82,7 +82,7 @@ const CoachLine = ({
         "flex items-start gap-2.5",
         styles.border,
         styles.bg,
-        onClick && "active:scale-[0.99] transition-transform",
+        onClick && "transition-transform",
         className,
       )}
       aria-label={onClick ? "Open AI Coach" : undefined}

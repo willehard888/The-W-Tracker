@@ -3,7 +3,7 @@ import { Flame, Users } from "lucide-react";
 import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
 import { cn } from "@/lib/utils";
-import { SEGMENT_ACTIVE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { hapticSelection } from "@/lib/haptics";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
@@ -38,15 +38,15 @@ const Squad = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <div ref={squadTargetRef} className="flex-1 flex gap-1 surface-inset rounded-xl p-1">
+      <div className="home-rise px-4 pt-3 pb-2">
+        <div ref={squadTargetRef} className={SEGMENT_TRACK}>
           {SUB.map((s) => (
             <button
               key={s.key}
               onClick={() => { hapticSelection(); setTab(s.key); }}
               className={cn(
-                "flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-[12px] font-black transition-all active:scale-[0.98]",
-                tab === s.key ? SEGMENT_ACTIVE : "text-muted-foreground",
+                "flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-black transition-all",
+                tab === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
               )}
             >
               <s.icon aria-hidden size={14} /> {s.label}

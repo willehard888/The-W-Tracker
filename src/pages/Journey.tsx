@@ -1,7 +1,9 @@
+import { fmtDate } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Compass, TrendingUp, TrendingDown, Moon, Flame, BookHeart, HeartPulse } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Compass, TrendingUp, TrendingDown, Moon, Flame, BookHeart, HeartPulse } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJourney, weeklyXp, type JourneyReflection } from "@/hooks/use-journey";
 import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
@@ -102,20 +104,10 @@ const Journey = () => {
   const hasAnyData = daysTracked > 0 || reflections.length > 0 || bestStreak > 0;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-            <Compass size={14} className="text-gold" />
-          </div>
-          <h1 className="font-display text-base font-black">Your Journey</h1>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Your journey" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto momentum-scroll px-4 pt-4 pb-8 space-y-4">
+      <div className="home-rise px-4 pt-4 pb-6 space-y-4">
         {!isLoading && !hasAnyData && (
           <EmptyState
             icon={Compass}
@@ -177,7 +169,7 @@ const Journey = () => {
           <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp size={12} className="text-gold" />
-              <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold">
+              <p className="eyebrow text-gold">
                 How far you've come
               </p>
             </div>
@@ -220,7 +212,7 @@ const Journey = () => {
             title="Momentum"
             sub={`XP per week · ${xpWeeks.length} weeks`}
             values={xpWeeks}
-            delta={xpDelta != null ? `${xpDelta >= 0 ? "+" : ""}${xpDelta.toLocaleString()} xp` : null}
+            delta={xpDelta != null ? `${xpDelta >= 0 ? "+" : ""}${fmtInt(xpDelta)} xp` : null}
             good={(xpDelta ?? 0) >= 0}
           />
         )}
@@ -241,7 +233,7 @@ const Journey = () => {
         <div className="surface-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <BookHeart size={13} className="text-gold" />
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground/80">
+            <p className="eyebrow text-muted-foreground/80">
               Your reflections
             </p>
             {reflections.length > 0 && (
@@ -291,8 +283,8 @@ const DeltaTile = ({
       )}
     />
     <p className="font-display text-lg font-black tabular-nums leading-none">{value}</p>
-    {unit && <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{unit}</p>}
-    <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider mt-1">{label}</p>
+    {unit && <p className="eyebrow-sm text-muted-foreground mt-0.5">{unit}</p>}
+    <p className="eyebrow-sm text-muted-foreground/70 mt-1">{label}</p>
   </div>
 );
 
@@ -317,7 +309,7 @@ const TrendCard = ({
         <Icon size={13} className="text-gold" />
         <div>
           <p className="text-[13px] font-black leading-tight">{title}</p>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{sub}</p>
+          <p className="eyebrow text-muted-foreground">{sub}</p>
         </div>
       </div>
       {delta && (
@@ -338,7 +330,7 @@ const relDate = (iso: string): string => {
   if (days <= 0) return "Today";
   if (days === 1) return "Yesterday";
   if (days < 7) return `${days} days ago`;
-  return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return fmtDate(iso + "T00:00:00");
 };
 
 const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
@@ -348,7 +340,7 @@ const ReflectionRow = ({ r }: { r: JourneyReflection }) => {
     <div className="surface-panel rounded-xl px-3 py-2.5">
       <div className="flex items-center gap-2 mb-1">
         {mood && <span className="text-sm leading-none">{mood}</span>}
-        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">
+        <span className="eyebrow text-muted-foreground/60">
           {relDate(r.reflection_date)}
         </span>
       </div>

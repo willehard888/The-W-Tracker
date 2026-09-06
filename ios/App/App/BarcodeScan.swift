@@ -3,8 +3,10 @@ import Capacitor
 import AVFoundation
 import UIKit
 
-/// In-house barcode scanner (EAN-8 / EAN-13 / UPC-E) on top of AVFoundation's
-/// `AVCaptureMetadataOutput`. UPC-A arrives as EAN-13 with a leading 0.
+/// In-house barcode scanner (EAN-8 / EAN-13 / UPC-E, plus ITF-14, Code 128 and
+/// GS1 Digital Link QR / Data Matrix) on top of AVFoundation's
+/// `AVCaptureMetadataOutput`. UPC-A arrives as EAN-13 with a leading 0; the
+/// GTIN inside a Code 128 / Digital Link payload is extracted JS-side.
 ///
 /// Replaces `@capacitor-mlkit/barcode-scanning`: the GoogleMLKit pods inject
 /// `EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64`, which makes every simulator
@@ -31,7 +33,11 @@ public class BarcodeScan: CAPPlugin, CAPBridgedPlugin {
     fileprivate static let formats: [(name: String, type: AVMetadataObject.ObjectType)] = [
         ("EAN_8", .ean8),
         ("EAN_13", .ean13),
-        ("UPC_E", .upce)
+        ("UPC_E", .upce),
+        ("ITF_14", .itf14),
+        ("CODE_128", .code128),
+        ("QR_CODE", .qr),
+        ("DATA_MATRIX", .dataMatrix)
     ]
 
     private static func permissionState() -> String {
@@ -71,7 +77,7 @@ public class BarcodeScan: CAPPlugin, CAPBridgedPlugin {
     @objc func scan(_ call: CAPPluginCall) {
         let wanted = call.getArray("formats", String.self) ?? []
         var types = Self.formats.filter { wanted.contains($0.name) }.map { $0.type }
-        if types.isEmpty { types = Self.formats.map { $0.type } } // default / unknown names → all three
+        if types.isEmpty { types = Self.formats.map { $0.type } } // default / unknown names → all of them
 
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
@@ -119,11 +125,15 @@ public class BarcodeScan: CAPPlugin, CAPBridgedPlugin {
 
 // MARK: - Scanner screen
 
-private final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+private final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate, UIGestureRecognizerDelegate {
     enum Outcome {
         case code(String, AVMetadataObject.ObjectType)
         case cancelled
     }
+
+    /// Same value seen twice within this window → confirmed. One frame with a
+    /// misread digit happens; two identical frames in a row do not.
+    private static let confirmWindow: TimeInterval = 0.5
 
     private let types: [AVMetadataObject.ObjectType]
     private let onFinish: (Outcome) -> Void
@@ -132,6 +142,7 @@ private final class ScannerViewController: UIViewController, AVCaptureMetadataOu
     private let sessionQueue = DispatchQueue(label: "app.wtracker.barcodescan.session", qos: .userInitiated)
     private var device: AVCaptureDevice?
     private var finished = false
+    private var candidate: (value: String, type: AVMetadataObject.ObjectType, hits: Int, since: TimeInterval)?
 
     private lazy var preview = AVCaptureVideoPreviewLayer(session: session)
     private let dim = CAShapeLayer()
@@ -169,6 +180,14 @@ private final class ScannerViewController: UIViewController, AVCaptureMetadataOu
         if session.canSetSessionPreset(.high) { session.sessionPreset = .high }
         guard session.canAddInput(input), session.canAddOutput(output) else { return false }
         session.addInput(input)
+        if (try? camera.lockForConfiguration()) != nil {
+            if camera.isFocusModeSupported(.continuousAutoFocus) { camera.focusMode = .continuousAutoFocus }
+            if camera.isAutoFocusRangeRestrictionSupported { camera.autoFocusRangeRestriction = .near }
+            if camera.isExposureModeSupported(.continuousAutoExposure) { camera.exposureMode = .continuousAutoExposure }
+            let zoom: CGFloat = 1.5 // ponytail: calibration knob — bigger bars for the decoder without a tele lens
+            if camera.activeFormat.videoMaxZoomFactor >= zoom { camera.videoZoomFactor = zoom }
+            camera.unlockForConfiguration()
+        }
         session.addOutput(output)
         output.setMetadataObjectsDelegate(self, queue: .main)
         let available = output.availableMetadataObjectTypes
@@ -210,8 +229,13 @@ private final class ScannerViewController: UIViewController, AVCaptureMetadataOu
 
         torchButton.tintColor = .white
         torchButton.setImage(UIImage(systemName: "bolt.slash.fill"), for: .normal)
+        torchButton.accessibilityLabel = "Turn torch on"
         torchButton.addTarget(self, action: #selector(torchTapped), for: .touchUpInside)
         torchButton.isHidden = !(device?.hasTorch ?? false)
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(focusTapped(_:)))
+        tap.delegate = self
+        view.addGestureRecognizer(tap)
 
         for v in [window, hint, cancel, torchButton] {
             v.translatesAutoresizingMaskIntoConstraints = false
@@ -293,7 +317,41 @@ private final class ScannerViewController: UIViewController, AVCaptureMetadataOu
         guard let device = device, device.hasTorch, (try? device.lockForConfiguration()) != nil else { return }
         device.torchMode = device.torchMode == .on ? .off : .on
         device.unlockForConfiguration()
-        torchButton.setImage(UIImage(systemName: device.torchMode == .on ? "bolt.fill" : "bolt.slash.fill"), for: .normal)
+        let on = device.torchMode == .on
+        torchButton.setImage(UIImage(systemName: on ? "bolt.fill" : "bolt.slash.fill"), for: .normal)
+        torchButton.accessibilityLabel = on ? "Turn torch off" : "Turn torch on"
+    }
+
+    /// Buttons keep their own touches; a tap anywhere else refocuses there.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        return !(touch.view is UIControl)
+    }
+
+    @objc private func focusTapped(_ tap: UITapGestureRecognizer) {
+        guard let device = device, (try? device.lockForConfiguration()) != nil else { return }
+        let point = preview.captureDevicePointConverted(fromLayerPoint: tap.location(in: view))
+        if device.isFocusPointOfInterestSupported {
+            device.focusPointOfInterest = point
+            let mode: AVCaptureDevice.FocusMode = device.isFocusModeSupported(.continuousAutoFocus) ? .continuousAutoFocus : .autoFocus
+            if device.isFocusModeSupported(mode) { device.focusMode = mode }
+        }
+        if device.isExposurePointOfInterestSupported {
+            device.exposurePointOfInterest = point
+            let mode: AVCaptureDevice.ExposureMode = device.isExposureModeSupported(.continuousAutoExposure) ? .continuousAutoExposure : .autoExpose
+            if device.isExposureModeSupported(mode) { device.exposureMode = mode }
+        }
+        device.unlockForConfiguration()
+    }
+
+    /// Only payloads that can carry a GTIN: a GS1 Digital Link path for QR /
+    /// Data Matrix, an AI (01) prefix for Code 128. Anything else (a Wi-Fi QR,
+    /// a shipping label) is ignored and scanning continues.
+    private static func plausible(_ value: String, _ type: AVMetadataObject.ObjectType) -> Bool {
+        switch type {
+        case .qr, .dataMatrix: return value.range(of: #"/01/\d{8,14}"#, options: .regularExpression) != nil
+        case .code128: return value.range(of: #"^01\d{14}"#, options: .regularExpression) != nil
+        default: return true
+        }
     }
 
     func metadataOutput(_ output: AVCaptureMetadataOutput,
@@ -302,10 +360,20 @@ private final class ScannerViewController: UIViewController, AVCaptureMetadataOu
         guard !finished,
               let code = metadataObjects.lazy
                 .compactMap({ $0 as? AVMetadataMachineReadableCodeObject })
-                .first(where: { !($0.stringValue ?? "").isEmpty }),
+                .first(where: { (code: AVMetadataMachineReadableCodeObject) -> Bool in
+                    guard let v = code.stringValue, !v.isEmpty else { return false }
+                    return Self.plausible(v, code.type)
+                }),
               let value = code.stringValue else { return }
+        let now = Date().timeIntervalSinceReferenceDate
+        if let c = candidate, c.value == value, now - c.since < Self.confirmWindow {
+            candidate = (value, code.type, c.hits + 1, c.since)
+        } else {
+            candidate = (value, code.type, 1, now)
+        }
+        guard let c = candidate, c.hits >= 2 else { return }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        finish(.code(value, code.type))
+        finish(.code(c.value, c.type))
     }
 
     /// Single exit: stops the camera, reports once, dismisses.

@@ -43,6 +43,16 @@
         text-rendering: optimizeLegibility;
       }
       #root { min-height: 100dvh; }
+      /* Static twin of HomeSkeleton (src/components/skeletons/PageSkeleton.tsx):
+         paints Home's block geometry before any JS runs; React's first commit
+         replaces it. Keep heights in sync with HomeSkeleton. */
+      .boot-skel { max-width: 28rem; margin: 0 auto; padding: 12px 16px; }
+      .boot-skel > div {
+        box-sizing: border-box;
+        border-radius: 12px;
+        background: hsl(var(--card) / 0.4);
+        border: 1px solid hsl(var(--border) / 0.3);
+      }
     </style>
 
     <meta property="og:type" content="website" />
@@ -60,7 +70,19 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="height: calc(env(safe-area-inset-top) + 44px)"></div>
+      <div class="boot-skel" aria-hidden="true">
+        <div style="height: 12px; width: 6rem; border-radius: 6px"></div>
+        <div style="height: 28px; width: 75%; margin-top: 8px; border-radius: 8px"></div>
+        <div style="height: 168px; margin-top: 16px; border-radius: 24px"></div>
+        <div style="height: 56px; margin-top: 24px"></div>
+        <div style="height: 56px; margin-top: 24px"></div>
+        <div style="height: 82px; margin-top: 24px"></div>
+        <div style="height: 64px; margin-top: 24px; width: 91.666667%"></div>
+        <div style="height: 168px; margin-top: 12px"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

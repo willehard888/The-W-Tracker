@@ -49,6 +49,8 @@ export interface NutrientDef {
   fineli_factor: number | null;
   usda_nutrient_id: number | null;
   usda_factor: number | null;
+  off_key: string | null;
+  off_factor: number | null;
 }
 
 /** numeric(12,4) in the DB — round once here so payloads are stable. */
@@ -75,6 +77,10 @@ export interface Flags {
   from?: string;
   zip?: string;
   dataset?: string;
+  file?: string;
+  countries?: string[];
+  since?: number;
+  concurrency?: number;
 }
 export function parseFlags(argv: string[]): Flags {
   const f: Flags = { dryRun: false };
@@ -85,19 +91,27 @@ export function parseFlags(argv: string[]): Flags {
       if (v === undefined || v.startsWith("--")) die(`${a} needs a value`);
       return v;
     };
+    const int = (min: number, max = Infinity): number => {
+      const n = Number(value());
+      if (!Number.isInteger(n) || n < min || n > max) die(`${a} must be an integer ${max === Infinity ? `≥ ${min}` : `in ${min}..${max}`}`);
+      return n;
+    };
     switch (a) {
       case "--": break;
       case "--dry-run": f.dryRun = true; break;
-      case "--limit": {
-        const n = Number(value());
-        if (!Number.isInteger(n) || n <= 0) die("--limit must be a positive integer");
-        f.limit = n;
-        break;
-      }
+      case "--limit": f.limit = int(1); break;
       case "--from": f.from = value(); break;
       case "--zip": f.zip = resolve(value()); break;
       case "--dataset": f.dataset = value(); break;
-      default: die(`unknown flag ${a} (known: --dry-run --limit N --from <source_id> --zip <path> --dataset <name>)`);
+      case "--file": f.file = resolve(value()); break;
+      case "--countries": f.countries = value().toLowerCase().split(",").map((s) => s.trim()).filter(Boolean); break;
+      case "--since": f.since = int(0); break;
+      case "--concurrency": f.concurrency = int(1, 8); break;
+      default:
+        die(
+          `unknown flag ${a} (known: --dry-run --limit N --from <source_id> --zip <path> --dataset <name>` +
+            " --file <path> --countries fi,se --since <unix> --concurrency 1..8)",
+        );
     }
   }
   return f;
@@ -134,11 +148,39 @@ export function createServiceClient(): SupabaseClient {
 export async function loadNutrientDefinitions(client: SupabaseClient): Promise<NutrientDef[]> {
   const { data, error } = await client
     .from("nutrient_definitions")
-    .select("id, key, unit, fineli_code, fineli_factor, usda_nutrient_id, usda_factor")
+    .select("id, key, unit, fineli_code, fineli_factor, usda_nutrient_id, usda_factor, off_key, off_factor")
     .order("id");
   if (error) throw new Error(`nutrient_definitions: ${error.message}`);
   const defs = (data ?? []) as NutrientDef[];
   if (!defs.length) throw new Error("nutrient_definitions is empty — apply the Phase 1 migrations first.");
+  return defs;
+}
+
+const SEED_FILE = "supabase/migrations/20260905100100_nutrition_catalog.sql";
+/**
+ * The nutrient_definitions seed rows parsed straight from the migration, for a
+ * --dry-run without a service key. Column order is the INSERT's:
+ * id, key, name_en, name_fi, unit, category, sort_order, fineli_code, fineli_factor,
+ * usda_nutrient_id, usda_factor, off_key, off_factor.
+ */
+export function seedNutrientDefinitions(): NutrientDef[] {
+  const sql = readFileSync(join(ROOT, SEED_FILE), "utf8");
+  const start = sql.indexOf("INSERT INTO public.nutrient_definitions");
+  const defs: NutrientDef[] = [];
+  for (const row of sql.slice(start, sql.indexOf("ON CONFLICT", start)).split("\n")) {
+    if (!/^\s*\(\s*\d/.test(row)) continue;
+    const t = (row.match(/'[^']*'|NULL|-?\d+(?:\.\d+)?/g) ?? []).map((x) =>
+      x === "NULL" ? null : x.startsWith("'") ? x.slice(1, -1) : Number(x));
+    if (t.length !== 13) throw new Error(`${SEED_FILE}: cannot parse seed row ${row.trim()}`);
+    const str = (i: number): string | null => (typeof t[i] === "string" ? t[i] : null);
+    const num = (i: number): number | null => (typeof t[i] === "number" ? t[i] : null);
+    defs.push({
+      id: num(0) ?? NaN, key: str(1) ?? "", unit: str(4) ?? "",
+      fineli_code: str(7), fineli_factor: num(8), usda_nutrient_id: num(9), usda_factor: num(10),
+      off_key: str(11), off_factor: num(12),
+    });
+  }
+  if (!defs.length) throw new Error(`${SEED_FILE}: no nutrient_definitions seed rows found`);
   return defs;
 }
 
@@ -147,8 +189,9 @@ async function rpcIngest(client: SupabaseClient, batch: FoodPayload[]): Promise<
   for (let attempt = 1; ; attempt++) {
     const { data, error, status } = await client.rpc("ingest_foods", { p_foods: batch });
     if (!error) return (data ?? []) as { action: string }[];
-    // status 0 = fetch failed (postgrest-js swallows network errors into the error object)
-    const retryable = status === 0 || status >= 500 || /fetch failed|ECONN|socket|timed? ?out/i.test(error.message);
+    // status 0 = fetch failed (postgrest-js swallows network errors into the error object).
+    // deadlock (40P01) = concurrent batches upserting food_barcodes; safe because ingest_foods is idempotent.
+    const retryable = status === 0 || status >= 500 || /fetch failed|ECONN|socket|timed? ?out|deadlock/i.test(error.message);
     if (!retryable || attempt === RETRIES) {
       throw new Error(`ingest_foods failed (HTTP ${status}): ${error.message}${error.details ? ` — ${error.details}` : ""}`);
     }
@@ -164,30 +207,39 @@ export interface IngestResult {
   actions: Record<string, number>;
 }
 
-/** Sends foods to ingest_foods in batches; onBatch(lastSourceId) fires after each committed batch. */
+/**
+ * Sends foods to ingest_foods in batches, `concurrency` (default 1) of them in flight at once;
+ * onBatch(lastSourceId) fires after each whole group has committed, so resume state never
+ * skips a batch that was still in flight.
+ */
 export async function ingestBatch(
   client: SupabaseClient,
   foods: FoodPayload[],
   batchSize = BATCH_SIZE,
-  opts: { dryRun?: boolean; onBatch?: (lastSourceId: string) => void } = {},
+  opts: { dryRun?: boolean; concurrency?: number; onBatch?: (lastSourceId: string) => void } = {},
 ): Promise<IngestResult> {
   const batches = Math.ceil(foods.length / batchSize);
   const actions: Record<string, number> = {};
-  for (let b = 0; b < batches; b++) {
+  const run = async (b: number): Promise<void> => {
     const batch = foods.slice(b * batchSize, (b + 1) * batchSize);
     const first = batch[0].source_id;
     const last = batch[batch.length - 1].source_id;
     const t0 = Date.now();
     if (opts.dryRun) {
       console.log(`  [dry-run] batch ${b + 1}/${batches}: ${batch.length} foods (${first} … ${last})`);
-    } else {
-      const counts: Record<string, number> = {};
-      for (const r of await rpcIngest(client, batch)) counts[r.action] = (counts[r.action] ?? 0) + 1;
-      for (const [k, v] of Object.entries(counts)) actions[k] = (actions[k] ?? 0) + v;
-      const detail = Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(" · ") || "no rows returned";
-      console.log(`  batch ${b + 1}/${batches}: ${batch.length} foods → ${detail} (${Date.now() - t0} ms)`);
+      return;
     }
-    opts.onBatch?.(last);
+    const counts: Record<string, number> = {};
+    for (const r of await rpcIngest(client, batch)) counts[r.action] = (counts[r.action] ?? 0) + 1;
+    for (const [k, v] of Object.entries(counts)) actions[k] = (actions[k] ?? 0) + v;
+    const detail = Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(" · ") || "no rows returned";
+    console.log(`  batch ${b + 1}/${batches}: ${batch.length} foods → ${detail} (${Date.now() - t0} ms)`);
+  };
+  const width = Math.max(1, opts.concurrency ?? 1);
+  for (let b = 0; b < batches; b += width) {
+    const group = Array.from({ length: Math.min(width, batches - b) }, (_, i) => b + i);
+    await Promise.all(group.map(run));
+    opts.onBatch?.(foods[Math.min((b + group.length) * batchSize, foods.length) - 1].source_id);
   }
   return { batches, processed: foods.length, actions };
 }
@@ -211,6 +263,7 @@ export async function runIngest(client: SupabaseClient, source: string, foods: F
   console.log(`${source}: ${slice.length} of ${foods.length} foods to ingest${flags.dryRun ? " (dry-run, nothing written)" : ""}`);
   const result = await ingestBatch(client, slice, BATCH_SIZE, {
     dryRun: flags.dryRun,
+    concurrency: flags.concurrency,
     onBatch: (lastSourceId) => {
       if (flags.dryRun) return;
       state[source] = { lastSourceId, done: false, total: foods.length };
@@ -261,7 +314,18 @@ export function runSelfCheck(): void {
     { dryRun: true, limit: 5, from: "x", zip: resolve("a.zip"), dataset: "foundation" },
   );
   assert.deepEqual(parseFlags([]), { dryRun: false });
+  assert.deepEqual(
+    parseFlags(["--file", "off.jsonl.gz", "--countries", "FI, se", "--since", "1725000000", "--concurrency", "3"]),
+    { dryRun: false, file: resolve("off.jsonl.gz"), countries: ["fi", "se"], since: 1725000000, concurrency: 3 },
+  );
   assert.equal(round4(650.5 / 4.184), 155.4732);
+  const seed = seedNutrientDefinitions();
+  assert.ok(seed.length >= 49, `seed rows: ${seed.length}`);
+  assert.deepEqual(
+    seed.find((d) => d.key === "salt_g"),
+    { id: 45, key: "salt_g", unit: "g", fineli_code: "NACL", fineli_factor: 0.001, usda_nutrient_id: 1093, usda_factor: 0.0025, off_key: "salt", off_factor: 1 },
+    "seed row parse",
+  );
   console.log("lib.mts self-check: OK");
 }
 

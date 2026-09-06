@@ -3,11 +3,13 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { cn } from "@/lib/utils";
+import { fmtDate, fmtInt, fmtUnit } from "@/lib/format";
 import {
-  Moon, Dumbbell, Droplets, Camera, Zap,
+  Moon, Dumbbell, Droplets, Camera, Flame,
   ChevronDown, Check, Plus, Search, X,
-  SlidersHorizontal, ShieldCheck, Sparkles,
+  SlidersHorizontal, ShieldCheck, Sparkles, Thermometer,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,8 +31,7 @@ import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { useCommitPop } from "@/hooks/use-commit-pop";
-import { triggerGust } from "@/lib/wind";
-import CheckinTierHeader from "@/components/CheckinTierHeader";
+import CheckinSkeleton from "@/components/checkin/CheckinSkeleton";
 import CheckinTierSummary from "@/components/CheckinTierSummary";
 import { useHealthKit } from "@/hooks/use-healthkit";
 import { queueCheckin, isNetworkError, localDateStr } from "@/lib/offline-checkin";
@@ -38,6 +39,7 @@ import { checkinReactionKey, fetchCheckinReaction } from "@/lib/checkin-reaction
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
+import { MidnightCountdown } from "@/components/MidnightCountdown";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import CheckinHabitPicker from "@/components/checkin/CheckinHabitPicker";
 import ShieldEarnedSheet from "@/components/checkin/ShieldEarnedSheet";
@@ -59,8 +61,12 @@ const PILLAR_ORDER: CheckinPillar[] = [
   "sleep", "movement", "nutrition", "mind", "recovery", "connection",
 ];
 
+// The lit state every answered block shares — sleep, workout, hydration and
+// each habit toggle light the same gold once they are done.
+const LIT = "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]";
+
 // A single evidence-based habit rendered as an emoji toggle, with an optional
-// "Detected ✓" badge when Apple Health confirms it.
+// "Detected" badge when Apple Health confirms it.
 const HabitToggle = ({
   habit, active, onToggle, detected,
 }: { habit: CheckinHabit; active: boolean; onToggle: () => void; detected?: boolean }) => {
@@ -71,10 +77,8 @@ const HabitToggle = ({
     onClick={() => { hapticSelection(); onToggle(); }}
     aria-pressed={active}
     className={cn(
-      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200 active:scale-[0.985]",
-      active
-        ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
-        : "surface-card hover:bg-secondary/50",
+      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200",
+      active ? LIT : "surface-card surface-card-quiet",
     )}
   >
     {/* Emoji tile */}
@@ -94,7 +98,7 @@ const HabitToggle = ({
         )}
       </div>
       <p className="text-[12px] text-muted-foreground leading-snug line-clamp-1 mt-0.5">
-        {active ? `+${habit.xp} XP` : (habit.note || `+${habit.xp} XP`)}
+        {active ? `+${fmtUnit(habit.xp, "XP")}` : (habit.note || `+${fmtUnit(habit.xp, "XP")}`)}
       </p>
     </div>
     {/* Check pill — the moment the tick lands is the one that matters, so it
@@ -149,7 +153,7 @@ const DailyCheckin = () => {
     setOnboardDismissed(true);
   };
 
-  const { data: lastCheckin } = useQuery({
+  const { data: lastCheckin, isLoading: lastCheckinLoading } = useQuery({
     queryKey: ["last-checkin", user?.id],
     staleTime: 0,
     gcTime:    30 * 60_000,
@@ -188,7 +192,7 @@ const DailyCheckin = () => {
 
   // Local-day window + midnight rollover, shared with the home screen so the
   // two can't disagree about when the check-in reopens.
-  const { todayStr, canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
+  const { todayStr, canCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
   // ── Core state ──────────────────────────────────────────────────────────
   const [sleep, setSleep] = useState(8);
@@ -237,6 +241,10 @@ const DailyCheckin = () => {
   // "Yes" is the commit that unlocks submission — same pop vocabulary as a
   // habit tick (it used to only cross-fade a colour).
   const honestPop = useCommitPop(honest === true);
+  const dishonestPop = useCommitPop(honest === false);
+  // The Lock press is the day's last commit: the flame on the button pops the
+  // instant the save starts.
+  const lockPop = useCommitPop(submitting);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [questBonusXp, setQuestBonusXp] = useState(0);
@@ -517,7 +525,7 @@ const DailyCheckin = () => {
         } catch { /* summary is best-effort */ }
         setSubmitted(true);
         setSubmitting(false);
-        try { hapticNotification("success"); triggerGust(0.95); } catch { /* cosmetic */ }
+        void hapticNotification("success");
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
         try { await refreshProfile(); } catch { /* non-critical */ }
       };
@@ -529,7 +537,7 @@ const DailyCheckin = () => {
             // DID save. Show success, not a false "already checked in" error.
             await showFromDb();
           } else {
-            toast.error("You've already checked in today. Come back tomorrow 💪");
+            toast.error("You've already checked in today. Come back tomorrow.");
             queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
             hapticNotification("error");
             setSubmitting(false);
@@ -538,7 +546,7 @@ const DailyCheckin = () => {
         }
         if (isNetworkError(rpcError)) {
           queueCheckin(rpcArgs, user?.id);
-          toast.success("Saved offline 📶", {
+          toast.success("Saved offline", {
             description: "No connection right now — we'll log this check-in automatically when you're back online.",
             duration: 6000,
           });
@@ -558,7 +566,7 @@ const DailyCheckin = () => {
         }
         console.error("record_checkin failed after retries:", rpcError);
         toast.error("Couldn't save your check-in.", {
-          description: friendlyError(rpcError, "Nothing was lost from the form — fix the connection and press Submit again."),
+          description: friendlyError(rpcError, "Nothing was lost from the form. Fix the connection and press Lock it in again."),
           duration: 6000,
         });
         hapticNotification("error");
@@ -575,12 +583,12 @@ const DailyCheckin = () => {
 
       if (r.new_level > r.old_level) { setNewLevelReached(r.new_level); setShowLevelUp(true); }
       if ((r.shield_used ?? 0) > 0) {
-        toast(`🛡️ Streak shield used — your ${r.new_streak}-day streak is safe.`, {
+        toast(`Streak shield used. Your ${r.new_streak}-day streak is safe.`, {
           description: `${r.shields_remaining ?? 0} shield${(r.shields_remaining ?? 0) === 1 ? "" : "s"} left.`,
           duration: 5000,
         });
       } else if (r.streak_broken && r.old_streak > 0) {
-        toast.error(`💀 Streak lost! Your ${r.old_streak}-day streak was reset.`, { duration: 5000 });
+        toast.error(`Streak lost. Your ${r.old_streak}-day streak was reset.`, { duration: 5000 });
       }
       if (r.shield_earned) {
         // A shield is rare (every 7-day streak) and meaningful — it gets a
@@ -598,7 +606,7 @@ const DailyCheckin = () => {
 
       setSubmitted(true);
       setSubmitting(false);
-      try { hapticNotification("success"); triggerGust(0.95); } catch { /* cosmetic */ }
+      void hapticNotification("success");
 
       // Activation funnel: every completed check-in, plus streak milestones.
       void track(FUNNEL.checkinCompleted, {
@@ -617,7 +625,7 @@ const DailyCheckin = () => {
             if (vr.verified) {
               void track(FUNNEL.checkinVerified);
               const n = Object.keys(vr.signals ?? {}).filter((k) => vr.signals?.[k]?.matched).length;
-              toast.success("Verified ✓", {
+              toast.success("Verified", {
                 description: `Apple Health confirmed ${n} habit${n === 1 ? "" : "s"} — bonus XP added.`,
                 duration: 4500,
               });
@@ -660,7 +668,7 @@ const DailyCheckin = () => {
             if (top) {
               const others = tribeIds.length - 1;
               toast.success(
-                `${top.name} +1 → ${(top.collective_streak ?? 0) + 1}d 🔥`,
+                `${top.name} +1 → ${(top.collective_streak ?? 0) + 1}d`,
                 {
                   description: others > 0
                     ? `You fed ${tribeIds.length} fires today. Tap to see the tribe.`
@@ -699,17 +707,23 @@ const DailyCheckin = () => {
     setSubmitting(false);
   };
 
+  // ── Loading — the skeleton is the built screen's own silhouette. Gating on
+  // the last check-in also removes the old flash: the form painted first and
+  // flipped to the locked state when the query landed.
+  if (lastCheckinLoading) return <CheckinSkeleton />;
+
   // Daily lock screen
   if (!canCheckin && !submitted) {
     return (
-      <div className="min-h-full flex flex-col items-center justify-center px-6 text-center pb-4">
-        <div className="animate-reveal">
-          <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-full flex flex-col">
+        <PageBar onBack={() => navigate("/")} />
+        <div className="home-rise flex-1 flex flex-col items-center justify-center px-6 pb-6 text-center">
+          <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-6">
             <Moon aria-hidden size={36} className="text-muted-foreground" />
           </div>
-          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already Logged Today</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already logged today</h1>
           <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
-          <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in {timeUntilCheckin}</p>
+          <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in <MidnightCountdown /></p>
           <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
         </div>
       </div>
@@ -724,7 +738,7 @@ const DailyCheckin = () => {
             <div className="h-20 w-20 rounded-full bg-xp-green/15 flex items-center justify-center mx-auto mb-5">
               <Check aria-hidden size={40} className="text-xp-green" />
             </div>
-            <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in ✓</h1>
+            <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in</h1>
             <p className="text-muted-foreground text-sm mb-8">Your day is locked in. Nice work.</p>
             <Button variant="ember" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
           </div>
@@ -752,8 +766,29 @@ const DailyCheckin = () => {
     );
   }
 
+  // Opening beat — the day this check-in makes. Day N is the streak after
+  // locking; a user with no check-in on record is about to take the first W.
+  const streak = profile?.streak ?? 0;
+  const now = new Date();
+  const dateLine = `${now.toLocaleDateString("en-US", { weekday: "long" })} · ${fmtDate(now)}`;
+  const sleepWord = isOptimalSleep ? "Optimal"
+    : sleep <= 5 ? "Too little"
+    : sleep < 7 ? "Short"
+    : sleep < 7.5 ? "Close"
+    : isChronicOversleep ? "Oversleeping"
+    : "Long night";
+
   return (
-    <div className="min-h-full pb-4 px-4 pt-0">
+    <div className="min-h-full">
+      <PageBar
+        onBack={() => navigate("/")}
+        title={<p className="eyebrow text-muted-foreground/75 truncate">{dateLine}</p>}
+        action={
+          <Button variant="ghost" size="icon" aria-label="Customize habits" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
+            <SlidersHorizontal size={18} />
+          </Button>
+        }
+      />
       <ModerationGate
         state={moderation.state}
         message={moderation.message}
@@ -761,70 +796,6 @@ const DailyCheckin = () => {
         onCancel={moderation.cancel}
         onDismiss={moderation.reset}
       />
-      <CheckinTierHeader
-        tier={profile?.status_tier ?? "recruit"}
-        division={profile?.tier_division ?? 0}
-        username={profile?.username}
-        streak={profile?.streak ?? 0}
-        totalXp={totalXp}
-        completedCount={completedCount}
-        maxCount={maxCount}
-        onBack={() => navigate("/")}
-      />
-
-      {/* The "why" anchor — reframes the whole check-in from "earn XP" to
-          "become who I said I'd become." Quiet, non-gold, only shown once the
-          user has authored their identity statement. */}
-      {why && (
-        <div className="mt-2 mb-1 surface-card surface-card-quiet px-4 py-2.5">
-          <p className="eyebrow text-[10px]">
-            Today's discipline is for
-          </p>
-          <p className="text-[13px] font-bold leading-snug text-foreground/90 mt-0.5">
-            {why}
-          </p>
-        </div>
-      )}
-
-      {/* Sick today — recovery mode. Logging still banks the day. */}
-      <button
-        type="button"
-        onClick={() => { hapticSelection(); setSickToday((v) => !v); }}
-        className={cn(
-          "mt-2 mb-1 w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.99]",
-          sickToday ? "border-teal/45 bg-teal/[0.08]" : "border-border/50 bg-card/40",
-        )}
-        aria-pressed={sickToday}
-      >
-        <span className="text-lg shrink-0">🤒</span>
-        <span className="min-w-0 flex-1">
-          <span className={cn("block text-sm font-bold", sickToday && "text-teal")}>Sick today</span>
-          <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">
-            {sickToday
-              ? "Recovery mode on — rest counts. The coach won't push training today, and missed habits don't count against you."
-              : "Feeling ill? Logging still keeps your streak — the coach switches to recovery mode."}
-          </span>
-        </span>
-        <span
-          className={cn(
-            "shrink-0 h-6 w-11 rounded-full border transition-colors relative",
-            sickToday ? "bg-teal/30 border-teal/60" : "bg-secondary border-border",
-          )}
-          aria-hidden
-        >
-          {/* Anchor stays left; the knob TRAVELS via transform. The old
-              left-0.5 ↔ right-0.5 swap can't interpolate, so the thumb
-              teleported and the transition never ran. Track w-11 (44px)
-              − thumb 18px − 2×2px inset = 22px of travel. */}
-          <span
-            className={cn(
-              "absolute top-0.5 left-0.5 h-[18px] w-[18px] rounded-full bg-foreground/90 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
-              sickToday && "translate-x-[22px]",
-            )}
-          />
-        </span>
-      </button>
-
       <CheckinHabitPicker
         open={pickerOpen}
         onOpenChange={setPickerOpen}
@@ -832,441 +803,462 @@ const DailyCheckin = () => {
         onSave={saveHabits}
         saving={savingHabits}
       />
+      <div className="px-4 pb-6">
+        {/* ── OPENING BEAT — one line of type; the streak is its only gold. ── */}
+        <div className="home-rise pt-2">
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            {lastCheckin ? (
+              <>Day <span className="text-gold glow-gold-text tabular-nums">{fmtInt(streak + 1)}</span>. Lock it in.</>
+            ) : (
+              "Your first W. Lock it in."
+            )}
+          </h1>
+        </div>
 
-      {/* First-run onboarding — make personalization obvious (non-blocking). */}
-      {showOnboard && (
-        <div className="mt-3 mb-4 rounded-2xl border border-gold/35 bg-gradient-to-b from-gold/10 to-gold/[0.03] p-4 text-center animate-reveal">
-          <p className="text-2xl mb-1">✨</p>
-          <p className="font-display text-lg font-black tracking-tight">Make it yours</p>
-          <p className="text-xs text-muted-foreground mt-1 mb-3 max-w-[280px] mx-auto">
-            Pick the habits you'll actually track every day. Sleep, workout, water &amp; meditation
-            stay in — add whatever matters to you.
-          </p>
-          <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
-            <SlidersHorizontal aria-hidden size={16} /> Choose my habits
-          </Button>
-          <button onClick={dismissOnboard} className="mt-2 text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/75 hover:text-foreground transition-colors py-1">
-            Use the defaults for now
+        {/* ── CONTEXT — the why-anchor and the sick toggle share one quiet
+               row; neither is a card of its own. ── */}
+        <div className="home-rise home-rise-1 mt-4 surface-card surface-card-quiet overflow-hidden">
+          {why && (
+            <div className="px-4 pt-3 pb-2.5 border-b border-border/40">
+              <p className="text-[12px] text-muted-foreground leading-snug">Today's discipline is for</p>
+              <p className="text-[13px] font-bold leading-snug text-foreground/90 mt-0.5">{why}</p>
+            </div>
+          )}
+          {/* Sick today — recovery mode. Logging still banks the day. */}
+          <button
+            type="button"
+            onClick={() => { hapticSelection(); setSickToday((v) => !v); }}
+            aria-pressed={sickToday}
+            className="w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
+          >
+            <Thermometer size={18} className={cn("shrink-0", sickToday ? "text-teal" : "text-muted-foreground")} aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className={cn("block text-sm font-bold", sickToday && "text-teal")}>Sick today</span>
+              <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">
+                {sickToday
+                  ? "Recovery mode on — rest counts. The coach won't push training today, and missed habits don't count against you."
+                  : "Feeling ill? Logging still keeps your streak — the coach switches to recovery mode."}
+              </span>
+            </span>
+            <span
+              className={cn(
+                "shrink-0 h-6 w-11 rounded-full border transition-colors relative",
+                sickToday ? "bg-teal/30 border-teal/60" : "bg-secondary border-border",
+              )}
+              aria-hidden
+            >
+              {/* The knob travels via transform: a left/right swap can't
+                  interpolate. Track 44px − thumb 18px − 2×2px inset = 22px. */}
+              <span
+                className={cn(
+                  "absolute top-0.5 left-0.5 h-[18px] w-[18px] rounded-full bg-foreground/90 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                  sickToday && "translate-x-[22px]",
+                )}
+              />
+            </span>
           </button>
         </div>
-      )}
 
-      {/* Habits header + Customize. The chip rides the app-wide gold-outline
-          pill language (a bespoke filled-gradient chip here was a third gold
-          chip dialect, and louder than the habits it configures). */}
-      <div className="mt-3 mb-3 flex items-center justify-between gap-3">
-        <p className="eyebrow text-gold/80">
-          Your habits · tap what you did
-        </p>
-        <Button variant="gold-outline" size="pill" className="shrink-0" onClick={() => setPickerOpen(true)}>
-          <SlidersHorizontal aria-hidden size={14} /> Customize
-        </Button>
-      </div>
-
-      {(detected.workout || detected.steps || detected.mindfulness || detected.sleep || detected.nutrition) && (
-        <div className="mb-4 rounded-xl border border-teal/30 bg-teal/5 p-3 flex items-start gap-2.5">
-          <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
-          <p className="text-xs text-foreground/90 leading-snug">
-            <span className="font-semibold text-teal">
-              {detected.workout || detected.steps || detected.mindfulness || detected.sleep ? "Apple Health synced." : "Verified."}
-            </span>{" "}
-            {[
-              detected.workout && `a ${detectedWorkoutMin ?? ""}${detectedWorkoutMin ? "-min " : ""}workout`,
-              detected.steps && "8k+ steps",
-              detected.mindfulness && "meditation",
-              detected.sleep && "your sleep",
-              detected.nutrition && "your protein (diary)",
-            ].filter(Boolean).join(", ")} detected — verified habits earn bonus XP.
-          </p>
-        </div>
-      )}
-
-      {/* ── Sleep (core) ── */}
-      <div className={cn(
-        "rounded-2xl border p-4 mb-3 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
-        isOptimalSleep
-          ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
-          : "surface-card",
-      )}>
-        <div className="flex items-center gap-3 mb-3">
-          <div className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
-            isOptimalSleep ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
-          )}><Moon aria-hidden size={20} /></div>
-          <div>
-            <p className="font-semibold text-sm flex items-center gap-1.5">
-              Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
+        {/* First-run — a quiet invitation, not a gold card competing with the beat. */}
+        {showOnboard && (
+          <div className="home-rise home-rise-1 mt-3 surface-card surface-card-quiet p-4 text-center">
+            <Sparkles size={22} className="text-muted-foreground mx-auto mb-1.5" aria-hidden />
+            <p className="font-display text-lg font-black tracking-tight">Make it yours</p>
+            <p className="text-xs text-muted-foreground mt-1 mb-3 max-w-[280px] mx-auto">
+              Pick the habits you'll actually track every day. Sleep, workout, water &amp; meditation
+              stay in — add whatever matters to you.
             </p>
-            <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
+            <Button variant="outline" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
+              <SlidersHorizontal aria-hidden size={16} /> Choose my habits
+            </Button>
+            <button onClick={dismissOnboard} className="mt-1 min-h-11 w-full text-[12px] font-semibold text-muted-foreground">
+              Use the defaults for now
+            </button>
           </div>
-          <span className={cn(
-            "ml-auto text-2xl font-bold font-display tabular-nums",
-            isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground",
-          )}>
-            {sleep}h <span aria-hidden>{sleep >= 7.5 && sleep <= 9 ? "🚀" : (sleep > 9 && sleep <= 12 && !isChronicOversleep) ? "✨" : sleep >= 7 && sleep < 7.5 ? "😐" : sleep <= 5 ? "💀" : sleep > 9 ? "😴" : "⚠️"}</span>
-          </span>
-        </div>
-        <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
-        {sleepPenaltyLabel && <p className="text-[11px] text-destructive mt-1 font-semibold"><span aria-hidden>⚠️</span> {sleepPenaltyLabel}</p>}
-        {isChronicOversleep && sleep >= 10 && (
-          <p className="text-[11px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
         )}
-      </div>
 
-      {/* ── Workout (core) ── Trained ▾ | Rest day. A rest day is logged on
-          purpose (no XP, no guilt) instead of leaving the row blank. */}
-      <div className="mb-3">
-        <div
-          className={cn(
-            "rounded-2xl border p-3.5 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
-            workout
-              ? "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]"
-              : "surface-card",
-          )}
-        >
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
-              workout ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
-            )}>
-              <Dumbbell aria-hidden size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
-                {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
-                {detected.workout && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {isRestDay
-                  ? "Rest day — logged"
-                  : workout
-                  ? "Tap Trained to change sport"
-                  : detected.workout ? "Health saw a workout — pick your sport" : "Did you train today?"}
-              </p>
-            </div>
-            {workout && <span className="text-[11px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+{selectedSport.xp} XP</span>}
+        {(detected.workout || detected.steps || detected.mindfulness || detected.sleep || detected.nutrition) && (
+          <div className="home-rise home-rise-2 mt-3 rounded-xl border border-teal/30 bg-teal/5 p-3 flex items-start gap-2.5">
+            <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
+            <p className="text-xs text-foreground/90 leading-snug">
+              <span className="font-semibold text-teal">
+                {detected.workout || detected.steps || detected.mindfulness || detected.sleep ? "Apple Health synced." : "Verified."}
+              </span>{" "}
+              {[
+                detected.workout && `a ${detectedWorkoutMin ?? ""}${detectedWorkoutMin ? "-min " : ""}workout`,
+                detected.steps && "8k+ steps",
+                detected.mindfulness && "meditation",
+                detected.sleep && "your sleep",
+                detected.nutrition && "your protein (diary)",
+              ].filter(Boolean).join(", ")} detected — verified habits earn bonus XP.
+            </p>
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              aria-pressed={Boolean(workout) && !isRestDay}
-              onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
-              className={cn(
-                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97] inline-flex items-center justify-center gap-1.5",
-                workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
-              )}
-            >
-              Trained <ChevronDown aria-hidden size={14} className={cn("transition-transform", sportOpen && "rotate-180")} />
-            </button>
-            <button
-              type="button"
-              aria-pressed={isRestDay}
-              onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
-              className={cn(
-                "rounded-xl border px-3 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
-                isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
-              )}
-            >
-              Rest day
-            </button>
+        )}
+
+        {/* ── Sleep (core) ── */}
+        <div className="home-rise home-rise-2 mt-5">
+          <div className={cn("rounded-2xl border p-4 transition-[background-color,border-color,box-shadow] duration-200", isOptimalSleep ? LIT : "surface-card surface-card-quiet")}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className={cn(
+                "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
+                isOptimalSleep ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
+              )}><Moon aria-hidden size={20} /></div>
+              <div>
+                <p className="font-semibold text-sm flex items-center gap-1.5">
+                  Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
+                </p>
+                <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
+              </div>
+              <span className="ml-auto text-right">
+                <span className={cn(
+                  "block text-2xl font-bold font-display tabular-nums leading-none",
+                  isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground",
+                )}>{sleep}h</span>
+                <span className="block text-[11px] font-semibold text-muted-foreground mt-1">{sleepWord}</span>
+              </span>
+            </div>
+            <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
+            {sleepPenaltyLabel && <p className="text-[11px] text-destructive mt-1 font-semibold">{sleepPenaltyLabel}</p>}
+            {isChronicOversleep && sleep >= 10 && (
+              <p className="text-[11px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
+            )}
           </div>
         </div>
-        {sportOpen && (
-          // No inner max-h scroll — a nested scrollbar hid the bottom rows of
-          // opened groups. The page scrolls naturally instead.
-          <div className="mt-1.5 surface-card overflow-hidden">
-            {/* FOR YOU — detected + profile + recent covers ~all real picks,
-                so the 24-sport catalog stays collapsed below. */}
-            {forYou.length > 0 && (
-              <div>
-                <p className="eyebrow px-4 pt-3 pb-1.5 text-gold/80">For you</p>
-                {forYou.map((sport) => (
-                  <button
-                    key={`fy-${sport.id}`}
-                    aria-pressed={sportCategory === sport.id}
-                    onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
-                    className={cn(
-                      "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
-                      sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
-                    )}
-                  >
-                    <span className="text-lg w-7 text-center">{sport.emoji}</span>
-                    <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
-                      {sport.label}
-                      {detectedSportId === sport.id && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
-                      )}
-                    </span>
-                    {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
-                    <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
-                  </button>
-                ))}
-              </div>
-            )}
 
-            {/* Search — "ten" → Tennis. The whole catalog is one keystroke away. */}
-            <div className="px-3 pt-3 pb-1 relative">
-              <Search aria-hidden size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75 pointer-events-none" />
-              <input
-                value={sportQuery}
-                onChange={(e) => setSportQuery(e.target.value)}
-                placeholder="Search sports…"
-                aria-label="Search sports"
-                className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
-              />
-              {sportQuery && (
+        {/* ── Workout (core) ── Trained ▾ | Rest day. A rest day is logged on
+            purpose (no XP, no guilt) instead of leaving the row blank. */}
+        <div className="home-rise home-rise-3 mt-3">
+          <div className={cn("rounded-2xl border p-3.5 transition-[background-color,border-color,box-shadow] duration-200", workout ? LIT : "surface-card surface-card-quiet")}>
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
+                workout ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
+              )}>
+                <Dumbbell aria-hidden size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
+                  {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
+                  {detected.workout && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {isRestDay
+                    ? "Rest day — logged"
+                    : workout
+                    ? "Tap Trained to change sport"
+                    : detected.workout ? "Health saw a workout — pick your sport" : "Did you train today?"}
+                </p>
+              </div>
+              {workout && <span className="text-[11px] font-bold tabular-nums text-muted-foreground">+{fmtUnit(selectedSport.xp, "XP")}</span>}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                aria-pressed={Boolean(workout) && !isRestDay}
+                onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
+                className={cn(
+                  "min-h-11 rounded-xl border px-3 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] inline-flex items-center justify-center gap-1.5",
+                  workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
+                )}
+              >
+                Trained <ChevronDown aria-hidden size={14} className={cn("transition-transform", sportOpen && "rotate-180")} />
+              </button>
+              <button
+                type="button"
+                aria-pressed={isRestDay}
+                onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
+                className={cn(
+                  "min-h-11 rounded-xl border px-3 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color]",
+                  isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
+                )}
+              >
+                Rest day
+              </button>
+            </div>
+          </div>
+          {sportOpen && (
+            // No inner max-h scroll — a nested scrollbar hid the bottom rows of
+            // opened groups. The page scrolls naturally instead.
+            <div className="mt-1.5 surface-card surface-card-quiet overflow-hidden">
+              {/* FOR YOU — detected + profile + recent covers ~all real picks,
+                  so the 24-sport catalog stays collapsed below. */}
+              {forYou.length > 0 && (
+                <div>
+                  <p className="eyebrow-sm px-4 pt-3 pb-1.5">For you</p>
+                  {forYou.map((sport) => (
+                    <button
+                      key={`fy-${sport.id}`}
+                      aria-pressed={sportCategory === sport.id}
+                      onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
+                      className={cn(
+                        "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                        sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
+                      )}
+                    >
+                      <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                      <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
+                        {sport.label}
+                        {detectedSportId === sport.id && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
+                        )}
+                      </span>
+                      {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                      <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Search — "ten" → Tennis. The whole catalog is one keystroke away. */}
+              <div className="px-3 pt-3 pb-1 relative">
+                <Search aria-hidden size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75 pointer-events-none" />
+                <input
+                  value={sportQuery}
+                  onChange={(e) => setSportQuery(e.target.value)}
+                  placeholder="Search sports…"
+                  aria-label="Search sports"
+                  className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+                />
+                {sportQuery && (
+                  <button
+                    onClick={() => setSportQuery("")}
+                    className="absolute right-3 top-1/2 mt-1 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-muted-foreground/75"
+                    aria-label="Clear search"
+                  >
+                    <X aria-hidden size={14} />
+                  </button>
+                )}
+              </div>
+
+              {sportQuery.trim() ? (
+                /* Search results — flat list */
+                (() => {
+                  const q = sportQuery.trim().toLowerCase();
+                  const hits = SPORTS.filter((sp) => sp.label.toLowerCase().includes(q) || sp.id.includes(q));
+                  return hits.length ? hits.map((sport) => (
+                    <button
+                      key={`q-${sport.id}`}
+                      aria-pressed={sportCategory === sport.id}
+                      onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
+                      className={cn(
+                        "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                        sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
+                      )}
+                    >
+                      <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                      <span className="text-sm font-medium flex-1">{sport.label}</span>
+                      {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                      <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
+                    </button>
+                  )) : (
+                    <p className="px-4 py-4 text-xs text-muted-foreground">No sports match "{sportQuery.trim()}"</p>
+                  );
+                })()
+              ) : (
+                /* Groups — collapsed by default; a new user with an empty
+                   For-you shortlist gets them all open (an empty picker is worse). */
+                sportsByGroup().map(({ group, sports }) => {
+                  const open = forYou.length === 0 || openGroup === group;
+                  return (
+                    <div key={group}>
+                      <button
+                        onClick={() => setOpenGroup((g) => (g === group ? null : group))}
+                        className="flex items-center justify-between w-full min-h-11 px-4 pt-3 pb-1.5 text-left"
+                      >
+                        <span className="eyebrow-sm">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
+                        {forYou.length > 0 && (
+                          <ChevronDown aria-hidden size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
+                        )}
+                      </button>
+                      {open && sports.map((sport) => (
+                        <button
+                          key={sport.id}
+                          aria-pressed={sportCategory === sport.id}
+                          onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
+                          className={cn(
+                            "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                            sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
+                          )}
+                        >
+                          <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                          <span className="text-sm font-medium flex-1">{sport.label}</span>
+                          {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                          <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })
+              )}
+              {sportCategory !== "none" && (
                 <button
-                  onClick={() => setSportQuery("")}
-                  className="absolute right-3 top-1/2 mt-1 -translate-y-1/2 h-11 w-11 flex items-center justify-center text-muted-foreground/75"
-                  aria-label="Clear search"
+                  onClick={() => { setSportCategory("none"); setSportOpen(false); }}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:bg-secondary/50 transition-colors"
                 >
-                  <X aria-hidden size={14} />
+                  <span className="w-7 flex justify-center"><X aria-hidden size={16} /></span>
+                  <span className="text-sm font-medium">Clear selection</span>
                 </button>
               )}
             </div>
-
-            {sportQuery.trim() ? (
-              /* Search results — flat list */
-              (() => {
-                const q = sportQuery.trim().toLowerCase();
-                const hits = SPORTS.filter((sp) => sp.label.toLowerCase().includes(q) || sp.id.includes(q));
-                return hits.length ? hits.map((sport) => (
-                  <button
-                    key={`q-${sport.id}`}
-                    aria-pressed={sportCategory === sport.id}
-                    onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
-                    className={cn(
-                      "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
-                      sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
-                    )}
-                  >
-                    <span className="text-lg w-7 text-center">{sport.emoji}</span>
-                    <span className="text-sm font-medium flex-1">{sport.label}</span>
-                    {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
-                    <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
-                  </button>
-                )) : (
-                  <p className="px-4 py-4 text-xs text-muted-foreground">No sports match "{sportQuery.trim()}"</p>
-                );
-              })()
-            ) : (
-              /* Groups — collapsed by default; a new user with an empty
-                 For-you shortlist gets them all open (an empty picker is worse). */
-              sportsByGroup().map(({ group, sports }) => {
-                const open = forYou.length === 0 || openGroup === group;
-                return (
-                  <div key={group}>
-                    <button
-                      onClick={() => setOpenGroup((g) => (g === group ? null : group))}
-                      className="flex items-center justify-between w-full px-4 pt-3 pb-1.5 text-left"
-                    >
-                      <span className="eyebrow">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
-                      {forYou.length > 0 && (
-                        <ChevronDown aria-hidden size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
-                      )}
-                    </button>
-                    {open && sports.map((sport) => (
-                      <button
-                        key={sport.id}
-                        aria-pressed={sportCategory === sport.id}
-                    onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
-                        className={cn(
-                          "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0 active:scale-[0.98]",
-                          sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
-                        )}
-                      >
-                        <span className="text-lg w-7 text-center">{sport.emoji}</span>
-                        <span className="text-sm font-medium flex-1">{sport.label}</span>
-                        {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
-                    <span className="text-xs font-bold text-gold">+{sport.xp} XP</span>
-                      </button>
-                    ))}
-                  </div>
-                );
-              })
-            )}
-            {sportCategory !== "none" && (
-              <button
-                onClick={() => { setSportCategory("none"); setSportOpen(false); }}
-                className="flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:bg-secondary/50 transition-colors"
-              >
-                <span className="text-lg w-7 text-center">✗</span>
-                <span className="text-sm font-medium">Clear selection</span>
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Hydration (optional core metric) ── */}
-      {hasHydration && (
-        <div className={cn(
-          "rounded-2xl border p-4 mb-3 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
-          hydration >= 3
-            ? "border-gold/45 bg-gradient-to-r from-gold/[0.10] to-gold/[0.03] shadow-[0_0_0_1px_hsl(var(--gold)/0.12),0_4px_14px_-6px_hsl(var(--gold)/0.3)]"
-            : "surface-card",
-        )}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className={cn(
-              "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
-              hydration >= 3 ? "bg-gold/15 text-gold" : "bg-teal/10 text-teal",
-            )}><Droplets aria-hidden size={20} /></div>
-            <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
-            <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
-          </div>
-          <input type="range" aria-label="Litres of water" aria-valuetext={`${hydration} litres`} min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
+          )}
         </div>
-      )}
 
-      {/* ── Personalized habit groups ── */}
-      {PILLAR_ORDER.map((pillar) => {
-        const habits = groupedHabits.get(pillar);
-        if (!habits?.length) return null;
-        return (
-          <div key={pillar} className="mb-4">
-            <p className="eyebrow mb-2">{PILLAR_LABEL[pillar]}</p>
-            <div className="space-y-2">
-              {habits.map((h) => (
-                <HabitToggle key={h.key} habit={h} active={done(h.key)} onToggle={() => toggle(h.key)} detected={isDetected(h)} />
-              ))}
+        {/* ── Hydration (optional core metric) ── */}
+        {hasHydration && (
+          <div className="home-rise home-rise-4 mt-3">
+            <div className={cn("rounded-2xl border p-4 transition-[background-color,border-color,box-shadow] duration-200", hydration >= 3 ? LIT : "surface-card surface-card-quiet")}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={cn(
+                  "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
+                  hydration >= 3 ? "bg-gold/15 text-gold" : "bg-teal/10 text-teal",
+                )}><Droplets aria-hidden size={20} /></div>
+                <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
+                <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
+              </div>
+              <input type="range" aria-label="Litres of water" aria-valuetext={`${hydration} litres`} min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
             </div>
           </div>
-        );
-      })}
+        )}
 
-      {/* Extras — collapsed to keep the daily flow short. Quests stay MOUNTED
-          (hidden when closed) so their bonus XP keeps counting toward the total. */}
-      <div className="mt-1 mb-4">
-        <button
-          onClick={() => { hapticSelection(); setMoreOpen((o) => !o); }}
-          className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left active:scale-[0.99]"
-        >
-          <span className="text-sm font-semibold flex items-center gap-2">
-            <Plus aria-hidden size={16} className="text-gold" />
-            Bonus quests &amp; proof photo
-            {questBonusXp > 0 && <span className="text-[11px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+{questBonusXp} XP</span>}
-          </span>
-          <ChevronDown aria-hidden size={16} className={cn("text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
-        </button>
-
-        <div className={cn("mt-3 space-y-4", !moreOpen && "hidden")}>
-          <DailyQuests
-            checkinData={{
-              sleep,
-              sportCategory,
-              mySports: athlete?.sports ?? [],
-              inTribe: !!inTribe,
-              extraWorkout: done("extra_workout"),
-              coldShower: done("cold_shower"),
-              healthyFood: done("healthy_food"),
-              protein: done("protein"),
-              meditationAm: done("meditation"),
-              meditationPm: done("meditation_pm"),
-              hydration,
-              noPhoneAm: done("no_phone_am"),
-              noPhonePm: done("no_phone_pm"),
-              reading: done("reading"),
-              completedCount,
-            }}
-            onBonusXpChange={setQuestBonusXp}
-          />
-
-          {/* Proof photo — available to everyone (all app users are paid) */}
-          <div>
-            <label className="flex items-center gap-3 w-full rounded-xl border border-dashed border-gold/30 p-4 hover:bg-gold/5 transition-colors active:scale-[0.97] cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/10 text-gold"><Camera aria-hidden size={20} /></div>
-              <div className="text-left flex-1">
-                <p className="font-semibold text-sm">Add proof photo</p>
-                <p className="text-xs text-muted-foreground">Posted to the Elite Feed · earns <span className="text-gold font-bold">+30 bonus XP</span></p>
+        {/* ── Personalized habit groups ── */}
+        {PILLAR_ORDER.map((pillar) => {
+          const habits = groupedHabits.get(pillar);
+          if (!habits?.length) return null;
+          return (
+            <div key={pillar} className="home-rise home-rise-4 mt-5">
+              <p className="eyebrow-sm mb-2">{PILLAR_LABEL[pillar]}</p>
+              <div className="space-y-2">
+                {habits.map((h) => (
+                  <HabitToggle key={h.key} habit={h} active={done(h.key)} onToggle={() => toggle(h.key)} detected={isDetected(h)} />
+                ))}
               </div>
-              {proofFile && <span className="text-[11px] font-bold text-gold bg-gold/10 px-2 py-0.5 rounded-full">+30 XP</span>}
-              {/* No `capture` attr: iOS then offers Take Photo AND Photo Library
-                  in the native sheet (founder decision — gallery proofs allowed,
-                  so the old 5-minute freshness gate is gone too). */}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                hapticSelection();
-                setProofFile(file);
-                const reader = new FileReader();
-                reader.onload = () => setProofPreview(reader.result as string);
-                reader.readAsDataURL(file);
-              }} />
-            </label>
-            {proofPreview && (
-              <MediaPreview imageSrc={proofPreview} sizeBytes={proofFile?.size} onClear={() => { setProofFile(null); setProofPreview(null); }} />
-            )}
+            </div>
+          );
+        })}
+
+        {/* Extras — a quiet disclosure so the daily flow stays short. Quests
+            stay MOUNTED (hidden when closed) so their bonus XP keeps counting. */}
+        <div className="home-rise home-rise-5 mt-5">
+          <button
+            onClick={() => { hapticSelection(); setMoreOpen((o) => !o); }}
+            aria-expanded={moreOpen}
+            className="w-full min-h-11 surface-card surface-card-quiet flex items-center justify-between gap-2 px-4 py-3 text-left"
+          >
+            <span className="text-sm font-semibold flex items-center gap-2">
+              <Plus aria-hidden size={16} className="text-muted-foreground" />
+              Bonus quests &amp; proof photo
+              {questBonusXp > 0 && <span className="text-[11px] font-bold tabular-nums text-muted-foreground">+{fmtUnit(questBonusXp, "XP")}</span>}
+            </span>
+            <ChevronDown aria-hidden size={16} className={cn("text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
+          </button>
+
+          <div className={cn("mt-3 space-y-4", !moreOpen && "hidden")}>
+            <DailyQuests
+              checkinData={{
+                sleep,
+                sportCategory,
+                mySports: athlete?.sports ?? [],
+                inTribe: !!inTribe,
+                extraWorkout: done("extra_workout"),
+                coldShower: done("cold_shower"),
+                healthyFood: done("healthy_food"),
+                protein: done("protein"),
+                meditationAm: done("meditation"),
+                meditationPm: done("meditation_pm"),
+                hydration,
+                noPhoneAm: done("no_phone_am"),
+                noPhonePm: done("no_phone_pm"),
+                reading: done("reading"),
+                completedCount,
+              }}
+              onBonusXpChange={setQuestBonusXp}
+            />
+
+            {/* Proof photo — available to everyone (all app users are paid) */}
+            <div>
+              <label className="press flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 hover:bg-secondary/40 transition-colors cursor-pointer">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera aria-hidden size={20} /></div>
+                <div className="text-left flex-1">
+                  <p className="font-semibold text-sm">Add proof photo</p>
+                  <p className="text-xs text-muted-foreground">Posted to the Elite Feed · earns <span className="font-bold text-foreground/80">+30 bonus XP</span></p>
+                </div>
+                {proofFile && <span className="text-[11px] font-bold tabular-nums text-muted-foreground">+30 XP</span>}
+                {/* No `capture` attr: iOS then offers Take Photo AND Photo Library
+                    in the native sheet (founder decision — gallery proofs allowed,
+                    so the old 5-minute freshness gate is gone too). */}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  hapticSelection();
+                  setProofFile(file);
+                  const reader = new FileReader();
+                  reader.onload = () => setProofPreview(reader.result as string);
+                  reader.readAsDataURL(file);
+                }} />
+              </label>
+              {proofPreview && (
+                <MediaPreview imageSrc={proofPreview} sizeBytes={proofFile?.size} onClear={() => { setProofFile(null); setProofPreview(null); }} />
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Honesty — the discipline wedge. "You can't grind with lies." */}
-      <div className={cn(
-        "mb-4 rounded-2xl border p-4 transition-[transform,background-color,border-color,box-shadow,color] duration-200",
-        honest === true
-          ? "border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent"
-          : honest === false
-          ? "border-destructive/40 bg-destructive/5"
-          : "surface-card",
-      )}>
-        <p className="font-bold text-[15px] flex items-center gap-1.5">Were you honest? <span>🤝</span></p>
-        <p className="text-xs text-muted-foreground mt-1 mb-3">
-          Answer truthfully — <span className="text-foreground/80 font-semibold">you can't grind with lies.</span>
-        </p>
-        <div className="flex gap-3" role="radiogroup" aria-label="Were you honest today?">
-          <button
-            role="radio"
-            aria-checked={honest === true}
-            onClick={() => { hapticSelection(); setHonest(true); }}
-            className={cn(
-              "flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
-              honest === true
-                ? "border-gold/50 bg-gold/12 text-gold shadow-[0_0_14px_-4px_hsl(var(--gold)/0.5)]"
-                : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
-              honestPop && "commit-pop",
-            )}
-          >Yes <span aria-hidden>✅</span></button>
-          <button
-            role="radio"
-            aria-checked={honest === false}
-            onClick={() => { hapticSelection(); setHonest(false); }}
-            className={cn(
-              "flex-1 rounded-xl border p-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color] active:scale-[0.97]",
-              honest === false
-                ? "border-destructive/50 bg-destructive/12 text-destructive"
-                : "border-border bg-secondary text-muted-foreground hover:bg-secondary/80",
-            )}
-          >No <span aria-hidden>❌</span></button>
-        </div>
-        {honest === false && (
-          <p role="alert" className="text-xs text-destructive mt-2.5 font-medium">Be honest with yourself. Go back and fix your answers.</p>
-        )}
-      </div>
-
-      {/* Submit */}
-      <div className="mt-6">
-        <Button variant="ember" size="xl" className="w-full" onClick={handleSubmit} loading={submitting} aria-busy={submitting} disabled={submitting || honest !== true}>
-          <Zap aria-hidden size={20} />
-          {submitting ? "Submitting..." : (
-            // The number every tick feeds — it counts instead of teleporting,
-            // closing the tick → total chain at its endpoint.
-            <span className="tabular-nums">
-              Submit Day — Earn <AnimatedNumber value={totalXp} duration={350} className="inline" /> XP
-            </span>
+        {/* ── HERO — lock the day, honestly. The honesty pair and the ember
+               Lock CTA share the screen's one full-weight card; "Yes" lights
+               the same ember the button below is made of. ── */}
+        <div className="home-rise home-rise-5 mt-6 surface-card p-4">
+          <p className="font-bold text-[15px]">Were you honest?</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-3">
+            Answer truthfully — <span className="text-foreground/80 font-semibold">you can't grind with lies.</span>
+          </p>
+          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Were you honest today?">
+            <button
+              role="radio"
+              aria-checked={honest === true}
+              onClick={() => { hapticSelection(); setHonest(true); }}
+              className={cn(
+                "min-h-11 rounded-xl border px-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color]",
+                honest === true
+                  ? "border-[hsl(var(--ember)/0.55)] bg-[hsl(var(--ember)/0.12)] text-[hsl(var(--ember-light))]"
+                  : "border-border bg-secondary text-muted-foreground",
+                honestPop && "commit-pop",
+              )}
+            >Yes</button>
+            <button
+              role="radio"
+              aria-checked={honest === false}
+              onClick={() => { hapticSelection(); setHonest(false); }}
+              className={cn(
+                "min-h-11 rounded-xl border px-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color]",
+                honest === false
+                  ? "border-destructive/50 bg-destructive/12 text-destructive"
+                  : "border-border bg-secondary text-muted-foreground",
+                dishonestPop && "commit-pop",
+              )}
+            >No</button>
+          </div>
+          {honest === false && (
+            <p role="alert" className="text-xs text-destructive mt-2.5 font-medium">Be honest with yourself. Go back and fix your answers.</p>
           )}
-        </Button>
-        {honest === null && !submitting ? (
-          // Close the loop on the greyed button so it doesn't read as broken.
-          // Only when UNANSWERED — after "No" the red guidance above owns the
-          // message; showing this too read as "flip it to Yes to proceed".
-          <p className="mt-2 text-center text-[12px] font-semibold text-gold/85">
-            Confirm “Were you honest?” above to submit
+
+          {/* The label carries the in-flight state ("Locking…") rather than a
+              spinner, and the flame pops the instant the save starts. */}
+          <Button variant="ember" size="xl" className="w-full mt-4" onClick={handleSubmit} aria-busy={submitting} disabled={submitting || honest !== true}>
+            <Flame aria-hidden size={20} className={cn(lockPop && "commit-pop")} />
+            {submitting ? "Locking…" : (
+              // The number every tick feeds — it counts instead of teleporting,
+              // closing the tick → total chain at its endpoint.
+              <span className="tabular-nums">
+                Lock it in · +<AnimatedNumber value={totalXp} duration={350} className="inline" /> XP
+              </span>
+            )}
+          </Button>
+          <p className="mt-2.5 text-center text-[12px] text-muted-foreground tabular-nums">
+            {honest === null && !submitting
+              ? "Answer above to lock the day"
+              : `${fmtInt(completedCount)} of ${fmtInt(maxCount)} logged`}
           </p>
-        ) : (
-          <p className="mt-2 text-center text-[12px] text-muted-foreground flex items-center justify-center gap-1">
-            <Sparkles aria-hidden size={12} className="text-gold" /> {maxCount} habits · your personal standard
-          </p>
-        )}
+        </div>
       </div>
     </div>
   );

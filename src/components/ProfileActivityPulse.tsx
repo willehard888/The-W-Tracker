@@ -1,6 +1,6 @@
+import { fmtRelative } from "@/lib/format";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { formatDistanceToNow } from "date-fns";
 import { Activity, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,7 +60,7 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
         !isActive && isWarm && "text-amber-400",
         !isWarm && "text-muted-foreground",
       )}>
-        {isActive ? "Active today" : `Checked in ${formatDistanceToNow(lastCheckin, { addSuffix: true })}`}
+        {isActive ? "Active today" : `Checked in ${fmtRelative(lastCheckin)}`}
       </span>
     </div>
   );

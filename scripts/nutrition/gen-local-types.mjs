@@ -10,7 +10,7 @@
 //   env: PGHOST=/tmp PGPORT=5499 PGUSER=postgres PGDATABASE=wf (defaults)
 import { execFileSync } from "node:child_process";
 
-const ALLOW = /^(food_|foods$|nutrition_|nutrient_|meal_|recipe_|ingest_foods$|search_foods$|log_meal$|update_meal_item$|duplicate_meal$|daily_nutrition_totals$|upsert_(user_food|recipe|nutrition_targets)$|normalize_barcode$|f_unaccent$|sum_nutrition$|scale_nutrition$)/;
+const ALLOW = /^(food_|foods$|nutrition_|nutrient_|meal_|recipe_|ingest_foods$|search_foods$|log_meal$|update_meal_item$|duplicate_meal$|daily_nutrition_totals$|upsert_(user_food|recipe|nutrition_targets)$|normalize_barcode$|f_unaccent$|sum_nutrition$|scale_nutrition$|record_scan_review$|scan_user_priors$)/;
 
 const psql = (sql) => {
   const out = execFileSync(

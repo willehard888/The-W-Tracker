@@ -147,7 +147,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
         {/* Duration */}
         {selected && (
           <div>
-            <p className="text-[11px] uppercase tracking-widest font-black text-muted-foreground mb-2">
+            <p className="eyebrow text-muted-foreground mb-2">
               Duration
             </p>
             <div className="grid grid-cols-3 gap-1.5">

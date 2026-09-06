@@ -28,7 +28,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
       className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}
     >
       <div className="flex items-center justify-between mb-3">
-        <p className="font-display font-black text-xs uppercase tracking-widest text-muted-foreground">
+        <p className="eyebrow font-display text-muted-foreground">
           Live Rivals
         </p>
         <button
@@ -46,7 +46,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
           <button
             type="button"
             onClick={() => navigate(`/user/${data.above!.user_id}`)}
-            className="w-full flex items-center gap-3 surface-card p-2.5 active:scale-[0.99] transition-transform"
+            className="press w-full flex items-center gap-3 surface-card p-2.5 transition-transform"
           >
             <StatusAvatar
               src={data.above.avatar_url}
@@ -61,7 +61,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
                 tier={data.above.status_tier}
                 className="font-bold text-sm truncate"
               />
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">Ahead of you</p>
+              <p className="eyebrow text-muted-foreground">Ahead of you</p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
               <ArrowUp size={12} className="text-xp-green" />
@@ -76,7 +76,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
             type="button"
             onClick={() => navigate(`/user/${data.below!.user_id}`)}
             className={cn(
-              "w-full flex items-center gap-3 rounded-xl border p-2.5 active:scale-[0.99] transition-transform",
+              "press w-full flex items-center gap-3 rounded-xl border p-2.5 transition-transform",
               heatBelow
                 ? "border-destructive/40 bg-destructive/5 shadow-[0_0_18px_hsl(var(--destructive)/0.2)]"
                 : "border-border/40 bg-card/40",
@@ -97,7 +97,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               />
               <p
                 className={cn(
-                  "text-[11px] uppercase tracking-wider flex items-center gap-1",
+                  "eyebrow flex items-center gap-1",
                   heatBelow ? "text-destructive font-black" : "text-muted-foreground",
                 )}
               >

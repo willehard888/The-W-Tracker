@@ -54,50 +54,29 @@ describe("fetchActiveSeason", () => {
 });
 
 describe("fetchSeasonBoard", () => {
-  it("computes season points from baselines, sorts, and finds my rank", async () => {
-    const baselines = [
-      { user_id: "a", baseline_xp: 100 },
-      { user_id: "b", baseline_xp: 500 },
-    ];
-    const profiles = [
-      { user_id: "a", xp: 150, username: "a" },  // 50 season points
-      { user_id: "b", xp: 900, username: "b" },  // 400 season points
-    ];
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) =>
-      table === "leaderboard_season_baselines" ? chain({ data: baselines }) : chain({ data: profiles }),
-    );
+  const rpc = supabase.rpc as ReturnType<typeof vi.fn>;
 
-    const out = await fetchSeasonBoard("s1", "a");
-    expect(out.full.map((r) => r.user_id)).toEqual(["b", "a"]);
-    expect(out.full[0].season_points).toBe(400);
-    expect(out.full[1].season_points).toBe(50);
-    expect(out.myRank).toBe(2);
-    expect(out.top.length).toBeLessThanOrEqual(BOARD_LIMIT);
+  it("calls season_board with the season + BOARD_LIMIT and maps {top, my_rank, total}", async () => {
+    const top = [
+      { user_id: "b", username: "b", xp: 900, season_points: 400 },
+      { user_id: "a", username: "a", xp: 150, season_points: 50 },
+    ];
+    rpc.mockResolvedValue({ data: { top, my_rank: 2, total: 2 }, error: null });
+
+    const out = await fetchSeasonBoard("s1");
+    expect(rpc).toHaveBeenCalledWith("season_board", { p_season_id: "s1", p_limit: BOARD_LIMIT });
+    expect(out).toEqual({ top, myRank: 2, total: 2 });
   });
 
-  // A season board lists people who competed in THIS season. Dormant accounts
-  // with lifetime XP but no season activity used to pad it with "0 SEASON XP"
-  // rows — including old test accounts — so a new member's first look at the
-  // competition was a list of people who aren't playing.
-  it("omits accounts with no season points", async () => {
-    const baselines = [{ user_id: "a", baseline_xp: 100 }];
-    const profiles = [
-      { user_id: "a", xp: 150, username: "a" },   // 50 season points → listed
-      { user_id: "idle", xp: 900, username: "idle" }, // no baseline → 0 → hidden
-    ];
-    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((table: string) =>
-      table === "leaderboard_season_baselines" ? chain({ data: baselines }) : chain({ data: profiles }),
-    );
-
-    const out = await fetchSeasonBoard("s1", "a");
-    expect(out.full.map((r) => r.user_id)).toEqual(["a"]);
-    expect(out.myRank).toBe(1);
+  it("returns null rank and an empty board when the viewer is not ranked", async () => {
+    rpc.mockResolvedValue({ data: { top: [], my_rank: null, total: 0 }, error: null });
+    expect(await fetchSeasonBoard("s1")).toEqual({ top: [], myRank: null, total: 0 });
+    rpc.mockResolvedValue({ data: null, error: null });
+    expect(await fetchSeasonBoard("s1")).toEqual({ top: [], myRank: null, total: 0 });
   });
 
-  it("returns null rank when the viewer is not on the board", async () => {
-    (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue(chain({ data: [] }));
-    const out = await fetchSeasonBoard("s1", "ghost");
-    expect(out.myRank).toBeNull();
-    expect(out.full).toEqual([]);
+  it("throws the rpc error", async () => {
+    rpc.mockResolvedValue({ data: null, error: new Error("boom") });
+    await expect(fetchSeasonBoard("s1")).rejects.toThrow("boom");
   });
 });

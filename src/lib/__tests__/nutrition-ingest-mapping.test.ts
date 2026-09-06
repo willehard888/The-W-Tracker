@@ -7,14 +7,14 @@ import { buildFineliFoods, fineliVersion, sentenceCase } from "../../../scripts/
 import { buildUsdaFoods, checkUsdaUnits, mapUsdaNutrients, usdaServingLabel, usdaVersion } from "../../../scripts/nutrition/usda.mts";
 
 const defs: NutrientDef[] = [
-  { id: 1, key: "kcal", unit: "kcal", fineli_code: "ENERC", fineli_factor: 1 / 4.184, usda_nutrient_id: 1008, usda_factor: 1 },
-  { id: 2, key: "protein_g", unit: "g", fineli_code: "PROT", fineli_factor: 1, usda_nutrient_id: 1003, usda_factor: 1 },
-  { id: 3, key: "carbs_g", unit: "g", fineli_code: "CHOAVL", fineli_factor: 1, usda_nutrient_id: 1005, usda_factor: 1 },
-  { id: 4, key: "fat_g", unit: "g", fineli_code: "FAT", fineli_factor: 1, usda_nutrient_id: 1004, usda_factor: 1 },
-  { id: 5, key: "fiber_g", unit: "g", fineli_code: "FIBC", fineli_factor: 1, usda_nutrient_id: 1079, usda_factor: 1 },
-  { id: 6, key: "epa_g", unit: "g", fineli_code: "F20D5N3", fineli_factor: 0.001, usda_nutrient_id: 1278, usda_factor: 1 },
-  { id: 7, key: "salt_g", unit: "g", fineli_code: "NACL", fineli_factor: 0.001, usda_nutrient_id: 1093, usda_factor: 0.0025 },
-  { id: 8, key: "vit_c_mg", unit: "mg", fineli_code: "VITC", fineli_factor: 1, usda_nutrient_id: 1162, usda_factor: 1 },
+  { id: 1, key: "kcal", unit: "kcal", fineli_code: "ENERC", fineli_factor: 1 / 4.184, usda_nutrient_id: 1008, usda_factor: 1, off_key: "energy-kcal", off_factor: 1 },
+  { id: 2, key: "protein_g", unit: "g", fineli_code: "PROT", fineli_factor: 1, usda_nutrient_id: 1003, usda_factor: 1, off_key: "proteins", off_factor: 1 },
+  { id: 3, key: "carbs_g", unit: "g", fineli_code: "CHOAVL", fineli_factor: 1, usda_nutrient_id: 1005, usda_factor: 1, off_key: "carbohydrates", off_factor: 1 },
+  { id: 4, key: "fat_g", unit: "g", fineli_code: "FAT", fineli_factor: 1, usda_nutrient_id: 1004, usda_factor: 1, off_key: "fat", off_factor: 1 },
+  { id: 5, key: "fiber_g", unit: "g", fineli_code: "FIBC", fineli_factor: 1, usda_nutrient_id: 1079, usda_factor: 1, off_key: "fiber", off_factor: 1 },
+  { id: 6, key: "epa_g", unit: "g", fineli_code: "F20D5N3", fineli_factor: 0.001, usda_nutrient_id: 1278, usda_factor: 1, off_key: null, off_factor: null },
+  { id: 7, key: "salt_g", unit: "g", fineli_code: "NACL", fineli_factor: 0.001, usda_nutrient_id: 1093, usda_factor: 0.0025, off_key: "salt", off_factor: 1 },
+  { id: 8, key: "vit_c_mg", unit: "mg", fineli_code: "VITC", fineli_factor: 1, usda_nutrient_id: 1162, usda_factor: 1, off_key: "vitamin-c", off_factor: 1000 },
 ];
 
 describe("csv + lib self-checks", () => {

@@ -1,18 +1,21 @@
+import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
+import { fmtRelative } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import PageBar from "@/components/ui/page-bar";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, ShieldAlert, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import AppImage from "@/components/ui/app-image";
 
 export default function AdminModeration() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
@@ -63,11 +66,7 @@ export default function AdminModeration() {
   }, [isAdmin, queryClient]);
 
   if (isAdmin === null) {
-    return (
-      <div className="min-h-full flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
   if (!isAdmin) return <Navigate to="/" replace />;
 
@@ -113,25 +112,23 @@ export default function AdminModeration() {
   };
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-6">
+    <div className="min-h-full">
+      <PageBar title="Moderation queue" onBack={() => navigate(-1)} />
+      <div className="px-4 pt-4 pb-6">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <ShieldCheck className="h-5 w-5 text-gold" />
-          <h1 className="font-display text-2xl font-black tracking-tight">Moderation Queue</h1>
-        </div>
         <p className="text-sm text-muted-foreground">
           Low-confidence AI blocks waiting for human review.
         </p>
         <div className="mt-3 flex items-center gap-4">
           <a
             href="/admin/legend-invites"
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gold hover:underline"
+            className="eyebrow inline-flex items-center gap-1.5 text-gold hover:underline"
           >
             → Legend invites
           </a>
           <a
             href="/admin/metrics"
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gold hover:underline"
+            className="eyebrow inline-flex items-center gap-1.5 text-gold hover:underline"
           >
             → Command Center
           </a>
@@ -168,11 +165,11 @@ export default function AdminModeration() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="eyebrow text-muted-foreground">
                     {item.content_type}
                   </span>
                   {item.severity && (
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-destructive">
+                    <span className="eyebrow text-destructive">
                       {item.severity}
                     </span>
                   )}
@@ -180,7 +177,7 @@ export default function AdminModeration() {
                     conf {Math.round((item.ai_confidence ?? 0) * 100)}%
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                    {fmtRelative(item.created_at)}
                   </span>
                 </div>
                 <p className="text-sm font-semibold mt-1">{item.ai_reason ?? "No reason"}</p>
@@ -218,6 +215,7 @@ export default function AdminModeration() {
             </div>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );

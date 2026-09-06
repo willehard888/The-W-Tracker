@@ -1,5 +1,7 @@
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { ChevronLeft, Search, Shield } from "lucide-react";
+import { Search, Shield } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -66,37 +68,30 @@ const BadgeCompare = () => {
   const theirCount = theirBadgeIds?.length || 0;
 
   return (
-    <div className="min-h-full pb-4 px-4 pt-4">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6 animate-reveal">
-        <button onClick={() => navigate("/profile")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors active:scale-95">
-          <ChevronLeft size={20} />
-        </button>
-        
-        <div>
-          <h1 className="font-display text-2xl font-black tracking-tight">Badge Compare</h1>
-          <p className="text-xs text-muted-foreground">See how your collection stacks up</p>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Badge compare" onBack={() => navigate("/profile")} />
+
+      <div className="px-4 pt-4 pb-6">
+      <p className="text-xs text-muted-foreground mb-4 home-rise">See how your collection stacks up</p>
 
       {/* Search */}
-      <div className="relative mb-4 animate-reveal animate-reveal-delay-1">
+      <div className="relative mb-4 home-rise home-rise-1">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           type="text"
-          placeholder="Search by username..."
+          placeholder="Search by username…"
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
             if (e.target.value.length < 2) setSelectedUser(null);
           }}
-          className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/40 transition-colors"
+          className="h-11 rounded-xl pl-10 text-sm"
         />
       </div>
 
       {/* Search Results */}
       {!selectedUser && users && users.length > 0 && (
-        <div className="mb-4 rounded-xl border border-border bg-card overflow-hidden animate-reveal">
+        <div className="mb-4 rounded-xl border border-border bg-card overflow-hidden home-rise">
           {users.map((u) => (
             <button
               key={u.user_id}
@@ -104,7 +99,7 @@ const BadgeCompare = () => {
                 setSelectedUser(u);
                 setSearchQuery(u.username);
               }}
-              className="flex items-center gap-3 w-full p-3 hover:bg-secondary/50 transition-colors text-left active:scale-[0.98] border-b border-border last:border-0"
+              className="press flex items-center gap-3 w-full p-3 hover:bg-secondary/50 transition-colors text-left border-b border-border last:border-0"
             >
               <div className="h-8 w-8 rounded-full bg-gold/10 flex items-center justify-center text-sm font-bold text-gold">
                 {u.username.charAt(0).toUpperCase()}
@@ -117,7 +112,7 @@ const BadgeCompare = () => {
 
       {/* Comparison */}
       {selectedUser && (
-        <div className="animate-reveal">
+        <div className="home-rise">
           {/* Score Header */}
           <div className="flex items-center justify-between mb-4 p-4 rounded-xl border border-border bg-card">
             <div className="text-center flex-1">
@@ -156,7 +151,7 @@ const BadgeCompare = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold truncate">{badge.name}</p>
                     <p className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.22em]",
+                      "eyebrow-sm",
                       badge.rarity === "legendary" ? "text-gold" :
                       badge.rarity === "epic" ? "text-[hsl(var(--badge-epic))]" :
                       badge.rarity === "rare" ? "text-[hsl(var(--badge-rare))]" :
@@ -182,11 +177,12 @@ const BadgeCompare = () => {
 
       {/* Empty State */}
       {!selectedUser && (!users || users.length === 0) && (
-        <div className="flex flex-col items-center justify-center text-center mt-16 animate-reveal">
+        <div className="flex flex-col items-center justify-center text-center mt-16 home-rise">
           <Shield size={48} className="text-muted-foreground/30 mb-4" />
           <p className="text-sm text-muted-foreground">Search for a user to compare badges</p>
         </div>
       )}
+      </div>
     </div>
   );
 };

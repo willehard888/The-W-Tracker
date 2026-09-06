@@ -85,7 +85,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
         </div>
 
         {/* Text */}
-        <p className="text-[11px] uppercase tracking-[0.22em] text-gold/60 font-bold mb-1"
+        <p className="eyebrow text-gold/60 mb-1"
           style={{ animation: phase === "show" ? "fade-in 0.5s ease-out 0.3s both" : undefined }}
         >
           New Level Reached

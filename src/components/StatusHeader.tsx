@@ -38,25 +38,10 @@ const PRESSURE_QUOTES = [
   "Let the streak speak",
 ];
 
-const HIDDEN_ROUTES = new Set([
-  "/landing",
-  "/auth",
-  "/onboarding",
-  "/apple-username",
-  "/choose-username",
-  "/apple-auth-launch",
-  "/paywall",
-  "/reset-password",
-  "/privacy",
-  "/terms",
-  "/ios-debug",
-  // Check-in is a focused full-screen flow with its own header/back — the
-  // global brand bar on top was a double header eating vertical space.
-  "/checkin",
-  // NOTE: /profile is NOT hidden — it gets the sticky brand strip like every
-  // other tab (identity row stays Home/Leaderboard-only via showIdentity, so
-  // the hero below is still the single identity block).
-]);
+// The brand strip belongs to the four tab roots only. Every sub-page owns its
+// own PageBar (back + title + safe-top), so an allowlist replaces the old
+// ever-growing hidden-routes list — a new route is a sub-page by default.
+const BRAND_ROUTES = new Set(["/", "/squad", "/leaderboard", "/profile"]);
 
 const StatusHeader = () => {
   const { user, profile, isElite } = useAuth();
@@ -97,16 +82,10 @@ const StatusHeader = () => {
   });
 
   if (!user || !profile) return null;
-  if (HIDDEN_ROUTES.has(location.pathname)) return null;
-  // Active workout — full-screen, no chrome.
-  if (location.pathname.startsWith("/coach/session/")) return null;
-  if (
-    location.pathname.startsWith("/oauth") ||
-    location.pathname.startsWith("/callback") ||
-    location.pathname.startsWith("/~oauth") ||
-    location.pathname.startsWith("/u/")
-  )
-    return null;
+  // A whitelist of tab roots. Any pushed screen — including the active workout
+  // at /coach/session/* — gets no brand strip without having to opt out, which
+  // the previous blacklist required every new full-screen route to remember.
+  if (!BRAND_ROUTES.has(location.pathname)) return null;
 
   // Canonical id — legacy 'normal' rows must behave exactly like recruit in
   // every ladder computation below (indexOf on the raw value returned -1).
@@ -243,7 +222,7 @@ const StatusHeader = () => {
           <button
             onClick={() => navigate("/notifications")}
             aria-label={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-90 transition before:absolute before:-inset-1 before:content-['']"
+            className="press absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition before:absolute before:-inset-1 before:content-['']"
           >
             <BellIcon aria-hidden size={18} />
             {unreadCount > 0 && (
@@ -261,7 +240,7 @@ const StatusHeader = () => {
         <div className="flex items-center gap-3 px-3 pb-2.5">
           <button
             onClick={() => navigate("/profile")}
-            className="shrink-0 active:scale-95 transition-transform"
+            className="press shrink-0 transition-transform"
             aria-label="Open profile"
           >
             <StatusAvatar
@@ -334,7 +313,7 @@ const StatusHeader = () => {
                     type="button"
                     onClick={() => navigate(target)}
                     className={cn(
-                      "pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 text-[11px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 h-[22px] rounded-full border transition-all active:scale-95 cursor-pointer before:absolute before:-inset-3 before:content-['']",
+                      "pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 text-[11px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 h-[22px] rounded-full border transition-all cursor-pointer before:absolute before:-inset-3 before:content-['']",
                       isLegendTarget
                         ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
                         : "text-[hsl(18_95%_62%)] border-[hsl(var(--ember))]/50 bg-[hsl(var(--ember))]/10 hover:border-[hsl(var(--ember))] shadow-[0_0_6px_hsl(var(--ember)/0.20)]",
@@ -389,7 +368,7 @@ const StatusHeader = () => {
               onClick={() => navigate("/paywall")}
               aria-label="Free trial — full access. Tap to see membership."
               className={cn(
-                "shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors active:scale-[0.96]",
+                "press shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors ",
                 trialUrgent
                   ? "bg-destructive/12 border-destructive/45 text-destructive"
                   : "bg-gold/10 border-gold/35 text-gold",

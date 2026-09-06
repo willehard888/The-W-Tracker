@@ -44,7 +44,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       />
 
       {/* Header */}
-      <header className="relative flex items-center justify-between px-6 pt-6 pb-4 animate-reveal">
+      <header className="relative flex items-center justify-between px-6 pt-6 pb-4 home-rise">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(var(--gold) / 0.35)" }} />
@@ -56,7 +56,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
 
       {/* Hero */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <div className="animate-reveal max-w-md mx-auto">
+        <div className="home-rise max-w-md mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-10">
             <Flame size={14} className="text-gold" />
             <span className="text-[12px] font-bold text-gold tracking-widest uppercase">
@@ -78,7 +78,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             </span>
           </p>
 
-          <div className="flex flex-col gap-3 w-full max-w-xs mx-auto animate-reveal animate-reveal-delay-2">
+          <div className="flex flex-col gap-3 w-full max-w-xs mx-auto home-rise home-rise-2">
             <Button
               variant="ember"
               size="xl"
@@ -98,7 +98,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
         </div>
 
         {/* What you actually get — one app replaces the whole stack */}
-        <div className="w-full max-w-md mx-auto mt-14 animate-reveal animate-reveal-delay-3">
+        <div className="w-full max-w-md mx-auto mt-14 home-rise home-rise-3">
           <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-gold/70 mb-3">
             One app · replaces five
           </p>
@@ -122,7 +122,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       </main>
 
       {/* Bottom tagline */}
-      <footer className="relative pb-8 pt-4 text-center animate-reveal animate-reveal-delay-4">
+      <footer className="relative pb-8 pt-4 text-center home-rise home-rise-4">
         <div className="flex items-center justify-center gap-2">
           <Sparkles size={12} className="text-gold/30" />
           <p className="text-[11px] text-muted-foreground/60 tracking-[0.22em] uppercase font-medium">

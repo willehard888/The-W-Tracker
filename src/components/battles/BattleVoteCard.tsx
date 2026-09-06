@@ -25,7 +25,7 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
       onClick={() => onVote(battle.id, votedFor)}
       disabled={!!myVote}
       className={cn(
-        "w-full py-2 rounded-lg text-xs font-bold transition-all active:scale-95 border",
+        "w-full py-2 rounded-lg text-xs font-bold transition-all border",
         mine
           ? "bg-gold/20 border-gold/40 text-gold"
           : myVote
@@ -40,7 +40,7 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
   return (
     <div className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
       <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-gold flex items-center gap-1">
+        <span className="eyebrow text-gold flex items-center gap-1">
           {typeInfo.emoji} {typeInfo.label} Battle — TIE
         </span>
         <span className="text-[11px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>

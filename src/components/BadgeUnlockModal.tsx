@@ -51,8 +51,6 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
   useEffect(() => {
     if (!badge) return;
     setPhase("enter");
-    // Bend every flame on screen as the badge lands.
-    import("@/lib/wind").then(({ triggerGust }) => triggerGust(0.85)).catch(() => {});
     // Felt reward: a success buzz on unlock, plus a heavy thud at the burst
     // for the rarer badges so their weight is physical, not just visual.
     void hapticNotification("success");
@@ -192,7 +190,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
           )}
         >
           <p className={cn(
-            "text-[11px] font-black uppercase tracking-[0.22em] mb-3",
+            "eyebrow mb-3",
             isLegendary ? "text-gold" : "text-muted-foreground"
           )}>
             {isLegendary ? "⚡ Legendary Badge Unlocked ⚡" : "Badge Unlocked"}
@@ -203,7 +201,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
             style.ring,
             isLegendary ? "bg-gold/[0.08]" : "bg-card"
           )}>
-            <span className={cn("text-[11px] font-black uppercase tracking-[0.22em]", style.text)}>
+            <span className={cn("eyebrow", style.text)}>
               {badge.rarity}
             </span>
           </div>

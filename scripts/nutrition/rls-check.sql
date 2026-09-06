@@ -93,7 +93,34 @@ END $$;
 RESET ROLE;
 
 -- service-side row (edge function writes as service_role)
-INSERT INTO public.meal_scan_cache (user_id, image_sha256, model, result) VALUES (:'A', repeat('a', 64), 'test', '{}');
+INSERT INTO public.meal_scan_cache (id, user_id, image_sha256, model, result)
+VALUES ('cccccccc-0000-4000-8000-0000000000a1', :'A', repeat('a', 64), 'test', '{}');
+
+-- ---------- as A again: scan review is RPC-only, own rows visible ----------
+SET LOCAL ROLE authenticated;
+SET LOCAL request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
+DO $$
+DECLARE
+  sid uuid := 'cccccccc-0000-4000-8000-0000000000a1';
+  n int;
+BEGIN
+  n := public.record_scan_review(sid, '[{"item_index":0,"model_name":"Chicken","model_grams":150,"final_grams":120,"action":"grams_edited"}]'::jsonb);
+  ASSERT n = 1, 'record_scan_review did not return 1';
+  ASSERT (SELECT count(*) FROM public.meal_scan_reviews) = 1, 'A does not see own review';
+  ASSERT (SELECT image_sha256 FROM public.meal_scan_reviews LIMIT 1) = repeat('a', 64), 'review did not copy the cache sha';
+  BEGIN
+    INSERT INTO public.meal_scan_reviews (user_id, scan_id, item_index, action) VALUES (auth.uid(), sid, 0, 'kept');
+    RAISE EXCEPTION 'member wrote meal_scan_reviews directly';
+  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+  BEGIN
+    PERFORM public.record_scan_review(sid, '[{"item_index":0,"action":"hacked"}]'::jsonb);
+    RAISE EXCEPTION 'bad action accepted';
+  EXCEPTION WHEN raise_exception THEN ASSERT SQLERRM = 'BAD_ACTION', SQLERRM; END;
+  ASSERT jsonb_typeof(public.scan_user_priors()) = 'array', 'scan_user_priors as A';
+  UPDATE public.profiles SET nutrition_prefs = '{"plate_cm":30}' WHERE user_id = auth.uid();
+  RAISE NOTICE 'rls-check scan review as A: ok';
+END $$;
+RESET ROLE;
 
 -- ---------- as B: nothing of A's is visible or writable ----------
 SET LOCAL ROLE authenticated;
@@ -119,6 +146,12 @@ BEGIN
   ASSERT (SELECT count(*) FROM public.nutrition_recipe_items)= 0, 'nutrition_recipe_items leak';
   ASSERT (SELECT count(*) FROM public.food_favorites)        = 0, 'food_favorites leak';
   ASSERT (SELECT count(*) FROM public.meal_scan_cache)       = 0, 'meal_scan_cache leak';
+  ASSERT (SELECT count(*) FROM public.meal_scan_reviews)     = 0, 'meal_scan_reviews leak';
+  ASSERT public.scan_user_priors() = '[]'::jsonb, 'scan_user_priors leaks A''s portions';
+  BEGIN
+    PERFORM public.record_scan_review('cccccccc-0000-4000-8000-0000000000a1', '[{"item_index":0,"action":"kept"}]'::jsonb);
+    RAISE EXCEPTION 'B reviewed A''s scan';
+  EXCEPTION WHEN raise_exception THEN ASSERT SQLERRM = 'FORBIDDEN', SQLERRM; END;
   ASSERT (SELECT count(*) FROM public.foods WHERE id = fid)  = 0, 'user food leak';
   ASSERT (SELECT count(*) FROM public.food_nutrients fn WHERE fn.food_id = fid) = 0, 'user food nutrients leak';
   ASSERT (SELECT count(*) FROM storage.objects WHERE bucket_id = 'meal-photos') = 0, 'storage leak';
@@ -216,6 +249,8 @@ BEGIN
   BEGIN PERFORM public.nutrition_for_grams(gen_random_uuid(), 1); RAISE EXCEPTION 'anon can compute'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   BEGIN PERFORM public.log_meal(gen_random_uuid(), current_date, 0, 'lunch', '[]'::jsonb); RAISE EXCEPTION 'anon can log'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   BEGIN PERFORM public.daily_nutrition_totals(current_date); RAISE EXCEPTION 'anon can read totals'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+  BEGIN PERFORM public.scan_user_priors(); RAISE EXCEPTION 'anon can read priors'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+  BEGIN PERFORM public.record_scan_review(gen_random_uuid(), '[]'::jsonb); RAISE EXCEPTION 'anon can review'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   -- Supabase's default grants give anon SELECT; every policy is TO authenticated, so anon gets 0 rows (or no grant at all locally).
   BEGIN PERFORM 1 FROM public.foods; IF FOUND THEN RAISE EXCEPTION 'anon can read foods'; END IF; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   BEGIN PERFORM 1 FROM public.meal_logs; IF FOUND THEN RAISE EXCEPTION 'anon can read meals'; END IF; EXCEPTION WHEN insufficient_privilege THEN NULL; END;

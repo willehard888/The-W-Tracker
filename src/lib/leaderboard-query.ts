@@ -49,43 +49,16 @@ export const fetchActiveSeason = async () => {
   return ensured;
 };
 
-export const fetchSeasonBoard = async (seasonId: string, userId: string | undefined) => {
-  const [{ data: baselines }, { data: profiles }] = await Promise.all([
-    supabase
-      .from("leaderboard_season_baselines")
-      .select("user_id, baseline_xp")
-      .eq("season_id", seasonId),
-    supabase
-      .from("profiles")
-      .select("username, xp, level, streak, user_id, avatar_url, status_tier")
-      .gt("xp", 0)
-      // PostgREST silently truncates at 1000 rows with an ARBITRARY subset
-      // when unordered. Order by xp so the truncation keeps the top players
-      // (season points derive from xp deltas, so high-xp covers the board).
-      .order("xp", { ascending: false })
-      .limit(2000),
-  ]);
-
-  const baselineMap = new Map<string, number>((baselines || []).map((b) => [b.user_id, b.baseline_xp]));
-
-  const full = ((profiles || []) as LeaderRow[])
-    .map((p) => ({
-      ...p,
-      season_points: Math.max(p.xp - (baselineMap.get(p.user_id) ?? p.xp), 0),
-    }))
-    // A season board should list people who competed in THIS season. Without
-    // this filter every dormant account with historic XP — including old test
-    // accounts — padded the board with rows reading "0 SEASON XP", so a new
-    // member's first impression of the competition was a list of people who
-    // aren't playing. Lifetime standing still lives on the all-time board.
-    .filter((p) => (p.season_points ?? 0) > 0)
-    .sort((a, b) => (b.season_points || 0) - (a.season_points || 0) || b.xp - a.xp);
-
-  const myRank = userId ? full.findIndex((u) => u.user_id === userId) + 1 : null;
-
-  return {
-    full,
-    top: full.slice(0, BOARD_LIMIT),
-    myRank: myRank && myRank > 0 ? myRank : null,
-  };
+/**
+ * Season board via the `season_board` RPC: season_points = xp above this
+ * season's baseline, only people who competed THIS season are listed (dormant
+ * accounts with lifetime XP used to pad the board with "0 SEASON XP" rows),
+ * ordered season_points DESC, xp DESC. `myRank` is the caller's position in
+ * the FULL ranked set (auth.uid() server-side), `total` its size.
+ */
+export const fetchSeasonBoard = async (seasonId: string) => {
+  const { data, error } = await supabase.rpc("season_board", { p_season_id: seasonId, p_limit: BOARD_LIMIT });
+  if (error) throw error;
+  const board = (data ?? {}) as { top?: LeaderRow[]; my_rank?: number | null; total?: number };
+  return { top: board.top ?? [], myRank: board.my_rank ?? null, total: board.total ?? 0 };
 };

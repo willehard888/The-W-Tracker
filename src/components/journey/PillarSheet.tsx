@@ -1,6 +1,6 @@
-import { createPortal } from "react-dom";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { useNavigate } from "react-router-dom";
-import { X, Target, ChevronRight } from "lucide-react";
+import { Target, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { pickLevers } from "@/lib/whealth-levers";
@@ -34,34 +34,17 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
   const navigate = useNavigate();
   const levers = pickLevers(pillar, parts);
 
-  return createPortal(
-    <div className="fixed inset-0 z-[70]">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
-      <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border-t border-gold/25 bg-background px-4 pt-3 pb-8 max-h-[80vh] overflow-y-auto">
-        <div className="flex items-center justify-center pb-2">
-          <span className="h-1 w-9 rounded-full bg-foreground/20" aria-hidden />
-        </div>
-
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-gold/85">
-              {PILLAR_LABEL[pillar]} pillar
-            </p>
-            <p className="font-display text-2xl font-black tabular-nums leading-tight">
-              {score == null ? "—" : `${score}/100`}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="h-10 w-10 rounded-full flex items-center justify-center bg-card/70 border border-border/60 active:scale-95 transition"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
+  return (
+    <BottomSheet
+      open
+      onClose={onClose}
+      label={`${PILLAR_LABEL[pillar]} pillar`}
+      title={`${PILLAR_LABEL[pillar]} pillar`}
+      subtitle={score == null ? "No data yet" : `${score}/100`}
+    >
+      <div className="pt-2 pb-2">
         {/* Sub-signals */}
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
+        <p className="eyebrow text-foreground/60 mb-2">
           What drives it
         </p>
         <div className="space-y-2.5 mb-5">
@@ -88,7 +71,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
         </div>
 
         {/* Levers */}
-        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-foreground/60 mb-2">
+        <p className="eyebrow text-foreground/60 mb-2">
           Your biggest levers
         </p>
         <div className="space-y-2.5">
@@ -104,7 +87,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
               <button
                 type="button"
                 onClick={() => { hapticImpact("light"); onClose(); navigate(l.action.path); }}
-                className="mt-2 inline-flex items-center gap-1 rounded-lg bg-gold/10 border border-gold/30 px-2.5 py-1.5 text-[12px] font-bold text-gold active:scale-95 transition"
+                className="press mt-2 inline-flex items-center gap-1 rounded-lg bg-gold/10 border border-gold/30 px-2.5 py-1.5 text-[12px] font-bold text-gold transition"
               >
                 {l.action.label} <ChevronRight size={12} />
               </button>
@@ -112,8 +95,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
           ))}
         </div>
       </div>
-    </div>,
-    document.body,
+    </BottomSheet>
   );
 };
 

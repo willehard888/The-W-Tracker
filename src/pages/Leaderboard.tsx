@@ -1,46 +1,33 @@
-
-import { Trophy, Lock, Crown, TrendingUp, Clock3, Medal, Swords, ShieldCheck, AlertTriangle, Flame } from "lucide-react";
+import { fmtInt, fmtUnit } from "@/lib/format";
+import { Trophy, Crown, Medal, Swords, ShieldCheck } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
-
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllTimeLeaders, fetchActiveSeason, fetchSeasonBoard, BOARD_LIMIT } from "@/lib/leaderboard-query";
+import { fetchAllTimeLeaders, fetchActiveSeason, fetchSeasonBoard, type LeaderRow } from "@/lib/leaderboard-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { useEffect, useMemo, useRef, useState } from "react";
-import StatusBadge from "@/components/StatusBadge";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 import TopTribesWidget from "@/components/TopTribesWidget";
 import MoreSection from "@/components/ui/more-section";
 import { Button } from "@/components/ui/button";
-import { BoardRowsSkeleton } from "@/components/skeletons/PageSkeleton";
+import { Block } from "@/components/skeletons/PageSkeleton";
+import { SettingsRow } from "@/components/settings/SettingsList";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import AnimatedNumber from "@/components/AnimatedNumber";
 import EmptyState from "@/components/ui/empty-state";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
-type LeaderRow = {
-  username: string;
-  xp: number;
-  level: number;
-  streak: number;
-  user_id: string;
-  avatar_url: string | null;
-  status_tier?: string | null;
-  season_points?: number;
-};
-
-
+type Mode = "season" | "all_time";
 
 const formatCountdown = (endsAt?: string) => {
-  if (!endsAt) return "--";
+  if (!endsAt) return "";
   const diff = new Date(endsAt).getTime() - Date.now();
   if (diff <= 0) return "Season ended";
 
@@ -52,9 +39,9 @@ const formatCountdown = (endsAt?: string) => {
 
   // Seconds only inside the final hour — a 23-day countdown ticking every
   // second at the top of the page is motion with no information in it.
-  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m ${seconds}s`;
+  if (days > 0) return `${days}d ${hours}h ${minutes}m left`;
+  if (hours > 0) return `${hours}h ${minutes}m left`;
+  return `${minutes}m ${seconds}s left`;
 };
 
 /**
@@ -74,13 +61,41 @@ const CountdownTimer = ({ endsAt }: { endsAt?: string }) => {
   return <span>{text}</span>;
 };
 
+/** Data-phase skeletons in the screen's own silhouette — the beat sits above
+ *  the segment, the podium and five rows below it. RouteFallback only covers
+ *  the lazy-chunk load; without these the board popped in with a layout shift. */
+const BeatSkeleton = () => (
+  <div>
+    <Block height={28} className="w-3/4 !rounded-lg" />
+    <Block height={28} delay={40} className="w-1/2 mt-1.5 !rounded-lg" />
+    <Block height={12} delay={80} className="w-28 mt-3 !rounded-md" />
+  </div>
+);
+
+const BoardSkeleton = () => (
+  <div>
+    <div className="grid grid-cols-3 gap-2 items-end">
+      <Block height={150} className="!rounded-2xl" />
+      <Block height={176} delay={40} className="!rounded-2xl" />
+      <Block height={134} delay={80} className="!rounded-2xl" />
+    </div>
+    <div className="mt-4 divide-y divide-border/35">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="py-3">
+          <Block height={36} delay={120 + i * 40} />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const Leaderboard = () => {
   // Contextual onboarding: first /leaderboard visit → Season vs All-Time.
   const ranksTargetRef = useSpotlightTarget("RANKS_INTRO");
   useOnboardingTrigger("RANKS_INTRO", true);
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"season" | "all_time">("season");
+  const [mode, setMode] = useState<Mode>("season");
   const { scrollRef, pullDistance, isRefreshing, onTouchStart: pullStart, onTouchMove: pullMove, onTouchEnd: pullEnd, PULL_THRESHOLD } = usePullRefresh([
     ["leaderboard-all-time"],
     ["leaderboard-season"],
@@ -115,15 +130,10 @@ const Leaderboard = () => {
       hapticSelection();
     }
   };
-  const onTouchEnd = (e: React.TouchEvent) => {
+  const onTouchEnd = () => {
     pullEnd();
     swipe.current = null;
   };
-
-
-  // Countdown ticking moved to <CountdownTimer> — only that component re-renders.
-
-  const isElite = profile?.status_tier === 'elite'; // EARNED tier, not the paid flag
 
   const { data: allTimeLeaders, isLoading: allTimeLoading } = useQuery({
     queryKey: ["leaderboard-all-time"],
@@ -147,7 +157,7 @@ const Leaderboard = () => {
 
   const { data: myRankData } = useMyRank(profile?.user_id);
 
-  const { data: activeSeason } = useQuery({
+  const { data: activeSeason, isLoading: seasonMetaLoading } = useQuery({
     queryKey: ["active-season"],
     staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
@@ -159,7 +169,7 @@ const Leaderboard = () => {
     enabled: !!activeSeason?.id,
     staleTime: 5 * 60_000,
     gcTime:    15 * 60_000,
-    queryFn: () => fetchSeasonBoard(activeSeason.id, profile?.user_id),
+    queryFn: () => fetchSeasonBoard(activeSeason.id),
   });
 
   const { data: championData } = useQuery({
@@ -192,11 +202,11 @@ const Leaderboard = () => {
   });
 
   const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
-  const totalUsersForMode = mode === "season" ? seasonData?.full.length || 1 : totalCount || 1;
-  // All-Time "Your Position" derives from the SAME XP-ordered list the board
-  // shows — the rank_score-based RPC could say "#7" while the user's own
-  // highlighted row sat at #12 on the very same screen. RPC stays as the
-  // fallback for users deeper than the visible board.
+  const boardTotal = mode === "season" ? seasonData?.total || 0 : totalCount || 0;
+  // All-Time position derives from the SAME XP-ordered list the board shows —
+  // the rank_score-based RPC could say "#7" while the user's own highlighted
+  // row sat at #12 on the very same screen. RPC stays as the fallback for
+  // users deeper than the visible board.
   const myAllTimeIdx = profile?.user_id
     ? (allTimeLeaders ?? []).findIndex((u) => u.user_id === profile.user_id)
     : -1;
@@ -217,300 +227,184 @@ const Leaderboard = () => {
       return new Set((data as string[]) ?? []);
     },
   });
-  const percentile = rank
-    ? Math.max(1, Math.round(((totalUsersForMode - rank) / totalUsersForMode) * 100))
-    : mode === "season" ? 0 : Math.round(myRankData?.percentile ?? 0);
   const hasRank = mode === "season" ? Boolean(rank) : (myAllTimeIdx >= 0 || Boolean(myRankData?.hasRank));
-  const mySeasonWins = profile?.user_id ? championData?.counts?.[profile.user_id] || 0 : 0;
 
-  // countdownText replaced by <CountdownTimer> component — see render below.
+  // The beat can only say something true once the whole mode has landed —
+  // a half-loaded all-time board would read "#4 of 0".
+  const boardLoading = mode === "season"
+    ? seasonMetaLoading || seasonLoading
+    : allTimeLoading || totalCount === undefined;
+
+  // Who is just above you: the lead of the person one place up, when both of
+  // you are on the visible board. Off the board, the beat states rank alone.
+  const points = (u: LeaderRow) => (mode === "season" ? u.season_points || 0 : u.xp);
+  const me = rank ? currentLeaders[rank - 1] : undefined;
+  const above = rank && rank > 1 ? currentLeaders[rank - 2] : undefined;
+  const gap = me && above && me.user_id === profile?.user_id ? points(above) - points(me) : null;
 
   // Access is gated globally by AccessGate (8,99 €/mo membership or 14-day trial).
-  // Leaderboard is open to every member with active access.
-
   return (
     <div
       ref={scrollRef}
-      className="min-h-full pb-4 px-4 pt-6"
+      className="min-h-full px-4 pt-4 pb-6"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
-      
 
-      <div className="animate-reveal mb-4 relative">
-        <div className="absolute -inset-x-8 -top-6 -bottom-6 pointer-events-none -z-10"
-             style={{
-               background:
-                 "radial-gradient(ellipse 90% 70% at 50% 0%, hsl(var(--gold) / 0.22) 0%, transparent 65%)",
-             }}
-             aria-hidden
-        />
-        <div className="absolute -inset-x-8 -top-6 h-32 pointer-events-none -z-10 opacity-50 mix-blend-screen"
-             style={{
-               background:
-                 "conic-gradient(from 210deg at 50% 120%, transparent 0deg, hsl(var(--gold) / 0.35) 90deg, transparent 180deg)",
-               filter: "blur(28px)",
-             }}
-             aria-hidden
-        />
-        <div className="flex items-center gap-2.5">
-          <div className="relative">
-            <Trophy aria-hidden size={26} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.6)]" />
-            <div className="absolute inset-0 animate-pulse opacity-60">
-              <Trophy aria-hidden size={26} className="text-gold blur-[6px]" />
-            </div>
-          </div>
-          {/* Title matches the tab that brought you here ("Ranks") — a tab
-              labeled one thing landing on a page titled another reads lost. */}
-          <h1 className="font-display text-2xl font-black tracking-tight bg-gradient-to-br from-gold via-gold-light to-gold bg-clip-text text-transparent">
-            Ranks
-          </h1>
-        </div>
-        <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-1.5">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold animate-pulse shadow-[0_0_8px_hsl(var(--gold))]" />
-          Season & all time rankings — climb or fall.
-        </p>
-      </div>
-
-      {/* Season banner */}
-      <div className="animate-reveal animate-reveal-delay-1 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-4 glow-gold-sm">
-        <div
-          /* !absolute: .glass-3d > * forces children position:relative, which
-             pulled this decorative glow into flow and left a 128px void above
-             the content. !absolute keeps it out of flow as intended. */
-          className="!absolute -top-12 -right-8 h-32 w-32 rounded-full opacity-30 blur-2xl pointer-events-none"
-          style={{ background: "hsl(var(--gold))" }}
-          aria-hidden
-        />
-        <div className="flex items-center justify-between gap-2 relative">
-          <div>
-            <p className="eyebrow text-gold/80">Current Season</p>
-            <p className="font-display font-bold text-lg tracking-tight mt-0.5">{activeSeason?.name || "Season"}</p>
-          </div>
-          <div className="text-right">
-            <p className="eyebrow">Ends in</p>
-            <p className="font-display font-black text-sm text-gold flex items-center justify-end gap-1 tabular-nums mt-0.5">
-              <Clock3 aria-hidden size={14} /> <CountdownTimer endsAt={activeSeason?.ends_at} />
+      {/* ── OPENING BEAT — where you stand, stated once. Type on the page,
+             not a card: the old title, season banner and "Your Position"
+             card fold into this one line and the quiet status under it. ── */}
+      <header className="home-rise mb-5">
+        {boardLoading ? (
+          <BeatSkeleton />
+        ) : (
+          <>
+            <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+              {hasRank && rank ? (
+                <>
+                  <span className="text-gold tabular-nums">#{fmtInt(rank)}</span> of {fmtInt(boardTotal)}.
+                  {rank === 1
+                    ? " Nobody above you."
+                    : gap != null && gap > 0
+                    ? ` ${fmtUnit(gap, "XP")} above you.`
+                    : null}
+                </>
+              ) : (
+                "Your first check-in puts you on the board."
+              )}
+            </h1>
+            <p className="eyebrow mt-2">
+              {mode === "season" ? (
+                <>
+                  {activeSeason?.name || "Season"}
+                  {activeSeason?.ends_at && <> · <CountdownTimer endsAt={activeSeason.ends_at} /></>}
+                </>
+              ) : (
+                "All time · lifetime XP"
+              )}
             </p>
-          </div>
+          </>
+        )}
+      </header>
+
+      {/* ── SEGMENT — season or all time. Carries the RANKS_INTRO spotlight;
+             the horizontal swipe on the page switches it too. ── */}
+      <div ref={ranksTargetRef} className="home-rise home-rise-1 mb-5">
+        <div className={SEGMENT_TRACK} role="tablist" aria-label="Board">
+          {(["season", "all_time"] as const).map((m) => (
+            <button
+              key={m}
+              role="tab"
+              aria-selected={mode === m}
+              onClick={() => { void hapticSelection(); setMode(m); }}
+              className={cn("eyebrow flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+            >
+              {m === "season" ? "Season" : "All time"}
+            </button>
+          ))}
         </div>
-        <p className="text-[12px] text-muted-foreground mt-3 relative flex items-center gap-1.5">
-          <Crown aria-hidden size={12} className="text-gold shrink-0" />
-          #1 earns <span className="text-gold font-semibold">Season Champion</span> reward + permanent profile badge.
-        </p>
       </div>
 
-      {/* Mode switcher — paged tabs with swipe hint */}
-      <div ref={ranksTargetRef}>
-        <ModeTabs mode={mode} onChange={setMode} />
-      </div>
+      {boardLoading && currentLeaders.length === 0 && <BoardSkeleton />}
 
-
-      {profile && (
-        <div className="animate-reveal animate-reveal-delay-2 relative overflow-hidden rounded-2xl border border-gold/40 glass-3d p-4 mb-5 glow-gold-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-gold text-primary-foreground font-display font-black text-base shadow-lg shadow-gold/30">
-                  {hasRank ? <span className="tabular-nums">#<AnimatedNumber value={rank ?? 0} duration={800} /></span> : "—"}
-              </div>
-              <div>
-                <p className="font-display font-bold text-base tracking-tight">Your Position</p>
-                <p className="text-xs text-muted-foreground">
-                  {hasRank ? (
-                    <>Ahead of <span className="text-gold font-bold">{Math.min(99, Math.round(percentile))}%</span> · {mode === "season" ? "Season" : "All Time"}</>
-                  ) : (
-                    <>Make your first check-in · {mode === "season" ? "Season" : "All Time"}</>
-                  )}
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Season wins: <span className="text-gold font-bold">{mySeasonWins}</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <StatusBadge tier={profile.status_tier || 'recruit'} division={profile.tier_division ?? 0} size="sm" showAura={false} />
-              <TrendingUp aria-hidden size={16} className="text-gold" />
-            </div>
-          </div>
-          {hasRank && percentile < 50 && (
-            <p className="text-[11px] text-destructive font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><AlertTriangle size={11} aria-hidden /> Falling behind — others are gaining</p>
-          )}
-          {hasRank && percentile >= 90 && (
-            <p className="text-[11px] text-gold font-bold mt-3 text-center uppercase tracking-wider inline-flex items-center gap-1 w-full justify-center"><Flame size={11} aria-hidden /> Top {Math.max(1, Math.round(100 - percentile))}% — defend your spot</p>
-          )}
-        </div>
-      )}
-
-      {/* Data-phase skeleton — RouteFallback only covers the lazy-chunk load;
-          without this the podium+rows popped in with a big layout shift. */}
-      {(mode === "season" ? seasonLoading : allTimeLoading) && currentLeaders.length === 0 && (
-        <BoardRowsSkeleton />
-      )}
-
-      {/* Podium — top 3, hero treatment */}
-      {currentLeaders.length >= 1 && (
-        <div className="relative mb-5 animate-reveal animate-reveal-delay-2">
-          {/* Spotlight glow behind #1 */}
+      {/* ── HERO — the podium. One spotlight, behind #1; the other two sit
+             on quiet surfaces so the leader is the screen's spectacle. ── */}
+      {!boardLoading && currentLeaders.length > 0 && (
+        <div className="home-rise home-rise-2 relative isolate">
           <div
+            aria-hidden
             className="absolute left-1/2 -translate-x-1/2 top-0 w-56 h-56 pointer-events-none -z-10 opacity-70"
             style={{
-              background:
-                "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.35) 0%, transparent 60%)",
+              background: "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.35) 0%, transparent 60%)",
               filter: "blur(12px)",
             }}
-            aria-hidden
           />
           <div className="grid grid-cols-3 gap-2 items-end">
-            {/* #2 */}
-            {currentLeaders[1] && (
-              <PodiumCard
-                user={currentLeaders[1]}
-                rank={2}
-                points={mode === "season" ? currentLeaders[1].season_points || 0 : currentLeaders[1].xp}
-                mode={mode}
-                isMe={currentLeaders[1].user_id === profile?.user_id}
-                wins={championData?.counts?.[currentLeaders[1].user_id] || 0}
-                onClick={() => navigate(`/user/${currentLeaders[1].user_id}`)}
-              />
-            )}
-            {/* #1 */}
-            {currentLeaders[0] && (
-              <PodiumCard
-                user={currentLeaders[0]}
-                rank={1}
-                points={mode === "season" ? currentLeaders[0].season_points || 0 : currentLeaders[0].xp}
-                mode={mode}
-                isMe={currentLeaders[0].user_id === profile?.user_id}
-                wins={championData?.counts?.[currentLeaders[0].user_id] || 0}
-                onClick={() => navigate(`/user/${currentLeaders[0].user_id}`)}
-              />
-            )}
-            {/* #3 */}
-            {currentLeaders[2] && (
-              <PodiumCard
-                user={currentLeaders[2]}
-                rank={3}
-                points={mode === "season" ? currentLeaders[2].season_points || 0 : currentLeaders[2].xp}
-                mode={mode}
-                isMe={currentLeaders[2].user_id === profile?.user_id}
-                wins={championData?.counts?.[currentLeaders[2].user_id] || 0}
-                onClick={() => navigate(`/user/${currentLeaders[2].user_id}`)}
-              />
-            )}
+            {([1, 0, 2] as const).map((i) => {
+              const u = currentLeaders[i];
+              return u ? (
+                <PodiumCard
+                  key={u.user_id}
+                  user={u}
+                  rank={(i + 1) as 1 | 2 | 3}
+                  points={points(u)}
+                  isMe={u.user_id === profile?.user_id}
+                  wins={championData?.counts?.[u.user_id] || 0}
+                  onClick={() => navigate(`/user/${u.user_id}`)}
+                />
+              ) : (
+                <div key={i} aria-hidden />
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* "The Chase" = ranks 4+. Only render its divider when there ARE rows
-          below the podium, so a sparse/first-run board never shows an orphan
-          header. A truly empty board gets a proper empty state instead. */}
-      {currentLeaders.length > 3 && (
-      <div className="mt-4 animate-reveal animate-reveal-delay-3">
-        <div className="flex items-center gap-2 mb-3 px-1">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-          <p className="eyebrow">The Chase</p>
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-        </div>
-        <div className="space-y-1.5">
+      {/* ── THE CHASE — ranks 4+ as hairline rows. Only the first screenful
+             animates; the rest are content-visibility:auto and skip paint.
+             Flames are `still` here (one per row behind a .limit(50)) and
+             animated on the podium alone. ── */}
+      {!boardLoading && currentLeaders.length > 3 && (
+        <ul className="mt-2 divide-y divide-border/35">
           {currentLeaders.slice(3).map((user, i) => {
-            const points = mode === "season" ? user.season_points || 0 : user.xp;
-            const wins = championData?.counts?.[user.user_id] || 0;
-            const displayRank = i + 4;
             const isMe = user.user_id === profile?.user_id;
-            const isTop10 = displayRank <= 10;
-
+            const wins = championData?.counts?.[user.user_id] || 0;
             return (
-              <button
+              <li
                 key={user.user_id}
-                onClick={() => navigate(`/user/${user.user_id}`)}
-                style={
-                  // Skip paint/layout for off-screen rows beyond the first
-                  // screenful — cheap virtualization, no container rewrite.
-                  i < 8
-                    ? { animationDelay: `${i * 40}ms` }
-                    : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }
-                }
-                className={cn(
-                  "w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all active:scale-[0.99]",
-                  // The board landed as one solid block, while its own loading
-                  // skeleton staggered — the real content arrived flatter than
-                  // the placeholder it replaced. Only the first screenful
-                  // animates; the rest are content-visibility:auto anyway.
-                  i < 8 && "animate-fade-in-up",
-                  isMe
-                    ? "border-gold/50 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent ring-1 ring-gold/40 shadow-[0_0_20px_hsl(var(--gold)/0.15)]"
-                    : isTop10
-                    ? "border-border bg-card hover:border-gold/20"
-                    : "border-border/60 bg-card/60"
-                )}
+                className={cn(i < 8 && "animate-fade-in-up")}
+                style={i < 8
+                  ? { animationDelay: `${210 + i * 40}ms` }
+                  : { contentVisibility: "auto", containIntrinsicSize: "auto 60px" }}
               >
-                <div className={cn(
-                  "shrink-0 h-9 w-9 rounded-lg flex items-center justify-center font-display font-black text-sm tabular-nums",
-                  isTop10
-                    ? "bg-gold/10 text-gold border border-gold/20"
-                    : "bg-secondary text-muted-foreground"
-                )}>
-                  {displayRank}
-                </div>
-                <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || 'recruit'} size="sm" animated={false} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate flex items-center gap-1.5">
-                    <TierUsername username={user.username} tier={user.status_tier || "recruit"} />
-                    {verifiedSet?.has(user.user_id) && (
-                      <span
-                        className="shrink-0 inline-flex items-center justify-center h-[15px] w-[15px] rounded-md bg-teal/15 border border-teal/30 text-teal"
-                        aria-label="HealthKit-verified — unfakeable discipline"
-                        title="Verified by Apple Health"
-                      >
-                        <ShieldCheck aria-hidden size={12} strokeWidth={2.6} />
-                      </span>
-                    )}
-                    {isMe && <span className="text-[10px] text-gold/70 font-medium">(you)</span>}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[12px] text-muted-foreground">Lv {user.level}</p>
-                    {user.streak > 0 && (
-                      <>
-                        <span className="text-muted-foreground/75">•</span>
-                        {/* `still` in rows, animated on the podium below. This
-                            list renders one flame per row with no virtualization
-                            behind a .limit(100), and each animated instance is
-                            3–7 looping layers, several with blur() and
-                            mix-blend-mode — the app's heaviest surface. Colour
-                            and size still track the streak, so the row reads the
-                            same; motion now belongs to the top three alone. */}
-                        <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" still />
-                      </>
-                    )}
-                    {wins > 0 && (
-                      <p className="text-[11px] text-gold/80 flex items-center gap-0.5">
-                        <Medal aria-hidden size={11} /> {wins}×
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={cn("font-display font-black text-sm tabular-nums", isMe && "text-gold")}>
-                    {points.toLocaleString()}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
-                    {mode === "season" ? "Season XP" : "XP"}
-                  </p>
-                </div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/user/${user.user_id}`)}
+                  className="w-full min-h-11 flex items-center gap-3 py-3 text-left"
+                >
+                  <span className={cn("w-6 shrink-0 font-display font-black text-sm tabular-nums", isMe ? "text-gold" : "text-muted-foreground")}>
+                    {i + 4}
+                  </span>
+                  <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || "recruit"} size="sm" animated={false} />
+                  <span className="flex-1 min-w-0">
+                    <span className="flex items-center gap-1.5 text-sm font-semibold">
+                      <TierUsername username={user.username} tier={user.status_tier || "recruit"} className="min-w-0 truncate" />
+                      {verifiedSet?.has(user.user_id) && (
+                        <span
+                          className="shrink-0 inline-flex items-center justify-center h-[15px] w-[15px] rounded-md bg-teal/15 border border-teal/30 text-teal"
+                          aria-label="HealthKit-verified — unfakeable discipline"
+                          title="Verified by Apple Health"
+                        >
+                          <ShieldCheck aria-hidden size={12} strokeWidth={2.6} />
+                        </span>
+                      )}
+                      {isMe && <span className="shrink-0 text-[10px] text-muted-foreground font-medium">(you)</span>}
+                    </span>
+                    <span className="flex items-center gap-2 mt-0.5 text-[12px] text-muted-foreground">
+                      <span>Lv {user.level}</span>
+                      {user.streak > 0 && <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" still />}
+                      {wins > 0 && (
+                        <span className="inline-flex items-center gap-0.5">
+                          <Medal aria-hidden size={11} /> {wins}×
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-display font-black text-sm tabular-nums">{fmtUnit(points(user), "XP")}</span>
+                </button>
+              </li>
             );
           })}
-        </div>
-      </div>
+        </ul>
       )}
 
       {/* Nobody on the board yet (fresh deploy / new season) — invite action.
           Gated on the ACTIVE mode's loading state so a cold cache doesn't flash
-          "the board is warming up" for ~500ms before data lands. */}
-      {currentLeaders.length === 0 && !(mode === "season" ? seasonLoading || !activeSeason : allTimeLoading) && (
-        <div className="mt-4 animate-reveal animate-reveal-delay-3">
+          "the board is warming up" before data lands. */}
+      {!boardLoading && currentLeaders.length === 0 && (
+        <div className="home-rise home-rise-2">
           <EmptyState
             icon={Trophy}
             title="The board is warming up"
@@ -520,22 +414,16 @@ const Leaderboard = () => {
         </div>
       )}
 
-      {/* 1v1 Battles — friend challenges live under Ranks (no orphan route).
-          Below the board, not above it: on a page named Ranks the rankings
-          come first — this used to push the podium a full card down. */}
-      <button
-        onClick={() => navigate("/battles")}
-        className="animate-reveal mt-4 w-full text-left surface-card p-3.5 flex items-center gap-3 active:scale-[0.99] transition-transform"
-      >
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[hsl(var(--ember))] to-[hsl(var(--ember-dark))] flex items-center justify-center shrink-0">
-          <Swords aria-hidden size={18} className="text-white" strokeWidth={2.4} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="eyebrow text-[hsl(var(--ember-light))] mb-0.5">1v1 Battles</p>
-          <p className="text-[12px] font-bold leading-tight">Challenge a friend — winner takes the score</p>
-        </div>
-        <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
-      </button>
+      {/* 1v1 Battles — friend challenges live under Ranks (no orphan route),
+          as one quiet row below the board: rankings come first here. */}
+      <div className="home-rise home-rise-4 mt-6 surface-card surface-card-quiet overflow-hidden">
+        <SettingsRow
+          icon={Swords}
+          label="1v1 Battles"
+          sub="Challenge a friend — winner takes the score"
+          onClick={() => navigate("/battles")}
+        />
+      </div>
 
       {/* Secondary boards — different purposes (tribes, invites) collapsed so
           Ranks stays focused on the one question: where do I rank? */}
@@ -545,20 +433,17 @@ const Leaderboard = () => {
       </MoreSection>
 
       {championData?.recent?.length ? (
-        <div className="mt-6 rounded-xl border border-border glass-3d p-4 animate-reveal animate-reveal-delay-3">
-          <div className="flex items-center gap-2 mb-3">
-            <Trophy aria-hidden size={16} className="text-gold" />
-            <h2 className="font-display font-bold text-base">Hall of Champions</h2>
-          </div>
-          <div className="space-y-2">
-            {championData.recent.map((row: any) => (
-              <div key={`${row.season_id}-${row.user_id}`} className="flex items-center justify-between text-sm">
+        <section className="mt-8">
+          <h2 className="font-display font-bold text-base tracking-tight">Hall of Champions</h2>
+          <ul className="mt-1 divide-y divide-border/35">
+            {championData.recent.map((row) => (
+              <li key={`${row.season_id}-${row.user_id}`} className="flex items-center justify-between gap-2 py-2.5 text-sm">
                 <span className="truncate">@{row.username_snapshot || "unknown"}</span>
-                <span className="text-muted-foreground ml-2">{row.season_name}</span>
-              </div>
+                <span className="shrink-0 text-muted-foreground">{row.season_name}</span>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       ) : null}
     </div>
   );
@@ -568,171 +453,64 @@ interface PodiumCardProps {
   user: LeaderRow;
   rank: 1 | 2 | 3;
   points: number;
-  mode: "season" | "all_time";
   isMe: boolean;
   wins: number;
   onClick: () => void;
 }
 
-const PodiumCard = ({ user, rank, points, mode, isMe, wins, onClick }: PodiumCardProps) => {
-  const isFirst = rank === 1;
-  const isSecond = rank === 2;
-  const heightClass = isFirst ? "pt-8 pb-5" : isSecond ? "pt-5 pb-4 mt-6" : "pt-5 pb-3.5 mt-10";
-  const rankLabel = isFirst ? "1st" : isSecond ? "2nd" : "3rd";
-  const accent = isFirst
-    ? "border-gold/70 bg-gradient-to-b from-gold/[0.22] via-gold/[0.08] to-card shadow-[0_8px_32px_-8px_hsl(var(--gold)/0.5)]"
-    : isSecond
-    ? "border-foreground/30 bg-gradient-to-b from-foreground/[0.1] via-foreground/[0.03] to-card"
-    : "border-amber-700/50 bg-gradient-to-b from-amber-700/[0.14] via-amber-700/[0.05] to-card";
+// Stepped heights keep the podium silhouette; only #1 wears the full surface
+// and the gold border — #2 and #3 are quiet so the leader is the spectacle.
+const PODIUM = {
+  1: { label: "1st", shape: "pt-8 pb-5 border-gold/60" },
+  2: { label: "2nd", shape: "surface-card-quiet pt-5 pb-4 mt-6" },
+  3: { label: "3rd", shape: "surface-card-quiet pt-5 pb-3.5 mt-10" },
+} as const;
 
+const PodiumCard = ({ user, rank, points, isMe, wins, onClick }: PodiumCardProps) => {
+  const isFirst = rank === 1;
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn(
-        "relative rounded-2xl border overflow-visible flex flex-col items-center px-2 text-center transition-transform active:scale-[0.97]",
-        heightClass,
-        accent,
-        isMe && "ring-2 ring-gold/60",
+        "surface-card flex flex-col items-center px-2 text-center",
+        PODIUM[rank].shape,
+        isMe && "ring-1 ring-gold/40",
       )}
     >
-      {/* Floating crown for #1 */}
-      {isFirst && (
-        <div className="absolute -top-5 left-1/2 -translate-x-1/2 pointer-events-none">
-          <div className="relative">
-            <Crown aria-hidden size={28} className="text-gold drop-shadow-[0_0_12px_hsl(var(--gold)/0.9)] animate-[float_3s_ease-in-out_infinite]" />
-            <div className="absolute inset-0 blur-md opacity-70 animate-pulse">
-              <Crown aria-hidden size={28} className="text-gold" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Soft gold gradient halo for #1 */}
-      {isFirst && (
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none opacity-60"
-          aria-hidden
-          style={{
-            background:
-              "linear-gradient(135deg, hsl(var(--gold) / 0.15) 0%, transparent 45%, transparent 55%, hsl(var(--gold) / 0.1) 100%)",
-          }}
-        />
-      )}
-
-      <div className={cn("absolute top-2 right-2 font-display font-black text-[11px] tabular-nums uppercase tracking-wider",
-        isFirst ? "text-gold" : isSecond ? "text-foreground/60" : "text-amber-600"
-      )}>
-        {rankLabel}
-      </div>
-
-      <div className={cn("relative", isFirst && "scale-110")}>
-        {isFirst && (
-          <div
-            className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse"
-            style={{ background: "hsl(var(--gold) / 0.6)" }}
-            aria-hidden
-          />
-        )}
-        <div className="relative">
-          <StatusAvatar aria-hidden
-            src={user.avatar_url}
-            name={user.username}
-            tier={user.status_tier || "recruit"}
-            size={isFirst ? "md" : "sm"}
-          />
-        </div>
-      </div>
-
+      {isFirst && <Crown aria-hidden size={22} className="absolute -top-3 left-1/2 -translate-x-1/2 text-gold" />}
+      <span className={cn("eyebrow-sm absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
+        {PODIUM[rank].label}
+      </span>
+      <StatusAvatar
+        src={user.avatar_url}
+        name={user.username}
+        tier={user.status_tier || "recruit"}
+        size={isFirst ? "md" : "sm"}
+      />
       <TierUsername
         as="p"
         username={user.username}
         tier={user.status_tier || "recruit"}
         className="font-display font-bold text-xs mt-2 truncate max-w-full px-1"
       />
-      {isMe && <span className="text-[10px] text-gold/70 font-medium -mt-0.5">(you)</span>}
-      <p className={cn(
-        "font-display font-black tabular-nums mt-1",
-        isFirst ? "text-gold text-xl" : "text-foreground text-sm",
-      )}>
-        {points.toLocaleString()}
+      {isMe && <span className="text-[10px] text-muted-foreground font-medium">(you)</span>}
+      <p className={cn("font-display font-black tabular-nums mt-1", isFirst ? "text-gold text-lg" : "text-sm")}>
+        {fmtUnit(points, "XP")}
       </p>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
-        {mode === "season" ? "Season XP" : "XP"}
-      </p>
-      <div className="flex items-center gap-2 mt-1.5 flex-wrap justify-center">
-        {user.streak > 0 && (
-          <StreakFlameInline streak={user.streak} suffix="d" className={cn(isFirst ? "text-[12px]" : "text-[11px]")} />
-        )}
-        {wins > 0 && (
-          <p className="text-[10px] text-gold/80 flex items-center gap-0.5">
-            <Medal aria-hidden size={11} /> {wins}×
-          </p>
-        )}
-      </div>
+      {(user.streak > 0 || wins > 0) && (
+        <span className="flex items-center gap-2 mt-1.5 text-[11px]">
+          {user.streak > 0 && (
+            <StreakFlameInline streak={user.streak} suffix="d" className={isFirst ? "text-[12px]" : "text-[11px]"} />
+          )}
+          {wins > 0 && (
+            <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+              <Medal aria-hidden size={11} /> {wins}×
+            </span>
+          )}
+        </span>
+      )}
     </button>
-  );
-};
-
-interface ModeTabsProps {
-  mode: "season" | "all_time";
-  onChange: (m: "season" | "all_time") => void;
-}
-
-const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
-  const isSeason = mode === "season";
-  return (
-    <div className="animate-reveal animate-reveal-delay-1 mb-4">
-      <div
-        className="relative grid grid-cols-2 rounded-full border border-gold/30 bg-card/70 backdrop-blur-md p-1 shadow-[0_8px_24px_-12px_hsl(var(--gold)/0.35)]"
-        role="tablist"
-        aria-label="Leaderboard mode"
-      >
-        {/* Sliding indicator */}
-        <div
-          aria-hidden
-          className={cn(
-            "absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] rounded-full transition-transform duration-500 ease-[cubic-bezier(0.16,1.2,0.32,1)]",
-            "bg-gradient-to-br from-gold/95 via-gold to-gold/85",
-            "shadow-[0_4px_16px_-4px_hsl(var(--gold)/0.65),inset_0_1px_0_hsl(var(--gold-light)/0.7)]",
-          )}
-          style={{ transform: isSeason ? "translateX(0%)" : "translateX(100%)" }}
-        />
-        <button
-          role="tab"
-          aria-selected={isSeason}
-          onClick={() => onChange("season")}
-          className={cn(
-            "relative z-10 py-2 min-h-11 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors active:scale-[0.97]",
-            isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <span className="inline-flex items-center gap-1.5">
-            <Clock3 aria-hidden size={12} className={cn(isSeason ? "text-primary-foreground" : "text-gold/80")} />
-            Season
-          </span>
-        </button>
-        <button
-          role="tab"
-          aria-selected={!isSeason}
-          onClick={() => onChange("all_time")}
-          className={cn(
-            "relative z-10 py-2 min-h-11 text-xs font-display font-black uppercase tracking-[0.22em] transition-colors active:scale-[0.97]",
-            !isSeason ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <span className="inline-flex items-center gap-1.5">
-            <Trophy aria-hidden size={12} className={cn(!isSeason ? "text-primary-foreground" : "text-gold/80")} />
-            All Time
-          </span>
-        </button>
-      </div>
-      {/* Swipe hint */}
-      <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-bold">
-        <ChevronLeft aria-hidden size={12} className={cn("transition-opacity", isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
-        <span>Swipe to switch</span>
-        <ChevronRight aria-hidden size={12} className={cn("transition-opacity", !isSeason ? "opacity-20" : "opacity-70 text-gold/70")} />
-      </div>
-    </div>
   );
 };
 

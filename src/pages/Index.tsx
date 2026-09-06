@@ -1,3 +1,5 @@
+import { fmtDate } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import { ChevronRight, Award, ArrowUp, Crown } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
@@ -39,6 +41,8 @@ import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
 import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
 import { setPendingPhoto } from "@/lib/nutrition/pending-photo";
 import { dayState, macroSummary } from "@/lib/nutrition/totals";
+import { onIdle } from "@/lib/idle";
+import { HomeSkeleton } from "@/components/skeletons/PageSkeleton";
 // Pull-to-refresh removed temporarily — was intercepting inner taps.
 
 const Index = () => {
@@ -47,19 +51,10 @@ const Index = () => {
   // Prefetch the most-likely next screens once Home is idle, so the first tap
   // on Feed / Check-in opens instantly (no lazy-chunk wait). Touch devices
   // have no hover, so BottomNav's hover-prefetch never fires — this covers it.
-  useEffect(() => {
-    const prefetch = () => {
-      import("@/pages/EliteFeed");
-      import("@/pages/DailyCheckin");
-    };
-    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-    if (ric) {
-      const id = ric(prefetch, { timeout: 2500 });
-      return () => (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
-    }
-    const t = setTimeout(prefetch, 1500);
-    return () => clearTimeout(t);
-  }, []);
+  useEffect(() => onIdle(() => {
+    import("@/pages/EliteFeed");
+    import("@/pages/DailyCheckin");
+  }, 2500), []);
   const { profile } = useAuth();
   // Contextual onboarding (Blueprint triggers): Today intro on first visit;
   // streak card once a streak exists; progression once XP exists (also
@@ -157,12 +152,13 @@ const Index = () => {
     rankData?.rank,            // undefined until loaded — do NOT coerce to 0 (poisons the snapshot)
     Number(profile?.rank_score) || 0,
     rankData?.totalUsers,
+    profile?.last_rank_snapshot,
   );
 
   // ── Checkin-derived values (hooks must be before any early return) ────────
   // Shared with DailyCheckin — the window is the LOCAL CALENDAR DAY, so the
   // card unlocks at midnight (not 24h after the last check-in).
-  const { canCheckin, timeUntilCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
+  const { canCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
   // Fuel — today's kcal and protein against target. Both queries are cheap
   // and cached (30 s / 5 min); a failed read with nothing cached hides the
@@ -210,7 +206,8 @@ const Index = () => {
     return () => clearTimeout(t);
   }, [profile?.streak]);
 
-  if (!profile) return null;
+  // Same geometry as the auth-loading fallback — no blank frame between them.
+  if (!profile) return <HomeSkeleton />;
 
   const xpToNext = profile.level * 500;
   const tier = profile.status_tier || "recruit";
@@ -223,7 +220,7 @@ const Index = () => {
   // is never generic filler.
   const now = new Date();
   const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
-  const monthDay = now.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const monthDay = fmtDate(now);
   const ritualLine = !canCheckin
     ? "Today is locked in."
     : profile.streak > 0
@@ -248,7 +245,7 @@ const Index = () => {
     : "radial-gradient(ellipse 90% 70% at center top, hsl(var(--gold) / 0.075) 0%, hsl(var(--gold) / 0.025) 45%, transparent 80%)";
 
   return (
-    <div className="h-full pb-6 px-4 pt-3 relative overflow-y-auto overflow-x-hidden">
+    <div className="min-h-full pb-6 px-4 pt-3 relative">
       {milestoneConfetti && (
         <Portal>
           <div className="fixed inset-0 pointer-events-none z-[var(--z-toast)]">
@@ -306,7 +303,6 @@ const Index = () => {
           longestStreak={profile.longest_streak}
           lastCheckinAt={lastCheckin?.checked_in_at}
           canCheckin={canCheckin}
-          timeUntilCheckin={timeUntilCheckin}
           tier={tier}
         />
       </div>
@@ -338,7 +334,7 @@ const Index = () => {
                 <span className="font-display font-black text-[17px] tabular-nums leading-none">
                   #<AnimatedNumber value={rankData!.rank} duration={700} />
                 </span>
-                <span className="text-[11px] text-muted-foreground">of {(rankData?.totalUsers ?? 0).toLocaleString()}</span>
+                <span className="text-[11px] text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)}</span>
               </span>
             )}
             <span className="inline-flex items-baseline gap-1">
@@ -486,7 +482,7 @@ const Index = () => {
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">
-        <p className="text-[11px] text-muted-foreground font-semibold tracking-[0.22em] uppercase">
+        <p className="eyebrow text-muted-foreground">
           {tierConfig.message}
         </p>
       </div>

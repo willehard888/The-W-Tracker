@@ -1,110 +1,65 @@
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, ArrowRight } from "lucide-react";
+import { Dumbbell, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCoachProgram } from "@/hooks/use-coach-program";
-import { dayFocus, daySummary, isRestDay, type ProgramDayShape } from "@/lib/training/session";
+import { useCoachProgram, todaySessionOf } from "@/hooks/use-coach-program";
 
 /**
- * Card 3 — Training program (Program). Available to every member (the app is
- * fully paywalled, so there's no secondary gate).
- *
- * Loading: skeleton (it used to flash the "no program" CTA mid-fetch)
- * No program yet: "Generate program" CTA → /coach/program (triggers
- *   ProgramOnboarding internally on visit)
- * Has program: one-line "Day 3 · Push (45 min)" + tap to /coach/program
+ * The program door. No program yet: the two-minute build. Has one: today's
+ * session as a quiet row into /coach/program.
  */
 const ProgramCard = () => {
   const navigate = useNavigate();
   const { program, currentWeek, todayDayIndex, isLoading } = useCoachProgram();
+  const today = todaySessionOf(program, currentWeek, todayDayIndex);
 
-  const today = (() => {
-    if (!program) return null;
-    // Match on the week NUMBER, not the array position — every other surface
-    // does, and a plan whose weeks are out of order would otherwise show the
-    // wrong day here alone.
-    const week = program.plan_json?.weeks?.find((w) => w.week === currentWeek)
-      ?? program.plan_json?.weeks?.[currentWeek - 1];
-    return (week?.days?.[todayDayIndex] as ProgramDayShape | undefined) ?? null;
-  })();
-
-  // Fetching. Without this the card rendered its "no program" branch while the
-  // query was still in flight, so anyone who HAS a program saw "Build my
-  // program" flash before their real week appeared.
+  // Fetching. Without this the card renders its "no program" branch while the
+  // query is still in flight, so anyone who HAS a program sees "Build my
+  // program" flash before their real week appears.
   if (isLoading) {
     return (
-      <div className="surface-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Dumbbell size={12} className="text-gold" />
-          <p className="eyebrow">Training program</p>
-        </div>
-        <div className="skeleton-block h-5 w-2/3 mb-2" />
-        <div className="skeleton-block h-3 w-1/3" />
+      <div className="surface-card surface-card-quiet px-4 py-3.5 flex items-center gap-3">
+        <Dumbbell size={16} className="text-muted-foreground shrink-0" aria-hidden />
+        <span className="flex-1 min-w-0">
+          <span className="skeleton-block block h-4 w-2/5 mb-1.5" />
+          <span className="skeleton-block block h-3 w-1/4" />
+        </span>
       </div>
     );
   }
 
-  // No program yet
   if (!program) {
     return (
-      <div className="surface-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Dumbbell size={12} className="text-gold" />
-          <p className="eyebrow">
-            Training program
-          </p>
-        </div>
-        <p className="text-[14px] font-bold leading-snug mb-1">
-          Generate your 4-week training program
-        </p>
-        <p className="text-[12px] text-muted-foreground leading-snug mb-4">
+      <div className="surface-card surface-card-quiet p-4">
+        <p className="text-[14px] font-bold leading-snug">Generate your 4-week training program</p>
+        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
           Two-minute setup. The plan adapts each week from your logs.
         </p>
-        <Button
-          variant="ember"
-          size="default"
-          onClick={() => navigate("/coach/program")}
-          className="w-full"
-        >
+        <Button variant="secondary" onClick={() => navigate("/coach/program")} className="w-full mt-3">
           Build my program
         </Button>
       </div>
     );
   }
 
-  // Elite: has program — show today's session line
+  const title = !today ? `Week ${currentWeek}` : today.isRest ? "Rest day" : `Day ${todayDayIndex + 1} · ${today.focus}`;
+  const sub = !today
+    ? "Tap to view your week."
+    : today.isRest
+      ? "Active recovery, mobility, walk. Earn tomorrow."
+      : [today.duration ? `${today.duration} min` : null, today.blocks ? `${today.blocks} blocks` : null].filter(Boolean).join(" · ") || "Open the program";
+
   return (
     <button
       type="button"
       onClick={() => navigate("/coach/program")}
-      className="w-full text-left surface-card p-5 active:scale-[0.99] transition-transform"
+      className="press w-full text-left surface-card surface-card-quiet px-4 py-3.5 flex items-center gap-3"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <Dumbbell size={12} className="text-gold" />
-        <p className="eyebrow">
-          Training program · Week {currentWeek}
-        </p>
-      </div>
-
-      {today ? (
-        <>
-          <p className="text-[15px] font-bold leading-tight text-foreground mb-1">
-            {isRestDay(today) ? "Rest day" : `Day ${todayDayIndex + 1} · ${dayFocus(today)}`}
-          </p>
-          <p className="text-[12px] text-muted-foreground leading-snug">
-            {isRestDay(today)
-              ? "Active recovery, mobility, walk. Earn tomorrow."
-              : daySummary(today)}
-          </p>
-        </>
-      ) : (
-        <p className="text-[13px] text-muted-foreground">
-          Tap to view your week.
-        </p>
-      )}
-
-      <div className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-gold">
-        Open program <ArrowRight size={12} />
-      </div>
+      <Dumbbell size={16} className="text-muted-foreground shrink-0" aria-hidden />
+      <span className="flex-1 min-w-0">
+        <span className="block text-[14px] font-bold leading-tight truncate">{title}</span>
+        <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>
+      </span>
+      <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
     </button>
   );
 };

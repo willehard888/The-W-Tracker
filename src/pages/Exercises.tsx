@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
+// useParams: an exercise is a route (/exercises/:slug), so the coach can link
+// straight to a movement and the phone's back gesture closes the detail
+// instead of leaving the library entirely.
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Dumbbell, ChevronRight, Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronRight, Search, X } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import {
@@ -58,14 +61,9 @@ const coachingText = (slug: string) => {
 };
 
 const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () => void }) => (
-  <div className="px-4 pt-3 pb-28">
-    <button
-      onClick={onBack}
-      className="mb-3 inline-flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground active:scale-95 transition-transform"
-    >
-      <ArrowLeft size={15} /> All exercises
-    </button>
-
+  <div className="min-h-full">
+    <PageBar onBack={onBack} />
+    <div className="home-rise px-4 pt-4 pb-6">
     {/* The rep, played. Both states were already being fetched for the old
         side-by-side stills — this shows the movement between them. */}
     <IllustrationPlayer ex={ex} className="mb-4" />
@@ -73,7 +71,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
     <h1 className="font-display text-xl font-black tracking-tight leading-tight">{ex.title}</h1>
     <div className="flex flex-wrap gap-1.5 mt-2">
       {[...ex.equipment, ex.type].filter(Boolean).map((t) => (
-        <span key={t as string} className="text-[11px] font-black uppercase tracking-wider text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 capitalize">
+        <span key={t as string} className="eyebrow text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 capitalize">
           {t}
         </span>
       ))}
@@ -112,6 +110,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
       Educational guidance &mdash; not medical advice. Start lighter than you think you need to,
       and stop if a movement causes pain.
     </p>
+    </div>
   </div>
 );
 
@@ -150,20 +149,10 @@ const Exercises = () => {
   if (selected) return <ExerciseDetail ex={selected} onBack={() => navigate("/exercises")} />;
 
   return (
-    <div className="flex flex-col">
-      <div className="page-header-premium px-4 pt-3 pb-2 flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-            <Dumbbell size={14} className="text-gold" />
-          </div>
-          <h1 className="font-display text-base font-black">Exercise library</h1>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Exercise library" onBack={() => navigate(-1)} />
 
-      <div className="px-4 pt-3 pb-28">
+      <div className="home-rise px-4 pt-4 pb-6">
         {/* Search */}
         <div className="relative mb-3">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -190,7 +179,7 @@ const Exercises = () => {
                   key={g ?? "all"}
                   onClick={() => { hapticImpact("light"); setGroup(g); }}
                   className={cn(
-                    "shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-all active:scale-95",
+                    "press shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-all ",
                     active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
                   )}
                 >
@@ -207,7 +196,7 @@ const Exercises = () => {
               key={ex.slug}
               onClick={() => { hapticImpact("light"); navigate(`/exercises/${ex.slug}`); }}
               style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 80px" }}
-              className="w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 active:scale-[0.99] transition-transform"
+              className="press w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 transition-transform"
             >
               <div className="flex items-center gap-3">
                 <IllustrationThumb ex={ex} size={56} eager={i < 10} />

@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, parseISO } from "date-fns";
-import { ArrowLeft, Info, Loader2, Target, WifiOff } from "lucide-react";
+import { Info, Loader2, Target, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
 import MoreSection from "@/components/ui/more-section";
@@ -389,17 +390,23 @@ const NutritionDiary = () => {
         action: { label: "Settings", onClick: () => void openSettings() },
       });
     } else if (o.kind === "unreadable") {
-      toast("Couldn't read that barcode", { description: "Try again in better light, or search by name." });
+      toast("Couldn't read that barcode", {
+        description: "Try again in better light, or search by name.",
+        action: { label: "Type it", onClick: () => setSheet({ view: "barcode", slot }) },
+      });
+    } else if (o.kind === "unavailable") {
+      toast("Camera isn't available right now", { description: "Type the digits instead." });
     } else if (o.kind === "unsupported") {
       toast("Barcode scanning isn't available on this device");
     }
   };
   const submitManualCode = (slot: MealSlot) => {
     const digits = manualCode.replace(/\D/g, "");
-    const format = digits.length === 8 ? "EAN_8" : digits.length === 12 ? "UPC_A" : "EAN_13";
-    const n = normalizeBarcode(digits, format);
-    if (!n.ok) return toast("That doesn't look like a valid barcode");
-    void lookup(n.code, slot);
+    const n = normalizeBarcode(digits);
+    // 8 digits that fail as EAN-8 are usually a UPC-E copied as printed (number system + 6 + check).
+    const r = !n.ok && digits.length === 8 ? normalizeBarcode(digits, "UPC_E") : n;
+    if (!r.ok) return toast("That doesn't look like a valid barcode");
+    void lookup(r.code, slot);
   };
 
   // ── Writes ───────────────────────────────────────────────────────────
@@ -529,19 +536,23 @@ const NutritionDiary = () => {
     : () => setSheet({ view: "search", slot: sheet.slot });
 
   return (
-    <div className="flex flex-col min-h-full">
-      <header className="page-header-premium px-2 pt-3 pb-1 flex items-center gap-0.5">
-        <Button variant="ghost" size="icon" aria-label="Back to Home" className="min-h-11 min-w-11" onClick={() => navigate("/")}>
-          <ArrowLeft size={18} />
-        </Button>
-        <DateBar date={date} onChange={setDate} className="flex-1" />
-        <Button variant="ghost" size="icon" aria-label="Nutrition targets" className="min-h-11 min-w-11" onClick={() => navigate("/nutrition/targets")}>
-          <Target size={18} />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="How estimates work" className="min-h-11 min-w-11" onClick={() => setInfoOpen(true)}>
-          <Info size={18} />
-        </Button>
-      </header>
+    <div className="min-h-full">
+      {/* Documented exception to "one action": targets + how-it-works are both
+          44 pt icons and both belong to the diary as a whole, not a row. */}
+      <PageBar
+        onBack={() => navigate("/")}
+        title={<DateBar date={date} onChange={setDate} />}
+        action={
+          <>
+            <Button variant="ghost" size="icon" aria-label="Nutrition targets" onClick={() => navigate("/nutrition/targets")}>
+              <Target size={18} />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="How estimates work" onClick={() => setInfoOpen(true)}>
+              <Info size={18} />
+            </Button>
+          </>
+        }
+      />
 
       {!online && (
         <p role="status" className="px-4 pt-2.5 text-[12px] text-muted-foreground inline-flex items-center gap-1.5">
@@ -549,7 +560,7 @@ const NutritionDiary = () => {
         </p>
       )}
 
-      <div className="px-4 pt-4 pb-28">
+      <div className="px-4 pt-4 pb-6">
         {loading ? (
           <BodySkeleton />
         ) : failed ? (
@@ -650,6 +661,14 @@ const NutritionDiary = () => {
               barcodeSupported={barcodeSupported}
               onScanBarcode={() => void scanBarcode(sheet.slot)}
               onEnterBarcode={() => setSheet({ view: "barcode", slot: sheet.slot })}
+              onScanPhoto={() => {
+                setSheet(null);
+                navigate(`/nutrition/photo?date=${date}&slot=${sheet.slot}`);
+              }}
+              onOpenRecipes={() => {
+                setSheet(null);
+                navigate("/nutrition/recipes");
+              }}
               onCreateFood={() => createFood(sheet.slot, { name: query.trim() })}
               onSearchOnline={() => void runOnlineSearch()}
             />

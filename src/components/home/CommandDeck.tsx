@@ -3,6 +3,7 @@ import { Flame, ChevronRight, Check } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { MidnightCountdown } from "@/components/MidnightCountdown";
 import { hapticImpact } from "@/lib/haptics";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
 import { resolveCheckinHabits } from "@/lib/checkin-habits";
@@ -14,7 +15,6 @@ interface CommandDeckProps {
   longestStreak: number;
   lastCheckinAt?: string | null;
   canCheckin: boolean;
-  timeUntilCheckin: string | null;
   tier: string;
   className?: string;
 }
@@ -37,7 +37,6 @@ const SPARKS = [
 const CommandDeck = ({
   streak,
   canCheckin,
-  timeUntilCheckin,
   tier,
   className,
 }: CommandDeckProps) => {
@@ -88,11 +87,9 @@ const CommandDeck = ({
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-black leading-tight">Day banked</p>
-          {timeUntilCheckin && (
-            <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
-              Next check-in in {timeUntilCheckin}
-            </p>
-          )}
+          <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
+            Next check-in in <MidnightCountdown />
+          </p>
         </div>
         {streak > 0 && (
           <span
@@ -132,8 +129,9 @@ const CommandDeck = ({
   // at natural size, which is what the static border wants.
 
   return (
+    <div className={cn("breathing-glow rounded-3xl", className)}>
     <div
-      className={cn("rounded-3xl p-[1.5px] overflow-hidden relative breathing-glow", className)}
+      className="rounded-3xl p-[1.5px] overflow-hidden relative"
       style={{ backgroundImage: border }}
     >
       <button
@@ -153,7 +151,7 @@ const CommandDeck = ({
           lockTimer.current = setTimeout(() => navigate("/checkin"), 150);
         }}
         className={cn(
-          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 active:scale-[0.99]",
+          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 ",
           locking && "cta-locking",
         )}
         style={{
@@ -207,16 +205,14 @@ const CommandDeck = ({
               />
               <div
                 className={cn(
-                  "cta-breathe-anim cta-melt-face relative flex items-center justify-between gap-3 min-h-[66px] px-5 rounded-2xl overflow-hidden",
+                  "cta-melt-face relative flex items-center justify-between gap-3 min-h-[66px] px-5 rounded-2xl overflow-hidden",
                   "transition-[transform,box-shadow,filter] duration-100 ease-out",
                   "group-active:translate-y-1.5 group-active:brightness-105",
-                  "group-active:[animation:none]",
                 )}
                 style={{
                   background: "linear-gradient(160deg, hsl(46 96% 64%) 0%, hsl(38 92% 55%) 34%, hsl(24 94% 52%) 70%, hsl(16 90% 47%) 100%)",
                   boxShadow:
                     "inset 0 2px 0 hsl(48 100% 85% / 0.9), inset 0 -3px 0 hsl(18 80% 30% / 0.9), inset 0 -14px 22px -12px hsl(14 85% 30% / 0.75), 0 1px 0 hsl(20 60% 18%)",
-                  animation: "cta-breathe 3.4s ease-in-out infinite",
                 }}
               >
                 {/* Melt-on-press: a lava slab parked below the face floods up
@@ -349,6 +345,7 @@ const CommandDeck = ({
             </div>
         </div>
       </button>
+    </div>
     </div>
   );
 };

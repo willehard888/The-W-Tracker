@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Plus, Swords, Clock, History } from "lucide-react";
+import { Loader2, Plus, Swords, Clock, History } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import TribeBattleCard, { type TribeBattle } from "@/components/TribeBattleCard";
@@ -138,17 +139,9 @@ const TribeBattles = () => {
   }
 
   return (
-    <div className="min-h-full pb-8 px-4 pt-4">
-      {/* This one had no press feedback at all — the third of three different
-          back buttons across the tribe screens. */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 mb-4 text-muted-foreground"
-        onClick={() => navigate(`/tribes/${id}`)}
-      >
-        <ArrowLeft size={14} /> {tribe.name}
-      </Button>
+    <div className="min-h-full">
+      <PageBar onBack={() => navigate(`/tribes/${id}`)} />
+      <div className="home-rise px-4 pt-4 pb-6">
 
       {/* Hero — anchored by the tribe's collective war-flame.
           The bigger the combined member streak, the hotter & taller the
@@ -175,7 +168,7 @@ const TribeBattles = () => {
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-1">
                 <Swords size={18} className="text-[hsl(var(--ember))]" />
-                <p className="text-[11px] uppercase tracking-widest font-black bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
+                <p className="eyebrow bg-gradient-to-r from-[hsl(var(--ember))] to-gold bg-clip-text text-transparent">
                   Tribe Battles
                 </p>
               </div>
@@ -263,6 +256,7 @@ const TribeBattles = () => {
         challengerTribeId={id!}
         onCreated={load}
       />
+      </div>
     </div>
   );
 };

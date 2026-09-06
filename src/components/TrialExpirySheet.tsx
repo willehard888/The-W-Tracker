@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, Flame, Zap, X } from "lucide-react";
@@ -88,17 +89,17 @@ const TrialExpirySheet = () => {
             <div className="rounded-xl border border-border/50 bg-card/60 px-2 py-2.5 text-center">
               <Flame size={13} className="mx-auto mb-1 text-gold" />
               <p className="font-display text-lg font-black tabular-nums leading-none">{Math.max(streak, best)}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">day streak</p>
+              <p className="eyebrow-sm mt-1 text-muted-foreground">day streak</p>
             </div>
             <div className="rounded-xl border border-border/50 bg-card/60 px-2 py-2.5 text-center">
               <Zap size={13} className="mx-auto mb-1 text-gold" />
-              <p className="font-display text-lg font-black tabular-nums leading-none">{xp.toLocaleString()}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">xp earned</p>
+              <p className="font-display text-lg font-black tabular-nums leading-none">{fmtInt(xp)}</p>
+              <p className="eyebrow-sm mt-1 text-muted-foreground">xp earned</p>
             </div>
             <div className="rounded-xl border border-border/50 bg-card/60 px-2 py-2.5 text-center">
               <Crown size={13} className="mx-auto mb-1 text-gold" />
               <p className="font-display text-lg font-black tabular-nums leading-none">{level}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">level</p>
+              <p className="eyebrow-sm mt-1 text-muted-foreground">level</p>
             </div>
           </div>
 
@@ -108,7 +109,7 @@ const TrialExpirySheet = () => {
           <button
             type="button"
             onClick={dismiss}
-            className="mt-2 w-full text-center text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60 py-1"
+            className="eyebrow mt-2 w-full text-center text-muted-foreground/60 py-1"
           >
             Maybe later
           </button>

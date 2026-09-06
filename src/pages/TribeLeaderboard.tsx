@@ -1,10 +1,11 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useMemo, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Crown, Users, Lock, Zap, Flame } from "lucide-react";
-import PageHeader from "@/components/ui/page-header";
+import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import {
@@ -123,18 +124,19 @@ const TribeLeaderboard = () => {
         style={{ color: accent }}
       >
         <Flame size={12} fill="currentColor" strokeWidth={0} />
-        {streak.toLocaleString()}d · {collectiveTierName(streak)}
+        {fmtInt(streak)}d · {collectiveTierName(streak)}
       </span>
     );
   };
 
   return (
-    <div className="min-h-full pb-32 px-4 pt-4">
-      <PageHeader
-        title="Tribe Leaderboard"
-        subtitle={period === "weekly" ? "Ranked by XP earned this week" : "Ranked by all-time XP"}
-        onBack={() => navigate("/squad?tab=tribes")}
-      />
+    <div className="min-h-full">
+      <PageBar title="Tribe leaderboard" onBack={() => navigate("/squad?tab=tribes")} />
+      {/* pb-32 clears this page's fixed "your tribe" footer. */}
+      <div className="home-rise px-4 pt-4 pb-32">
+      <p className="text-[13px] text-muted-foreground mb-4">
+        {period === "weekly" ? "Ranked by XP earned this week" : "Ranked by all-time XP"}
+      </p>
 
       {/* Period segment */}
       <div className={cn(SEGMENT_TRACK, "mb-4")}>
@@ -143,7 +145,7 @@ const TribeLeaderboard = () => {
             key={p}
             onClick={() => setPeriod(p)}
             className={cn(
-              "flex-1 text-xs font-black py-2 rounded-lg uppercase tracking-wider transition-all",
+              "eyebrow flex-1 py-2 rounded-lg transition-all",
               period === p ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -183,7 +185,7 @@ const TribeLeaderboard = () => {
                       <Lock size={12} className="text-muted-foreground shrink-0" />
                     )}
                     {mine && (
-                      <span className="text-[10px] px-1 py-0.5 rounded bg-gold/20 text-gold font-black uppercase tracking-widest shrink-0">
+                      <span className="eyebrow-sm px-1 py-0.5 rounded bg-gold/20 text-gold shrink-0">
                         Mine
                       </span>
                     )}
@@ -225,6 +227,7 @@ const TribeLeaderboard = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

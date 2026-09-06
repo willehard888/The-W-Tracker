@@ -91,7 +91,7 @@ const RestTimer = ({
         type="button"
         onClick={() => { hapticImpact("light"); setEndsAt((e) => e + 30_000); firedRef.current = false; }}
         aria-label="Add 30 seconds"
-        className="min-h-11 min-w-11 rounded-xl border border-border/50 inline-flex items-center justify-center text-[12px] font-bold text-foreground/85 active:scale-95 transition-transform"
+        className="min-h-11 min-w-11 rounded-xl border border-border/50 inline-flex items-center justify-center text-[12px] font-bold text-foreground/85"
       >
         <Plus size={13} aria-hidden />30s
       </button>
@@ -99,7 +99,7 @@ const RestTimer = ({
         type="button"
         onClick={() => { hapticImpact("light"); onDismiss(); }}
         aria-label="Skip rest"
-        className="min-h-11 min-w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground active:scale-95 transition-transform"
+        className="min-h-11 min-w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground"
       >
         <X size={16} aria-hidden />
       </button>

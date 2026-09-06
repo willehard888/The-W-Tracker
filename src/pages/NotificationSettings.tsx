@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Flame, Brain, Users, Swords, BarChart3, RotateCcw,
+  Flame, Brain, Users, Swords, BarChart3, RotateCcw,
   Minus, Plus, BellOff, BellRing,
 } from "lucide-react";
+import PageBar from "@/components/ui/page-bar";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { AppLauncher } from "@capacitor/app-launcher";
@@ -132,30 +133,25 @@ const NotificationSettings = () => {
   const previewKey = tone;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="shrink-0 px-4 pt-3 pb-2 flex items-center gap-2 border-b border-border/30">
-        <Button variant="ghost" size="icon-sm" className="h-11 w-11" aria-label="Go back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-        </Button>
-        <h1 className="font-display text-base font-black">Notifications</h1>
-      </div>
+    <div className="min-h-full">
+      <PageBar title="Notification settings" onBack={() => navigate(-1)} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10 space-y-5">
+      <div className="px-4 pt-4 pb-6 space-y-5">
 
         {/* ── Delivery status ── */}
         {perm === "granted" && (
-          <div className="animate-reveal surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
+          <div className="home-rise surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
             <span className="relative flex h-2 w-2 shrink-0">
               <span className="absolute inline-flex h-full w-full rounded-full bg-xp-green opacity-60 animate-ping motion-reduce:animate-none" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-xp-green" />
             </span>
-            <p className="text-[12px] font-bold tracking-wider uppercase text-xp-green/90">
+            <p className="eyebrow text-xp-green/90">
               Delivering to this device
             </p>
           </div>
         )}
         {perm === "prompt" && (
-          <div className="animate-reveal surface-card p-4 text-center">
+          <div className="home-rise surface-card p-4 text-center">
             <div className="mx-auto h-12 w-12 rounded-2xl gradient-gold glow-gold-sm flex items-center justify-center mb-3">
               <BellRing aria-hidden size={22} strokeWidth={2.2} className="text-primary-foreground" />
             </div>
@@ -173,7 +169,7 @@ const NotificationSettings = () => {
           </div>
         )}
         {perm === "denied" && (
-          <div className="animate-reveal surface-card p-4 text-center">
+          <div className="home-rise surface-card p-4 text-center">
             <div className="mx-auto h-12 w-12 rounded-2xl bg-muted/40 border border-border/50 flex items-center justify-center mb-3">
               <BellOff aria-hidden size={22} strokeWidth={2.2} className="text-muted-foreground" />
             </div>
@@ -192,7 +188,7 @@ const NotificationSettings = () => {
         )}
 
         {/* ── The one spectacle: live lock-screen preview ── */}
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <p className="eyebrow px-1 mb-1.5">Preview</p>
           <div
             key={previewKey}
@@ -208,7 +204,7 @@ const NotificationSettings = () => {
               <div className="h-[22px] w-[22px] rounded-[6px] gradient-gold flex items-center justify-center shrink-0">
                 <span className="font-display text-[12px] font-black text-primary-foreground leading-none">W</span>
               </div>
-              <span className="flex-1 text-[10px] font-bold tracking-[0.14em] uppercase text-foreground/55">
+              <span className="eyebrow-sm flex-1 text-foreground/55">
                 The W Tracker
               </span>
               <span className="text-[11px] tabular-nums text-foreground/45">
@@ -224,7 +220,7 @@ const NotificationSettings = () => {
         </div>
 
         {/* ── Streak guard ── */}
-        <div className="animate-reveal animate-reveal-delay-2">
+        <div className="home-rise home-rise-2">
           <p className="eyebrow px-1 mb-1.5">Streak guard</p>
           <div className="surface-card overflow-hidden divide-y divide-border/30">
             <ToggleRow
@@ -247,7 +243,7 @@ const NotificationSettings = () => {
                   aria-label="Earlier"
                   disabled={prefs.reminder_hour <= REMINDER_HOUR_MIN}
                   onClick={() => bumpHour(-1)}
-                  className="relative h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30 before:absolute before:-inset-1.5 before:content-['']"
+                  className="press relative h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center transition-transform disabled:opacity-30 before:absolute before:-inset-1.5 before:content-['']"
                 >
                   <Minus aria-hidden size={14} />
                 </button>
@@ -259,7 +255,7 @@ const NotificationSettings = () => {
                   aria-label="Later"
                   disabled={prefs.reminder_hour >= REMINDER_HOUR_MAX}
                   onClick={() => bumpHour(1)}
-                  className="relative h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30 before:absolute before:-inset-1.5 before:content-['']"
+                  className="press relative h-9 w-9 rounded-xl border border-border/60 bg-background/60 flex items-center justify-center transition-transform disabled:opacity-30 before:absolute before:-inset-1.5 before:content-['']"
                 >
                   <Plus aria-hidden size={14} />
                 </button>
@@ -269,7 +265,7 @@ const NotificationSettings = () => {
         </div>
 
         {/* ── Everything else ── */}
-        <div className="animate-reveal animate-reveal-delay-3">
+        <div className="home-rise home-rise-3">
           <p className="eyebrow px-1 mb-1.5">From the app</p>
           <div className="surface-card overflow-hidden divide-y divide-border/30">
             <ToggleRow icon={Brain} label="Coach" sub="Morning cue & timely course-corrections" checked={prefs.coach} onChange={setCategory("coach")} />

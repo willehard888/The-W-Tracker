@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useRef, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { Download, Share2, X, Flame, Zap, Trophy, Crown, Sparkles, Shield } from "lucide-react";
@@ -124,7 +125,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         ctx.shadowBlur = 20;
         ctx.fillStyle = "rgba(202, 158, 62, 1)";
         ctx.font = "900 56px 'Space Grotesk', system-ui, sans-serif";
-        ctx.fillText(`${profile.xp.toLocaleString()}`, card.offsetWidth / 2, centerY - 5);
+        ctx.fillText(`${fmtInt(profile.xp)}`, card.offsetWidth / 2, centerY - 5);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = "rgba(202, 158, 62, 0.5)";
@@ -393,7 +394,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
       ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory! https://whealthfactory.com/u/${profile.username}`
       : variant === "whealth" && whealthData
       ? `Whealth Index ${whealthData.overall}/100 on Whealth Factory — one number for sleep, recovery, movement, nutrition, mind & inner work. https://whealthfactory.com/u/${profile.username}`
-      : `${profile.xp.toLocaleString()} XP · ${tierConfig.label} on Whealth Factory. https://whealthfactory.com/u/${profile.username}`;
+      : `${fmtInt(profile.xp)} XP · ${tierConfig.label} on Whealth Factory. https://whealthfactory.com/u/${profile.username}`;
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -482,7 +483,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
             <p className="font-bold tracking-[0.22em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
             <p className={cn(
-              "font-black uppercase tracking-wider mb-4 text-[11px]",
+              "eyebrow mb-4",
               tier === 'legend' ? "text-[hsl(280_70%_60%)]" :
               tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
               tier === 'elite' ? "text-gold" : "text-muted-foreground/40"
@@ -494,7 +495,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
               <>
                 <p className="font-extrabold text-foreground mb-2 text-2xl">@{profile.username}</p>
                 <p className="font-black text-gold text-5xl drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)]">
-                  {profile.xp.toLocaleString()}
+                  {fmtInt(profile.xp)}
                 </p>
                 <p className="font-bold tracking-widest text-gold/50 mb-6 text-xs">TOTAL XP</p>
                 <div className="grid grid-cols-3 gap-2 w-full">
@@ -625,7 +626,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         <div className="flex gap-2 w-full pb-safe">
           <Button variant="ember" size="default" className="flex-1" onClick={handleDownload} disabled={downloading}>
             <Download size={16} />
-            {downloading ? "Saving..." : "Save Image"}
+            {downloading ? "Saving…" : "Save Image"}
           </Button>
           <Button variant="gold-outline" size="default" className="flex-1" onClick={handleShare} disabled={sharing}>
             <Share2 size={16} />

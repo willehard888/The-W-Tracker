@@ -1,8 +1,11 @@
+import { Block } from "@/components/skeletons/PageSkeleton";
+import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import {
   Crown, ArrowLeft, Loader2, ShieldCheck, Sparkles,
 } from "lucide-react";
@@ -106,7 +109,9 @@ const Paywall = () => {
   // ─── Already a member ────────────────────────────────────────
   if (isElite) {
     return (
-      <div className="min-h-full pb-4 px-4 pt-6 flex flex-col items-center justify-center text-center safe-top">
+      <div className="min-h-full flex flex-col">
+        <PageBar onBack={() => navigate(-1)} />
+        <div className="flex-1 px-4 pt-4 pb-6 flex flex-col items-center justify-center text-center">
         <div className="h-20 w-20 rounded-full flex items-center justify-center mb-4 gradient-gold glow-gold">
           <Sparkles size={36} className="text-primary-foreground" strokeWidth={2.4} />
         </div>
@@ -132,6 +137,7 @@ const Paywall = () => {
             <Crown size={14} /> Enter app
           </Button>
         </div>
+        </div>
       </div>
     );
   }
@@ -139,9 +145,7 @@ const Paywall = () => {
   const creditsUntilRaw: string | null = profile?.membership_credits_until ?? null;
   const creditsActive = creditsUntilRaw && new Date(creditsUntilRaw).getTime() > Date.now();
   const creditsUntilLabel = creditsActive
-    ? new Date(creditsUntilRaw as string).toLocaleDateString(undefined, {
-        day: "numeric", month: "short", year: "numeric",
-      })
+    ? fmtDate(creditsUntilRaw as string)
     : null;
 
   // ─── Native purchase handler ─────────────────────────────────
@@ -210,17 +214,12 @@ const Paywall = () => {
 
   // ─── Render ──────────────────────────────────────────────────
   return (
-    <div className="min-h-full pb-8 px-4 pt-6 safe-top">
-      {/* Escape hatch — the bottom nav and header are hidden on /paywall, so
-          without this the page is a hard dead end (trial users tapping the
-          header pill were stuck). */}
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-2 h-10 w-10 rounded-full flex items-center justify-center bg-card/70 border border-border/60 active:scale-95 transition"
-        aria-label="Back"
-      >
-        <ArrowLeft size={18} />
-      </button>
+    <div className="min-h-full">
+      {/* The bar's back is the escape hatch — the bottom nav and brand header
+          are hidden on /paywall, so without it the page is a hard dead end. */}
+      <PageBar onBack={() => navigate(-1)} />
+
+      <div className="px-4 pt-4 pb-6">
 
       {subscriptionLoading && !isElite && (
         <div className="mb-4 flex items-center justify-center gap-2 rounded-xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground">
@@ -230,7 +229,7 @@ const Paywall = () => {
       )}
 
       {creditsActive && (
-        <div className="animate-reveal mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
+        <div className="home-rise mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
           <p className="text-xs font-bold text-gold tracking-wide">
             Free membership until {creditsUntilLabel}
           </p>
@@ -241,16 +240,16 @@ const Paywall = () => {
       )}
 
       {/* Header */}
-      <div className="text-center mb-4 mt-2 animate-reveal">
+      <div className="text-center mb-4 mt-2 home-rise">
         <BrandLogo size={isNative ? 56 : 64} priority className="mx-auto rounded-2xl glow-gold" />
       </div>
 
       {isNative && rcLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 size={24} className="animate-spin text-gold" />
+        <div className="home-rise home-rise-1">
+          <Block height={440} className="!rounded-3xl" />
         </div>
       ) : (
-        <div className="animate-reveal animate-reveal-delay-1">
+        <div className="home-rise home-rise-1">
           <PremiumHero
             monthlyPriceLabel={monthlyLabel}
             yearlyPriceLabel={yearlyLabel}
@@ -276,7 +275,7 @@ const Paywall = () => {
       )}
 
       {/* Restore */}
-      <div className="text-center mt-6 animate-reveal animate-reveal-delay-3">
+      <div className="text-center mt-6 home-rise home-rise-3">
         <button
           onClick={handleRestore}
           className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"
@@ -287,12 +286,12 @@ const Paywall = () => {
 
       {/* Pilot testers redeem free access here instead of purchasing, so the
           paywall and the real store flow stay live during the pilot. */}
-      <div className="animate-reveal animate-reveal-delay-3">
+      <div className="home-rise home-rise-3">
         <PilotCodeRedeem />
       </div>
 
       <div className="text-center mt-4">
-        <p className="text-[11px] text-muted-foreground tracking-wider uppercase">
+        <p className="eyebrow text-muted-foreground">
           {/* "Cancel anytime" said once, in the CTA footnote — not four times. */}
           {isNative ? "Secure Apple in-app purchase" : "Subscribe in the iOS app"}
         </p>
@@ -312,6 +311,7 @@ const Paywall = () => {
         >
           Terms of Use
         </button>
+      </div>
       </div>
     </div>
   );

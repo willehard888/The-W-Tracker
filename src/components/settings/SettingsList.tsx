@@ -8,7 +8,7 @@ import { hapticSelection } from "@/lib/haptics";
 
 /** Settings section: eyebrow + surface-card list of rows. */
 export const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="animate-reveal animate-reveal-delay-1">
+  <div className="home-rise home-rise-1">
     <p className="eyebrow px-1 mb-1.5">{title}</p>
     <div className="surface-card overflow-hidden divide-y divide-border/30">{children}</div>
   </div>
@@ -31,7 +31,7 @@ export const SettingsRow = ({
   <button
     type="button"
     onClick={() => { void hapticSelection(); onClick(); }}
-    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors active:scale-[0.99]"
+    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors "
   >
     <Icon aria-hidden size={14} className="text-muted-foreground shrink-0" />
     <span className="flex-1 min-w-0">

@@ -1,13 +1,15 @@
+import { ActionRow } from "@/components/ActionRow";
+import { fmtInt, fmtRelative } from "@/lib/format";
 import { useState } from "react";
 import { isSafeRoute } from "@/hooks/use-push-notifications";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
 import {
-  Bell, Check, X, ChevronLeft, Swords, Users, Trophy, MessageSquare,
-  Gift, Flame, Crown, CheckCheck, UserPlus,
+  Bell, Swords, Users, Trophy, MessageSquare,
+  Gift, Flame, Crown, CheckCheck, UserPlus, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
 import StatusAvatar from "@/components/StatusAvatar";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,11 +40,11 @@ const KIND_ICONS: Record<string, typeof Bell> = {
 };
 
 /**
- * The bell's home: everything that happened to you, in one place.
- *   1. "Needs your response" — friend requests, tribe invites and 1v1
+ * The bell's home: what needs you, then what happened.
+ *   1. The response stack — friend requests, tribe invites and 1v1
  *      challenges with INLINE accept/decline (the same RPCs the dedicated
  *      pages use, so every surface stays in sync via shared query keys).
- *   2. "Activity" — the notifications ledger; tap marks read + deep-links.
+ *   2. The ledger — hairline rows; tap marks read + deep-links.
  */
 const Notifications = () => {
   const navigate = useNavigate();
@@ -149,161 +151,142 @@ const Notifications = () => {
 
   const actionCount = (friendRequests?.length ?? 0) + (tribeInvites?.length ?? 0) + (battleChallenges?.length ?? 0);
   const unread = (notifications ?? []).filter((n) => !n.read_at).length;
+  const waiting = actionCount + unread;
 
   return (
-    <div className="min-h-full pb-6 px-4 pt-3">
-      <div className="page-header-premium px-0 pt-0 pb-2 flex items-center gap-2 mb-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)} aria-label="Back">
-          <ChevronLeft size={20} />
-        </Button>
-        <h1 className="font-display text-base font-black tracking-tight">Notifications</h1>
-        <div className="ml-auto flex items-center gap-2">
-          {unread > 0 && (
-            <button
-              onClick={markAllRead}
-              className="inline-flex items-center gap-1 text-[12px] font-bold text-gold active:opacity-70"
-            >
-              <CheckCheck size={13} /> Mark all read
-            </button>
-          )}
-          {/* Friends management lives behind the bell now — the Squad-header
-              UserPlus button this replaces was the page's only door. */}
-          <button
-            onClick={() => navigate("/friends")}
-            aria-label="Add friends"
-            className="h-9 w-9 rounded-full bg-secondary/70 border border-border flex items-center justify-center text-foreground/90 active:scale-95 transition-transform"
-          >
-            <UserPlus size={15} />
-          </button>
-        </div>
-      </div>
+    <div className="min-h-full">
+      <PageBar
+        title="Notifications"
+        onBack={() => navigate(-1)}
+        action={
+          unread > 0 ? (
+            <Button variant="ghost" size="icon" aria-label="Mark all read" onClick={markAllRead}>
+              <CheckCheck size={18} />
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {/* ── Needs your response ── */}
-      {actionCount > 0 && (
-        <div className="animate-reveal mb-6">
-          <p className="eyebrow text-gold/85 mb-2 px-1">Needs your response · {actionCount}</p>
-          <div className="space-y-1.5">
+      <div className="px-4 pt-4 pb-6">
+        {/* Opening beat — what is waiting, stated once. */}
+        <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          {waiting > 0 ? `${fmtInt(waiting)} waiting on you.` : "All caught up."}
+        </h2>
+
+        {/* ── The response stack — the one card on the screen ── */}
+        {actionCount > 0 && (
+          <div className="home-rise home-rise-1 mt-5 surface-card divide-y divide-border/35 overflow-hidden">
             {(friendRequests ?? []).map((r) => (
-              <div key={r.friendship_id} className="flex items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.05] p-2.5">
-                <button onClick={() => navigate(`/user/${r.user_id}`)} className="shrink-0">
-                  <StatusAvatar src={r.avatar_url} name={r.username} tier="recruit" size="sm" animated={false} />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">@{r.username}</p>
-                  <p className="text-[11px] text-muted-foreground">wants to be friends</p>
-                </div>
-                <Button size="sm" variant="ember" disabled={busy === r.friendship_id}
-                  onClick={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added")}>
-                  <Check size={13} /> Accept
-                </Button>
-                <button
-                  disabled={busy === r.friendship_id}
-                  aria-label="Decline request"
-                  onClick={() => guard(r.friendship_id, () => declineRequest(r.friendship_id))}
-                  className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
-                >
-                  <X size={15} />
-                </button>
-              </div>
+              <ActionRow
+                key={r.friendship_id}
+                leading={
+                  <button type="button" onClick={() => navigate(`/user/${r.user_id}`)} aria-label={`@${r.username}`}>
+                    <StatusAvatar src={r.avatar_url} name={r.username} tier="recruit" size="sm" animated={false} />
+                  </button>
+                }
+                title={`@${r.username}`}
+                subtitle="wants to be friends"
+                busy={busy === r.friendship_id}
+                onAccept={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added")}
+                onDecline={() => guard(r.friendship_id, () => declineRequest(r.friendship_id))}
+              />
             ))}
 
             {(tribeInvites ?? []).map((inv) => (
-              <div key={inv.id} className="flex items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.05] p-2.5">
-                <span className="h-10 w-10 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
-                  <Crown size={16} className="text-gold" />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">{inv.tribeName}</p>
-                  <p className="text-[11px] text-muted-foreground">Tribe invite from @{inv.inviter}</p>
-                </div>
-                <Button size="sm" variant="ember" disabled={busy === inv.id}
-                  onClick={() => respondTribeInvite(inv.id, true, inv.tribe_id, inv.tribeName)}>
-                  <Check size={13} /> Join
-                </Button>
-                <button
-                  disabled={busy === inv.id}
-                  aria-label="Decline invite"
-                  onClick={() => respondTribeInvite(inv.id, false, inv.tribe_id, inv.tribeName)}
-                  className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
-                >
-                  <X size={15} />
-                </button>
-              </div>
+              <ActionRow
+                key={inv.id}
+                leading={
+                  <span className="h-10 w-10 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center">
+                    <Crown size={16} className="text-gold" aria-hidden />
+                  </span>
+                }
+                title={inv.tribeName}
+                subtitle={`Tribe invite from @${inv.inviter}`}
+                acceptLabel="Join"
+                busy={busy === inv.id}
+                onAccept={() => respondTribeInvite(inv.id, true, inv.tribe_id, inv.tribeName)}
+                onDecline={() => respondTribeInvite(inv.id, false, inv.tribe_id, inv.tribeName)}
+              />
             ))}
 
             {(battleChallenges ?? []).map((b) => (
-              <div key={b.id} className="flex items-center gap-3 rounded-xl border border-gold/25 bg-gold/[0.05] p-2.5">
-                <button onClick={() => b.challenger && navigate(`/user/${b.challenger.user_id}`)} className="shrink-0">
-                  <StatusAvatar src={b.challenger?.avatar_url ?? null} name={b.challenger?.username ?? "?"} tier={b.challenger?.status_tier ?? "recruit"} size="sm" animated={false} />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">⚔️ @{b.challenger?.username ?? "someone"}</p>
-                  <p className="text-[11px] text-muted-foreground">{b.battle_type} battle · {b.duration_days} days</p>
-                </div>
-                <Button size="sm" variant="ember" disabled={busy === b.id} onClick={() => respondBattle(b.id, true)}>
-                  <Check size={13} /> Accept
-                </Button>
-                <button
-                  disabled={busy === b.id}
-                  aria-label="Decline battle"
-                  onClick={() => respondBattle(b.id, false)}
-                  className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground shrink-0"
-                >
-                  <X size={15} />
-                </button>
-              </div>
+              <ActionRow
+                key={b.id}
+                leading={
+                  <button
+                    type="button"
+                    onClick={() => b.challenger && navigate(`/user/${b.challenger.user_id}`)}
+                    aria-label={`@${b.challenger?.username ?? "challenger"}`}
+                  >
+                    <StatusAvatar src={b.challenger?.avatar_url ?? null} name={b.challenger?.username ?? "?"} tier={b.challenger?.status_tier ?? "recruit"} size="sm" animated={false} />
+                  </button>
+                }
+                title={
+                  <>
+                    <Swords size={13} className="inline -mt-0.5 mr-1 text-gold" aria-hidden />@{b.challenger?.username ?? "someone"}
+                  </>
+                }
+                subtitle={`${b.battle_type} battle · ${b.duration_days} days`}
+                busy={busy === b.id}
+                onAccept={() => respondBattle(b.id, true)}
+                onDecline={() => respondBattle(b.id, false)}
+              />
             ))}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Activity ── */}
-      <p className="eyebrow mb-2 px-1">Activity</p>
-      {isLoading ? (
-        <div className="space-y-1.5">
-          {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-card/60 skeleton-block" />)}
+        {/* ── The ledger — hairline rows, an ember dot for unread ── */}
+        <div className="mt-5">
+          {isLoading ? (
+            <div className="divide-y divide-border/35">
+              {[0, 1, 2].map((i) => <div key={i} className="h-10 my-3 rounded-lg bg-card/40 skeleton-block" />)}
+            </div>
+          ) : (notifications?.length ?? 0) === 0 ? (
+            <EmptyState
+              icon={Bell}
+              title="Quiet for now"
+              description="Friend requests, invites, kudos and battle news land here — go earn some noise."
+            />
+          ) : (
+            <div className="divide-y divide-border/35">
+              {notifications!.map((n, i) => {
+                const Icon = KIND_ICONS[n.kind] ?? Bell;
+                const isUnread = !n.read_at;
+                return (
+                  // Entrance on a wrapper: the keyframe pins transform, which would kill the row's press.
+                  <div key={n.id} className={cn(i < 8 && "animate-fade-in-up")} style={i < 8 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
+                    <button type="button" onClick={() => openNotification(n)} className="w-full flex items-start gap-3 py-3 text-left">
+                      <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/70")} aria-hidden />
+                      <span className="flex-1 min-w-0">
+                        <span className={cn("block text-[13px] leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
+                          {n.title}
+                        </span>
+                        {n.body && <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
+                        <span className="block text-[11px] text-muted-foreground/60 mt-1">{fmtRelative(n.created_at)}</span>
+                      </span>
+                      {isUnread && <span className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      ) : (notifications?.length ?? 0) === 0 ? (
-        <EmptyState
-          icon={Bell}
-          title="Quiet for now"
-          description="Friend requests, invites, kudos and battle news land here — go earn some noise."
-        />
-      ) : (
-        <div className="space-y-1.5">
-          {notifications!.map((n) => {
-            const Icon = KIND_ICONS[n.kind] ?? Bell;
-            const isUnread = !n.read_at;
-            return (
-              <button
-                key={n.id}
-                onClick={() => openNotification(n)}
-                className={cn(
-                  "w-full flex items-start gap-3 p-3 text-left rounded-xl border transition-colors active:scale-[0.99]",
-                  isUnread ? "border-gold/25 bg-gold/[0.05]" : "border-border/50 bg-card/40",
-                )}
-              >
-                <span className={cn(
-                  "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
-                  isUnread ? "bg-gold/12 border border-gold/30 text-gold" : "bg-secondary text-muted-foreground",
-                )}>
-                  <Icon size={15} />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-[13px] leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
-                    {n.title}
-                  </p>
-                  {n.body && <p className="text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</p>}
-                  <p className="text-[11px] text-muted-foreground/60 mt-1">
-                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                  </p>
-                </div>
-                {isUnread && <span className="h-2 w-2 rounded-full bg-[hsl(var(--ember))] shrink-0 mt-2" aria-label="Unread" />}
-              </button>
-            );
-          })}
+
+        {/* Friends management lives behind the bell — a quiet door at the end,
+            not a second action in the bar. */}
+        <div className="home-rise home-rise-3 mt-7">
+          <button
+            type="button"
+            onClick={() => navigate("/friends")}
+            className="w-full surface-card surface-card-quiet px-4 py-3 flex items-center gap-3 text-left"
+          >
+            <UserPlus size={16} className="text-muted-foreground shrink-0" aria-hidden />
+            <span className="flex-1 min-w-0 text-[13px] font-bold">Find friends</span>
+            <ChevronRight size={14} className="text-muted-foreground shrink-0" aria-hidden />
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };

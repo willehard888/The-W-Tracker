@@ -1,3 +1,5 @@
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { fmtRelative } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
@@ -8,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, ShieldAlert, Trash2, Check } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 
@@ -55,6 +56,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ReportRow | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -145,7 +147,6 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
 
   const removePost = async (r: ReportRow) => {
     if (!r.post?.id) return;
-    if (!confirm("Delete this post? This cannot be undone.")) return;
     setBusyId(r.id);
     const { error } = await supabase
       .from("tribe_posts")
@@ -192,12 +193,12 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
             <div key={r.id} className="rounded-xl border border-border bg-secondary/40 p-3">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="min-w-0">
-                  <p className="text-[11px] uppercase tracking-widest font-bold text-destructive">
+                  <p className="eyebrow text-destructive">
                     {r.reason}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
                     Reported by @{r.reporter?.username ?? "user"} ·{" "}
-                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                    {fmtRelative(r.created_at)}
                   </p>
                 </div>
               </div>
@@ -248,7 +249,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                   variant="destructive"
                   className="flex-1"
                   disabled={busyId === r.id || !r.post}
-                  onClick={() => removePost(r)}
+                  onClick={() => setPendingDelete(r)}
                 >
                   {busyId === r.id ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -262,6 +263,13 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
           ))}
         </div>
       </DialogContent>
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => { if (!o) setPendingDelete(null); }}
+        title="Delete this post?"
+        description="This cannot be undone."
+        onConfirm={() => { const r = pendingDelete; setPendingDelete(null); if (r) void removePost(r); }}
+      />
     </Dialog>
   );
 }

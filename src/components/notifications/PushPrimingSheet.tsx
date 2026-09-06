@@ -112,7 +112,7 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
         </Button>
         <button
           onClick={dismiss}
-          className="mt-2 w-full py-2 text-center text-[12px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-foreground transition-colors"
+          className="eyebrow mt-2 w-full py-2 text-center text-muted-foreground/60 hover:text-foreground transition-colors"
         >
           Maybe later
         </button>

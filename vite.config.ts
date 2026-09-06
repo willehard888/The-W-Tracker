@@ -18,6 +18,16 @@ export default defineConfig(({ mode }) => {
     ...(mode === "production" && {
       esbuild: { drop: ["console", "debugger"] as ("console" | "debugger")[] },
     }),
+    // Sentry is error-only: these compile-time flags let rollup drop the
+    // debug/tracing/replay code paths from @sentry/* (names verified against
+    // node_modules/@sentry/*).
+    define: {
+      __SENTRY_DEBUG__: false,
+      __SENTRY_TRACING__: false,
+      __RRWEB_EXCLUDE_IFRAME__: true,
+      __RRWEB_EXCLUDE_SHADOW_DOM__: true,
+      __SENTRY_EXCLUDE_REPLAY_WORKER__: true,
+    },
     build: {
       target: "es2020",
       cssCodeSplit: true,

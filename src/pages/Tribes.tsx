@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useMemo, useRef, useState, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
@@ -360,7 +361,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             <div className="mt-2.5 flex items-center gap-x-3 gap-y-1 flex-wrap">
               {cTier >= 0 ? (
                 <span className="inline-flex items-center gap-1 text-[12px] font-black tabular-nums" style={{ color: cAccent }}>
-                  <Flame aria-hidden size={13} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                  <Flame aria-hidden size={13} fill="currentColor" /> {fmtInt(cStreak)}d · {collectiveTierName(cStreak)}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-[12px] font-bold text-[hsl(var(--ember))]/85">
@@ -381,7 +382,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               )}
               {heroIsFeatured && (t.weekly_xp ?? 0) > 0 && (
                 <span className="inline-flex items-center gap-1 text-[12px] font-black tabular-nums text-gold">
-                  On fire this week · +{(t.weekly_xp ?? 0).toLocaleString()} XP
+                  On fire this week · +{fmtInt(t.weekly_xp ?? 0)} XP
                 </span>
               )}
             </div>
@@ -475,7 +476,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
                 {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
                 {isNew && (
-                  <span className="shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold text-[10px] font-black tracking-widest uppercase">
+                  <span className="eyebrow-sm shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
                     New
                   </span>
                 )}
@@ -488,7 +489,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               {/* One meta row: activity · members (+spots) · fire · lit today */}
               <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
                 {ActIcon && t.primary_activity && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="eyebrow inline-flex items-center gap-1 text-muted-foreground">
                     <ActIcon aria-hidden size={11} strokeWidth={2.4} /> {t.primary_activity}
                   </span>
                 )}
@@ -500,7 +501,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 </span>
                 {cTier >= 0 && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums" style={{ color: cAccent }}>
-                    <Flame aria-hidden size={12} fill="currentColor" /> {cStreak.toLocaleString()}d · {collectiveTierName(cStreak)}
+                    <Flame aria-hidden size={12} fill="currentColor" /> {fmtInt(cStreak)}d · {collectiveTierName(cStreak)}
                   </span>
                 )}
                 {p && p.checked > 0 && (
@@ -596,7 +597,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 onClick={() => { tabTouched.current = true; void hapticSelection(); setTab(t); }}
                 aria-pressed={active}
                 className={cn(
-                  "relative pb-2 text-[12px] font-black uppercase tracking-wider transition-colors",
+                  "eyebrow relative min-h-11 inline-flex items-end pb-2 transition-colors",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground/80",
                 )}
               >
@@ -610,7 +611,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         </div>
         <button
           onClick={() => navigate("/tribes/leaderboard")}
-          className="pb-2 inline-flex items-center gap-1 text-[12px] font-bold text-gold/85 active:scale-95 transition-transform"
+          className="press pb-2 inline-flex items-center gap-1 text-[12px] font-bold text-gold/85 transition-transform"
         >
           <Trophy aria-hidden size={11} /> Leaderboard <ChevronRight aria-hidden size={11} className="-ml-0.5" />
         </button>
@@ -655,7 +656,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             </div>
           </div>
           {openGroup && (
-            <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar animate-reveal">
+            <div className="mb-2 -mx-4 px-4 overflow-x-auto no-scrollbar home-rise">
               <div className="flex gap-1.5 w-max">
                 {(TRIBE_ACTIVITY_GROUPS.find((g) => g.label === openGroup)?.items ?? []).map((a) => {
                   const active = activityFilter === a.name;
@@ -731,7 +732,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           <button
             type="button"
             onClick={() => navigate("/tribes/new")}
-            className="w-full py-3.5 inline-flex items-center justify-center gap-1.5 text-[13px] font-bold text-muted-foreground hover:text-gold active:scale-[0.98] transition-[color,transform]"
+            className="press w-full py-3.5 inline-flex items-center justify-center gap-1.5 text-[13px] font-bold text-muted-foreground hover:text-gold transition-[color,transform]"
           >
             <Plus aria-hidden size={14} /> Start your own tribe
           </button>

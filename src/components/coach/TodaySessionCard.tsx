@@ -110,7 +110,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
       />
       <div className="relative">
         {/* Header band */}
-        <p className="text-[11px] font-black tracking-[0.22em] uppercase text-gold/90 mb-1">
+        <p className="eyebrow text-gold/90 mb-1">
           Today · W{currentWeek} · {day.day}
         </p>
         <h2 className="font-display text-[26px] leading-[1.05] font-black tracking-tight">
@@ -161,7 +161,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
               ))}
               {day.conditioning && (
                 <li className="pt-1">
-                  <p className="text-[11px] font-black uppercase tracking-widest text-gold mb-0.5">Conditioning</p>
+                  <p className="eyebrow text-gold mb-0.5">Conditioning</p>
                   <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
                 </li>
               )}
@@ -181,7 +181,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           <div className="rounded-xl bg-background/40 border border-border/40 p-4 mb-5">
             <div className="flex items-center gap-2 mb-1.5">
               <Wind size={14} className="text-gold" />
-              <p className="text-[11px] font-black uppercase tracking-widest text-gold">Recovery</p>
+              <p className="eyebrow text-gold">Recovery</p>
             </div>
             <p className="text-[12px] text-foreground/85 leading-snug">
               {week!.recovery.mobility_min} min mobility · {week!.recovery.breathwork} · sleep {week!.recovery.sleep_target_h}h.
@@ -205,7 +205,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
             answered. A rest day has no effort worth rating. */}
         {alreadyLogged && !isRest && todayLog?.perceived_rpe == null && (
           <div className="mt-4">
-            <p className="text-[11px] font-black tracking-[0.22em] uppercase text-muted-foreground mb-2">
+            <p className="eyebrow text-muted-foreground mb-2">
               How hard was it?
             </p>
             {/* 5 across, so each target clears the 44pt floor — ten in one row
@@ -220,7 +220,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
                   aria-label={`Rate effort ${value} out of 10`}
                   className={cn(
                     "h-11 rounded-lg border text-[13px] font-black tabular-nums",
-                    "transition-colors active:scale-[0.96] disabled:opacity-50",
+                    "press transition-colors disabled:opacity-50",
                     "border-border/60 bg-secondary/40 text-muted-foreground",
                     "hover:border-gold/40 hover:text-gold",
                   )}
@@ -250,7 +250,7 @@ const CollapseRow = ({
     )}
   >
     <span className={cn(
-      "text-[11px] font-black uppercase tracking-widest mt-0.5 shrink-0",
+      "eyebrow mt-0.5 shrink-0",
       muted ? "text-muted-foreground" : "text-gold",
     )}>{label}</span>
     <span className={cn(

@@ -118,7 +118,7 @@ const ChooseUsername = () => {
     <div className="min-h-full gradient-dark flex items-center justify-center px-6">
       <div className="w-full max-w-sm rounded-3xl border border-border bg-card/90 p-6 shadow-2xl">
         <div className="mb-6 space-y-2 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">Whealth Factory</p>
+          <p className="eyebrow text-gold">Whealth Factory</p>
           <h1 className="font-display text-3xl font-black tracking-tight">Claim your name</h1>
           <p className="text-sm text-muted-foreground">
             This is your permanent @handle — on the leaderboard, in your tribe,
@@ -128,7 +128,7 @@ const ChooseUsername = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="choose-username" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label htmlFor="choose-username" className="eyebrow text-muted-foreground">
               Username
             </label>
             <div className="flex h-12 items-center rounded-xl border border-border bg-background px-4 focus-within:border-gold/50 focus-within:ring-2 focus-within:ring-gold/20">

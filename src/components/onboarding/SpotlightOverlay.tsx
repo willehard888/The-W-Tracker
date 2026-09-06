@@ -94,12 +94,19 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
     window.addEventListener("resize", onMove);
     window.addEventListener("scroll", onMove, true);
     // SPA navigation moves/hides targets without firing scroll or resize —
-    // a slow heartbeat keeps the overlay honest (one rect read per tick).
-    const heartbeat = setInterval(measure, 300);
+    // the observers catch it (display:none reads as a 0×0 resize), so no
+    // 300 ms polling timer runs for the life of the card.
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(onMove) : null;
+    ro?.observe(target);
+    const io = typeof IntersectionObserver === "function"
+      ? new IntersectionObserver(onMove, { threshold: [0, 0.25, 0.5, 0.75, 1] })
+      : null;
+    io?.observe(target);
     return () => {
       window.removeEventListener("resize", onMove);
       window.removeEventListener("scroll", onMove, true);
-      clearInterval(heartbeat);
+      ro?.disconnect();
+      io?.disconnect();
       cancelAnimationFrame(frame.current);
     };
   }, [target]);
@@ -180,7 +187,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
               onSkip();
             }}
             aria-label="Skip"
-            className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors"
+            className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
           >
             <X size={15} />
           </button>
@@ -189,7 +196,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
               <Icon size={17} strokeWidth={2.4} />
             </div>
             <div className="min-w-0">
-              <p className="mb-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-gold">
+              <p className="eyebrow-sm mb-0.5 text-gold">
                 <span aria-hidden className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-gold align-middle" />
                 AI Coach
               </p>

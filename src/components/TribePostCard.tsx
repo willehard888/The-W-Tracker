@@ -1,10 +1,10 @@
+import { fmtRelative } from "@/lib/format";
 import { useState, useRef, useMemo, memo } from "react";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
@@ -104,7 +104,7 @@ const CommentThread = ({
             <div className="flex items-center gap-1.5">
               <span className="text-[12px] font-bold text-[hsl(var(--ember))]">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--ember))]/70 italic">· edited</span>
+                <span className="eyebrow-sm text-[hsl(var(--ember))]/70 italic">· edited</span>
               )}
             </div>
             {isEditing ? (
@@ -144,7 +144,7 @@ const CommentThread = ({
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
               <p className="text-[10px] text-muted-foreground">
-                {formatDistanceToNow(new Date(node.created_at), { addSuffix: true })}
+                {fmtRelative(node.created_at)}
               </p>
               {/* Three copies of one class string became three uses of the new
                   `xs` size — small enough to sit on a comment's meta line, with
@@ -422,7 +422,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         {/* Reported banner (admin/owner) */}
         {post.reported && (isAdmin || isOwner) && (
           <div className="px-4 py-2 bg-destructive/10 border-b border-destructive/30 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-destructive flex items-center gap-1">
+            <span className="eyebrow text-destructive flex items-center gap-1">
               <AlertTriangle aria-hidden size={11} /> Reported
             </span>
             <Button
@@ -459,7 +459,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               {isApexAuthor && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/40">
                   <Zap aria-hidden size={7} className="text-[hsl(var(--ember))]" fill="currentColor" />
-                  <span className="text-[10px] font-black tracking-wider uppercase text-[hsl(var(--ember))]">Apex</span>
+                  <span className="eyebrow-sm text-[hsl(var(--ember))]">Apex</span>
                 </span>
               )}
               {post.author?.status_tier === "elite" && (
@@ -467,7 +467,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               )}
             </div>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+              <span>{fmtRelative(post.created_at)}</span>
               {post.moderation_status === "pending" && (
                 <span className="inline-flex items-center px-1.5 py-px rounded-full border border-[hsl(var(--amber))]/40 bg-[hsl(var(--amber))]/10 text-[hsl(var(--amber))] font-bold uppercase tracking-wider">
                   Reviewing…
@@ -541,7 +541,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <button onClick={() => toggleLike.mutate()}
               aria-label={post.liked ? "Remove fire" : "Give fire"}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
                 post.liked
                   ? "bg-streak-orange/15 text-streak-orange"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -553,7 +553,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <button onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(!showComments); }}
             aria-label="Toggle comments"
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
               showComments ? "bg-[hsl(var(--ember))]/12 text-[hsl(var(--ember))]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}>
             <MessageCircle aria-hidden size={15} fill={showComments ? "currentColor" : "none"} />
@@ -574,7 +574,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               aria-label={post.kudosed ? "Remove kudos" : "Give kudos"}
               title={`${kudosRemaining}/2 kudos remaining this month`}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all active:scale-95",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
                 post.kudosed
                   ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                   : kudosRemaining > 0
@@ -600,7 +600,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         {showComments && (
           <div className="border-t border-border/50 px-4 py-3 bg-secondary/20">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Discussion</p>
+              <p className="eyebrow text-muted-foreground">Discussion</p>
               <p className="text-[11px] text-muted-foreground/75 tabular-nums">
                 {post.comments_count} {post.comments_count === 1 ? "reply" : "replies"}
               </p>
@@ -636,7 +636,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-[hsl(var(--ember))]/30 bg-[hsl(var(--ember))]/[0.06] p-2 animate-fade-in">
                     <div className="w-0.5 rounded-full bg-[hsl(var(--ember))] shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--ember))] uppercase tracking-wider">
+                      <div className="eyebrow flex items-center gap-1 text-[hsl(var(--ember))]">
                         <Reply aria-hidden size={12} /> Replying to @{replyTo.username}
                       </div>
                       <p className="text-[12px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
@@ -665,7 +665,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       ref={commentInputRef}
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Add a comment..."}
+                      placeholder={replyTo ? `Reply to @${replyTo.username}…` : "Add a comment…"}
                       aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                       maxLength={300}
                       className={cn(

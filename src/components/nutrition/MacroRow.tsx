@@ -29,7 +29,7 @@ const MacroRow = ({ nutrition, className }: { nutrition: MacroSummary; className
       ].map((m) => (
         <div key={m.l}>
           <p className="text-[15px] font-black leading-none tabular-nums">{m.v}</p>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-1">{m.l}</p>
+          <p className="eyebrow text-muted-foreground mt-1">{m.l}</p>
         </div>
       ))}
     </div>

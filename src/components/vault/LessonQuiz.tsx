@@ -33,7 +33,7 @@ const LessonQuiz = ({
       <div className="flex items-center gap-2 mb-3">
         <HelpCircle size={13} style={{ color: accent }} strokeWidth={2.6} />
         <p
-          className="text-[11px] font-black tracking-[0.22em] uppercase"
+          className="eyebrow"
           style={{ color: accent }}
         >
           Comprehension check
@@ -59,7 +59,7 @@ const LessonQuiz = ({
                       type="button"
                       disabled={submitted}
                       onClick={() => setAnswers((p) => ({ ...p, [qi]: ci }))}
-                      className="w-full text-left rounded-xl border px-3 py-2 text-[12px] flex items-start gap-2 transition active:scale-[0.99] disabled:active:scale-100"
+                      className="press w-full text-left rounded-xl border px-3 py-2 text-[12px] flex items-start gap-2 transition disabled:"
                       style={{
                         background: showState
                           ? isCorrect
@@ -114,7 +114,7 @@ const LessonQuiz = ({
             setSubmitted(true);
             onScore(score);
           }}
-          className="mt-4 w-full rounded-xl py-2.5 text-[12px] font-black tracking-wider uppercase disabled:opacity-40 disabled:cursor-not-allowed transition active:scale-[0.99]"
+          className="eyebrow mt-4 w-full rounded-xl py-2.5 disabled:opacity-40 disabled:cursor-not-allowed transition "
           style={{
             background: accent,
             color: "hsl(var(--background))",

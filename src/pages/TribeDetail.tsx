@@ -1,3 +1,5 @@
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { fmtInt } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -10,9 +12,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Button } from "@/components/ui/button";
+import PageBar from "@/components/ui/page-bar";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ArrowLeft,
   Crown,
   Loader2,
   Send,
@@ -555,8 +557,9 @@ const TribeDetail = () => {
     invalidateTribe();
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Delete this tribe? This cannot be undone.")) return;
+  const [confirmDeleteTribe, setConfirmDeleteTribe] = useState(false);
+  const handleDelete = () => setConfirmDeleteTribe(true);
+  const deleteTribe = async () => {
     const { error } = await supabase.rpc("delete_tribe", { p_tribe_id: id! });
     if (error) { toast.error(friendlyError(error)); return; }
     toast.success("Tribe deleted");
@@ -604,12 +607,9 @@ const TribeDetail = () => {
     // to one lands here. Offer the request path instead of a dead end
     // (join_tribe is SECURITY DEFINER; it works even when the row is hidden).
     return (
-      <div className="px-4 pt-4 pb-8">
-        {/* One back-button treatment across the tribe screens. There were
-            three, and one of them had no press feedback at all. */}
-        <Button variant="ghost" size="sm" className="-ml-3 mb-8 text-muted-foreground" onClick={() => navigate("/squad?tab=tribes")}>
-          <ArrowLeft size={14} /> Tribes
-        </Button>
+      <div className="min-h-full">
+        <PageBar onBack={() => navigate("/squad?tab=tribes")} />
+        <div className="home-rise px-4 pt-4 pb-6">
         <div className="surface-card p-6 text-center">
           <div className="mx-auto h-12 w-12 rounded-2xl bg-secondary/50 border border-border/60 flex items-center justify-center mb-3">
             <Lock size={20} className="text-muted-foreground" />
@@ -621,6 +621,7 @@ const TribeDetail = () => {
           <Button variant="ember" size="lg" className="mt-4" onClick={handleJoin}>
             Request to join
           </Button>
+        </div>
         </div>
       </div>
     );
@@ -639,7 +640,9 @@ const TribeDetail = () => {
     : null;
 
   return (
-    <div ref={scrollRef} className="pb-8 px-4 pt-4 relative">
+    <div ref={scrollRef} className="min-h-full relative">
+      <PageBar onBack={() => { hapticSelection(); navigate("/squad?tab=tribes"); }} />
+      <div className="home-rise px-4 pt-4 pb-6">
       {/* Subtle page tint toward the tribe's tier color */}
       {pageTint && (
         <div
@@ -685,7 +688,7 @@ const TribeDetail = () => {
             }}
           >
             <p
-              className="text-[11px] uppercase tracking-[0.22em] font-black text-center mb-1"
+              className="eyebrow text-center mb-1"
               style={{ color: tierUp.accent }}
             >
               Tribe Fire promoted
@@ -700,15 +703,6 @@ const TribeDetail = () => {
         </div>
         </Portal>
       )}
-
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 mb-4 relative text-muted-foreground"
-        onClick={() => { hapticSelection(); navigate("/squad?tab=tribes"); }}
-      >
-        <ArrowLeft size={14} /> Tribes
-      </Button>
 
       {/* HERO — the tribe's one cinematic card: fire, identity, actions */}
       <TribeHero
@@ -740,7 +734,7 @@ const TribeDetail = () => {
             <UserCheck size={14} className="text-gold" strokeWidth={2.6} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] uppercase tracking-widest font-black text-gold">Pending requests</p>
+            <p className="eyebrow text-gold">Pending requests</p>
             <p className="text-[11px] text-muted-foreground truncate">
               {pendingCount} {pendingCount === 1 ? "person wants" : "people want"} to join
             </p>
@@ -757,7 +751,7 @@ const TribeDetail = () => {
             <ShieldAlert size={14} className="text-destructive" strokeWidth={2.6} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] uppercase tracking-widest font-black text-destructive">Reported posts</p>
+            <p className="eyebrow text-destructive">Reported posts</p>
             <p className="text-[11px] text-muted-foreground truncate">
               {reportedCount} {reportedCount === 1 ? "post needs" : "posts need"} your review
             </p>
@@ -780,7 +774,7 @@ const TribeDetail = () => {
               )}
               {isOwner && (tribe.weekly_xp ?? 0) > 0 && (
                 <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums text-gold">
-                  <Zap size={12} fill="currentColor" /> +{(tribe.weekly_xp ?? 0).toLocaleString()} XP
+                  <Zap size={12} fill="currentColor" /> +{fmtInt(tribe.weekly_xp ?? 0)} XP
                 </span>
               )}
             </span>
@@ -942,6 +936,13 @@ const TribeDetail = () => {
           <TribeInviteModal tribeId={id} open={inviteOpen} onClose={() => setInviteOpen(false)} />
           <TribePendingRequestsDialog tribeId={id} open={pendingOpen} onOpenChange={setPendingOpen} onChanged={invalidateTribe} />
           <TribeReportsDialog tribeId={id} open={reportsOpen} onOpenChange={setReportsOpen} onChanged={invalidateTribe} />
+          <ConfirmDialog
+            open={confirmDeleteTribe}
+            onOpenChange={setConfirmDeleteTribe}
+            title="Delete this tribe?"
+            description="This cannot be undone."
+            onConfirm={() => { setConfirmDeleteTribe(false); void deleteTribe(); }}
+          />
           {isOwner && tribe && profile?.user_id && (
             <TribeManageDialog
               tribeId={id}
@@ -961,6 +962,7 @@ const TribeDetail = () => {
           )}
         </>
       )}
+      </div>
     </div>
   );
 };

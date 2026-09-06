@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -50,7 +51,7 @@ const AnimatedNumber = ({ value, className, duration = 1000, format }: AnimatedN
 
   return (
     <span className={cn("tabular-nums", className)}>
-      {format ? format(display) : display.toLocaleString()}
+      {format ? format(display) : fmtInt(display)}
     </span>
   );
 };

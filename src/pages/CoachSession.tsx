@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
@@ -251,6 +251,18 @@ const CoachSession = () => {
 
   const current = progress.currentExerciseIndex >= 0 ? plan[progress.currentExerciseIndex] : null;
   const summaryShown = progress.isComplete || showSummary || !!session?.completed;
+
+  // Every set logged: the session is finished whether or not a button gets
+  // pressed — someone who closes the app on the summary still trained today,
+  // and the check-in bridge and the program's tick key on the finished row.
+  const finishRef = useRef(finish);
+  finishRef.current = finish;
+  const autoFinished = useRef(false);
+  useEffect(() => {
+    if (!progress.isComplete || !session || session.completed || autoFinished.current) return;
+    autoFinished.current = true;
+    finishRef.current().catch(() => { autoFinished.current = false; });
+  }, [progress.isComplete, session]);
   const illustrated = useMemo(() => (current ? resolveIllustration(current.slug, current.name) : null), [current]);
 
   const { data: history } = useExerciseHistory(current?.slug ?? null);
@@ -373,8 +385,8 @@ const CoachSession = () => {
                       <HeartPulse size={16} className="text-muted-foreground" aria-hidden />
                     </span>
                   }
-                  title="Save workouts to Apple Health"
-                  subtitle="Every finished session, in Health"
+                  title="Save to Apple Health"
+                  subtitle="Every finished session"
                   acceptLabel="Turn on"
                   declineLabel="Not now"
                   busy={healthBusy}

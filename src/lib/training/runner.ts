@@ -160,6 +160,7 @@ export const suggestedLoad = (
   history: LoggedSet[] | undefined,
   setIndex: number,
   currentSession: LoggedSet[] | undefined,
+  prescribedReps?: string | number | null,
 ): { weight: number | null; reps: number | null } => {
   const sameSetLastTime = history?.find((h) => h.set_index === setIndex && h.weight != null);
   if (sameSetLastTime) {
@@ -173,7 +174,14 @@ export const suggestedLoad = (
   if (prevThisSession) {
     return { weight: prevThisSession.weight ?? null, reps: prevThisSession.reps ?? null };
   }
-  return { weight: null, reps: null };
+  // A first-ever set: the reps are prescribed, so only the load is a question.
+  return { weight: null, reps: repTarget(prescribedReps) };
+};
+
+/** The prescribed rep count — the low end of "8-12"; null for "AMRAP". */
+export const repTarget = (reps: string | number | null | undefined): number | null => {
+  const m = String(reps ?? "").match(/\d+/);
+  return m ? parseInt(m[0], 10) : null;
 };
 
 /** mm:ss for the rest timer. Clamps at zero — never shows a negative clock. */

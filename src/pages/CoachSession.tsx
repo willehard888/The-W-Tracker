@@ -422,7 +422,7 @@ const CoachSession = () => {
 
   // ── Active session ────────────────────────────────────────────────────────
   const nextSet = progress.currentSetIndex;
-  const suggestion = suggestedLoad(history, nextSet, logged[current!.slug]);
+  const suggestion = suggestedLoad(history, nextSet, logged[current!.slug], current!.reps);
 
   const logCurrent = async (setIndex: number, weightStr: string, repsStr: string) => {
     if (!current) return;
@@ -437,9 +437,11 @@ const CoachSession = () => {
         weight: w, reps: r, rpe: current.rpe ?? null,
         setIndex,
       });
-      // Rest only after a set that leaves more to do — never after the last one.
-      if (setIndex < current.sets) { setRestFor(current.restSec); setRestToken((t) => t + 1); }
-      else setRestFor(null);
+      // Rest after every set but the session's last — walking to the next
+      // exercise is not a rest, and the clock kept vanishing there.
+      const lastOfSession = setIndex >= current.sets && progress.currentExerciseIndex >= plan.length - 1;
+      if (lastOfSession) setRestFor(null);
+      else { setRestFor(current.restSec); setRestToken((t) => t + 1); }
     } catch {
       toast.error("Couldn't save that set.");
     }

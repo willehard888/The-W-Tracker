@@ -150,6 +150,12 @@ describe("sessionProgress", () => {
 });
 
 describe("suggestedLoad", () => {
+  it("seeds a first-ever set with the prescribed reps and no load", () => {
+    expect(suggestedLoad(undefined, 1, [], "8-12")).toEqual({ weight: null, reps: 8 });
+    expect(suggestedLoad([], 1, undefined, 10)).toEqual({ weight: null, reps: 10 });
+    expect(suggestedLoad([], 1, [], "AMRAP")).toEqual({ weight: null, reps: null });
+    expect(suggestedLoad([], 1, [])).toEqual({ weight: null, reps: null });
+  });
   it("offers the same set from last time", () => {
     expect(suggestedLoad([set(1, 60, 8), set(2, 65, 8)], 2, [])).toEqual({ weight: 65, reps: 8 });
   });

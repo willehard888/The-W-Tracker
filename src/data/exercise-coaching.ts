@@ -44,6 +44,9 @@
  *  - Conservative by default: when in doubt, tell them to use less weight.
  */
 
+import { LOWER_BODY_COACHING } from "@/data/coaching/lower-body";
+import { UPPER_BODY_COACHING } from "@/data/coaching/upper-body";
+
 export interface CoachingMistake {
   /** What goes wrong, described as the athlete would notice it. */
   error: string;
@@ -71,7 +74,7 @@ export interface ExerciseCoaching {
 }
 
 /** Keyed by `IllustratedExercise.slug`. */
-export const EXERCISE_COACHING: Record<string, ExerciseCoaching> = {
+const CORE_COACHING: Record<string, ExerciseCoaching> = {
   "barbell-squat": {
     setup: [
       "Set the bar just below shoulder height, so you lift it out rather than tiptoe under it.",
@@ -521,6 +524,13 @@ export const EXERCISE_COACHING: Record<string, ExerciseCoaching> = {
     easier: "A smaller range — even lifting just your shoulders an inch counts while you find the movement.",
     harder: "Slow it down further, pause at the top, or hold a light weight on your chest.",
   },
+};
+
+/** Every entry: the core movements here plus the two group files, keyed by illustrated slug. */
+export const EXERCISE_COACHING: Record<string, ExerciseCoaching> = {
+  ...CORE_COACHING,
+  ...LOWER_BODY_COACHING,
+  ...UPPER_BODY_COACHING,
 };
 
 /** Coaching for an exercise, or undefined where none has been written yet. */

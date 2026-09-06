@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Check, ChevronDown } from "lucide-react";
 import { CoachProgram, ProgramLog, ProgramWeek } from "@/hooks/use-coach-program";
 import { daySummary, isRestDay } from "@/lib/training/session";
 import { cn } from "@/lib/utils";
-import { FactRow } from "@/components/coach/rows";
+import { DoorRow, FactRow } from "@/components/coach/rows";
 import ExerciseRow from "@/components/coach/ExerciseRow";
 
 interface Props {
@@ -37,6 +38,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
   const [openWeek, setOpenWeek] = useState<number>(currentWeek);
   const [openDay, setOpenDay] = useState<string | null>(null);
   const [showWeekDetails, setShowWeekDetails] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -118,6 +120,13 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                               <li className="pt-1 text-[12px] text-foreground/80">
                                 <span className={cn(LABEL, "mr-1.5")}>Conditioning</span>
                                 {day.conditioning}
+                              </li>
+                            )}
+                            {/* The runner used to open only from today's card, so a
+                                session on any other day of the week had no way in. */}
+                            {isCurrent && !isLogged && (
+                              <li className="border-t border-border/35">
+                                <DoorRow label="Start this session" onClick={() => navigate(`/coach/session/${week.week}/${di}`)} />
                               </li>
                             )}
                           </ul>

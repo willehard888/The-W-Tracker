@@ -136,6 +136,7 @@ const CoachProgramDetail = () => {
               <ProgramReveal
                 program={program}
                 currentWeek={currentWeek}
+                todayDayIndex={todayDayIndex}
                 onStart={() => setJustGenerated(false)}
               />
             )}

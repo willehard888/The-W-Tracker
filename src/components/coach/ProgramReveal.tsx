@@ -35,15 +35,21 @@ const N = ({ children }: { children: ReactNode }) => (
 const ProgramReveal = ({
   program,
   currentWeek,
+  todayDayIndex,
   onStart,
 }: {
   program: CoachProgram;
   currentWeek: number;
+  todayDayIndex: number;
   onStart: () => void;
 }) => {
   const week = program.plan_json?.weeks?.find((w) => w.week === currentWeek);
   const trainingDays = (week?.days ?? []).filter((d) => isTrainingDay(d));
   const n = trainingDays.length;
+  // Built on a rest day, the first session is not today — say so, or the
+  // button lands on "Rest" and the whole reveal reads as a broken promise.
+  const todayIsRest = !isTrainingDay(week?.days?.[todayDayIndex]);
+  const firstDay = trainingDays[0]?.day;
 
   // The advertised session length, averaged over the days that actually have
   // work in them — a plan with four rest days would otherwise report half.
@@ -63,6 +69,7 @@ const ProgramReveal = ({
         <N>{fmtInt(n)}</N> {n === 1 ? "session" : "sessions"}
         {avgMin > 0 && <> · ~<N>{fmtInt(avgMin)}</N> min</>}
         {" · "}week <N>{fmtInt(currentWeek)}</N> of {fmtInt(program.weeks ?? 4)}
+        {todayIsRest && firstDay && <> · first session {firstDay}</>}
       </p>
       {focusList.length > 0 && (
         <p className="mt-1 text-[13px] text-muted-foreground">{focusList.join(" · ")}</p>
@@ -77,7 +84,7 @@ const ProgramReveal = ({
           onStart();
         }}
       >
-        Start your first session
+        {todayIsRest ? "See your week" : "Start your first session"}
       </Button>
     </section>
   );

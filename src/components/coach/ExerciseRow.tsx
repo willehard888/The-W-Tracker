@@ -149,7 +149,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
             </span>
           )}
         </div>
-        <span className="text-[12px] font-black tracking-wider text-gold whitespace-nowrap inline-flex items-center gap-1">
+        <span className="text-[12px] font-bold text-foreground/85 tabular-nums whitespace-nowrap inline-flex items-center gap-1">
           {block.sets}×{block.reps}{block.rpe ? ` · RPE ${block.rpe}` : ""}
           {hasMore && (
             <ChevronDown size={11} className={cn("text-muted-foreground/70 transition-transform", open && "rotate-180")} />
@@ -168,7 +168,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           ) : null}
 
           {ex && (ex.primary.length > 0 || ex.equipment) && (
-            <p className="eyebrow text-muted-foreground/70">
+            <p className="text-[11px] font-bold text-muted-foreground">
               {[ex.primary.join(", "), ex.equipment].filter(Boolean).join(" · ")}
             </p>
           )}
@@ -205,7 +205,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {block.notes && <p className="text-[12px] text-muted-foreground leading-snug">{block.notes}</p>}
           {block.alt && (
             <p className="text-[12px] text-muted-foreground/85">
-              <span className="eyebrow-sm text-gold/85 mr-1">Swap</span>{block.alt}
+              <span className="text-[11px] font-bold text-muted-foreground mr-1">Swap</span>{block.alt}
             </p>
           )}
 
@@ -213,7 +213,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {weightSeries.length >= 2 && (
             <div className="rounded-xl bg-background/40 border border-border/40 p-2.5">
               <div className="flex items-center justify-between mb-1">
-                <p className="eyebrow text-muted-foreground/70">Progression</p>
+                <p className="text-[11px] font-bold text-muted-foreground">Progression</p>
                 <p className={cn(
                   "text-[11px] font-black tabular-nums",
                   trend > 0 ? "text-xp-green" : trend < 0 ? "text-destructive" : "text-muted-foreground",
@@ -229,7 +229,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {loggable && (
             <div className="rounded-xl bg-background/50 border border-border/50 p-2.5">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="eyebrow text-gold">Log your result</p>
+                <p className="text-[11px] font-bold text-muted-foreground">Log your result</p>
                 {last && (
                   <p className="text-[11px] text-muted-foreground">
                     Last: {last.weight != null ? `${last.weight}kg` : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}` : ""} · {daysAgo(last.logged_on)}

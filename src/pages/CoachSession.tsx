@@ -56,6 +56,12 @@ import {
  * `lib/training/runner.ts`. This is the one screen in the app that gets
  * backgrounded mid-task with a loaded bar in the athlete's hands, and anything
  * kept only in memory is gone by the time they come back.
+ *
+ * COMPOSITION — one set at a time. The bar says where in the program you are;
+ * the beat says which exercise and what is prescribed; the rep player is the
+ * reference; the one open set row is the hero and the only gold on the screen.
+ * The summary is a beat ("Push day done.") and one standing line, volume in
+ * gold — no tiles.
  */
 
 /** "62.5 kg" keeps its half; fmtInt would round a plate pair away. */
@@ -63,7 +69,7 @@ const fmtKg = (n: number) => (Number.isInteger(n) ? fmtUnit(n, "kg") : `${n}${NB
 const setLine = (w: string, r: string) =>
   `${w === "" ? "—" : fmtKg(Number(w))} × ${r === "" ? "—" : fmtInt(Number(r))}`;
 
-/** `[−] value unit [+]` — two 44 pt targets around a typed field. */
+/** `[−] value [+] unit` — two 44 pt targets around a typed field. */
 const Stepper = ({
   value,
   unit,
@@ -290,6 +296,10 @@ const CoachSession = () => {
     );
   }
 
+  const focus = dayFocus(planDay);
+  // The bar names the program slot; the beat names the day and the exercise.
+  const barTitle = `Week ${week} · ${planDay.day}`;
+
   // ── Summary ───────────────────────────────────────────────────────────────
   if (summaryShown) {
     const volume = sessionVolume(logged);
@@ -312,95 +322,100 @@ const CoachSession = () => {
       setHealthAsk(false);
     };
     return (
-      <div className="home-rise px-5 pt-8">
-        <p className="eyebrow text-gold mb-2">Session complete</p>
-        <h1 className="font-display text-2xl font-black tracking-tight leading-tight mb-5">
-          {dayFocus(planDay) || "Workout"} done
-        </h1>
+      <div className="min-h-full">
+        <PageBar onBack={() => navigate("/coach/program")} title={barTitle} />
+        <div className="px-4 pt-6 pb-6">
+          {/* Opening beat: the day, done. One standing line under it — the
+              volume is the screen's one felt number. */}
+          <div className="home-rise">
+            <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+              {focus || "Workout"} done.
+            </h2>
+            <p className="mt-3 text-[15px] font-bold tabular-nums text-foreground/85">
+              {fmtInt(progress.doneSets)} {progress.doneSets === 1 ? "set" : "sets"}
+              {volume > 0 && (
+                <>
+                  {" · "}
+                  <span className="text-gold glow-gold-text">{fmtUnit(volume, "kg")}</span>
+                </>
+              )}
+              {mins ? ` · ${fmtUnit(mins, "min")}` : ""}
+            </p>
+          </div>
 
-        <div className="grid grid-cols-2 gap-2 mb-5">
-          {[
-            { label: "Exercises", value: `${progress.exercisesDone} / ${progress.totalExercises}` },
-            { label: "Sets", value: `${progress.doneSets}` },
-            { label: "Volume", value: volume ? fmtUnit(volume, "kg") : "—" },
-            { label: "Time", value: mins ? `${mins} min` : "—" },
-          ].map((s) => (
-            <div key={s.label} className="rounded-xl border border-border/40 bg-background/40 px-3 py-2.5">
-              <p className="eyebrow text-muted-foreground/70 mb-1">{s.label}</p>
-              <p className="text-[16px] font-black tabular-nums text-foreground">{s.value}</p>
+          {prs.length > 0 && (
+            <div className="home-rise home-rise-1 mt-4">
+              <div className="commit-pop flex flex-wrap gap-2">
+                {prs.map((p) => (
+                  <span
+                    key={p.slug}
+                    className="inline-flex items-center gap-1.5 min-h-8 rounded-full border border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.08] px-3 text-[12px] font-bold text-[hsl(var(--teal))]"
+                  >
+                    <TrendingUp size={13} aria-hidden />
+                    <span className="sr-only">Personal record: </span>
+                    {p.name} · est. 1RM {fmtUnit(Math.round(p.e1rm), "kg")}
+                  </span>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          )}
 
-        {prs.length > 0 && (
-          <div className="commit-pop flex flex-wrap gap-2 mb-5">
-            {prs.map((p) => (
-              <span
-                key={p.slug}
-                className="inline-flex items-center gap-1.5 min-h-8 rounded-full border border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.08] px-3 text-[12px] font-bold text-[hsl(var(--teal))]"
-              >
-                <TrendingUp size={13} aria-hidden />
-                <span className="sr-only">Personal record: </span>
-                {p.name} · est. 1RM {fmtUnit(Math.round(p.e1rm), "kg")}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-transparent px-4 py-3 mb-5">
-          <p className="text-[13px] text-foreground/90 leading-snug">
-            Your weights are saved. The next block is built from these numbers —
-            and today's session now counts toward your check-in.
+          <p className="home-rise home-rise-2 mt-4 text-[13px] text-muted-foreground leading-snug">
+            Weights saved. Today counts toward your check-in.
           </p>
-        </div>
 
-        {healthAsk && (
-          <div className="surface-card surface-card-quiet mb-5">
-            <ActionRow
-              leading={
-                <span className="h-10 w-10 rounded-xl bg-card/60 border border-border/40 flex items-center justify-center">
-                  <HeartPulse size={16} className="text-muted-foreground" aria-hidden />
-                </span>
-              }
-              title="Save workouts to Apple Health"
-              subtitle="Every finished session, in Health"
-              acceptLabel="Turn on"
-              declineLabel="Not now"
-              busy={healthBusy}
-              onAccept={() => void acceptHealth()}
-              onDecline={() => { markWorkoutWriteDeclined(); setHealthAsk(false); }}
-            />
+          {healthAsk && (
+            <div className="home-rise home-rise-3 mt-5">
+              <div className="surface-card surface-card-quiet">
+                <ActionRow
+                  leading={
+                    <span className="h-10 w-10 rounded-xl bg-card/60 border border-border/40 flex items-center justify-center">
+                      <HeartPulse size={16} className="text-muted-foreground" aria-hidden />
+                    </span>
+                  }
+                  title="Save workouts to Apple Health"
+                  subtitle="Every finished session, in Health"
+                  acceptLabel="Turn on"
+                  declineLabel="Not now"
+                  busy={healthBusy}
+                  onAccept={() => void acceptHealth()}
+                  onDecline={() => { markWorkoutWriteDeclined(); setHealthAsk(false); }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="home-rise home-rise-4 mt-6">
+            <Button
+              variant="ember"
+              size="lg"
+              className="w-full"
+              disabled={isFinishing}
+              onClick={async () => {
+                try {
+                  if (!session?.completed) await finish();
+                  hapticNotification("success");
+                } catch {
+                  toast.error("Couldn't save the session — your sets are still logged.");
+                }
+                navigate("/checkin");
+              }}
+            >
+              {isFinishing ? <Loader2 size={16} className="animate-spin" /> : "Finish and check in"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              className="w-full mt-2"
+              onClick={async () => {
+                try { if (!session?.completed) await finish(); } catch { /* sets are safe */ }
+                navigate("/coach/program");
+              }}
+            >
+              Back to program
+            </Button>
           </div>
-        )}
-
-        <Button
-          variant="ember"
-          size="lg"
-          className="w-full mb-2"
-          disabled={isFinishing}
-          onClick={async () => {
-            try {
-              if (!session?.completed) await finish();
-              hapticNotification("success");
-            } catch {
-              toast.error("Couldn't save the session — your sets are still logged.");
-            }
-            navigate("/checkin");
-          }}
-        >
-          {isFinishing ? <Loader2 size={16} className="animate-spin" /> : "Finish and check in"}
-        </Button>
-        <Button
-          variant="ghost"
-          size="lg"
-          className="w-full"
-          onClick={async () => {
-            try { if (!session?.completed) await finish(); } catch { /* sets are safe */ }
-            navigate("/coach/program");
-          }}
-        >
-          Back to program
-        </Button>
+        </div>
       </div>
     );
   }
@@ -432,103 +447,106 @@ const CoachSession = () => {
 
   return (
     <div className="min-h-full">
-      {/* The one sub-page bar. A node title carries the week and focus in the
-          same slot, and the exercise count rides the action slot — leaving is
-          always one 44 pt tap and it never scrolls away. */}
-      <PageBar
-        onBack={() => navigate("/coach/program")}
-        title={
-          <>
-            <p className="eyebrow text-muted-foreground/70">Week {week} · {planDay.day}</p>
-            <p className="font-display text-[15px] font-black truncate leading-tight">
-              {dayFocus(planDay) || "Session"}
-            </p>
-          </>
-        }
-        action={
-          <span className="pr-3 text-[12px] font-black tabular-nums text-gold">
-            {progress.exercisesDone}/{progress.totalExercises}
-          </span>
-        }
-      />
-      {/* Progress sits under the bar, sticking with it: at any moment the
-          athlete can see how much of the session is behind them. */}
-      <div className="sticky top-[var(--safe-top)] z-20 h-1 bg-border/40">
-        <div
-          className="h-full bg-gold transition-[width] duration-300"
-          style={{ width: `${Math.round(progress.fraction * 100)}%` }}
-        />
+      {/* Bar and progress hairline stick as one unit, so the way out and how
+          much of the session is behind you never scroll away. */}
+      <div className="sticky top-0 z-20">
+        <PageBar sticky={false} onBack={() => navigate("/coach/program")} title={barTitle} />
+        <div className="h-1 bg-border/40">
+          <div
+            className="h-full bg-foreground/55 transition-[width] duration-300"
+            style={{ width: `${Math.round(progress.fraction * 100)}%` }}
+          />
+        </div>
       </div>
 
-      <div className="home-rise px-4 pt-4 space-y-4">
+      <div className="px-4 pt-4 pb-6">
         {current && (
           <>
-            {illustrated && <IllustrationPlayer ex={illustrated} />}
-
-            <div>
-              <h2 className="font-display text-xl font-black tracking-tight leading-tight">
+            {/* Opening beat: where you are, what is on stage, what it asks. */}
+            <div className="home-rise">
+              <p className="text-[13px] font-semibold text-muted-foreground tabular-nums">
+                Exercise {fmtInt(progress.currentExerciseIndex + 1)} of {fmtInt(progress.totalExercises)}
+                {focus ? ` · ${focus}` : ""}
+              </p>
+              <h2 className="mt-1 font-display font-black text-[27px] leading-[1.04] tracking-tight">
                 {current.name}
               </h2>
-              <p className="text-[13px] text-gold font-bold mt-0.5">
+              <p className="mt-1.5 text-[13px] font-bold tabular-nums text-foreground/85">
                 {current.sets} × {current.reps || "—"}
                 {current.rpe ? ` · RPE ${current.rpe}` : ""}
               </p>
               {/* The first time someone meets this notation it means nothing.
                   One line, inline, where the number actually is. */}
-              <p className="text-[12px] text-muted-foreground leading-snug mt-1">
+              <p className="mt-0.5 text-[12px] text-muted-foreground leading-snug">
                 {current.sets} sets of {current.reps || "your target"} reps
                 {current.rpe ? `, leaving about ${Math.max(0, 10 - current.rpe)} reps in reserve` : ""}.
               </p>
             </div>
 
-            {illustrated && <ExerciseCoachingCompact slug={illustrated.slug} />}
-
-            {restFor != null && (
-              <RestTimer
-                key={restToken}
-                seconds={restFor}
-                onDismiss={() => setRestFor(null)}
-              />
+            {illustrated && (
+              <div className="home-rise home-rise-1 mt-4">
+                <IllustrationPlayer ex={illustrated} />
+              </div>
             )}
 
-            <div className="space-y-1" ref={loggingTargetRef}>
-              <p className="eyebrow text-gold/85 mb-1">Sets</p>
-              {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
-                const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);
-                const isDone = !!existing;
-                const seed = isDone
-                  ? { weight: existing.weight ?? null, reps: existing.reps ?? null }
-                  : n === nextSet
-                    ? suggestion
-                    : { weight: null, reps: null };
-                return (
-                  <SetRow
-                    key={n}
-                    index={n}
-                    done={isDone}
-                    isCurrent={n === nextSet}
-                    weight={seed.weight != null ? String(seed.weight) : ""}
-                    reps={seed.reps != null ? String(seed.reps) : ""}
-                    saving={logSet.isPending}
-                    onLog={(w, r) => logCurrent(n, w, r)}
-                  />
-                );
-              })}
-            </div>
+            {illustrated && (
+              <div className="home-rise home-rise-2 mt-3">
+                <ExerciseCoachingCompact slug={illustrated.slug} />
+              </div>
+            )}
 
+            {/* Arrives after a commit, not on open — no entrance of its own. */}
+            {restFor != null && (
+              <div className="mt-4">
+                <RestTimer
+                  key={restToken}
+                  seconds={restFor}
+                  onDismiss={() => setRestFor(null)}
+                />
+              </div>
+            )}
+
+            <div className="home-rise home-rise-3 mt-5" ref={loggingTargetRef}>
+              <p className="eyebrow mb-2">Sets</p>
+              <div className="space-y-1">
+                {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
+                  const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);
+                  const isDone = !!existing;
+                  const seed = isDone
+                    ? { weight: existing.weight ?? null, reps: existing.reps ?? null }
+                    : n === nextSet
+                      ? suggestion
+                      : { weight: null, reps: null };
+                  return (
+                    <SetRow
+                      key={n}
+                      index={n}
+                      done={isDone}
+                      isCurrent={n === nextSet}
+                      weight={seed.weight != null ? String(seed.weight) : ""}
+                      reps={seed.reps != null ? String(seed.reps) : ""}
+                      saving={logSet.isPending}
+                      onLog={(w, r) => logCurrent(n, w, r)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           </>
         )}
 
         {/* Finishing early is a normal thing to do, not a failure. Open sets
             get one question; a fully logged day goes straight to the summary. */}
-        <Button
-          variant="ghost"
-          size="lg"
-          className="w-full text-muted-foreground"
-          onClick={() => (progress.doneSets >= progress.totalSets ? setShowSummary(true) : setFinishAsk(true))}
-        >
-          Finish session
-        </Button>
+        <div className="mt-4">
+          <Button
+            variant="ghost"
+            size="lg"
+            className="w-full text-muted-foreground"
+            onClick={() => (progress.doneSets >= progress.totalSets ? setShowSummary(true) : setFinishAsk(true))}
+          >
+            Finish session
+          </Button>
+        </div>
       </div>
 
       <ConfirmDialog

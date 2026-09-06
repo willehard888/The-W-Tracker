@@ -82,7 +82,10 @@ const RestTimer = ({
     <div
       className={cn(
         "rounded-2xl border px-4 py-3 flex items-center gap-3",
-        over ? "border-gold/40 bg-gold/[0.06]" : "border-border/50 bg-background/50",
+        // Counting down it is quiet chrome; gold belongs to the set. "Rest is
+        // up" is the one live moment here, so it goes ember like everything
+        // live in the app.
+        over ? "border-ember/40 bg-ember/[0.06]" : "border-border/50 bg-background/50",
       )}
       role="status"
       aria-live="off"
@@ -93,7 +96,7 @@ const RestTimer = ({
             className="stroke-border/50" />
           <circle
             cx="20" cy="20" r="17" fill="none" strokeWidth="3" strokeLinecap="round"
-            className={over ? "stroke-gold" : "stroke-gold/70"}
+            className={over ? "stroke-ember" : "stroke-foreground/60"}
             strokeDasharray={2 * Math.PI * 17}
             strokeDashoffset={2 * Math.PI * 17 * (1 - pct)}
           />
@@ -101,7 +104,7 @@ const RestTimer = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="eyebrow text-muted-foreground/70 mb-0.5">
+        <p className="text-[12px] font-semibold text-muted-foreground mb-0.5">
           {over ? "Rest is up" : "Resting"}
         </p>
         <p className="text-[17px] font-black tabular-nums leading-none text-foreground">

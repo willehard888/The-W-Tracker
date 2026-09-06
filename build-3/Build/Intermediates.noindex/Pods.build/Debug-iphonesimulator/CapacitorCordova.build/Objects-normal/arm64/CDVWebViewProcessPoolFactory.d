@@ -1,0 +1,6 @@
+dependencies: \
+  /Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorCordova.build/module.modulemap \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVWebViewProcessPoolFactory.m \
+  /Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/Target\ Support\ Files/CapacitorCordova/CapacitorCordova-prefix.pch \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVWebViewProcessPoolFactory.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVAvailabilityDeprecated.h

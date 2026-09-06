@@ -1,0 +1,4 @@
+
+module CapacitorPushNotifications.Swift {
+  header "CapacitorPushNotifications-Swift.h"
+}

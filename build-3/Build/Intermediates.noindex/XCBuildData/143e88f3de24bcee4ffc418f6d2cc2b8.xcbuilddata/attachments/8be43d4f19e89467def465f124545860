@@ -1,0 +1,4 @@
+
+module CapacitorHealth.Swift {
+  header "CapacitorHealth-Swift.h"
+}

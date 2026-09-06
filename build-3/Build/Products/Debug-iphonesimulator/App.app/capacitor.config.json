@@ -1,0 +1,43 @@
+{
+	"appId": "app.lovable.wtracker",
+	"appName": "Whealth Factory",
+	"webDir": "dist",
+	"backgroundColor": "#0a0710",
+	"ios": {
+		"contentInset": "never",
+		"backgroundColor": "#0a0710",
+		"limitsNavigationsToAppBoundDomains": false,
+		"scrollEnabled": true,
+		"scheme": "app"
+	},
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		},
+		"StatusBar": {
+			"style": "DARK",
+			"overlaysWebView": true,
+			"backgroundColor": "#00000000"
+		}
+	},
+	"server": {
+		"androidScheme": "https"
+	},
+	"packageClassList": [
+		"SignInWithApple",
+		"AppPlugin",
+		"AppLauncherPlugin",
+		"FilesystemPlugin",
+		"HapticsPlugin",
+		"LocalNotificationsPlugin",
+		"PushNotificationsPlugin",
+		"SharePlugin",
+		"StatusBarPlugin",
+		"PurchasesPlugin",
+		"HealthPlugin"
+	]
+}

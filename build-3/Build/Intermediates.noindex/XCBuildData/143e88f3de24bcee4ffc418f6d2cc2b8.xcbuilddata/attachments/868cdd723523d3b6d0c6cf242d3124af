@@ -1,0 +1,29 @@
+{
+  "" : {
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/CapacitorLocalNotifications-primary.dia",
+    "emit-module-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/CapacitorLocalNotifications-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/CapacitorLocalNotifications-primary-emit-module.dia",
+    "pch" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/CapacitorLocalNotifications-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/CapacitorLocalNotifications-primary.swiftdeps"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/local-notifications/ios/Sources/LocalNotificationsPlugin/LocalNotificationsHandler.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsHandler~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/local-notifications/ios/Sources/LocalNotificationsPlugin/LocalNotificationsPlugin.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorLocalNotifications.build/Objects-normal/arm64/LocalNotificationsPlugin~partial.swiftmodule"
+  }
+}

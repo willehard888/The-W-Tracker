@@ -1,0 +1,4 @@
+
+module CapacitorLocalNotifications.Swift {
+  header "CapacitorLocalNotifications-Swift.h"
+}

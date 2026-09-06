@@ -1,0 +1,309 @@
+{
+  "" : {
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesHybridCommon-primary.dia",
+    "emit-module-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesHybridCommon-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesHybridCommon-primary-emit-module.dia",
+    "pch" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesHybridCommon-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesHybridCommon-primary.swiftdeps"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/CommonFunctionality.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonFunctionality~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/CommonPurchaseParams.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CommonPurchaseParams~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/Constants.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Constants~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/CustomerInfo+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/CustomerInfo+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/EntitlementInfo+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfo+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/EntitlementInfos+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementInfos+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/EntitlementVerificationMode+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/EntitlementVerificationMode+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/Enums+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Enums+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/ErrorContainer.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/ErrorContainer~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/FatalErrorUtil.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/FatalErrorUtil~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/IOSAPIAvailabilityChecker.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IOSAPIAvailabilityChecker~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/IntroEligibility+HybridExtensions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/IntroEligibility+HybridExtensions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/NSDate+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NSDate+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/NonSubscriptionTransaction+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/NonSubscriptionTransaction+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/Offering+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offering+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/Offerings+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Offerings+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/Package+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Package+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/PromotionalOffer+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PromotionalOffer+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/PurchaseParamsBuilder+HybridExtensions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchaseParamsBuilder+HybridExtensions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/Purchases+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/Purchases+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/PurchasesAreCompletedBy+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/PurchasesAreCompletedBy+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/RefundRequestStatus+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/RefundRequestStatus+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/StoreKitVersion+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreKitVersion+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/StoreProduct+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProduct+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/StoreProductDiscount+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreProductDiscount+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/StoreTransaction+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/StoreTransaction+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/SubscriptionInfo+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/SubscriptionInfo+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/VirtualCurrencies+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrencies+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/VirtualCurrency+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/VirtualCurrency+HybridAdditions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/PurchasesHybridCommon/ios/PurchasesHybridCommon/PurchasesHybridCommon/WinBackOffer+HybridAdditions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/PurchasesHybridCommon.build/Objects-normal/arm64/WinBackOffer+HybridAdditions~partial.swiftmodule"
+  }
+}

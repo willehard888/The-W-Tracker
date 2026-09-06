@@ -1,0 +1,32 @@
+dependencies: \
+  /Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/Capacitor.build/module.modulemap \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController+CDVScreenOrientationDelegate.m \
+  /Users/rasmuspetterson/The-W-Tracker/ios/App/Pods/Target\ Support\ Files/Capacitor/Capacitor-prefix.pch \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController+CDVScreenOrientationDelegate.h \
+  /Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorCordova.build/module.modulemap \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVScreenOrientationDelegate.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/CapacitorCordova.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/AppDelegate.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVViewController.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDV.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVAvailability.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVPlugin.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVPluginResult.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVCommandDelegate.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVInvokedUrlCommand.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVURLProtocol.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVWebViewProcessPoolFactory.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVAvailabilityDeprecated.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVCommandDelegateImpl.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVPluginManager.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVConfigParser.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/CDVPlugin+Resources.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/CapacitorCordova/CapacitorCordova/Classes/Public/NSDictionary+CordovaPreferences.h \
+  /Users/rasmuspetterson/The-W-Tracker/build-3/Build/Products/Debug-iphonesimulator/Capacitor/Capacitor.framework/Headers/Capacitor-Swift.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/Capacitor.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPPlugin.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPPluginCall.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgedPlugin.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPPluginMethod.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPInstanceDescriptor.h \
+  /Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPInstanceConfiguration.h

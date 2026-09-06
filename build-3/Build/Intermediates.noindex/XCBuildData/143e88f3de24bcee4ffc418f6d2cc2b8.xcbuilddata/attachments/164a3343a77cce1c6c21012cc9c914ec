@@ -1,0 +1,29 @@
+{
+  "" : {
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/CapacitorPushNotifications-primary.dia",
+    "emit-module-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/CapacitorPushNotifications-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/CapacitorPushNotifications-primary-emit-module.dia",
+    "pch" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/CapacitorPushNotifications-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/CapacitorPushNotifications-primary.swiftdeps"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/push-notifications/ios/Sources/PushNotificationsPlugin/PushNotificationsHandler.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsHandler~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/push-notifications/ios/Sources/PushNotificationsPlugin/PushNotificationsPlugin.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorPushNotifications.build/Objects-normal/arm64/PushNotificationsPlugin~partial.swiftmodule"
+  }
+}

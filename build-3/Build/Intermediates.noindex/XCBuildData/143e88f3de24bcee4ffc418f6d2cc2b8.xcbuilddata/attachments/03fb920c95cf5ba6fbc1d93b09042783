@@ -1,0 +1,4 @@
+
+module RevenuecatPurchasesCapacitor.Swift {
+  header "RevenuecatPurchasesCapacitor-Swift.h"
+}

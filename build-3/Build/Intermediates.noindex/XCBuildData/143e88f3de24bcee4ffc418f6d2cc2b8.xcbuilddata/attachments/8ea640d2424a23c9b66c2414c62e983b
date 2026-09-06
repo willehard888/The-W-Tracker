@@ -1,0 +1,4 @@
+
+module RevenuecatPurchasesCapacitor.__Swift {
+  exclude header "RevenuecatPurchasesCapacitor-Swift.h"
+}

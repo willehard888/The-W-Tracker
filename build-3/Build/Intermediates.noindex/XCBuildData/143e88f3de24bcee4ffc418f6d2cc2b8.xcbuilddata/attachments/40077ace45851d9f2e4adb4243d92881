@@ -1,0 +1,19 @@
+{
+  "" : {
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/CapacitorApp-primary.dia",
+    "emit-module-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/CapacitorApp-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/CapacitorApp-primary-emit-module.dia",
+    "pch" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/CapacitorApp-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/CapacitorApp-primary.swiftdeps"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/app/ios/Sources/AppPlugin/AppPlugin.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorApp.build/Objects-normal/arm64/AppPlugin~partial.swiftmodule"
+  }
+}

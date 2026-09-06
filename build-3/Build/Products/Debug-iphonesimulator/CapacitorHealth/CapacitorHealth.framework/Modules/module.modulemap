@@ -1,0 +1,10 @@
+framework module CapacitorHealth {
+  umbrella header "CapacitorHealth-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module CapacitorHealth.Swift {
+  header "CapacitorHealth-Swift.h"
+}

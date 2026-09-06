@@ -1,0 +1,23 @@
+{
+  "version": 0,
+  "use-external-names": false,
+  "case-sensitive": false,
+  "roots": [{
+    "type": "directory",
+    "name": "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Products/Debug-iphonesimulator/CapacitorStatusBar/CapacitorStatusBar.framework/Modules",
+    "contents": [{
+      "type": "file",
+      "name": "module.modulemap",
+      "external-contents": "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/unextended-module.modulemap",
+    }]
+    },
+    {
+    "type": "directory",
+    "name": "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Products/Debug-iphonesimulator/CapacitorStatusBar/CapacitorStatusBar.framework/Headers",
+    "contents": [{
+      "type": "file",
+      "name": "CapacitorStatusBar-Swift.h",
+      "external-contents": "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/unextended-interface-header.h",
+    }]
+  }]
+}

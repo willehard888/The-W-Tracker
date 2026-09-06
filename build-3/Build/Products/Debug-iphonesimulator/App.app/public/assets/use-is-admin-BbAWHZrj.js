@@ -1,0 +1,1 @@
+import{a as s}from"./query-B8XjMU8Y.js";import{s as t}from"./index-BXMmS4YU.js";const i=e=>{const{data:a}=s({queryKey:["user-role-admin",e],queryFn:async()=>{if(!e)return!1;const{data:r}=await t.from("user_roles").select("role").eq("user_id",e).eq("role","admin").maybeSingle();return!!r},enabled:!!e,staleTime:6e5,gcTime:18e5});return!!a};export{i as u};

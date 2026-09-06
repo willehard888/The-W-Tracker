@@ -1,0 +1,1 @@
+import{r}from"./vendor-ww25odCS.js";const f=(e,s=300)=>{const o=r.useRef(e),[u,t]=r.useState(!1);return r.useEffect(()=>{const n=o.current;if(o.current=e,!e||n){t(!1);return}t(!0);const p=setTimeout(()=>t(!1),s);return()=>clearTimeout(p)},[e,s]),u};export{f as u};

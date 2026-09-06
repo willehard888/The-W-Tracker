@@ -1,0 +1,49 @@
+{
+  "" : {
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/RevenuecatPurchasesCapacitor-primary.dia",
+    "emit-module-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/RevenuecatPurchasesCapacitor-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/RevenuecatPurchasesCapacitor-primary-emit-module.dia",
+    "pch" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/RevenuecatPurchasesCapacitor-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/RevenuecatPurchasesCapacitor-primary.swiftdeps"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@revenuecat/purchases-capacitor/ios/Sources/RevenuecatPurchasesCapacitor/CAPPluginCallExtensions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/CAPPluginCallExtensions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@revenuecat/purchases-capacitor/ios/Sources/RevenuecatPurchasesCapacitor/PluginHelperExtensions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PluginHelperExtensions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@revenuecat/purchases-capacitor/ios/Sources/RevenuecatPurchasesCapacitor/PropertySetterPluginExtensions.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PropertySetterPluginExtensions~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@revenuecat/purchases-capacitor/ios/Sources/RevenuecatPurchasesCapacitor/PurchasesPlugin.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RevenuecatPurchasesCapacitor.build/Objects-normal/arm64/PurchasesPlugin~partial.swiftmodule"
+  }
+}

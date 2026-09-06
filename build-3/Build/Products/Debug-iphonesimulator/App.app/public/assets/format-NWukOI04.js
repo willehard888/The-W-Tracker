@@ -1,0 +1,1 @@
+import{br as o}from"./index-BXMmS4YU.js";const i={"0.25":"¼","0.5":"½","0.75":"¾"};function u(r){if(!Number.isFinite(r))return"";if(r<0)return String(-o(-r,2));const t=Math.floor(r),e=i[String(o(r-t,2))];return e?t===0?e:`${t}${e}`:String(o(r,2))}function f(r){return r.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ")}export{u as f,f as n};

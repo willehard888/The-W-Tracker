@@ -1,0 +1,59 @@
+{
+  "" : {
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/CapacitorStatusBar-primary.dia",
+    "emit-module-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/CapacitorStatusBar-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/CapacitorStatusBar-primary-emit-module.dia",
+    "pch" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/CapacitorStatusBar-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/CapacitorStatusBar-primary.swiftdeps"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/status-bar/ios/Sources/StatusBarPlugin/StatusBar.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBar~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/status-bar/ios/Sources/StatusBarPlugin/StatusBarConfig.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarConfig~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/status-bar/ios/Sources/StatusBarPlugin/StatusBarInfo.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarInfo~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/status-bar/ios/Sources/StatusBarPlugin/StatusBarPlugin.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/StatusBarPlugin~partial.swiftmodule"
+  },
+  "/Users/rasmuspetterson/The-W-Tracker/node_modules/@capacitor/status-bar/ios/Sources/StatusBarPlugin/UIColor.swift" : {
+    "const-values" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor.swiftconstvalues",
+    "dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor.d",
+    "diagnostics" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor.o",
+    "llvm-bc" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor.bc",
+    "object" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor.o",
+    "swift-dependencies" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor.swiftdeps",
+    "swiftmodule" : "/Users/rasmuspetterson/The-W-Tracker/build-3/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/CapacitorStatusBar.build/Objects-normal/arm64/UIColor~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,10 @@
+framework module CapacitorLocalNotifications {
+  umbrella header "CapacitorLocalNotifications-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module CapacitorLocalNotifications.__Swift {
+  exclude header "CapacitorLocalNotifications-Swift.h"
+}

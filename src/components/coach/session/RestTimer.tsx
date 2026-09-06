@@ -30,16 +30,23 @@ const RestTimer = ({
   const [endsAt, setEndsAt] = useState(() => Date.now() + seconds * 1000);
   const [remaining, setRemaining] = useState(seconds);
   const firedRef = useRef(false);
+  // The parent passes inline callbacks; reading them through a ref keeps the
+  // interval alive across parent renders instead of rebuilding it four times a
+  // second.
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
     const tick = () => {
-      const left = (endsAt - Date.now()) / 1000;
-      setRemaining(left);
+      // Whole seconds: the display cannot show less, and a float re-rendered
+      // the row on every 250 ms tick for nothing.
+      const left = Math.ceil((endsAt - Date.now()) / 1000);
+      setRemaining((prev) => (prev === left ? prev : left));
       if (left <= 0 && !firedRef.current) {
         firedRef.current = true;
         // A buzz is the point: the athlete is not looking at the screen.
         hapticNotification("success");
-        onDone?.();
+        onDoneRef.current?.();
       }
     };
     tick();
@@ -51,7 +58,7 @@ const RestTimer = ({
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", tick);
     };
-  }, [endsAt, onDone]);
+  }, [endsAt]);
 
   const over = remaining <= 0;
   const pct = Math.max(0, Math.min(1, remaining / seconds));

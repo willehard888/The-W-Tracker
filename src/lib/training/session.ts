@@ -70,17 +70,6 @@ export const startOfLocalDayISO = (now: Date = new Date()): string => {
   return d.toISOString();
 };
 
-/** Was this timestamp written today, in the athlete's own timezone? */
-export const isToday = (iso?: string | null, now: Date = new Date()): boolean => {
-  if (!iso) return false;
-  const t = new Date(iso);
-  if (Number.isNaN(t.getTime())) return false;
-  return (
-    t.getFullYear() === now.getFullYear() &&
-    t.getMonth() === now.getMonth() &&
-    t.getDate() === now.getDate()
-  );
-};
 
 /** Display label for a day, e.g. "Push · 45 min · 5 exercises". */
 export const daySummary = (day?: ProgramDayShape | null): string => {

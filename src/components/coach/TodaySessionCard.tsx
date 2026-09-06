@@ -62,6 +62,10 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
         week: currentWeek,
         day_index: todayDayIndex,
         completed: true,
+        // The runner's start() may have left this row in_progress; PostgREST
+        // upserts only the columns given, so say it explicitly.
+        status: "completed",
+        logged_at: new Date().toISOString(),
       },
       { onConflict: "program_id,week,day_index" },
     );

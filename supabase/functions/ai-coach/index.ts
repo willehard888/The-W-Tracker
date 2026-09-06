@@ -23,6 +23,7 @@ import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { sportName, sportBreakdown } from "../_shared/sports.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
+import { programWeekState } from "../_shared/program-week.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -438,16 +439,6 @@ Deno.serve(async (req) => {
     // ── Stage 2: the only two gathers with stage-1 dependencies
     // (situation needs profile.streak; program logs need the program id).
     const program: any = programRes.data ?? null;
-    let todaySession: any = null;
-    if (program?.plan_json?.weeks) {
-      const started = new Date(program.started_on);
-      const now = new Date();
-      const diffDays = Math.max(0, Math.floor((now.getTime() - new Date(started.getFullYear(), started.getMonth(), started.getDate()).getTime()) / 86400_000));
-      const weekIdx = Math.min(program.weeks ?? 1, Math.floor(diffDays / 7) + 1);
-      const dayIdx = (now.getDay() + 6) % 7;
-      const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
-      todaySession = wk?.days?.[dayIdx] ?? null;
-    }
 
     const tzOffset = typeof body?.tz_offset === "number" ? body.tz_offset : undefined;
     const [situation, logsRes] = await Promise.all([
@@ -462,10 +453,20 @@ Deno.serve(async (req) => {
             .eq("user_id", userId)
             .eq("program_id", program.id)
             .order("logged_at", { ascending: false })
-            .limit(5)
         : Promise.resolve({ data: [] as any[] }),
     ]);
-    const recentLogs = (logsRes as any).data ?? [];
+    const allLogs: any[] = (logsRes as any).data ?? [];
+    const recentLogs = allLogs.slice(0, 5);
+    // Today's session in the week the athlete is actually in (calendar AND
+    // logs — the runner's week, see _shared/program-week.ts).
+    let todaySession: any = null;
+    if (program?.plan_json?.weeks) {
+      const now = new Date();
+      const weekIdx = programWeekState({ startedOn: program.started_on, weeks: program.weeks, logs: allLogs, now }).currentWeek;
+      const dayIdx = (now.getDay() + 6) % 7;
+      const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
+      todaySession = wk?.days?.[dayIdx] ?? null;
+    }
     // The seeded post-check-in chat used to arrive as an unexplained
     // assistant turn — the model didn't know the conversation continues
     // straight from the check-in the athlete JUST submitted.

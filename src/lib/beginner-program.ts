@@ -174,7 +174,7 @@ export const createBeginnerProgram = async (opts: {
       // The column has existed since the first migration and every row until
       // now said "auto", because nothing ever asked. These rows say what they
       // actually are.
-      experience: block === 1 ? "beginner_block_1" : "beginner_block_2",
+      experience: BLOCK_EXPERIENCE[block],
       days_per_week: TRAIN_DAY_INDEXES.length,
       equipment: (opts.equipment ?? []).join(", ") || "Full gym",
       body_focus: [],

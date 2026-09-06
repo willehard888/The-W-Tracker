@@ -12,6 +12,7 @@ import {
 } from "@/components/skeletons/PageSkeleton";
 import CheckinSkeleton from "@/components/checkin/CheckinSkeleton";
 import CoachSkeleton from "@/components/coach/CoachSkeleton";
+import SessionSkeleton from "@/components/coach/session/SessionSkeleton";
 
 /**
  * Suspense fallback for lazy routes — a skeleton matched to the destination
@@ -27,6 +28,7 @@ const RouteFallback = () => {
   if (is("/checkin")) return <CheckinSkeleton />;
   if (is("/nutrition")) return <NutritionSkeleton />;
   if (is("/leaderboard")) return <LeaderboardSkeleton />;
+  if (is("/coach/session/")) return <SessionSkeleton />;
   if (is("/coach")) return <CoachSkeleton />;
   if (is("/profile", "/user/")) return <ProfileSkeleton />;
   if (is("/feed", "/squad")) return <FeedSkeleton />;
@@ -39,6 +41,7 @@ const RouteFallback = () => {
       </div>
     );
   }
+  if (/^\/exercises\/./.test(pathname)) return <SubPageSkeleton />;
   if (is("/messages", "/tribes", "/battles", "/friends", "/recipes", "/exercises", "/vault")) return <ListSkeleton />;
   return <SubPageSkeleton />;
 };

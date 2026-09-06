@@ -271,8 +271,8 @@ export type Database = {
           timezone?: string
           tone_pref?: string
           training_days_pref?: number[]
-          updated_at?: string
           training_experience?: string | null
+          updated_at?: string
           user_id: string
           wake_time?: string
           weight_kg?: number | null
@@ -305,8 +305,8 @@ export type Database = {
           timezone?: string
           tone_pref?: string
           training_days_pref?: number[]
-          updated_at?: string
           training_experience?: string | null
+          updated_at?: string
           user_id?: string
           wake_time?: string
           weight_kg?: number | null
@@ -3899,6 +3899,7 @@ export type Database = {
           p_program: string
           p_reps: number
           p_rpe?: number
+          p_set_index?: number
           p_slug: string
           p_week: number
           p_weight: number
@@ -3997,6 +3998,7 @@ export type Database = {
           program_id: string | null
           reps: number | null
           rpe: number | null
+          set_index: number
           updated_at: string
           user_id: string
           week: number | null
@@ -4263,6 +4265,7 @@ export type Database = {
           timezone: string
           tone_pref: string
           training_days_pref: number[]
+          training_experience: string | null
           updated_at: string
           user_id: string
           wake_time: string

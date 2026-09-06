@@ -10,6 +10,7 @@ import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-person
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
+import { programWeekState } from "../_shared/program-week.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -606,15 +607,18 @@ Deno.serve(async (req) => {
     // Recent program logs (for missed sessions + last RPE)
     let lastRpe: number | null = null;
     let missedSessions7d = 0;
+    // Every log of the block, not just the last week: the week the athlete is
+    // in is derived from what they logged (see _shared/program-week.ts).
+    let programLogs: any[] = [];
     if (program) {
       const { data: logs } = await supabase
         .from("coach_program_logs")
         .select("perceived_rpe, logged_at, week, day_index, completed")
         .eq("user_id", userId)
         .eq("program_id", program.id)
-        .gte("logged_at", sevenDaysAgo)
         .order("logged_at", { ascending: false });
-      const arr = (logs ?? []) as any[];
+      programLogs = (logs ?? []) as any[];
+      const arr = programLogs.filter((l) => l.logged_at >= sevenDaysAgo);
       const withRpe = arr.find((l) => l.perceived_rpe != null);
       lastRpe = withRpe?.perceived_rpe ?? null;
       // crude estimate: planned target sessions per week vs completed
@@ -657,10 +661,10 @@ Deno.serve(async (req) => {
     // Resolve today's program day (Mon=0..Sun=6)
     let todayDay: any = null;
     if (program) {
-      const started = new Date(program.started_on);
       const today = new Date();
-      const days = Math.floor((today.getTime() - started.setHours(0, 0, 0, 0)) / 86400_000);
-      const week = Math.min(program.weeks ?? 4, Math.max(1, Math.floor(days / 7) + 1));
+      // Calendar AND logs — the same week the runner shows, so the plan never
+      // prescribes week 4 to someone the client shows on week 2.
+      const week = programWeekState({ startedOn: program.started_on, weeks: program.weeks, logs: programLogs, now: today }).currentWeek;
       const js = today.getDay();
       const dayIdx = (js + 6) % 7;
       const w = (program.plan_json?.weeks ?? []).find((x: any) => x.week === week);

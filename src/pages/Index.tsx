@@ -1,3 +1,4 @@
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import { fmtDate } from "@/lib/format";
 import { fmtInt } from "@/lib/format";
 import { ChevronRight, Award, ArrowUp, Crown } from "lucide-react";
@@ -56,6 +57,7 @@ const Index = () => {
     import("@/pages/DailyCheckin");
   }, 2500), []);
   const { profile } = useAuth();
+  const { hasAccess } = useTrialAccess();
   // Contextual onboarding (Blueprint triggers): Today intro on first visit;
   // streak card once a streak exists; progression once XP exists (also
   // chained from STREAK_INTRO). Eligibility/dedup is the provider's job.
@@ -390,7 +392,7 @@ const Index = () => {
       {/* APPLE HEALTH — the ask that makes check-ins verifiable. Native only,
           until connected; renders nothing on web/Android. */}
       {isNativePlatform() && !healthConnected && (
-        <div className="home-rise home-rise-4 mb-6 relative z-10">
+        <div className="home-rise home-rise-3 mb-6 relative z-10">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
           </ErrorBoundary>
@@ -402,11 +404,16 @@ const Index = () => {
              keep Home's whole gold budget. Before this the day's exercises
              lived on exactly one screen two taps away, and nothing on Home
              ever mentioned them. ── */}
-      <div className="home-rise home-rise-4 mb-6 relative z-10">
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <TrainingZone />
-        </ErrorBoundary>
-      </div>
+      {/* Boot cost: two small reads (active program, newest 60 logs) in
+             parallel, cached 10 / 5 min and shared with /coach — only for
+             members, who are the only people who can hold a program. */}
+      {hasAccess && (
+        <div className="home-rise home-rise-3 mb-6 relative z-10">
+          <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+            <TrainingZone />
+          </ErrorBoundary>
+        </div>
+      )}
 
       {/* ── COACH — a whisper, not a card. The coach's one line in its own
              voice; a low quiet band so it reads as a presence, never a second

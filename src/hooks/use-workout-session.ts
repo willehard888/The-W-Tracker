@@ -112,6 +112,10 @@ export const useWorkoutSession = (programId?: string | null, week?: number, day?
           status: "completed",
           started_at: startedAt ?? null,
           duration_sec: durationSec,
+          // The check-in bridge asks "was a session completed today?" through
+          // logged_at. It defaulted to row creation — the moment the runner was
+          // opened — so a session finished after midnight credited the wrong day.
+          logged_at: new Date().toISOString(),
         },
         { onConflict: CONFLICT },
       );

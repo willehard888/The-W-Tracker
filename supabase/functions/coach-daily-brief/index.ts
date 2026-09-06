@@ -7,6 +7,7 @@ import { gatherProgression, buildProgressionBlock } from "../_shared/progression
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
+import { programWeekState } from "../_shared/program-week.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,10 +75,14 @@ Deno.serve(async (req) => {
     let weekIdx = 1;
     let dayIdx = 0;
     if (program?.plan_json?.weeks) {
-      const started = new Date(program.started_on);
+      // Calendar AND logs — the week the runner shows (_shared/program-week.ts).
+      const { data: logs } = await sb
+        .from("coach_program_logs")
+        .select("week, completed")
+        .eq("user_id", uid)
+        .eq("program_id", program.id);
       const now = new Date();
-      const diffDays = Math.max(0, Math.floor((now.getTime() - new Date(started.getFullYear(), started.getMonth(), started.getDate()).getTime()) / 86400_000));
-      weekIdx = Math.min(program.weeks ?? 1, Math.floor(diffDays / 7) + 1);
+      weekIdx = programWeekState({ startedOn: program.started_on, weeks: program.weeks, logs: (logs ?? []) as any[], now }).currentWeek;
       dayIdx = (now.getDay() + 6) % 7;
       const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
       todaySession = wk?.days?.[dayIdx] ?? null;

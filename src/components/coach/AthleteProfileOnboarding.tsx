@@ -187,6 +187,9 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
     {
       title: "Have you trained before?",
       sub: "There is no wrong answer here. It decides where we start you.",
+      // Not optional: a null answer reads as "experienced" downstream, which is
+      // exactly the person the written beginner path exists to catch.
+      required: true,
       content: (
         <div className="space-y-2">
           {EXPERIENCE.map(e => (
@@ -438,6 +441,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
   // It used to be `step === 3`, which silently pointed at the wrong step the
   // moment a step was inserted ahead of it.
   const optional = !!(cur as { optional?: boolean }).optional;
+  const blocked = !!(cur as { required?: boolean }).required && !draft.training_experience;
 
   const next = async () => {
     if (last) {
@@ -492,7 +496,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
             <ChevronLeft size={16} /> Back
           </Button>
         )}
-        <Button variant="ember" size="lg" className="flex-1" loading={isSaving} onClick={next}>
+        <Button variant="ember" size="lg" className="flex-1" loading={isSaving} disabled={blocked} onClick={next}>
           {last ? "Lock it in" : optional ? "Continue" : "Next"} {!last && <ChevronRight size={16} />}
         </Button>
       </div>

@@ -873,10 +873,6 @@
   .rep-phase-a { animation-name: rep-phase-a; }
   .rep-phase-b { animation-name: rep-phase-b; }
 
-  .animate-reveal-delay-1 { animation-delay: 80ms; }
-  .animate-reveal-delay-2 { animation-delay: 160ms; }
-  .animate-reveal-delay-3 { animation-delay: 240ms; }
-  .animate-reveal-delay-4 { animation-delay: 320ms; }
 
   /* HOME ENTRANCE — the screen settling into place on open. One authored
      grammar for the first-viewport cascade: a short blur-rise, spring-eased,
@@ -1252,16 +1248,6 @@
   100%      { opacity: 0; }
 }
 
-@keyframes reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
 
 /* Home first-viewport entrance — blur-rise settle. Emil's blur-to-mask on
    entry: the element resolves from a soft, slightly-shrunk, lifted state, so

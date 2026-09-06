@@ -6,7 +6,6 @@ import {
   isTrainingDay,
   daySummary,
   startOfLocalDayISO,
-  isToday,
 } from "@/lib/training/session";
 
 /**
@@ -153,32 +152,3 @@ describe("startOfLocalDayISO", () => {
   });
 });
 
-describe("isToday", () => {
-  const now = new Date(2026, 8, 5, 12, 0, 0);
-
-  it("accepts a session logged late the same local evening", () => {
-    // The case that a UTC comparison gets wrong.
-    expect(isToday(new Date(2026, 8, 5, 23, 45, 0).toISOString(), now)).toBe(true);
-  });
-
-  it("accepts one logged just after local midnight this morning", () => {
-    expect(isToday(new Date(2026, 8, 5, 0, 5, 0).toISOString(), now)).toBe(true);
-  });
-
-  it("rejects yesterday and tomorrow", () => {
-    expect(isToday(new Date(2026, 8, 4, 23, 59, 0).toISOString(), now)).toBe(false);
-    expect(isToday(new Date(2026, 8, 6, 0, 1, 0).toISOString(), now)).toBe(false);
-  });
-
-  it("rejects the same date in another month or year", () => {
-    expect(isToday(new Date(2026, 7, 5, 12, 0, 0).toISOString(), now)).toBe(false);
-    expect(isToday(new Date(2025, 8, 5, 12, 0, 0).toISOString(), now)).toBe(false);
-  });
-
-  it("is false for missing or unparseable input rather than throwing", () => {
-    expect(isToday(null, now)).toBe(false);
-    expect(isToday(undefined, now)).toBe(false);
-    expect(isToday("", now)).toBe(false);
-    expect(isToday("not a date", now)).toBe(false);
-  });
-});

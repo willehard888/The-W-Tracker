@@ -12,7 +12,7 @@ import { coachingFor, type ExerciseCoaching } from "@/data/exercise-coaching";
  *
  * Both read the same `EXERCISE_COACHING` entry. Nothing is written twice, and
  * an exercise without coaching renders nothing at all rather than an empty
- * heading — 229 of the 269 illustrated movements are still in that state.
+ * heading — most of the 269 illustrated movements are still in that state.
  */
 
 const Label = ({ children }: { children: React.ReactNode }) => (

@@ -192,4 +192,3 @@ export const BLOCK_2_WEEKS: PathWeek[] = [
 ];
 
 /** Which weekdays the path trains on. Mon / Wed / Fri, a day off between. */
-export const PATH_TRAIN_DAYS = ["Mon", "Wed", "Fri"] as const;

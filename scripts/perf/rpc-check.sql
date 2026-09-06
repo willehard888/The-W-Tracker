@@ -72,6 +72,7 @@ INSERT INTO public.workout_set_logs (user_id, exercise_slug, exercise_name, weig
   (:'A', 'squat', 'Squat', 100, 5, current_date - 10, now() - interval '10 days'),
   (:'A', 'squat', 'Squat', 110, 5, current_date - 1,  now() - interval '1 day'),
   (:'A', 'squat', 'Squat', 105, 5, current_date - 5,  now() - interval '5 days'),
+  (:'A', 'squat', 'Squat', 90,  8, current_date - 1,  now() - interval '1 day'),   -- a lighter set the same day: collapses
   (:'B', 'bench', 'Bench', 100, 5, current_date - 1,  now());
 INSERT INTO public.tribes (id, owner_id, visibility) VALUES ('bbbbbbbb-0000-4000-8000-00000000000b', :'B', 'private');
 INSERT INTO public.tribe_members (tribe_id, user_id) VALUES ('bbbbbbbb-0000-4000-8000-00000000000b', :'A'), ('bbbbbbbb-0000-4000-8000-00000000000b', :'B');
@@ -164,8 +165,8 @@ BEGIN
   ASSERT p->'lessons' = '[{"quiz_score": 80}]'::jsonb, 'lessons: ' || (p->'lessons')::text;
   ASSERT (p->>'lessons_total')::int = 3, 'lessons_total: ' || (p->>'lessons_total');
 
-  -- lifts: own, newest-first
-  ASSERT jsonb_array_length(p->'lifts') = 3, 'lifts count';
+  -- lifts: own, newest-first, one row per exercise-day (the heaviest set)
+  ASSERT jsonb_array_length(p->'lifts') = 3, 'lifts count (per-set rows collapsed): ' || (p->'lifts')::text;
   ASSERT (p->'lifts'->0->>'weight')::numeric = 110 AND (p->'lifts'->1->>'weight')::numeric = 105 AND (p->'lifts'->2->>'weight')::numeric = 100,
     'lifts newest-first: ' || (p->'lifts')::text;
   ASSERT p->'lifts'->0 ?& ARRAY['exercise_slug','exercise_name','weight','reps'], 'lift columns';

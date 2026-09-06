@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -87,6 +88,9 @@ export interface ProgramLog {
   week: number;
   day_index: number;
   completed: boolean;
+  status?: string;
+  started_at?: string | null;
+  duration_sec?: number | null;
   perceived_rpe: number | null;
   notes: string | null;
   logged_at: string;
@@ -107,9 +111,10 @@ export const useCoachProgram = () => {
     staleTime: 10 * 60_000,  // program rarely changes mid-session
     gcTime:    30 * 60_000,
     queryFn: async () => {
+      // Home mounts this too (TrainingZone): name the columns, not "*".
       const { data, error } = await supabase
         .from("coach_programs")
-        .select("*")
+        .select("id, user_id, status, goal, experience, days_per_week, equipment, body_focus, constraints, weeks, plan_json, ai_summary, started_on, created_at")
         .eq("user_id", user!.id)
         .eq("status", "active")
         .order("created_at", { ascending: false })
@@ -120,24 +125,31 @@ export const useCoachProgram = () => {
     },
   });
 
+  // Fetched alongside the program, not after it: chaining on the program id
+  // cost Home a second round trip. Newest 60 rows for the user, narrowed to
+  // the active program below (a superseded block's logs must not count).
   const logsQuery = useQuery({
-    queryKey: ["coach-program-logs", user?.id, programQuery.data?.id],
-    enabled: !!user?.id && !!programQuery.data?.id,
+    queryKey: ["coach-program-logs", user?.id],
+    enabled: !!user?.id,
     staleTime: 5 * 60_000,
     gcTime:    15 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coach_program_logs")
-        .select("*")
+        .select("id, program_id, week, day_index, completed, status, started_at, duration_sec, perceived_rpe, notes, logged_at")
         .eq("user_id", user!.id)
-        .eq("program_id", programQuery.data!.id);
+        .order("logged_at", { ascending: false })
+        .limit(60);
       if (error) throw error;
       return (data ?? []) as ProgramLog[];
     },
   });
 
   const program = programQuery.data ?? null;
-  const logs = logsQuery.data ?? [];
+  const logs = useMemo(
+    () => (program ? (logsQuery.data ?? []).filter((l) => l.program_id === program.id) : []),
+    [logsQuery.data, program],
+  );
 
   // Where the athlete is, from the calendar AND from what they logged.
   //

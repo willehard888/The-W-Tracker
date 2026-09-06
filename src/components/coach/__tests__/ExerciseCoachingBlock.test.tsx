@@ -36,7 +36,7 @@ describe("ExerciseCoachingBlock", () => {
     expect(screen.queryByText(coaching.harder)).not.toBeInTheDocument();
   });
 
-  it("renders nothing at all for the 229 exercises without coaching", () => {
+  it("renders nothing at all for an exercise without coaching", () => {
     // Not an empty "Coaching" heading — nothing.
     const { container } = render(<ExerciseCoachingBlock slug="no-coaching-here" />);
     expect(container).toBeEmptyDOMElement();

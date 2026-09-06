@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Check, ChevronRight, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import { candidatesForName } from "@/lib/exercise-match";
 import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
+import SessionSkeleton from "@/components/coach/session/SessionSkeleton";
 import PageBar from "@/components/ui/page-bar";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 import { dayFocus } from "@/lib/training/session";
@@ -20,7 +21,6 @@ import { fmtUnit } from "@/lib/format";
 import {
   buildSessionPlan,
   sessionProgress,
-  setsDoneFor,
   suggestedLoad,
   sessionVolume,
 } from "@/lib/training/runner";
@@ -120,11 +120,15 @@ const CoachSession = () => {
   const day = Number(params.day);
 
   const { program, isLoading: programLoading } = useCoachProgram();
-  const { session, start, finish, isFinishing } = useWorkoutSession(program?.id, week, day);
+  const { session, isLoading: sessionLoading, start, finish, isFinishing } = useWorkoutSession(program?.id, week, day);
   const { data: daySets } = useDaySets(program?.id, week, day);
   const logSet = useLogSet();
 
   const [restFor, setRestFor] = useState<number | null>(null);
+  // Bumped on every logged set: the timer is keyed on it, so the same rest
+  // length twice in a row still restarts the clock (a plain state write with
+  // an equal value is a no-op and left the previous deadline running).
+  const [restToken, setRestToken] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
 
   const planDay = program?.plan_json?.weeks?.find((w) => w.week === week)?.days?.[day];
@@ -133,6 +137,7 @@ const CoachSession = () => {
   const progress = sessionProgress(plan, logged);
 
   const current = progress.currentExerciseIndex >= 0 ? plan[progress.currentExerciseIndex] : null;
+  const summaryShown = progress.isComplete || showSummary || !!session?.completed;
   const illustrated = useMemo(() => {
     if (!current) return null;
     for (const cand of candidatesForName(current.name)) {
@@ -148,26 +153,24 @@ const CoachSession = () => {
   // state — these only say when the moment is right. FIRST_WORKOUT_INTRO chains
   // to the logging spotlight, so the pair costs one teaching moment rather than
   // two interruptions in the middle of a warm-up.
-  useOnboardingTrigger("FIRST_WORKOUT_INTRO", plan.length > 0 && !session?.completed);
-  useOnboardingTrigger("WORKOUT_COMPLETE_INTRO", !!session?.completed);
+  useOnboardingTrigger("FIRST_WORKOUT_INTRO", plan.length > 0 && !summaryShown);
+  // On the summary, not on `session.completed`: the finish button navigates
+  // away in the same handler, so the completed row never re-rendered here.
+  useOnboardingTrigger("WORKOUT_COMPLETE_INTRO", summaryShown);
   const loggingTargetRef = useSpotlightTarget("WORKOUT_LOGGING_INTRO");
 
   // Mark the session started once, when the runner opens on a real session.
+  // Only once the session row has been read: on a cold open both guards below
+  // passed while the query was still in flight, and start() overwrote a
+  // finished session with in_progress.
   useEffect(() => {
-    if (!program?.id || !plan.length || session?.completed) return;
+    if (!program?.id || !plan.length || sessionLoading || session?.completed) return;
     if (session?.started_at) return;
     void start().catch(() => { /* a failed start must never block training */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [program?.id, plan.length, session?.started_at, session?.completed]);
+  }, [program?.id, plan.length, sessionLoading, session?.started_at, session?.completed]);
 
-  if (programLoading) {
-    return (
-      <div className="px-4 pt-6 space-y-3">
-        <div className="skeleton-block h-6 w-1/2" />
-        <div className="skeleton-block h-48 w-full" />
-      </div>
-    );
-  }
+  if (programLoading) return <SessionSkeleton />;
 
   if (!program || !planDay || plan.length === 0) {
     return (
@@ -183,10 +186,8 @@ const CoachSession = () => {
     );
   }
 
-  const doneAll = progress.isComplete || showSummary || !!session?.completed;
-
   // ── Summary ───────────────────────────────────────────────────────────────
-  if (doneAll) {
+  if (summaryShown) {
     const volume = sessionVolume(logged);
     const mins = session?.duration_sec ? Math.max(1, Math.round(session.duration_sec / 60)) : null;
     return (
@@ -250,7 +251,6 @@ const CoachSession = () => {
   }
 
   // ── Active session ────────────────────────────────────────────────────────
-  const done = current ? setsDoneFor(current, logged[current.slug]) : 0;
   const nextSet = progress.currentSetIndex;
   const suggestion = suggestedLoad(history, nextSet, logged[current!.slug]);
 
@@ -268,7 +268,8 @@ const CoachSession = () => {
         setIndex,
       });
       // Rest only after a set that leaves more to do — never after the last one.
-      if (setIndex < current.sets) setRestFor(current.restSec);
+      if (setIndex < current.sets) { setRestFor(current.restSec); setRestToken((t) => t + 1); }
+      else setRestFor(null);
     } catch {
       toast.error("Couldn't save that set.");
     }
@@ -329,9 +330,9 @@ const CoachSession = () => {
 
             {restFor != null && (
               <RestTimer
+                key={restToken}
                 seconds={restFor}
                 onDismiss={() => setRestFor(null)}
-                onDone={() => setRestFor(null)}
               />
             )}
 
@@ -360,16 +361,6 @@ const CoachSession = () => {
               })}
             </div>
 
-            {done >= current.sets && (
-              <Button
-                variant="ember"
-                size="lg"
-                className="w-full"
-                onClick={() => { hapticImpact("medium"); setRestFor(null); }}
-              >
-                Next exercise <ChevronRight size={16} />
-              </Button>
-            )}
           </>
         )}
 

@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { writeWorkoutToHealth } from "@/lib/health/workout-write";
 
 /**
  * The lifecycle of one workout: started, finished, how long it took.
@@ -102,6 +103,7 @@ export const useWorkoutSession = (programId?: string | null, week?: number, day?
       const durationSec = startedAt
         ? Math.max(0, Math.min(43200, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000)))
         : null;
+      const now = new Date().toISOString();
       const { error } = await supabase.from("coach_program_logs").upsert(
         {
           user_id: user!.id,
@@ -115,11 +117,14 @@ export const useWorkoutSession = (programId?: string | null, week?: number, day?
           // The check-in bridge asks "was a session completed today?" through
           // logged_at. It defaulted to row creation — the moment the runner was
           // opened — so a session finished after midnight credited the wrong day.
-          logged_at: new Date().toISOString(),
+          logged_at: now,
         },
         { onConflict: CONFLICT },
       );
       if (error) throw error;
+      // Apple Health, after our own row is safe. Opt-in and fail-open inside;
+      // a measured session is the only kind worth writing.
+      if (startedAt) void writeWorkoutToHealth({ id: `${programId}-${week}-${day}`, startIso: startedAt, endIso: now });
       return durationSec;
     },
     onSuccess: invalidate,

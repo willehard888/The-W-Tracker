@@ -3,6 +3,10 @@ import {
   markHealthConnected,
   hasHealthConsent,
   clearHealthConsent,
+  markWorkoutWriteEnabled,
+  hasWorkoutWriteConsent,
+  clearWorkoutWriteConsent,
+  WORKOUT_WRITE_CONSENT_KEY,
 } from "@/lib/health/health-consent";
 
 describe("health-consent", () => {
@@ -39,5 +43,45 @@ describe("health-consent", () => {
       throw new Error("quota");
     });
     expect(() => markHealthConnected()).not.toThrow();
+  });
+});
+
+describe("workout write consent", () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
+
+  it("is off until the athlete turns it on, independent of the read consent", () => {
+    expect(hasWorkoutWriteConsent()).toBe(false);
+    markHealthConnected();
+    expect(hasWorkoutWriteConsent()).toBe(false);
+    markWorkoutWriteEnabled();
+    expect(hasWorkoutWriteConsent()).toBe(true);
+    expect(localStorage.getItem(WORKOUT_WRITE_CONSENT_KEY)).toBe("1");
+  });
+
+  it("clears on sign-out without touching the read consent", () => {
+    markHealthConnected();
+    markWorkoutWriteEnabled();
+    clearWorkoutWriteConsent();
+    expect(hasWorkoutWriteConsent()).toBe(false);
+    expect(hasHealthConsent()).toBe(true);
+  });
+
+  it("fails closed when storage throws", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("denied");
+    });
+    expect(hasWorkoutWriteConsent()).toBe(false);
+  });
+
+  it("does not throw when storage is unwritable or unremovable", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("quota");
+    });
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+      throw new Error("denied");
+    });
+    expect(() => markWorkoutWriteEnabled()).not.toThrow();
+    expect(() => clearWorkoutWriteConsent()).not.toThrow();
   });
 });

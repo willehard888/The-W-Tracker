@@ -27,7 +27,7 @@
 	<key>NSHealthShareUsageDescription</key>
 	<string>Whealth Factory reads your workouts, sleep, and steps from Apple Health to verify your daily check-ins. Verified check-ins earn the Verified Performer badge.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Whealth Factory can save the meals you log (calories, protein, carbs, fat, water, caffeine) to Apple Health, if you turn this on in Nutrition settings.</string>
+	<string>Whealth Factory can save the meals you log (calories, protein, carbs, fat, water, caffeine) and the workouts you finish to Apple Health, if you turn this on in the app.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Whealth Factory uses your camera so you can take proof photos and videos for your daily check-ins, battles, and the community feed, and scan food barcodes for your diary.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

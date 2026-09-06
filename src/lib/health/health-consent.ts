@@ -80,3 +80,34 @@ export const clearMealWriteConsent = (): void => {
     /* noop */
   }
 };
+
+/**
+ * Third consent: "save the workouts I finish to Apple Health". Offered once
+ * on the session summary; same device-scoped + fail-closed rules, swept by
+ * AuthContext.signOut.
+ */
+export const WORKOUT_WRITE_CONSENT_KEY = "w_health_write_workouts";
+
+export const markWorkoutWriteEnabled = (): void => {
+  try {
+    localStorage.setItem(WORKOUT_WRITE_CONSENT_KEY, "1");
+  } catch {
+    /* storage unavailable — the offer just comes back next time */
+  }
+};
+
+export const hasWorkoutWriteConsent = (): boolean => {
+  try {
+    return localStorage.getItem(WORKOUT_WRITE_CONSENT_KEY) === "1";
+  } catch {
+    return false; // fail CLOSED: never write health data on a guess
+  }
+};
+
+export const clearWorkoutWriteConsent = (): void => {
+  try {
+    localStorage.removeItem(WORKOUT_WRITE_CONSENT_KEY);
+  } catch {
+    /* noop */
+  }
+};

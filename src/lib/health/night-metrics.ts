@@ -39,6 +39,14 @@ export interface MealWriteArgs {
   caffeine_mg?: number;
 }
 
+/** Args for `writeWorkout` — one strength workout per finished session. */
+export interface WorkoutWriteArgs {
+  session_id: string;
+  /** ISO-8601. Under 60 s between them is skipped, not written. */
+  start: string;
+  end: string;
+}
+
 interface HealthNightPlugin {
   /** Read-only (night metrics) — share-free, called on every sync. */
   requestAuthorization(): Promise<{ granted: boolean }>;
@@ -47,6 +55,9 @@ interface HealthNightPlugin {
   requestMealWriteAuthorization(): Promise<{ granted: boolean }>;
   writeMeal(args: MealWriteArgs): Promise<{ written: boolean; samples?: number }>;
   deleteMeal(args: { meal_id: string }): Promise<{ deleted: number }>;
+  /** Share auth for the workout type only; rejects when HealthKit is unavailable. */
+  requestWorkoutWriteAuthorization(): Promise<{ granted: boolean }>;
+  writeWorkout(args: WorkoutWriteArgs): Promise<{ written: boolean }>;
 }
 
 // No web impl → calls reject on web, which we catch (fail-open).

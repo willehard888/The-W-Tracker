@@ -1,11 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Check, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
+import { Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { ActionRow } from "@/components/ActionRow";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { isNativePlatform } from "@/lib/platform";
+import {
+  enableWorkoutWrite,
+  hasWorkoutWriteConsent,
+  isWorkoutWriteDeclined,
+  markWorkoutWriteDeclined,
+  writeWorkoutToHealth,
+} from "@/lib/health/workout-write";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from "@/hooks/use-workout-log";
@@ -222,6 +231,12 @@ const CoachSession = () => {
   const [restToken, setRestToken] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const [finishAsk, setFinishAsk] = useState(false);
+  // Asked once, on the summary, only where Health exists: a yes turns it on
+  // for every session from here, a no is remembered.
+  const [healthAsk, setHealthAsk] = useState(
+    () => isNativePlatform() && !hasWorkoutWriteConsent() && !isWorkoutWriteDeclined(),
+  );
+  const [healthBusy, setHealthBusy] = useState(false);
 
   const planDay = program?.plan_json?.weeks?.find((w) => w.week === week)?.days?.[day];
   const plan = useMemo(() => buildSessionPlan(planDay?.blocks), [planDay]);
@@ -280,6 +295,22 @@ const CoachSession = () => {
     const volume = sessionVolume(logged);
     const mins = session?.duration_sec ? Math.max(1, Math.round(session.duration_sec / 60)) : null;
     const prs = sessionPRs(recent, logged, new Date().toLocaleDateString("en-CA"));
+    const acceptHealth = async () => {
+      setHealthBusy(true);
+      const ok = await enableWorkoutWrite();
+      if (ok && session?.started_at) {
+        // This session too — finish() only writes when it runs, and an already
+        // finished one would otherwise be the one workout that never landed.
+        const startMs = new Date(session.started_at).getTime();
+        const endIso = session.completed && session.duration_sec
+          ? new Date(startMs + session.duration_sec * 1000).toISOString()
+          : new Date().toISOString();
+        void writeWorkoutToHealth({ id: `${program.id}-${week}-${day}`, startIso: session.started_at, endIso });
+      }
+      if (!ok) toast("Apple Health didn't allow it", { description: "Turn on Workouts for Whealth Factory in Health › Sharing." });
+      setHealthBusy(false);
+      setHealthAsk(false);
+    };
     return (
       <div className="home-rise px-5 pt-8">
         <p className="eyebrow text-gold mb-2">Session complete</p>
@@ -322,6 +353,25 @@ const CoachSession = () => {
             and today's session now counts toward your check-in.
           </p>
         </div>
+
+        {healthAsk && (
+          <div className="surface-card surface-card-quiet mb-5">
+            <ActionRow
+              leading={
+                <span className="h-10 w-10 rounded-xl bg-card/60 border border-border/40 flex items-center justify-center">
+                  <HeartPulse size={16} className="text-muted-foreground" aria-hidden />
+                </span>
+              }
+              title="Save workouts to Apple Health"
+              subtitle="Every finished session, in Health"
+              acceptLabel="Turn on"
+              declineLabel="Not now"
+              busy={healthBusy}
+              onAccept={() => void acceptHealth()}
+              onDecline={() => { markWorkoutWriteDeclined(); setHealthAsk(false); }}
+            />
+          </div>
+        )}
 
         <Button
           variant="ember"

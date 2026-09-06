@@ -25,7 +25,9 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "queryNight", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestMealWriteAuthorization", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "writeMeal", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "deleteMeal", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "deleteMeal", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestWorkoutWriteAuthorization", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "writeWorkout", returnType: CAPPluginReturnPromise)
     ]
 
     private let store = HKHealthStore()
@@ -267,6 +269,71 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
             self.purgeMeal(mealId) { deleted, error in
                 if let error = error { call.reject(error.localizedDescription); return }
                 call.resolve(["deleted": deleted])
+            }
+        }
+    }
+
+    // MARK: - Workout write (finished session → Apple Health)
+    //
+    // Opt-in like meals, and share-only for the workout type. One strength
+    // workout per finished session, keyed by the session id so finishing the
+    // same day twice replaces the entry instead of adding a second one.
+
+    @objc func requestWorkoutWriteAuthorization(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.reject("HealthKit is not available on this device")
+            return
+        }
+        Self.hkQueue.async { [store] in
+            store.requestAuthorization(toShare: [HKObjectType.workoutType()], read: []) { success, error in
+                if let error = error { call.reject(error.localizedDescription); return }
+                // `success` only says the sheet was handled; the status says what
+                // the athlete chose (and reflects a later change in Health › Sharing).
+                let authorized = store.authorizationStatus(for: HKObjectType.workoutType()) == .sharingAuthorized
+                call.resolve(["granted": success && authorized])
+            }
+        }
+    }
+
+    @objc func writeWorkout(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.reject("HealthKit is not available on this device")
+            return
+        }
+        guard let sessionId = call.getString("session_id"), !sessionId.isEmpty else {
+            call.reject("session_id is required")
+            return
+        }
+        let start = Self.parseDate(call.getString("start")) ?? Date()
+        // HealthKit throws (not errors) on end < start — clamp, never crash.
+        let end = max(Self.parseDate(call.getString("end")) ?? start, start)
+        // A runner opened and closed is not a workout.
+        guard end.timeIntervalSince(start) >= 60 else {
+            call.resolve(["written": false])
+            return
+        }
+
+        let configuration = HKWorkoutConfiguration()
+        configuration.activityType = .traditionalStrengthTraining
+        let builder = HKWorkoutBuilder(healthStore: store, configuration: configuration, device: .local())
+        let metadata: [String: Any] = [
+            HKMetadataKeySyncIdentifier: "wf-session-\(sessionId)",
+            HKMetadataKeySyncVersion: 1
+        ]
+
+        Self.hkQueue.async {
+            builder.beginCollection(withStart: start) { _, error in
+                if let error = error { call.reject(error.localizedDescription); return }
+                builder.addMetadata(metadata) { _, error in
+                    if let error = error { call.reject(error.localizedDescription); return }
+                    builder.endCollection(withEnd: end) { _, error in
+                        if let error = error { call.reject(error.localizedDescription); return }
+                        builder.finishWorkout { workout, error in
+                            if let error = error { call.reject(error.localizedDescription); return }
+                            call.resolve(["written": workout != nil])
+                        }
+                    }
+                }
             }
         }
     }

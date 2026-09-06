@@ -7,7 +7,7 @@ import { identifyUser, resetIdentity, captureException } from "@/lib/observabili
 import { uniqueChannelName } from "@/lib/realtime";
 import { sameProfile } from "@/lib/profile-diff";
 import { clearIosDebug } from "@/lib/ios-debug";
-import { HEALTH_CONSENT_KEY, MEAL_WRITE_CONSENT_KEY } from "@/lib/health/health-consent";
+import { HEALTH_CONSENT_KEY, MEAL_WRITE_CONSENT_KEY, WORKOUT_WRITE_CONSENT_KEY } from "@/lib/health/health-consent";
 import { queryClient } from "@/lib/query-client";
 
 interface AuthContextType {
@@ -355,6 +355,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // data under their own name.
         HEALTH_CONSENT_KEY,
         MEAL_WRITE_CONSENT_KEY,
+        WORKOUT_WRITE_CONSENT_KEY,
       ].forEach(
         (k) => localStorage.removeItem(k),
       );

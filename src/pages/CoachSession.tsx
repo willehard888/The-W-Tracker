@@ -8,8 +8,7 @@ import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { useDaySets, useExerciseHistory, useLogSet } from "@/hooks/use-workout-log";
-import { findIllustrated } from "@/data/exercises-illustrated";
-import { candidatesForName } from "@/lib/exercise-match";
+import { resolveIllustration } from "@/lib/exercise-match";
 import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
@@ -138,14 +137,7 @@ const CoachSession = () => {
 
   const current = progress.currentExerciseIndex >= 0 ? plan[progress.currentExerciseIndex] : null;
   const summaryShown = progress.isComplete || showSummary || !!session?.completed;
-  const illustrated = useMemo(() => {
-    if (!current) return null;
-    for (const cand of candidatesForName(current.name)) {
-      const hit = findIllustrated(cand);
-      if (hit) return hit;
-    }
-    return null;
-  }, [current]);
+  const illustrated = useMemo(() => (current ? resolveIllustration(current.slug, current.name) : null), [current]);
 
   const { data: history } = useExerciseHistory(current?.slug ?? null);
 

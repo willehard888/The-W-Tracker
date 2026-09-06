@@ -1,3 +1,5 @@
+import { ILLUSTRATED_EXERCISES, findIllustrated, type IllustratedExercise } from "@/data/exercises-illustrated";
+import { ILLUSTRATION_BY_CATALOG } from "@/data/illustration-map";
 /**
  * Name → library-slug matching for coach-program exercise blocks.
  *
@@ -67,4 +69,34 @@ export const bestTokenSubsetSlug = (
     }
   }
   return best;
+};
+
+let byNormTitle: Map<string, string> | null = null;
+
+/**
+ * THE way to find the drawing for a prescribed movement: the explicit
+ * catalog → illustration table first, then the exact title lookup (with the
+ * name aliases), then the token-subset fallback. Used by the runner, the
+ * program rows and the library so all three show the same picture.
+ */
+export const resolveIllustration = (
+  catalogSlug?: string | null,
+  name?: string | null,
+): IllustratedExercise | null => {
+  const mapped = catalogSlug ? ILLUSTRATION_BY_CATALOG[catalogSlug] : undefined;
+  if (mapped) {
+    const hit = ILLUSTRATED_EXERCISES.find((e) => e.slug === mapped);
+    if (hit) return hit;
+  }
+  for (const cand of candidatesForName(name)) {
+    const hit = findIllustrated(cand);
+    if (hit) return hit;
+  }
+  if (!name) return null;
+  if (!byNormTitle) {
+    byNormTitle = new Map();
+    for (const e of ILLUSTRATED_EXERCISES) byNormTitle.set(normalizeExerciseName(e.title), e.slug);
+  }
+  const slug = bestTokenSubsetSlug(name, byNormTitle);
+  return slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) ?? null : null;
 };

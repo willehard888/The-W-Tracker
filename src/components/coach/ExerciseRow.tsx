@@ -7,9 +7,8 @@ import { useExerciseLibrary, resolveExercise, exerciseImgBranded } from "@/lib/e
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
 import { IllustrationThumb, IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
-import { findIllustrated } from "@/data/exercises-illustrated";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
-import { candidatesForName } from "@/lib/exercise-match";
+import { resolveIllustration } from "@/lib/exercise-match";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
 import Sparkline from "@/components/coach/Sparkline";
@@ -88,13 +87,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
 
   // Illustration first (the consistent hand-drawn set), then the duotone
   // photo, then the muscle-group glyph — every row stays on brand.
-  const illustrated = (() => {
-    for (const cand of candidatesForName(block.name)) {
-      const hit = findIllustrated(cand);
-      if (hit) return hit;
-    }
-    return ex ? findIllustrated(ex.name) : null;
-  })();
+  const illustrated = resolveIllustration(block.slug, block.name) ?? (ex ? resolveIllustration(null, ex.name) : null);
   const group = resolveGroup(block.name, ex?.primary);
   const hasMore = !!(ex || illustrated || block.notes || block.alt || block.rest_sec || block.tempo);
 

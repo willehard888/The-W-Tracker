@@ -84,6 +84,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                       );
                     }
                     const isLogged = logs.some((l) => l.week === week.week && l.day_index === di && l.completed);
+                    const inProgress = logs.some((l) => l.week === week.week && l.day_index === di && !l.completed && l.status === "in_progress");
                     const dayOpen = openDay === dayKey;
                     return (
                       <li key={dayKey}>
@@ -126,7 +127,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                                 session on any other day of the week had no way in. */}
                             {isCurrent && !isLogged && (
                               <li className="border-t border-border/35">
-                                <DoorRow label="Start this session" onClick={() => navigate(`/coach/session/${week.week}/${di}`)} />
+                                <DoorRow label={inProgress ? "Continue this session" : "Start this session"} onClick={() => navigate(`/coach/session/${week.week}/${di}`)} />
                               </li>
                             )}
                           </ul>

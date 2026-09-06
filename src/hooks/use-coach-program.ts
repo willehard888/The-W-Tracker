@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { dayFocus, blockCount, isRestDay } from "@/lib/training/session";
+import { programWeekState } from "@/lib/training/program-week";
 
 export interface ProgramBlock {
   name: string;
@@ -138,18 +139,21 @@ export const useCoachProgram = () => {
   const program = programQuery.data ?? null;
   const logs = logsQuery.data ?? [];
 
-  // Compute current week / today's day relative to started_on
+  // Where the athlete is, from the calendar AND from what they logged.
+  //
+  // This used to be the calendar alone, which slid the program past anyone who
+  // missed a week — you came back to week 3 having trained week 1, carrying
+  // loads built on work you never did — and pinned to the final week forever,
+  // so a finished block was indistinguishable from an abandoned one.
   const today = new Date();
-  let currentWeek = 1;
-  let todayDayIndex = DAY_INDEX_FROM_DATE(today);
-  if (program) {
-    const started = new Date(program.started_on);
-    const days = Math.floor(
-      (today.getTime() - new Date(started.getFullYear(), started.getMonth(), started.getDate()).getTime()) /
-        86400_000,
-    );
-    currentWeek = Math.min(program.weeks, Math.max(1, Math.floor(days / 7) + 1));
-  }
+  const todayDayIndex = DAY_INDEX_FROM_DATE(today);
+  const weekState = programWeekState({
+    startedOn: program?.started_on,
+    weeks: program?.weeks,
+    logs,
+    now: today,
+  });
+  const currentWeek = weekState.currentWeek;
 
   return {
     isLoading: programQuery.isLoading,
@@ -160,6 +164,8 @@ export const useCoachProgram = () => {
     logs,
     currentWeek,
     todayDayIndex,
+    /** Block progress: how far behind, and whether it is time for the next one. */
+    weekState,
     refetch: () => {
       programQuery.refetch();
       logsQuery.refetch();

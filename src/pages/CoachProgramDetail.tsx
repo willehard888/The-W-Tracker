@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Crown, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import WeekStrip from "@/components/coach/WeekStrip";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
@@ -38,6 +39,7 @@ const CoachProgramDetail = () => {
     currentWeek,
     todayDayIndex,
     logs,
+    weekState,
     refetch,
   } = useCoachProgram();
 
@@ -102,6 +104,41 @@ const CoachProgramDetail = () => {
         {/* Has program — full layout */}
         {!isLoading && program && (
           <div className="home-rise home-rise-1 mt-4 space-y-4">
+            {/* The block is over. Until now it simply pinned to its last week
+                forever, so a finished block and an abandoned one looked
+                identical and nothing offered what came next. */}
+            {weekState.readyForNext && !justGenerated && (
+              <section className="rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/[0.07] to-card p-4">
+                <p className="eyebrow text-gold mb-1.5">
+                  {weekState.sessionsDone > 0 ? "Block complete" : "Block finished"}
+                </p>
+                <p className="text-[14px] font-bold leading-snug mb-1">
+                  {weekState.sessionsDone > 0
+                    ? `${weekState.sessionsDone} sessions over ${program.weeks} weeks.`
+                    : "These four weeks have passed."}
+                </p>
+                <p className="text-[12.5px] text-muted-foreground leading-snug mb-3">
+                  {weekState.sessionsDone > 0
+                    ? "The next block is built from the weights you logged — it starts where you actually finished."
+                    : "Nothing logged this time. The next block can start smaller; pick it up whenever you're ready."}
+                </p>
+                {isElite && !showRegen && (
+                  <Button variant="ember" className="w-full" onClick={() => setShowRegen(true)}>
+                    Build my next block
+                  </Button>
+                )}
+              </section>
+            )}
+
+            {/* The calendar moved on without them. Said once, plainly, with no
+                scolding — the plan waited rather than skipping ahead. */}
+            {weekState.weeksBehind > 0 && !weekState.readyForNext && (
+              <p className="rounded-xl border border-border/40 bg-background/40 px-3 py-2.5 text-[12.5px] text-muted-foreground leading-snug">
+                You were away for {weekState.weeksBehind === 1 ? "a week" : `${weekState.weeksBehind} weeks`}.
+                The plan waited — you're on week {weekState.currentWeek}, right where you left off.
+              </p>
+            )}
+
             {justGenerated && (
               <ProgramReveal
                 program={program}

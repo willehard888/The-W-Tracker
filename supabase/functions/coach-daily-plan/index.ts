@@ -8,6 +8,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportName } from "../_shared/sports.ts";
 import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
+import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 
 const corsHeaders = {
@@ -149,6 +150,16 @@ const buildPrompt = (
     logs_7d: number;
     last_logged: string | null;
   }>,
+  /**
+   * Per-lift trend, PRs and stalls from the athlete's own logged sets.
+   *
+   * This function decides today's missions and, until now, could not see a
+   * single weight the athlete had lifted — it knew the session's NAME and its
+   * duration and nothing else. The chat coach and the morning brief have both
+   * read this block for months; the one surface that actually prescribes the
+   * day was the one flying blind.
+   */
+  progressionBlock: string,
 ) => {
   const username = profile?.username ?? "operator";
   const tier = profile?.status_tier ?? "recruit";
@@ -281,7 +292,7 @@ Breakdown: avg sleep ${readiness.breakdown.avg_sleep_h}h, last RPE ${readiness.b
 ATHLETE STATUS: ${username} · tier ${tier} · streak ${streak}d
 ${recent}
 ${sessionLine}
-
+${progressionBlock ? `\n${progressionBlock}\n` : ""}
 ${profileBlock}
 
 ${goalBlock}
@@ -667,7 +678,13 @@ Deno.serve(async (req) => {
         const nightSignals = await gatherNightSignals(supabase, userId).catch(() => ({ hasData: false }));
         const causalBlock = buildCausalBlock(nightSignals as any);
         const gapsBlock = buildHabitGapsBlock(habitGaps);
-        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext)
+        // The athlete's own logged sets — per-lift trend, PRs and stalls. The
+        // same block the chat coach and the morning brief already read. Fails
+        // open: a plan without it is worse, but a plan that never arrives is
+        // worse still.
+        const progression = await gatherProgression(supabase, userId).catch(() => []);
+        const progressionBlock = buildProgressionBlock(progression);
+        const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext, progressionBlock)
           + (causalBlock ? `\n\n${causalBlock}\n\nIf recovery is clearly suppressed vs baseline, bias today toward recovery/lighter load and say why in the rationale.` : "")
           + (gapsBlock ? `\n\n${gapsBlock}` : "");
         const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {

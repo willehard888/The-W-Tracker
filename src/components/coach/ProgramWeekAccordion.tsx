@@ -1,8 +1,9 @@
-import { isRestDay } from "@/lib/training/session";
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
+import { Check, ChevronDown } from "lucide-react";
+import { CoachProgram, ProgramLog, ProgramWeek } from "@/hooks/use-coach-program";
+import { daySummary, isRestDay } from "@/lib/training/session";
 import { cn } from "@/lib/utils";
+import { FactRow } from "@/components/coach/rows";
 import ExerciseRow from "@/components/coach/ExerciseRow";
 
 interface Props {
@@ -11,172 +12,142 @@ interface Props {
   logs: ProgramLog[];
 }
 
+const LABEL = "text-[11px] font-bold text-muted-foreground";
+
+const nutritionLine = (n: ProgramWeek["nutrition"]) =>
+  [
+    n.protein_g_per_kg != null ? `Protein ${n.protein_g_per_kg} g/kg` : "",
+    n.daily_kcal_band,
+    n.notes,
+  ].filter(Boolean).join(" · ");
+
+const recoveryLine = (r: ProgramWeek["recovery"]) =>
+  [
+    r.sleep_target_h != null ? `Sleep ${r.sleep_target_h} h` : "",
+    r.mobility_min != null ? `mobility ${r.mobility_min} min` : "",
+    r.breathwork,
+  ].filter(Boolean).join(" · ");
+
+/**
+ * The whole block, week by week. Only the current week is a surface; the
+ * others are hairline rows, and inside a week the days are hairline rows too,
+ * a rest day being nothing more than its line.
+ */
 const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
   const [openWeek, setOpenWeek] = useState<number>(currentWeek);
   const [openDay, setOpenDay] = useState<string | null>(null);
-  const [showSummary, setShowSummary] = useState(false);
   const [showWeekDetails, setShowWeekDetails] = useState(false);
 
   return (
-    <div className="space-y-3">
-      {program.ai_summary && (
-        <div className="rounded-2xl border border-gold/20 bg-card/60 p-3.5">
-          <p className="eyebrow text-gold mb-1">Overview</p>
-          <p className={cn("text-[12px] text-foreground/85 leading-snug", !showSummary && "line-clamp-2")}>
-            {program.ai_summary}
-          </p>
-          {program.ai_summary.length > 120 && (
-            <button
-              type="button"
-              onClick={() => setShowSummary(v => !v)}
-              className="eyebrow mt-1 text-gold/80"
-            >
-              {showSummary ? "Less" : "Read more"}
-            </button>
-          )}
-        </div>
-      )}
-
+    <div>
       {(program.plan_json.weeks ?? []).map((week) => {
         const open = openWeek === week.week;
         const isCurrent = week.week === currentWeek;
         return (
-          <div
+          <section
             key={week.week}
-            className={cn(
-              "relative rounded-2xl border overflow-hidden",
-              isCurrent ? "border-gold/35 bg-card/70" : "border-border/50 bg-card/40",
-            )}
+            className={isCurrent ? "surface-card surface-card-quiet px-4 my-2" : "border-t border-border/35"}
           >
-            {isCurrent && (
-              <span aria-hidden className="absolute left-0 top-0 bottom-0 w-1 bg-gold" />
-            )}
             <button
               type="button"
               onClick={() => setOpenWeek(open ? -1 : week.week)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left"
+              className="press w-full min-h-11 flex items-center gap-3 py-3 text-left"
             >
-              <div className="min-w-0">
-                <p className="eyebrow text-gold">Week {week.week}</p>
-                <p className="font-display text-base font-black tracking-tight truncate">{week.theme}</p>
-              </div>
+              <span className="flex-1 min-w-0 block text-[14px] font-semibold leading-tight truncate">
+                Week {week.week}{week.theme ? ` · ${week.theme}` : ""}
+              </span>
               <ChevronDown
-                size={18}
-                className={cn("text-muted-foreground transition-transform shrink-0", open && "rotate-180")}
+                size={16}
+                className={cn("text-muted-foreground/60 shrink-0 transition-transform", open && "rotate-180")}
+                aria-hidden
               />
             </button>
 
             {open && (
-              <div className="px-3 pb-3 space-y-1.5">
+              <div className="pb-3">
                 {week.progression_note && (
-                  <p className="px-1 text-[12px] text-muted-foreground leading-snug">
+                  <p className="mb-1 text-[12px] text-muted-foreground leading-snug">
                     {week.progression_note}
                   </p>
                 )}
-                {(week.days ?? []).map((day, di) => {
-                  const isRest = isRestDay(day);
-                  const isLogged = logs.some((l) => l.week === week.week && l.day_index === di && l.completed);
-                  const dayKey = `${week.week}-${di}`;
-                  const dayOpen = openDay === dayKey;
-                  return (
-                    <div
-                      key={dayKey}
-                      className={cn(
-                        "rounded-xl border",
-                        isRest ? "border-border/30 bg-background/20" : "border-border/50 bg-background/40",
-                      )}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setOpenDay(dayOpen ? null : dayKey)}
-                        className="w-full flex items-center justify-between px-3 py-2 text-left"
-                        disabled={isRest}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className={cn(
-                            "eyebrow w-8 shrink-0",
-                            isRest ? "text-muted-foreground" : "text-gold",
-                          )}>
-                            {day.day}
+                <ul className="divide-y divide-border/35">
+                  {(week.days ?? []).map((day, di) => {
+                    const dayKey = `${week.week}-${di}`;
+                    if (isRestDay(day)) {
+                      return (
+                        <li key={dayKey} className="py-2.5 flex items-center gap-3 text-[13px] text-muted-foreground">
+                          <span className={cn(LABEL, "w-8 shrink-0")}>{day.day}</span>
+                          Rest
+                        </li>
+                      );
+                    }
+                    const isLogged = logs.some((l) => l.week === week.week && l.day_index === di && l.completed);
+                    const dayOpen = openDay === dayKey;
+                    return (
+                      <li key={dayKey}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenDay(dayOpen ? null : dayKey)}
+                          className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
+                        >
+                          <span className={cn(LABEL, "w-8 shrink-0")}>{day.day}</span>
+                          <span className="flex-1 min-w-0">
+                            <span className="block text-[13px] font-semibold leading-tight truncate">{day.focus}</span>
+                            <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{daySummary(day)}</span>
                           </span>
-                          <div className="min-w-0">
-                            <p className={cn("text-[13px] font-bold truncate", isRest && "text-muted-foreground")}>
-                              {day.focus}
-                            </p>
-                            {!isRest && (
-                              <p className="text-[11px] text-muted-foreground">
-                                {day.duration_min} min · {day.blocks?.length ?? 0} block{(day.blocks?.length ?? 0) !== 1 && "s"}
-                              </p>
+                          {isLogged && <Check size={14} className="text-xp-green shrink-0" role="img" aria-label="Done" />}
+                          <ChevronDown
+                            size={14}
+                            className={cn("text-muted-foreground/60 shrink-0 transition-transform", dayOpen && "rotate-180")}
+                            aria-hidden
+                          />
+                        </button>
+                        {dayOpen && (
+                          <ul className="pb-2 space-y-1">
+                            {(day.blocks ?? []).map((b, i) => (
+                              <ExerciseRow
+                                key={i}
+                                block={b}
+                                programId={program.id}
+                                week={week.week}
+                                dayIndex={di}
+                                loggable={week.week <= currentWeek}
+                              />
+                            ))}
+                            {day.conditioning && (
+                              <li className="pt-1 text-[12px] text-foreground/80">
+                                <span className={cn(LABEL, "mr-1.5")}>Conditioning</span>
+                                {day.conditioning}
+                              </li>
                             )}
-                          </div>
-                        </div>
-                        {isLogged && (
-                          <span className="eyebrow-sm text-gold">Done</span>
+                          </ul>
                         )}
-                      </button>
-                      {!isRest && dayOpen && (
-                        <ul className="px-3 pb-2.5 space-y-1">
-                          {(day.blocks ?? []).map((b, i) => (
-                            <ExerciseRow
-                              key={i}
-                              block={b as any}
-                              programId={program.id}
-                              week={week.week}
-                              dayIndex={di}
-                              loggable={week.week <= currentWeek}
-                            />
-                          ))}
-                          {day.conditioning && (
-                            <li className="text-[12px] text-foreground/80 pt-1">
-                              <span className="eyebrow text-gold mr-1.5">Conditioning</span>
-                              {day.conditioning}
-                            </li>
-                          )}
-                        </ul>
-                      )}
-                    </div>
-                  );
-                })}
+                      </li>
+                    );
+                  })}
+                </ul>
 
                 {(week.nutrition || week.recovery) && (
-                  <button
-                    type="button"
-                    onClick={() => setShowWeekDetails(v => !v)}
-                    className="eyebrow w-full text-muted-foreground/70 inline-flex items-center justify-center gap-1 py-1.5"
-                  >
-                    Week details
-                    <ChevronDown size={11} className={cn("transition-transform", showWeekDetails && "rotate-180")} />
-                  </button>
-                )}
-                {showWeekDetails && (week.nutrition || week.recovery) && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {week.nutrition && (
-                      <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                        <p className="eyebrow text-gold mb-1">Nutrition</p>
-                        <p className="text-[12px] leading-snug text-foreground/85">
-                          {week.nutrition.protein_g_per_kg != null && (
-                            <>Protein <b>{week.nutrition.protein_g_per_kg} g/kg</b>{week.nutrition.daily_kcal_band ? " · " : ". "}</>
-                          )}
-                          {week.nutrition.daily_kcal_band ? <>{week.nutrition.daily_kcal_band}. </> : null}
-                          {week.nutrition.notes && <>{week.nutrition.notes}</>}
-                        </p>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowWeekDetails(v => !v)}
+                      className="press w-full min-h-11 inline-flex items-center justify-center gap-1 text-[12px] font-semibold text-muted-foreground"
+                    >
+                      Week details
+                      <ChevronDown size={12} className={cn("transition-transform", showWeekDetails && "rotate-180")} aria-hidden />
+                    </button>
+                    {showWeekDetails && (
+                      <div className="divide-y divide-border/35 border-t border-border/35">
+                        {week.nutrition && <FactRow k="Nutrition" v={nutritionLine(week.nutrition)} />}
+                        {week.recovery && <FactRow k="Recovery" v={recoveryLine(week.recovery)} />}
                       </div>
                     )}
-                    {week.recovery && (
-                      <div className="rounded-xl border border-border/40 bg-background/30 p-3">
-                        <p className="eyebrow text-gold mb-1">Recovery</p>
-                        <p className="text-[12px] leading-snug text-foreground/85">
-                          {week.recovery.sleep_target_h != null && <>Sleep <b>{week.recovery.sleep_target_h} h</b> · </>}
-                          {week.recovery.mobility_min != null && <>mobility {week.recovery.mobility_min} min · </>}
-                          {week.recovery.breathwork && <>{week.recovery.breathwork}.</>}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  </>
                 )}
               </div>
             )}
-          </div>
+          </section>
         );
       })}
     </div>

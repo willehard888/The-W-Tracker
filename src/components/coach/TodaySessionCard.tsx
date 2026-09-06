@@ -1,6 +1,6 @@
-import { isRestDay } from "@/lib/training/session";
+import { dayFocus, daySummary, isRestDay } from "@/lib/training/session";
 import { useMemo, useState } from "react";
-import { Check, ChevronDown, Loader2, Wind, Play } from "lucide-react";
+import { Check, ChevronDown, Loader2, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,8 @@ import ExerciseRow from "@/components/coach/ExerciseRow";
 // session — truncating the easy end would store a harder session than happened.
 const RPE_SCALE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
+const LABEL = "text-[11px] font-bold text-muted-foreground";
+
 interface Props {
   program: CoachProgram;
   currentWeek: number;
@@ -24,6 +26,11 @@ interface Props {
   onLogged: () => void;
 }
 
+/**
+ * Today's session: the page's one hero surface. The beat above already says
+ * the week, so this card says the day — its focus, its length, and the way
+ * into the runner.
+ */
 const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged }: Props) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,6 +52,8 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
 
   if (!day) return null;
   const isRest = isRestDay(day);
+  const canStart = !isRest && !todayLog && day.blocks.length > 0;
+  const recovery = week?.recovery;
 
   const markDone = async () => {
     if (!user) return;
@@ -100,170 +109,137 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
   };
 
   return (
-    <div
-      className={cn(
-        "relative rounded-3xl overflow-hidden border p-5",
-        "bg-card/70 border-border/50",
-        "shadow-[0_12px_36px_-18px_hsl(0_0%_0%/0.6)]",
-      )}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-16 -right-16 w-44 h-44 rounded-full blur-3xl opacity-50"
-        style={{ background: "radial-gradient(circle, hsl(var(--gold)/0.4), transparent 70%)" }}
-      />
-      <div className="relative">
-        {/* Header band */}
-        <p className="eyebrow text-gold/90 mb-1">
-          Today · W{currentWeek} · {day.day}
-        </p>
-        <h2 className="font-display text-[26px] leading-[1.05] font-black tracking-tight">
-          {day.focus}
-        </h2>
-        {!isRest && (
-          <p className="text-[12px] text-muted-foreground mt-1 mb-4">
-            {day.duration_min} min · {day.blocks.length} block{day.blocks.length !== 1 && "s"}
-          </p>
-        )}
+    <div className="surface-card p-4">
+      <h2 className="font-display font-black text-[20px] leading-[1.1] tracking-tight">
+        {dayFocus(day) || "Today's session"}
+      </h2>
+      <p className="mt-1 text-[13px] text-muted-foreground">{daySummary(day)}</p>
 
-        {/* The primary action on this card is starting, not reading. The list
-            below stays for anyone who wants to see the session first. */}
-        {!isRest && !todayLog && day.blocks.length > 0 && (
-          <Button
-            variant="ember"
-            size="lg"
-            className="w-full mb-4"
-            onClick={() => {
-              hapticImpact("medium");
-              navigate(`/coach/session/${currentWeek}/${todayDayIndex}`);
-            }}
-          >
-            <Play size={16} aria-hidden /> Start workout
-          </Button>
-        )}
-
-        {!isRest ? (
-          <div className="space-y-1.5 mb-5">
-            {day.warmup && (
-              <CollapseRow
-                label="Warm-up"
-                preview={day.warmup}
-                open={openWarmup}
-                onToggle={() => { hapticImpact("light"); setOpenWarmup(v => !v); }}
-              />
-            )}
-
-            <ul className="space-y-1.5 py-1">
-              {day.blocks.map((b, i) => (
-                <ExerciseRow
-                  key={i}
-                  block={b as any}
-                  programId={program.id}
-                  week={currentWeek}
-                  dayIndex={todayDayIndex}
-                />
-              ))}
-              {day.conditioning && (
-                <li className="pt-1">
-                  <p className="eyebrow text-gold mb-0.5">Conditioning</p>
-                  <p className="text-[12px] text-foreground/85">{day.conditioning}</p>
-                </li>
-              )}
-            </ul>
-
-            {day.cooldown && (
-              <CollapseRow
-                label="Cooldown"
-                preview={day.cooldown}
-                open={openCooldown}
-                onToggle={() => { hapticImpact("light"); setOpenCooldown(v => !v); }}
-                muted
-              />
-            )}
-          </div>
-        ) : (
-          <div className="rounded-xl bg-background/40 border border-border/40 p-4 mb-5">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Wind size={14} className="text-gold" />
-              <p className="eyebrow text-gold">Recovery</p>
-            </div>
-            <p className="text-[12px] text-foreground/85 leading-snug">
-              {week!.recovery.mobility_min} min mobility · {week!.recovery.breathwork} · sleep {week!.recovery.sleep_target_h}h.
-            </p>
-          </div>
-        )}
-
+      {/* The primary action on this card is starting, not reading. The list
+          below stays for anyone who wants to see the session first. */}
+      {canStart && (
         <Button
-          variant={alreadyLogged ? "secondary" : "ember"}
+          variant="ember"
           size="lg"
-          disabled={alreadyLogged || saving}
-          onClick={markDone}
-          className="w-full font-black"
+          className="w-full mt-4"
+          onClick={() => {
+            hapticImpact("medium");
+            navigate(`/coach/session/${currentWeek}/${todayDayIndex}`);
+          }}
         >
-          {saving ? <Loader2 size={16} className="animate-spin" />
-            : alreadyLogged ? <><Check size={16} /> Done · today</>
-            : <><Check size={16} /> {isRest ? "Mark rest" : "Done"}</>}
+          <Play size={16} aria-hidden /> Start workout
         </Button>
+      )}
 
-        {/* Effort — only after a real session is logged, and only until it's
-            answered. A rest day has no effort worth rating. */}
-        {alreadyLogged && !isRest && todayLog?.perceived_rpe == null && (
-          <div className="mt-4">
-            <p className="eyebrow text-muted-foreground mb-2">
-              How hard was it?
-            </p>
-            {/* 5 across, so each target clears the 44pt floor — ten in one row
-                would be ~35px wide on a phone. */}
-            <div className="grid grid-cols-5 gap-1.5">
-              {RPE_SCALE.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  disabled={rpeSaving != null}
-                  onClick={() => { hapticImpact("light"); saveRpe(value); }}
-                  aria-label={`Rate effort ${value} out of 10`}
-                  className={cn(
-                    "h-11 rounded-lg border text-[13px] font-black tabular-nums",
-                    "press transition-colors disabled:opacity-50",
-                    "border-border/60 bg-secondary/40 text-muted-foreground",
-                    "hover:border-gold/40 hover:text-gold",
-                  )}
-                >
-                  {rpeSaving === value ? <Loader2 size={13} className="animate-spin mx-auto" /> : value}
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground/75 mt-1.5 leading-snug">
-              1 = easy · 10 = everything you had. This is what tomorrow's plan reads.
-            </p>
+      {!isRest ? (
+        <div className="mt-4 space-y-1.5">
+          {day.warmup && (
+            <CollapseRow
+              label="Warm-up"
+              preview={day.warmup}
+              open={openWarmup}
+              onToggle={() => { hapticImpact("light"); setOpenWarmup(v => !v); }}
+            />
+          )}
+
+          <ul className="space-y-1.5 py-1">
+            {day.blocks.map((b, i) => (
+              <ExerciseRow
+                key={i}
+                block={b}
+                programId={program.id}
+                week={currentWeek}
+                dayIndex={todayDayIndex}
+              />
+            ))}
+            {day.conditioning && (
+              <li className="pt-1 text-[12px] text-foreground/85">
+                <span className={cn(LABEL, "mr-1.5")}>Conditioning</span>
+                {day.conditioning}
+              </li>
+            )}
+          </ul>
+
+          {day.cooldown && (
+            <CollapseRow
+              label="Cooldown"
+              preview={day.cooldown}
+              open={openCooldown}
+              onToggle={() => { hapticImpact("light"); setOpenCooldown(v => !v); }}
+            />
+          )}
+        </div>
+      ) : recovery ? (
+        <p className="mt-3 text-[13px] text-muted-foreground leading-snug">
+          {recovery.mobility_min} min mobility · {recovery.breathwork} · sleep {recovery.sleep_target_h}h.
+        </p>
+      ) : null}
+
+      {/* Done. Quiet while Start leads; the ember when it is the only act. */}
+      <Button
+        variant={alreadyLogged ? "secondary" : canStart ? "outline" : "ember"}
+        size="lg"
+        disabled={alreadyLogged || saving}
+        onClick={markDone}
+        className="w-full font-black mt-4"
+      >
+        {saving ? <Loader2 size={16} className="animate-spin" />
+          : alreadyLogged ? <><Check size={16} /> Done · today</>
+          : <><Check size={16} /> {isRest ? "Mark rest" : "Done"}</>}
+      </Button>
+
+      {/* Effort — only after a real session is logged, and only until it's
+          answered. A rest day has no effort worth rating. */}
+      {alreadyLogged && !isRest && todayLog?.perceived_rpe == null && (
+        <div className="mt-4">
+          <p className="text-[13px] font-bold mb-2">How hard was it?</p>
+          {/* 5 across, so each target clears the 44pt floor — ten in one row
+              would be ~35px wide on a phone. */}
+          <div className="grid grid-cols-5 gap-1.5">
+            {RPE_SCALE.map((value) => (
+              <button
+                key={value}
+                type="button"
+                disabled={rpeSaving != null}
+                onClick={() => { hapticImpact("light"); saveRpe(value); }}
+                aria-label={`Rate effort ${value} out of 10`}
+                className={cn(
+                  "h-11 rounded-lg border text-[13px] font-black tabular-nums",
+                  "press transition-colors disabled:opacity-50",
+                  "border-border/60 bg-secondary/40 text-muted-foreground",
+                  "hover:border-gold/40 hover:text-gold",
+                  rpeSaving === value && "commit-pop",
+                )}
+              >
+                {rpeSaving === value ? <Loader2 size={13} className="animate-spin mx-auto" /> : value}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
+          <p className="text-[11px] text-muted-foreground/75 mt-1.5 leading-snug">
+            1 = easy · 10 = everything you had. This is what tomorrow's plan reads.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
 
 const CollapseRow = ({
-  label, preview, open, onToggle, muted,
-}: { label: string; preview: string; open: boolean; onToggle: () => void; muted?: boolean }) => (
+  label, preview, open, onToggle,
+}: { label: string; preview: string; open: boolean; onToggle: () => void }) => (
   <button
     type="button"
     onClick={onToggle}
-    className={cn(
-      "w-full text-left flex items-start gap-2 px-0 py-1.5",
-    )}
+    className="w-full min-h-11 text-left flex items-start gap-2 px-0 py-2"
   >
-    <span className={cn(
-      "eyebrow mt-0.5 shrink-0",
-      muted ? "text-muted-foreground" : "text-gold",
-    )}>{label}</span>
+    <span className={cn(LABEL, "mt-0.5 shrink-0")}>{label}</span>
     <span className={cn(
       "text-[12px] leading-snug flex-1",
       open ? "text-foreground/90" : "text-foreground/70 truncate",
     )}>
       {preview}
     </span>
-    <ChevronDown size={12} className={cn("text-muted-foreground/70 mt-1 transition-transform shrink-0", open && "rotate-180")} />
+    <ChevronDown size={12} className={cn("text-muted-foreground/70 mt-1 transition-transform shrink-0", open && "rotate-180")} aria-hidden />
   </button>
 );
 

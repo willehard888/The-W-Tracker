@@ -1,53 +1,35 @@
-import { Sparkles, Target, CalendarDays, Clock, TrendingUp } from "lucide-react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
+import { fmtInt } from "@/lib/format";
 import type { CoachProgram } from "@/hooks/use-coach-program";
 import { isTrainingDay, dayFocus } from "@/lib/training/session";
 
 /**
  * The moment the program is created.
  *
- * WHY THIS EXISTS
+ * Generating a program takes twenty-five seconds of "Coach is designing your
+ * block" and used to drop the athlete into a nested accordion of four weeks ×
+ * seven days with nothing saying what had been built or where to begin.
  *
- * Generating a program took twenty-five seconds of a full-screen "Coach is
- * designing your block" animation and then dropped the athlete into a nested
- * accordion of four weeks × seven days. Nothing said what had been built, why
- * it looked that way, or where to begin. The most expensive moment in the
- * feature ended with a wall of collapsed rows.
- *
- * This states the four facts that make the plan legible — goal, rhythm, session
- * length, where you are in it — and then gives ONE action. Everything else on
- * the screen can wait until after the first session.
- *
- * It is not a modal and it does not block: it sits at the top of the program
- * screen and is dismissed by starting. A missed reveal costs nothing.
+ * This is the coach's own first sentence as the screen's beat, one standing
+ * line with the three facts that make the plan legible, this week's focuses,
+ * and ONE action. It is not a modal and it does not block: it sits at the top
+ * of the program screen and is dismissed by starting.
  */
 
-const GOAL_LABEL: Record<string, string> = {
-  all: "All-around",
-  strength: "Raw strength",
-  hypertrophy: "Build muscle",
-  fat_loss: "Fat loss",
-  endurance: "Endurance",
-  longevity: "Longevity",
-  focus: "Sharpen focus",
+/**
+ * The summary is 3–4 sentences in the athlete's voice. Its first sentence is
+ * the display line when it fits one; the rest follows quietly underneath.
+ */
+const splitLead = (summary: string | null): [string, string] => {
+  const m = summary?.match(/^\s*([^.!?]+[.!?])\s*([\s\S]*)$/);
+  if (m && m[1].length <= 100) return [m[1], m[2].trim()];
+  return ["Your program is ready.", summary?.trim() ?? ""];
 };
 
-const Fact = ({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Target;
-  label: string;
-  value: string;
-}) => (
-  <div className="rounded-xl border border-border/40 bg-background/40 px-3 py-2.5">
-    <p className="eyebrow text-muted-foreground/70 mb-1 inline-flex items-center gap-1">
-      <Icon size={11} aria-hidden /> {label}
-    </p>
-    <p className="text-[13px] font-bold leading-snug text-foreground">{value}</p>
-  </div>
+const N = ({ children }: { children: ReactNode }) => (
+  <span className="font-black text-foreground tabular-nums">{children}</span>
 );
 
 const ProgramReveal = ({
@@ -60,80 +42,36 @@ const ProgramReveal = ({
   onStart: () => void;
 }) => {
   const week = program.plan_json?.weeks?.find((w) => w.week === currentWeek);
-  const days = week?.days ?? [];
-  const trainingDays = days.filter((d) => isTrainingDay(d));
+  const trainingDays = (week?.days ?? []).filter((d) => isTrainingDay(d));
+  const n = trainingDays.length;
 
   // The advertised session length, averaged over the days that actually have
   // work in them — a plan with four rest days would otherwise report half.
-  const avgMin = trainingDays.length
-    ? Math.round(
-        trainingDays.reduce((sum, d) => sum + (d.duration_min ?? 0), 0) / trainingDays.length,
-      )
+  const avgMin = n
+    ? Math.round(trainingDays.reduce((sum, d) => sum + (d.duration_min ?? 0), 0) / n)
     : 0;
 
   const focusList = [...new Set(trainingDays.map((d) => dayFocus(d)).filter(Boolean))];
+  const [lead, rest] = splitLead(program.ai_summary);
 
   return (
-    <section className="rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.08] via-card/95 to-card p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <Sparkles size={12} className="text-gold" aria-hidden />
-        <p className="eyebrow text-gold">Your program is ready</p>
-      </div>
+    <section>
+      <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{lead}</h2>
+      {rest && <p className="mt-2 text-[13px] text-foreground/85 leading-snug">{rest}</p>}
 
-      {program.ai_summary && (
-        <p className="text-[13.5px] text-foreground/90 leading-relaxed mb-4">
-          {program.ai_summary}
-        </p>
-      )}
-
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <Fact
-          icon={Target}
-          label="Goal"
-          value={GOAL_LABEL[program.goal] ?? program.goal ?? "All-around"}
-        />
-        <Fact
-          icon={CalendarDays}
-          label="Schedule"
-          value={`${trainingDays.length} ${trainingDays.length === 1 ? "session" : "sessions"} / week`}
-        />
-        <Fact
-          icon={Clock}
-          label="Session"
-          value={avgMin ? `~${avgMin} min` : "Varies"}
-        />
-        <Fact
-          icon={TrendingUp}
-          label="Week"
-          value={`${currentWeek} of ${program.weeks ?? 4}`}
-        />
-      </div>
-
-      {focusList.length > 0 && (
-        <div className="mb-4">
-          <p className="eyebrow text-muted-foreground/70 mb-1.5">This week</p>
-          <div className="flex flex-wrap gap-1.5">
-            {focusList.map((f) => (
-              <span
-                key={f}
-                className="text-[11px] font-bold text-foreground/85 bg-secondary/50 border border-border/40 rounded-full px-2.5 py-1"
-              >
-                {f}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <p className="text-[12px] text-muted-foreground leading-snug mb-4">
-        Log the weight you use each session. The next block is built from those
-        numbers, so the plan gets more yours the more you record.
+      <p className="mt-2 text-[13px] text-muted-foreground">
+        <N>{fmtInt(n)}</N> {n === 1 ? "session" : "sessions"}
+        {avgMin > 0 && <> · ~<N>{fmtInt(avgMin)}</N> min</>}
+        {" · "}week <N>{fmtInt(currentWeek)}</N> of {fmtInt(program.weeks ?? 4)}
       </p>
+      {focusList.length > 0 && (
+        <p className="mt-1 text-[13px] text-muted-foreground">{focusList.join(" · ")}</p>
+      )}
 
       <Button
         variant="ember"
         size="lg"
-        className="w-full"
+        className="w-full mt-4"
         onClick={() => {
           hapticImpact("medium");
           onStart();

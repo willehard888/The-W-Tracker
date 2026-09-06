@@ -5,7 +5,7 @@ import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
+import AthleteProfileOnboarding, { EXPERIENCE } from "@/components/coach/AthleteProfileOnboarding";
 import { ProfileSkeleton as PageSkeleton } from "@/components/skeletons/PageSkeleton";
 
 const Row = ({ label, value }: { label: string; value: string }) => (
@@ -93,6 +93,7 @@ const AthleteProfileSettings = () => {
 
         <Section title="Goal">
           <Row label="Primary" value={GOALS[profile.primary_goal ?? ""] ?? "—"} />
+          <Row label="Experience" value={EXPERIENCE.find((e) => e.id === profile.training_experience)?.label ?? "—"} />
           <Row label="Sports" value={(profile.sports ?? []).length ? (profile.sports ?? []).map((id) => sportById(id).label).join(", ") : "—"} />
           <Row label="Horizon" value={profile.target_horizon_weeks ? `${profile.target_horizon_weeks} weeks` : "—"} />
         </Section>

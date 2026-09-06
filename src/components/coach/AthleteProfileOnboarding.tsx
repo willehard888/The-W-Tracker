@@ -33,7 +33,7 @@ const GOALS: { id: GoalId; label: string; sub: string; emoji: string }[] = [
  * answer decides whether someone starts on the written 8-week path or goes
  * straight to the AI generator.
  */
-const EXPERIENCE: { id: TrainingExperience; label: string; sub: string; emoji: string }[] = [
+export const EXPERIENCE: { id: TrainingExperience; label: string; sub: string; emoji: string }[] = [
   { id: "never_trained",  label: "New to the gym",       sub: "Never trained, or it has been years — we start from the beginning", emoji: "🌱" },
   { id: "under_6_months", label: "Some experience",      sub: "A few months in. You know the machines, still finding your footing", emoji: "📈" },
   { id: "experienced",    label: "I know my way around", sub: "Comfortable with the main lifts and training on your own", emoji: "🏋️" },

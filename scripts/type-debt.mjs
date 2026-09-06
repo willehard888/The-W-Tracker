@@ -6,8 +6,8 @@
  * baseline (.type-debt-baseline.json):
  *   • strictErrors — errors under the shadow tsconfig.strict.json (strict +
  *     strictNullChecks + noImplicitAny). The real Vite build is unaffected.
- *   • asAny        — count of `as any` escape hatches in src/.
- *   • asNever      — count of `as never` escape hatches in src/.
+ *   • asAny        — `as any` casts in src/ (code only — comments and strings
+ *   • asNever      — `as never` casts in src/    are not counted, see lib/cast-scan.mjs).
  *
  * This lets the team turn strictness on for NEW code immediately while paying
  * down existing debt file-by-file — no big-bang `strict: true` flip.
@@ -18,6 +18,7 @@
  */
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { scanDir } from "./lib/cast-scan.mjs";
 
 const BASELINE_FILE = ".type-debt-baseline.json";
 
@@ -31,22 +32,13 @@ const countStrictErrors = () => {
   }
 };
 
-const countPattern = (pattern) => {
-  try {
-    const out = execSync(`grep -rn "${pattern}" src --include="*.ts" --include="*.tsx"`, {
-      stdio: "pipe",
-    }).toString();
-    return out.split("\n").filter(Boolean).length;
-  } catch (e) {
-    if (e.status === 1) return 0; // grep: no matches
-    throw e;
-  }
-};
-
+// Pure node (no grep): counts real casts, not the words inside comments —
+// and the same number on every OS.
+const casts = scanDir("src");
 const current = {
   strictErrors: countStrictErrors(),
-  asAny: countPattern("as any"),
-  asNever: countPattern("as never"),
+  asAny: casts.asAny,
+  asNever: casts.asNever,
 };
 
 if (process.argv.includes("--update")) {

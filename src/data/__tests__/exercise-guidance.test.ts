@@ -11,41 +11,21 @@ import { ILLUSTRATED_EXERCISES, illustrationThumb } from "@/data/exercises-illus
  * the one moment the cue matters. The row now falls back to the illustrated
  * `steps`, so those steps have to actually be there for every entry.
  */
-/**
- * Two defects inherited from the upstream Everkinetic dataset, recorded here
- * rather than papered over. `exercises-illustrated.ts` is auto-generated and
- * the generator copies `id_num` and `primary` straight through, so neither is
- * fixable in this repo without deciding what the correct value is.
- *
- *  - `0020` is claimed by BOTH "Back Fly's with Exercise Band" and "Tate
- *    Press" — two unrelated movements, so one of them draws the wrong
- *    picture. Worse than no picture, since the illustration IS the guidance.
- *  - `push-up-feet-elevated` ships with primary, secondary and equipment all
- *    empty, so no muscle-group filter can reach it; only a name search finds
- *    it.
- *
- * Pinned as exact counts: if upstream fixes them these assertions fail and
- * the exceptions get deleted, which is the outcome we want.
- */
-const KNOWN_UPSTREAM_DEFECTS = {
-  duplicateIdNums: 1,
-  withoutPrimaryMuscle: ["push-up-feet-elevated"],
-};
-
 describe("illustrated exercise library", () => {
   it("has a unique slug for every entry", () => {
     expect(new Set(ILLUSTRATED_EXERCISES.map((e) => e.slug)).size).toBe(ILLUSTRATED_EXERCISES.length);
   });
 
-  it("shares an illustration only for the known upstream duplicate", () => {
+  it("never draws one illustration for two movements", () => {
+    // Upstream shipped 0020 for both the band back fly and "Tate Press"; the
+    // generator drops the duplicate (the lying dumbbell press is 0203).
     const seen = new Set<string>();
     const dupes = ILLUSTRATED_EXERCISES.filter((e) => {
       if (seen.has(e.idNum)) return true;
       seen.add(e.idNum);
       return false;
     });
-    expect(dupes.length, `sharing an idNum: ${dupes.map((e) => e.slug).join(", ")}`)
-      .toBe(KNOWN_UPSTREAM_DEFECTS.duplicateIdNums);
+    expect(dupes.map((e) => e.slug)).toEqual([]);
   });
 
   it("gives every exercise steps to fall back to", () => {
@@ -66,8 +46,8 @@ describe("illustrated exercise library", () => {
     }
   });
 
-  it("names a primary muscle, so the group filter can reach it", () => {
+  it("names a primary muscle for every entry, so the group filter can reach it", () => {
     const unreachable = ILLUSTRATED_EXERCISES.filter((e) => e.primary.length === 0).map((e) => e.slug);
-    expect(unreachable).toEqual(KNOWN_UPSTREAM_DEFECTS.withoutPrimaryMuscle);
+    expect(unreachable).toEqual([]);
   });
 });

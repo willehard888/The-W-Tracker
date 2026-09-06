@@ -17,13 +17,23 @@ const [exercises, svgList] = await Promise.all([
 ]);
 const svgNames = new Set(svgList.map((f) => f.name));
 
+// Upstream defects, fixed at the source so a regeneration keeps the fix:
+//  - 0020 is claimed by both "Back Fly's with Exercise Band" and "Tate Press";
+//    the drawing is the standing band pull, and the lying dumbbell press already
+//    exists as tate-press-with-dumbbell (0203) — the duplicate is dropped.
+//  - push-up-feet-elevated ships with no type, muscles or equipment.
+const DROP_SLUGS = new Set(["tate-press"]);
+const OVERRIDES = {
+  "push-up-feet-elevated": { type: "compound", primary: ["chest"], secondary: ["triceps", "shoulders"], equipment: ["body", "bench"] },
+};
+
 const seen = new Set();
 const out = [];
 for (const e of exercises) {
   if (!e.id_num || !e.title || !e.steps?.length) continue;
   if (!svgNames.has(`${e.id_num}-tension.svg`) || !svgNames.has(`${e.id_num}-relaxation.svg`)) continue;
   const slug = e.name || norm(e.title).replace(/ /g, "-");
-  if (seen.has(slug)) continue;
+  if (seen.has(slug) || DROP_SLUGS.has(slug)) continue;
   seen.add(slug);
   const primary = (e.primary ?? "").split(",").map((m) => m.trim()).filter(Boolean);
   const secondary = Array.isArray(e.secondary) ? e.secondary : [];
@@ -36,6 +46,7 @@ for (const e of exercises) {
     secondary,
     equipment: Array.isArray(e.equipment) ? e.equipment : [],
     steps: e.steps,
+    ...(OVERRIDES[slug] ?? {}),
   });
 }
 out.sort((a, b) => a.title.localeCompare(b.title));

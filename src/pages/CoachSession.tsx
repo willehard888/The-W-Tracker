@@ -14,6 +14,7 @@ import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
 import PageBar from "@/components/ui/page-bar";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 import { dayFocus } from "@/lib/training/session";
 import { fmtUnit } from "@/lib/format";
 import {
@@ -142,6 +143,14 @@ const CoachSession = () => {
   }, [current]);
 
   const { data: history } = useExerciseHistory(current?.slug ?? null);
+
+  // Guidance. The provider owns eligibility, the per-launch cap and the seen
+  // state — these only say when the moment is right. FIRST_WORKOUT_INTRO chains
+  // to the logging spotlight, so the pair costs one teaching moment rather than
+  // two interruptions in the middle of a warm-up.
+  useOnboardingTrigger("FIRST_WORKOUT_INTRO", plan.length > 0 && !session?.completed);
+  useOnboardingTrigger("WORKOUT_COMPLETE_INTRO", !!session?.completed);
+  const loggingTargetRef = useSpotlightTarget("WORKOUT_LOGGING_INTRO");
 
   // Mark the session started once, when the runner opens on a real session.
   useEffect(() => {
@@ -326,7 +335,7 @@ const CoachSession = () => {
               />
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-2" ref={loggingTargetRef}>
               <p className="eyebrow text-gold/85">Sets</p>
               {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
                 const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);

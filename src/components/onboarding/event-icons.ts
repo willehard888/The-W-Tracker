@@ -10,6 +10,9 @@ import {
   Users,
   Trophy,
   Shield,
+  Dumbbell,
+  ClipboardList,
+  CircleCheck,
   type LucideIcon,
 } from "lucide-react";
 import type { OnboardingEventId } from "@/lib/onboarding/types";
@@ -25,4 +28,9 @@ export const EVENT_ICONS: Record<OnboardingEventId, LucideIcon> = {
   COACH_MISSION_INTRO: ListChecks,
   SQUAD_INTRO: Users,
   RANKS_INTRO: Trophy,
+  TRAINING_PROGRAM_READY: ClipboardList,
+  FIRST_WORKOUT_INTRO: Dumbbell,
+  WORKOUT_LOGGING_INTRO: Dumbbell,
+  WORKOUT_COMPLETE_INTRO: CircleCheck,
+  PROGRAM_ADAPTS_INTRO: TrendingUp,
 };

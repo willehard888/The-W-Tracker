@@ -12,6 +12,7 @@ import { useCoachProgram } from "@/hooks/use-coach-program";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { loadExerciseLibrary } from "@/lib/exercise-library";
+import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 /**
  * /coach/program — full training program detail.
@@ -39,6 +40,14 @@ const CoachProgramDetail = () => {
     logs,
     refetch,
   } = useCoachProgram();
+
+  // Guidance. The reveal card teaches what was built; the adapts card waits
+  // until a first week is genuinely behind them, because "next week is built
+  // from what you logged" means nothing before anything is logged.
+  const completedSessions = logs.filter((l) => l.completed).length;
+  useOnboardingTrigger("TRAINING_PROGRAM_READY", !!program && justGenerated);
+  useOnboardingTrigger("PROGRAM_ADAPTS_INTRO", completedSessions >= 3);
+  const adaptsTargetRef = useSpotlightTarget("PROGRAM_ADAPTS_INTRO");
 
   // Warm the exercise library in parallel with the program fetch, so rows + their
   // photos resolve immediately instead of after a 600KB chunk loads on first row.
@@ -107,12 +116,16 @@ const CoachProgramDetail = () => {
               logs={logs}
               onLogged={() => refetch()}
             />
-            <WeekStrip
-              program={program}
-              currentWeek={currentWeek}
-              todayDayIndex={todayDayIndex}
-              logs={logs}
-            />
+            {/* The week strip is what "next week is built from what you
+                logged" is pointing at, so the spotlight lands on it. */}
+            <div ref={adaptsTargetRef}>
+              <WeekStrip
+                program={program}
+                currentWeek={currentWeek}
+                todayDayIndex={todayDayIndex}
+                logs={logs}
+              />
+            </div>
             <ProgramWeekAccordion
               program={program}
               currentWeek={currentWeek}

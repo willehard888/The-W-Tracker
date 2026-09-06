@@ -11,6 +11,15 @@ export const ONBOARDING_EVENT_IDS = [
   "COACH_MISSION_INTRO",
   "SQUAD_INTRO",
   "RANKS_INTRO",
+  // Training. Five moments, not fourteen: the session cap is 2 cards per app
+  // launch, and everything else an athlete needs to learn is taught inline by
+  // the runner itself — a line under "3 × 8", the rest timer's own label, the
+  // progress bar. A card is for what a surface cannot say about itself.
+  "TRAINING_PROGRAM_READY",
+  "FIRST_WORKOUT_INTRO",
+  "WORKOUT_LOGGING_INTRO",
+  "WORKOUT_COMPLETE_INTRO",
+  "PROGRAM_ADAPTS_INTRO",
 ] as const;
 
 export type OnboardingEventId = (typeof ONBOARDING_EVENT_IDS)[number];

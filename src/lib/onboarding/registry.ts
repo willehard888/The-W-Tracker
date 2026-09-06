@@ -104,4 +104,59 @@ export const ONBOARDING_EVENTS: Record<OnboardingEventId, OnboardingEventDef> = 
     fallback: "sheet",
     backdropDismiss: true,
   },
+
+  // ── Training ────────────────────────────────────────────────────────────
+  // The plan is the payoff for a 25-second wait; without a word here the
+  // athlete lands in a collapsed four-week accordion.
+  TRAINING_PROGRAM_READY: {
+    id: "TRAINING_PROGRAM_READY",
+    presentation: "sheet",
+    title: "Your program is built",
+    body: "Four weeks, shaped around your goal and your week. It changes as you log.",
+    cta: "Show me",
+    fallback: "sheet",
+    backdropDismiss: true,
+  },
+  // Chained, so the two together count as ONE teaching moment against the
+  // per-launch cap — a first workout is a single beat, not two interruptions.
+  FIRST_WORKOUT_INTRO: {
+    id: "FIRST_WORKOUT_INTRO",
+    presentation: "sheet",
+    title: "One set at a time",
+    body: "Work down the list. Log what you lift — the next session starts from it.",
+    cta: "Start",
+    chainsTo: "WORKOUT_LOGGING_INTRO",
+    fallback: "sheet",
+    backdropDismiss: true,
+  },
+  WORKOUT_LOGGING_INTRO: {
+    id: "WORKOUT_LOGGING_INTRO",
+    presentation: "spotlight",
+    title: "Weight × reps",
+    body: "Whatever you actually did. Rounding up helps nobody — least of all next week.",
+    cta: "Got it",
+    // The runner mounts its set rows after the plan resolves; without this the
+    // spotlight would race the first set and measure an empty rect.
+    prerequisite: "FIRST_WORKOUT_INTRO",
+    fallback: "skip",
+    backdropDismiss: true,
+  },
+  WORKOUT_COMPLETE_INTRO: {
+    id: "WORKOUT_COMPLETE_INTRO",
+    presentation: "sheet",
+    title: "That counts twice",
+    body: "The session is saved, and your check-in already knows you trained.",
+    cta: "Good",
+    fallback: "sheet",
+    backdropDismiss: true,
+  },
+  PROGRAM_ADAPTS_INTRO: {
+    id: "PROGRAM_ADAPTS_INTRO",
+    presentation: "spotlight",
+    title: "A week in",
+    body: "Next week is built from what you logged, not from a template.",
+    cta: "Got it",
+    fallback: "skip",
+    backdropDismiss: true,
+  },
 };

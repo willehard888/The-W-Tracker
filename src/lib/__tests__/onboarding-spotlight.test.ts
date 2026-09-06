@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   EMPTY_ONBOARDING_STATE,
   EMPTY_QUEUE,
@@ -187,5 +189,43 @@ describe("registry", () => {
     expect(ONBOARDING_EVENTS.TODAY_INTRO.chainsTo).toBe("CHECKIN_INTRO");
     expect(ONBOARDING_EVENTS.STREAK_INTRO.chainsTo).toBe("PROGRESSION_INTRO");
     expect(ONBOARDING_EVENTS.AI_COACH_INTRO.chainsTo).toBe("COACH_MISSION_INTRO");
+    // Starting a first workout is one teaching moment, not two: the intro
+    // chains into the logging spotlight, so the pair costs a single slot
+    // against the per-launch cap.
+    expect(ONBOARDING_EVENTS.FIRST_WORKOUT_INTRO.chainsTo).toBe("WORKOUT_LOGGING_INTRO");
+    expect(ONBOARDING_EVENTS.WORKOUT_LOGGING_INTRO.prerequisite).toBe("FIRST_WORKOUT_INTRO");
+  });
+
+  it("points every chainsTo and prerequisite at an event that exists", () => {
+    const ids = new Set<string>(ONBOARDING_EVENT_IDS);
+    for (const id of ONBOARDING_EVENT_IDS) {
+      const def = ONBOARDING_EVENTS[id];
+      if (def.chainsTo) expect(ids.has(def.chainsTo), `${id} chains to a missing event`).toBe(true);
+      if (def.prerequisite) {
+        expect(ids.has(def.prerequisite), `${id} requires a missing event`).toBe(true);
+        // An event waiting on itself would never resolve.
+        expect(def.prerequisite).not.toBe(id);
+      }
+    }
+  });
+
+  it("has every event id allowed by the database", () => {
+    // The trap: `onboarding_valid_event` is a hardcoded SQL allowlist, and all
+    // four state-writing RPCs check it. An id that exists in TypeScript but not
+    // in SQL is silently DROPPED on write — the card shows, the athlete
+    // dismisses it, nothing persists, and it shows again on the next launch.
+    // Adding an event means editing both, and forgetting the migration
+    // produces no error anywhere at runtime.
+    const dir = resolve(__dirname, "../../../supabase/migrations");
+    const allowed = new Set<string>();
+    for (const file of readdirSync(dir).filter((f) => f.includes("onboarding")).sort()) {
+      const sql = readFileSync(resolve(dir, file), "utf8");
+      const fn = sql.split("onboarding_valid_event").slice(1).join("");
+      for (const m of fn.matchAll(/'([A-Z][A-Z0-9_]+)'/g)) allowed.add(m[1]);
+    }
+    expect(allowed.size, "no onboarding_valid_event migration found").toBeGreaterThan(0);
+
+    const missing = ONBOARDING_EVENT_IDS.filter((id) => !allowed.has(id));
+    expect(missing, `these ids need adding to onboarding_valid_event: ${missing.join(", ")}`).toEqual([]);
   });
 });

@@ -20,19 +20,31 @@ import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/s
  *
  * Home's gold budget belongs to the hero (the daily check-in) and the W-Index —
  * a decision stated in Index.tsx and honoured by the Fuel row, which carries no
- * gold of its own. This row follows Fuel exactly: quiet surface, muted eyebrow,
- * one outline action. It is deliberately NOT a second spectacle competing with
- * the check-in; it is the day's other concrete fact, stated plainly.
+ * gold of its own. This row follows Fuel exactly: quiet surface, one outline
+ * action. Home's one eyebrow is the date above the beat, so the label here is
+ * plain 11 px muted text, not a second eyebrow. It is deliberately NOT a second
+ * spectacle competing with the check-in; it is the day's other concrete fact,
+ * stated plainly.
  */
+
+const ROW = "surface-card surface-card-quiet flex items-center";
+const BODY = "flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity";
+const LABEL = "text-[11px] font-bold text-muted-foreground/75 mb-0.5";
+
 const TrainingZone = () => {
   const navigate = useNavigate();
   const { program, logs, currentWeek, todayDayIndex, isLoading } = useCoachProgram();
 
+  // The row's own silhouette while the program loads — label, title line,
+  // sub-line at the heights the real states render — so nothing shifts.
   if (isLoading) {
     return (
-      <div className="surface-card surface-card-quiet px-4 py-3">
-        <p className="eyebrow text-muted-foreground/75 mb-1">Training</p>
-        <div className="skeleton-block h-4 w-2/5" />
+      <div className={ROW}>
+        <div className={BODY}>
+          <p className={LABEL}>Training</p>
+          <div className="skeleton-block h-4 w-2/5 rounded bg-card/40" />
+          <div className="skeleton-block h-3 w-1/2 rounded bg-card/40 mt-1.5" />
+        </div>
       </div>
     );
   }
@@ -46,14 +58,14 @@ const TrainingZone = () => {
   // the first time most people hear the feature exists.
   if (!program) {
     return (
-      <div className="surface-card surface-card-quiet flex items-center">
+      <div className={ROW}>
         <button
           type="button"
           onClick={() => go("/coach/program")}
           aria-label="Build your training program"
-          className="flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity"
+          className={BODY}
         >
-          <p className="eyebrow text-muted-foreground/75 mb-0.5">Training</p>
+          <p className={LABEL}>Training</p>
           <p className="text-[14px] font-bold leading-tight">No program yet</p>
           <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
             A few questions, then four weeks built around your week.
@@ -80,16 +92,14 @@ const TrainingZone = () => {
   const startSession = () => go(`/coach/session/${currentWeek}/${todayDayIndex}`);
 
   return (
-    <div className="surface-card surface-card-quiet flex items-center">
+    <div className={ROW}>
       <button
         type="button"
         onClick={open}
         aria-label="Open today's training session"
-        className="flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity"
+        className={BODY}
       >
-        <p className="eyebrow text-muted-foreground/75 mb-0.5">
-          Training · Week {currentWeek}
-        </p>
+        <p className={LABEL}>Training · Week {currentWeek}</p>
 
         {!day ? (
           // The plan exists but today's slot is missing — a truncated

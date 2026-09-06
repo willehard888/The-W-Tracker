@@ -3,9 +3,13 @@ import { useMemo, useState } from "react";
 // straight to a movement and the phone's back gesture closes the detail
 // instead of leaving the library entirely.
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronRight, Search, X } from "lucide-react";
+import { BookOpen, ChevronRight, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
+import { fmtInt } from "@/lib/format";
 import { hapticImpact } from "@/lib/haptics";
 import {
   ILLUSTRATED_EXERCISES,
@@ -21,6 +25,9 @@ import { coachingFor } from "@/data/exercise-coaching";
  * line art) + step-by-step instructions. Replaces the 542-photo browser whose
  * source photos came from hundreds of different gyms and read cheap no matter
  * the treatment (founder feedback, three rounds).
+ *
+ * One job: learn one movement. The detail is a beat (the name) over the one
+ * hero (the rep, played); everything under it is type on the page.
  */
 
 const GROUPS: Array<{ label: string; match: (m: string) => boolean }> = [
@@ -63,53 +70,65 @@ const coachingText = (slug: string) => {
 const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () => void }) => (
   <div className="min-h-full">
     <PageBar onBack={onBack} />
-    <div className="home-rise px-4 pt-4 pb-6">
-    {/* The rep, played. Both states were already being fetched for the old
-        side-by-side stills — this shows the movement between them. */}
-    <IllustrationPlayer ex={ex} className="mb-4" />
-
-    <h1 className="font-display text-xl font-black tracking-tight leading-tight">{ex.title}</h1>
-    <div className="flex flex-wrap gap-1.5 mt-2">
-      {[...ex.equipment, ex.type].filter(Boolean).map((t) => (
-        <span key={t as string} className="eyebrow text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5 capitalize">
-          {t}
-        </span>
-      ))}
-    </div>
-    {(ex.primary.length > 0 || ex.secondary.length > 0) && (
-      <p className="text-[12px] text-muted-foreground mt-2 capitalize">
-        <span className="font-bold text-foreground/80 normal-case">Muscles:</span>{" "}
-        {[...ex.primary, ...ex.secondary].join(", ")}
-      </p>
-    )}
-
-    <p className="eyebrow text-gold/85 mt-5 mb-2">How to perform</p>
-    <ol className="space-y-2.5">
-      {ex.steps.map((step, i) => (
-        <li key={i} className="flex gap-2.5 text-[13px] text-foreground/85 leading-snug">
-          <span className="shrink-0 h-5 w-5 rounded-full bg-gold/15 text-gold text-[11px] font-black flex items-center justify-center mt-px">{i + 1}</span>
-          <span>{step}</span>
-        </li>
-      ))}
-    </ol>
-
-    {coachingFor(ex.slug) && (
-      <>
-        <div className="mt-6 h-px bg-gradient-to-r from-transparent via-gold/25 to-transparent" />
-        <p className="eyebrow text-gold mt-5 mb-1">Coaching</p>
-        <p className="text-[12px] text-muted-foreground mb-4 leading-snug">
-          What a still picture can&rsquo;t show: the rhythm, the breathing, and the mistakes that actually happen.
+    <div className="px-4 pt-4 pb-6">
+      {/* The beat: the movement's name, and what it takes. */}
+      <header className="home-rise">
+        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{ex.title}</h1>
+        <p className="mt-1.5 text-[13px] text-muted-foreground capitalize">
+          {[...ex.equipment, ex.type].filter(Boolean).join(" · ")}
         </p>
-        <ExerciseCoachingBlock slug={ex.slug} />
-      </>
-    )}
+        {(ex.primary.length > 0 || ex.secondary.length > 0) && (
+          <p className="text-[13px] text-muted-foreground">
+            Works <span className="capitalize">{[...ex.primary, ...ex.secondary].join(", ")}</span>
+          </p>
+        )}
+      </header>
 
-    {/* The library now carries beginner technique guidance, so it carries the
-        same line the rest of the app uses for it. */}
-    <p className="mt-7 rounded-xl border border-border/40 bg-background/30 px-3 py-2.5 text-[11.5px] text-muted-foreground/80 leading-snug">
-      Educational guidance &mdash; not medical advice. Start lighter than you think you need to,
-      and stop if a movement causes pain.
-    </p>
+      {/* The hero: the rep, played. Both states were already being fetched
+          for the old side-by-side stills — this shows the movement between them. */}
+      <div className="home-rise home-rise-1 mt-4">
+        <IllustrationPlayer ex={ex} />
+      </div>
+
+      <section className="home-rise home-rise-2 mt-5">
+        <p className="text-[11px] font-bold text-muted-foreground mb-2">How to perform</p>
+        <ol className="space-y-2.5">
+          {ex.steps.map((step, i) => (
+            <li key={i} className="flex gap-2.5 text-[13px] text-foreground/85 leading-snug">
+              <span className="shrink-0 w-5 text-[11px] font-black text-muted-foreground tabular-nums mt-px">{i + 1}</span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {coachingFor(ex.slug) && (
+        <div className="home-rise home-rise-3 mt-6">
+          <ExerciseCoachingBlock slug={ex.slug} />
+        </div>
+      )}
+
+      {/* The library carries beginner technique guidance, so it carries the
+          same line the rest of the app uses for it. */}
+      <p className="mt-7 text-[11.5px] text-muted-foreground/80 leading-snug">
+        Educational guidance &mdash; not medical advice. Start lighter than you think you need to,
+        and stop if a movement causes pain.
+      </p>
+    </div>
+  </div>
+);
+
+/** A slug that resolves to nothing: an old link, or a renamed movement. */
+const ExerciseMissing = ({ onBack }: { onBack: () => void }) => (
+  <div className="min-h-full">
+    <PageBar onBack={onBack} />
+    <div className="home-rise px-4 pt-4 pb-6">
+      <EmptyState
+        icon={BookOpen}
+        title="This movement isn’t in the library"
+        description="The link may be old, or the movement was renamed."
+        action={<Button variant="outline" onClick={onBack}>Browse the library</Button>}
+      />
     </div>
   </div>
 );
@@ -146,7 +165,9 @@ const Exercises = () => {
   // a movement, the URL is shareable, and the phone's back gesture closes the
   // detail instead of leaving the library entirely.
   const selected = slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) : undefined;
-  if (selected) return <ExerciseDetail ex={selected} onBack={() => navigate("/exercises")} />;
+  const toList = () => navigate("/exercises");
+  if (selected) return <ExerciseDetail ex={selected} onBack={toList} />;
+  if (slug) return <ExerciseMissing onBack={toList} />;
 
   return (
     <div className="min-h-full">
@@ -155,15 +176,21 @@ const Exercises = () => {
       <div className="home-rise px-4 pt-4 pb-6">
         {/* Search */}
         <div className="relative mb-3">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
+          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${ILLUSTRATED_EXERCISES.length} exercises…`}
-            className="w-full rounded-xl border border-border/50 bg-background/40 pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+            placeholder={`Search ${fmtInt(ILLUSTRATED_EXERCISES.length)} exercises…`}
+            aria-label="Search exercises"
+            className="pl-9 pr-11"
           />
           {query && (
-            <button aria-label="Clear search" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setQuery("")}
+              className="absolute right-0 top-0 h-10 min-w-11 flex items-center justify-center text-muted-foreground"
+            >
               <X size={15} />
             </button>
           )}
@@ -177,9 +204,13 @@ const Exercises = () => {
               return (
                 <button
                   key={g ?? "all"}
+                  type="button"
+                  aria-pressed={active}
                   onClick={() => { hapticImpact("light"); setGroup(g); }}
                   className={cn(
-                    "press shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-all ",
+                    // A 32 px pill; the invisible ::before lifts its target to the 44 pt floor.
+                    "press relative shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-colors",
+                    "before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']",
                     active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
                   )}
                 >
@@ -190,30 +221,29 @@ const Exercises = () => {
           </div>
         </div>
 
-        <div className="space-y-2">
+        <ul className="divide-y divide-border/35 border-t border-border/35">
           {filtered.map((ex, i) => (
-            <button
-              key={ex.slug}
-              onClick={() => { hapticImpact("light"); navigate(`/exercises/${ex.slug}`); }}
-              style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 80px" }}
-              className="press w-full text-left rounded-2xl border border-gold/20 bg-gradient-to-b from-gold/[0.04] via-card/95 to-card p-3 transition-transform"
-            >
-              <div className="flex items-center gap-3">
-                <IllustrationThumb ex={ex} size={56} eager={i < 10} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-display text-[14px] font-black leading-tight truncate">{ex.title}</p>
-                  <p className="text-[12px] text-muted-foreground capitalize mt-0.5 truncate">
+            <li key={ex.slug} style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
+              <button
+                type="button"
+                onClick={() => { hapticImpact("light"); navigate(`/exercises/${ex.slug}`); }}
+                className="press w-full min-h-11 flex items-center gap-3 py-2 text-left"
+              >
+                <IllustrationThumb ex={ex} size={48} eager={i < 10} />
+                <span className="flex-1 min-w-0">
+                  <span className="block text-[14px] font-semibold leading-tight truncate">{ex.title}</span>
+                  <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 capitalize truncate">
                     {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.join(", ")}` : ""}
-                  </p>
-                </div>
-                <ChevronRight size={16} className="text-gold/60 shrink-0" />
-              </div>
-            </button>
+                  </span>
+                </span>
+                <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
+              </button>
+            </li>
           ))}
-          {filtered.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-10">No exercises match — try another search.</p>
-          )}
-        </div>
+        </ul>
+        {filtered.length === 0 && (
+          <p className="text-center text-sm text-muted-foreground py-10">No exercises match — try another search.</p>
+        )}
 
         {/* CC BY-SA attribution — required by the illustration license. */}
         <p className="mt-8 text-center text-[11px] text-muted-foreground/50">

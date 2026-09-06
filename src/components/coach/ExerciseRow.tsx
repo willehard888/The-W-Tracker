@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useExerciseLibrary, resolveExercise, exerciseImgBranded } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
-import { IllustrationThumb, IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
+import { IllustrationThumb, IllustrationHero } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import { resolveIllustration } from "@/lib/exercise-match";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
@@ -159,8 +159,10 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
 
       {open && (
         <div className="pl-0 pb-2 space-y-2.5">
+          {/* The static Start/Finish pair here; the rep only plays in the
+              detail and the runner, so a list never carries a loop per row. */}
           {illustrated ? (
-            <IllustrationPlayer ex={illustrated} />
+            <IllustrationHero ex={illustrated} />
           ) : ex?.images?.[0] ? (
             <BrandedExercisePhoto src={ex.images[ex.images.length - 1]} alt={block.name} width={640} imgClassName="max-h-56" />
           ) : null}

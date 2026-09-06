@@ -1,4 +1,4 @@
-import { dayFocus, daySummary, isRestDay } from "@/lib/training/session";
+import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
 import { useMemo, useState } from "react";
 import { Check, ChevronDown, Loader2, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -54,6 +54,12 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
   const isRest = isRestDay(day);
   const canStart = !isRest && !todayLog && day.blocks.length > 0;
   const recovery = week?.recovery;
+  // On a rest day the card's second line points forward — the next session
+  // this week, wrapping to Monday — instead of saying "Rest" twice.
+  const days = week?.days ?? [];
+  const nextUp = isRest
+    ? [...days.slice(todayDayIndex + 1), ...days.slice(0, todayDayIndex)].find((d) => isTrainingDay(d))
+    : undefined;
 
   const markDone = async () => {
     if (!user) return;
@@ -111,9 +117,11 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
   return (
     <div className="surface-card p-4">
       <h2 className="font-display font-black text-[20px] leading-[1.1] tracking-tight">
-        {dayFocus(day) || "Today's session"}
+        {isRest ? "Rest day" : dayFocus(day) || "Today's session"}
       </h2>
-      <p className="mt-1 text-[13px] text-muted-foreground">{daySummary(day)}</p>
+      <p className="mt-1 text-[13px] text-muted-foreground">
+        {nextUp ? `Next up: ${dayFocus(nextUp)} · ${nextUp.day}` : daySummary(day)}
+      </p>
 
       {/* The primary action on this card is starting, not reading. The list
           below stays for anyone who wants to see the session first. */}

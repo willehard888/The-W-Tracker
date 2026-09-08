@@ -226,7 +226,9 @@ const TribeBattles = () => {
         ) : (
           /* No battle to frame: the tribe's own fire stands alone. */
           <div className="home-rise home-rise-1 mt-5 flex items-center gap-3">
-            <div className="w-10 h-11 flex items-end justify-center shrink-0" aria-hidden>
+            {/* The lit fire stands on the line's baseline; the cold fallback
+                is a plain icon and belongs beside the text, not under it. */}
+            <div className={cn("w-10 h-11 flex justify-center shrink-0", tier >= 0 ? "items-end" : "items-center")} aria-hidden>
               {tier >= 0 ? (
                 <TribeFireLite tier={tier} palette={collectivePalette(collectiveStreak)} variant="mini" size={32} />
               ) : (

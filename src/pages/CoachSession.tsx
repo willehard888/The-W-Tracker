@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { readSession, removeSession, writeSession } from "@/lib/storage";
+import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
 import { Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -232,37 +232,39 @@ const CoachSession = () => {
   const logSet = useLogSet();
 
   // The rest deadline is the one piece of runner state not derived from
-  // logged sets, so it is written to sessionStorage: a WKWebView reload after
-  // a long background used to lose the card while the OS notification it had
-  // scheduled still fired. A deadline more than a minute past is history.
+  // logged sets, so it is written to localStorage: a WKWebView reload after a
+  // long background, or iOS killing the app, used to lose the card while the
+  // OS notification it had scheduled still fired. sessionStorage was tried
+  // first and does not survive a kill. A deadline more than a minute past is
+  // history and is cleared on read.
   const restKey = program?.id ? `wf_rest:${program.id}:${week}:${day}` : null;
   const [rest, setRest] = useState<{ endsAt: number; seconds: number } | null>(null);
   useEffect(() => {
     if (!restKey) return;
-    const raw = readSession(restKey);
+    const raw = readLocal(restKey);
     if (!raw) return;
     try {
       const saved = JSON.parse(raw) as { endsAt: number; seconds: number };
       if (saved.endsAt > Date.now() - 60_000) setRest(saved);
-      else removeSession(restKey);
+      else removeLocal(restKey);
     } catch {
-      removeSession(restKey);
+      removeLocal(restKey);
     }
   }, [restKey]);
   const startRest = (seconds: number) => {
     const next = { endsAt: Date.now() + seconds * 1000, seconds };
     setRest(next);
-    if (restKey) writeSession(restKey, JSON.stringify(next));
+    if (restKey) writeLocal(restKey, JSON.stringify(next));
   };
   const extendRest = (ms: number) => setRest((r) => {
     if (!r) return r;
     const next = { ...r, endsAt: r.endsAt + ms };
-    if (restKey) writeSession(restKey, JSON.stringify(next));
+    if (restKey) writeLocal(restKey, JSON.stringify(next));
     return next;
   });
   const clearRest = () => {
     setRest(null);
-    if (restKey) removeSession(restKey);
+    if (restKey) removeLocal(restKey);
   };
   // Which set is being written — before this, logging set 2 spun sets 1..N.
   const [pendingSet, setPendingSet] = useState<number | null>(null);

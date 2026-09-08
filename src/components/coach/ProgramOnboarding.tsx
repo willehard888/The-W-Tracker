@@ -179,8 +179,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         </div>
         <dl className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
           <Row k="Goal"      v={goalLabel} />
-          <Row k="Horizon"   v={`${horizon} weeks`} />
-          <Row k="Schedule"  v={`${days.length} days/wk`} extra={<DayDots active={days} />} />
+          <Row k="Horizon"   v={`${horizon} week${horizon === 1 ? "" : "s"}`} />
+          <Row k="Schedule"  v={`${days.length} day${days.length === 1 ? "" : "s"}/wk`} extra={<DayDots active={days} />} />
           <Row k="Session"   v={`${sessionMin} min`} />
           <Row k="Equipment" v={equipment} wide />
           {injuries.length > 0 && <Row k="Injuries" v={injuries.join(", ")} wide />}

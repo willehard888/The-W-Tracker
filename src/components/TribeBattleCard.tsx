@@ -111,6 +111,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
 
   const side = (s: TribeSide | undefined, fallback: string, score: number, felt: boolean) => {
     const streak = s?.collective_streak ?? 0;
+    const members = s?.member_count ?? 0;
     const tier = collectiveStreakTier(streak);
     return (
       <div className="flex items-end justify-between gap-3">
@@ -125,7 +126,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
           <div className="min-w-0">
             <p className="text-[13px] font-bold truncate">{s?.name ?? fallback}</p>
             <p className="text-[11px] text-muted-foreground tabular-nums">
-              {fmtInt(s?.member_count ?? 0)} members · {fmtInt(streak)}d collective
+              {fmtInt(members)} member{members === 1 ? "" : "s"} · {fmtInt(streak)}d collective
             </p>
           </div>
         </div>

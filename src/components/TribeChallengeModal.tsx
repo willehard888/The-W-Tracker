@@ -140,7 +140,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-sm font-bold truncate", on && "text-gold")}>{r.name}</p>
                   <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1 tabular-nums">
-                    <Users size={11} aria-hidden /> {r.member_count} members · {r.visibility}
+                    <Users size={11} aria-hidden /> {r.member_count} member{r.member_count === 1 ? "" : "s"} · {r.visibility}
                   </p>
                 </div>
                 {on && <Check size={16} className="commit-pop text-gold shrink-0" aria-hidden />}

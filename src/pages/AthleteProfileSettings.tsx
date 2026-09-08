@@ -108,7 +108,7 @@ const AthleteProfileSettings = () => {
             <FactRow k="Primary" v={labelOf(GOALS, profile.primary_goal) ?? "—"} />
             <FactRow k="Experience" v={labelOf(EXPERIENCE, profile.training_experience) ?? "—"} />
             <FactRow k="Sports" v={list(profile.sports, (id) => sportById(id).label) ?? "—"} />
-            <FactRow k="Horizon" v={profile.target_horizon_weeks ? `${profile.target_horizon_weeks} weeks` : "—"} />
+            <FactRow k="Horizon" v={profile.target_horizon_weeks ? `${profile.target_horizon_weeks} week${profile.target_horizon_weeks === 1 ? "" : "s"}` : "—"} />
           </Group>
 
           <Group title="Constraints">

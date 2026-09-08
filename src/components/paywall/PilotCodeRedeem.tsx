@@ -63,7 +63,7 @@ const PilotCodeRedeem = () => {
 
       hapticNotification("success");
       const days = result.granted_days;
-      toast.success(days ? `Access unlocked for ${days} days.` : "Access unlocked.");
+      toast.success(days ? `Access unlocked for ${days} day${days === 1 ? "" : "s"}.` : "Access unlocked.");
       setCode("");
       setOpen(false);
       // Pull the new membership_credits_until so the paywall lets them through

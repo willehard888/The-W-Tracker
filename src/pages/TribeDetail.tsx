@@ -574,7 +574,7 @@ const TribeDetail = () => {
   const handleShare = async () => {
     const url = `https://whealthfactory.com/tribes/${id}`;
     const text = collectiveStreak > 0
-      ? `Join ${tribe?.name ?? "my tribe"} on Whealth Factory — ${collectiveStreak} days of collective fire 🔥`
+      ? `Join ${tribe?.name ?? "my tribe"} on Whealth Factory — ${collectiveStreak} day${collectiveStreak === 1 ? "" : "s"} of collective fire 🔥`
       : `Join ${tribe?.name ?? "my tribe"} on Whealth Factory`;
     try {
       if (navigator.share) {

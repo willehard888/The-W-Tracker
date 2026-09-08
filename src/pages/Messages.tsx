@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { MessageCircle, Search, X, SearchX } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -90,7 +91,7 @@ const Messages = () => {
     enabled: !!user && searchQuery.trim().length >= 2,
   });
 
-  const { data: conversations, isLoading } = useQuery({
+  const { data: conversations, isLoading, isError, refetch } = useQuery({
     queryKey: ["conversations", user?.id],
     staleTime: 30_000,       // conversations should be reasonably real-time
     gcTime:    5 * 60_000,
@@ -242,7 +243,12 @@ const Messages = () => {
             </div>
           )}
 
-          {!isLoading && rows.length === 0 && (
+          {!isLoading && isError && rows.length === 0 && (
+            <div className="home-rise home-rise-2">
+              <ErrorState title="Couldn't load messages" onRetry={refetch} />
+            </div>
+          )}
+          {!isLoading && !isError && rows.length === 0 && (
             <div className="home-rise home-rise-2">
               <EmptyState icon={MessageCircle} title="No messages yet" description="Open someone's profile and tap Message to start a conversation." />
             </div>

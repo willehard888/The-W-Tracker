@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import PageBar from "@/components/ui/page-bar";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
@@ -306,14 +307,7 @@ const VaultCategoryBlock = ({
             ))}
 
           {!isLoading && error && (
-            <div className="py-4 text-center">
-              {/* Real retry — this page has no pull-to-refresh, so the old
-                  "Pull to refresh" copy asked for something impossible. */}
-              <p className="text-[12px] text-rose-400/90 mb-2">Couldn't load articles.</p>
-              <Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => refetch()}>
-                Try again
-              </Button>
-            </div>
+            <ErrorState size="compact" title="Couldn't load articles" onRetry={refetch} />
           )}
 
           {!isLoading && !error && articles.length === 0 && (

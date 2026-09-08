@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import LazyVideoPlayer from "@/components/LazyVideoPlayer";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
@@ -91,7 +92,7 @@ const EliteFeed = () => {
   // Check if current user is admin (shared cache across the app)
   const isAdmin = useIsAdmin(user?.id);
 
-  const { data: posts, isLoading } = useQuery({
+  const { data: posts, isLoading, isError, refetch: refetchPosts } = useQuery({
     queryKey: ["feed-posts", showReported],
     placeholderData: keepPreviousData,
     // Shared with the app-shell prefetcher (FeedPrefetcher in App.tsx) —
@@ -757,7 +758,7 @@ const EliteFeed = () => {
                 aria-label={showReported ? "Hide flagged posts" : "Show flagged posts"}
                 aria-pressed={showReported}
                 className={cn(
-                  "press h-9 w-9 rounded-full flex items-center justify-center transition-colors ",
+                  "press relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full flex items-center justify-center transition-colors",
                   showReported
                     ? "bg-destructive/15 text-destructive"
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
@@ -770,7 +771,7 @@ const EliteFeed = () => {
                 aria-label="Pending reports"
                 aria-pressed={showReportsPanel}
                 className={cn(
-                  "press relative h-9 w-9 rounded-full flex items-center justify-center transition-colors ",
+                  "press relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full flex items-center justify-center transition-colors",
                   showReportsPanel
                     ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
@@ -927,14 +928,14 @@ const EliteFeed = () => {
                   <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="press flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold "
+                    className="press relative before:absolute before:-inset-1 before:content-[''] flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold"
                   >
                     <Image aria-hidden size={14} />
                     Photo
                   </button>
                   <button
                     onClick={() => videoRef.current?.click()}
-                    className="press flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold "
+                    className="press relative before:absolute before:-inset-1 before:content-[''] flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold"
                   >
                     <Video aria-hidden size={14} />
                     Video
@@ -990,6 +991,9 @@ const EliteFeed = () => {
               </div>
             ))}
           </div>
+        )}
+        {isError && !posts && !isLoading && (
+          <ErrorState title="Couldn't load the feed" onRetry={refetchPosts} />
         )}
         {posts?.length === 0 && !isLoading && (
           <EmptyState

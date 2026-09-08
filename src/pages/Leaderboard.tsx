@@ -21,6 +21,7 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
@@ -135,7 +136,7 @@ const Leaderboard = () => {
     swipe.current = null;
   };
 
-  const { data: allTimeLeaders, isLoading: allTimeLoading } = useQuery({
+  const { data: allTimeLeaders, isLoading: allTimeLoading, isError: allTimeError, refetch: refetchAllTime } = useQuery({
     queryKey: ["leaderboard-all-time"],
     staleTime: 5 * 60_000,   // leaderboard refreshes every 5 min is more than enough
     gcTime:    15 * 60_000,
@@ -164,7 +165,7 @@ const Leaderboard = () => {
     queryFn: fetchActiveSeason,
   });
 
-  const { data: seasonData, isLoading: seasonLoading } = useQuery({
+  const { data: seasonData, isLoading: seasonLoading, isError: seasonError, refetch: refetchSeason } = useQuery({
     queryKey: ["leaderboard-season", activeSeason?.id, profile?.user_id],
     enabled: !!activeSeason?.id,
     staleTime: 5 * 60_000,
@@ -234,6 +235,9 @@ const Leaderboard = () => {
   const boardLoading = mode === "season"
     ? seasonMetaLoading || seasonLoading
     : allTimeLoading || totalCount === undefined;
+  // A failed fetch used to read "the board is warming up" — an empty board and
+  // a dead connection are different screens.
+  const boardError = mode === "season" ? seasonError : allTimeError;
 
   // Who is just above you: the lead of the person one place up, when both of
   // you are on the visible board. Off the board, the beat states rank alone.
@@ -403,7 +407,12 @@ const Leaderboard = () => {
       {/* Nobody on the board yet (fresh deploy / new season) — invite action.
           Gated on the ACTIVE mode's loading state so a cold cache doesn't flash
           "the board is warming up" before data lands. */}
-      {!boardLoading && currentLeaders.length === 0 && (
+      {!boardLoading && boardError && currentLeaders.length === 0 && (
+        <div className="home-rise home-rise-2">
+          <ErrorState title="Couldn't load the board" onRetry={() => { void refetchAllTime(); void refetchSeason(); }} />
+        </div>
+      )}
+      {!boardLoading && !boardError && currentLeaders.length === 0 && (
         <div className="home-rise home-rise-2">
           <EmptyState
             icon={Trophy}

@@ -15,6 +15,7 @@ import {
 import { format } from "date-fns";
 import type { LucideIcon } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
@@ -686,6 +687,8 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           <TribeSkeleton />
           <TribeSkeleton />
         </div>
+      ) : tribesQuery.isError && !tribesQuery.data ? (
+        <ErrorState title="Couldn't load tribes" onRetry={tribesQuery.refetch} />
       ) : tribes.length === 0 ? (
         activityFilter ? (
           <EmptyState

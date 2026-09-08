@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import StatusAvatar from "@/components/StatusAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,7 +53,7 @@ const Notifications = () => {
   const { profile } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
 
-  const { data: notifications, isLoading } = useNotifications();
+  const { data: notifications, isLoading, isError, refetch } = useNotifications();
   const { data: friendRequests } = useFriendRequests();
   const { acceptRequest, declineRequest } = useFriendActions();
 
@@ -241,6 +242,8 @@ const Notifications = () => {
             <div className="divide-y divide-border/35">
               {[0, 1, 2].map((i) => <div key={i} className="h-10 my-3 rounded-lg bg-card/40 skeleton-block" />)}
             </div>
+          ) : isError && !notifications ? (
+            <ErrorState title="Couldn't load your inbox" onRetry={refetch} />
           ) : (notifications?.length ?? 0) === 0 ? (
             <EmptyState
               icon={Bell}

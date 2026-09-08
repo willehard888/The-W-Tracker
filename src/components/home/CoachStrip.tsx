@@ -82,7 +82,7 @@ const CoachStrip = (_props: CoachStripProps) => {
       <div className="relative">
         <div className="flex items-center gap-1.5 mb-1.5">
           <Sparkles aria-hidden size={13} className="text-gold shrink-0" strokeWidth={2.4} />
-          <p className="eyebrow text-gold/85">AI Coach</p>
+          <p className="text-[11px] font-bold text-muted-foreground">AI Coach</p>
           {/* Mission progress rides the eyebrow row — no extra height. */}
           {hasPlan && (
             <span

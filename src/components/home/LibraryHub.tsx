@@ -118,7 +118,7 @@ const LibraryHub = () => {
         {/* Header — text only (the gold tile is gone; gold is the hero's now),
             a quiet value statement above the shelf, not a button. */}
         <div className="px-4 pt-3.5 pb-3">
-          <p className="eyebrow text-muted-foreground/80">The Library</p>
+          <p className="text-[11px] font-bold text-muted-foreground">The Library</p>
           <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
             Everything your membership unlocks
           </p>

@@ -342,7 +342,7 @@ const Index = () => {
               onClick={() => navigate("/journey")}
               className="shrink-0 flex flex-col items-end pr-4 pl-3 py-3 border-l border-border/40 active:opacity-70 transition-opacity"
             >
-              <span className="eyebrow text-gold/85 leading-none">W-Index</span>
+              <span className="text-[11px] font-bold text-gold/85 leading-none">W-Index</span>
               <span className="font-display font-black text-[17px] tabular-nums leading-none text-gold glow-gold-text mt-1 inline-flex items-center gap-1">
                 <Crown size={13} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
               </span>
@@ -473,7 +473,7 @@ const Index = () => {
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">
-        <p className="eyebrow text-muted-foreground">
+        <p className="text-[11px] font-bold text-muted-foreground">
           {tierConfig.message}
         </p>
       </div>

@@ -7,7 +7,7 @@
     "contentInset": "never",
     "backgroundColor": "#0a0710",
     "limitsNavigationsToAppBoundDomains": false,
-    "scrollEnabled": true,
+    "scrollEnabled": false,
     "scheme": "app"
   },
   "plugins": {

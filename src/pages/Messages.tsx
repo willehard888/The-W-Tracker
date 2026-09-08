@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { ActionRow } from "@/components/ActionRow";
 import { Input } from "@/components/ui/input";
 import { fmtInt, fmtRelative } from "@/lib/format";
@@ -156,7 +157,7 @@ const Messages = () => {
 
   return (
     <div ref={scrollRef} className="min-h-full" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-      <PageBar title="Messages" onBack={() => navigate("/squad")} />
+      <PageBar title="Messages" onBack={() => backOr(navigate, "/squad")} />
 
       <div className="px-4 pt-4 pb-6">
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />

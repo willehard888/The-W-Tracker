@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
 import { fmtInt } from "@/lib/format";
 import { useEffect, useState } from "react";
@@ -250,7 +251,7 @@ export default function AdminMetrics() {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Metrics" onBack={() => navigate(-1)} />
+      <PageBar title="Metrics" onBack={() => backOr(navigate, "/profile")} />
       <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       <div className="mb-6">
         <p className="text-sm text-muted-foreground">

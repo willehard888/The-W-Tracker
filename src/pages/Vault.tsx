@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -169,7 +170,7 @@ const Vault = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Vault" onBack={() => navigate(-1)} />
+      <PageBar title="Vault" onBack={() => backOr(navigate, "/")} />
 
       <div className="px-4 pt-4 pb-6">
         {/* Opening beat — the reader's own count, then one whisper of type. */}

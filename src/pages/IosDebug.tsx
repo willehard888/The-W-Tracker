@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Trash2 } from "lucide-react";
@@ -38,7 +39,7 @@ const IosDebug = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="iOS debug" onBack={() => navigate(-1)} />
+      <PageBar title="iOS debug" onBack={() => backOr(navigate, "/profile")} />
       <div className="px-4 pt-4 pb-6 space-y-4">
       <div className="flex items-center justify-end gap-2">
         <div className="flex items-center gap-2">

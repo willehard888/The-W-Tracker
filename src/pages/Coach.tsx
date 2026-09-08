@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import CoachSkeleton from "@/components/coach/CoachSkeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { memo, useEffect, useRef, useState } from "react";
@@ -94,7 +95,7 @@ const Coach = () => {
     if (typeof console !== "undefined") console.error("AI Coach failed to load:", err);
     return (
       <div className="min-h-full">
-        <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
+        <PageBar title="AI Coach" onBack={() => backOr(navigate, "/")} action={<CoachMenu navigate={navigate} />} />
         <div className="home-rise px-6 pt-16 pb-6 text-center">
           <div className="max-w-sm mx-auto space-y-4">
             <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto" aria-hidden><AlertTriangle size={32} className="text-muted-foreground" /></div>
@@ -118,7 +119,7 @@ const Coach = () => {
   if (!athlete?.onboarded && !onboardSkipped && !hasSeed) {
     return (
       <div className="min-h-full">
-        <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
+        <PageBar title="AI Coach" onBack={() => backOr(navigate, "/")} action={<CoachMenu navigate={navigate} />} />
         <div className="w-full flex justify-end px-6 pt-2">
           <button
             type="button"
@@ -220,7 +221,7 @@ const CoachShell = ({
 
   return (
     <div className="min-h-full">
-      <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
+      <PageBar title="AI Coach" onBack={() => backOr(navigate, "/")} action={<CoachMenu navigate={navigate} />} />
 
       <div className="px-4 pt-3 pb-6">
         <header className="home-rise">

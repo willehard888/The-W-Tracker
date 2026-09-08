@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
 import { fmtRelative } from "@/lib/format";
 import { useEffect, useState } from "react";
@@ -113,7 +114,7 @@ export default function AdminModeration() {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Moderation queue" onBack={() => navigate(-1)} />
+      <PageBar title="Moderation queue" onBack={() => backOr(navigate, "/profile")} />
       <div className="px-4 pt-4 pb-6">
       <div className="mb-6">
         <p className="text-sm text-muted-foreground">

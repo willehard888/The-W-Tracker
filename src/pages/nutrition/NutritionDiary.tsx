@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -540,7 +541,7 @@ const NutritionDiary = () => {
       {/* Documented exception to "one action": targets + how-it-works are both
           44 pt icons and both belong to the diary as a whole, not a row. */}
       <PageBar
-        onBack={() => navigate("/")}
+        onBack={() => backOr(navigate, "/")}
         title={<DateBar date={date} onChange={setDate} />}
         action={
           <>

@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -156,7 +157,7 @@ const NotificationSettings = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Notification settings" onBack={() => navigate(-1)} />
+      <PageBar title="Notification settings" onBack={() => backOr(navigate, "/profile")} />
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">

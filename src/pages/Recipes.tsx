@@ -1,6 +1,8 @@
 import { Input } from "@/components/ui/input";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useScrollContainer } from "@/contexts/ScrollContainerContext";
+import { backOr } from "@/lib/nav";
 import { Search, X, Utensils } from "lucide-react";
 import { recipeThumb, recipeSquare } from "@/lib/recipe-images";
 import { fmtQty } from "@/lib/recipe-scaling";
@@ -55,7 +57,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
 
   return (
     <div className="min-h-full">
-      <PageBar onBack={() => navigate("/recipes")} />
+      <PageBar onBack={() => backOr(navigate, "/recipes")} />
       {/* Photo runs edge to edge under the bar; the fade hands off to the copy. */}
       <div className="relative">
         <RecipePhoto id={recipe.id} className="w-full aspect-[4/3]" />
@@ -163,7 +165,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
 /** Every tag actually present in the data — never a hand-kept list. */
 const ALL_TAGS = [...new Set(RECIPES.flatMap((r) => r.tags))].sort();
 
-const RecipeList = () => {
+const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
@@ -183,7 +185,7 @@ const RecipeList = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Recipes" onBack={() => navigate(-1)} />
+      <PageBar title="Recipes" onBack={() => backOr(navigate, "/")} />
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
@@ -250,7 +252,7 @@ const RecipeList = () => {
                 <li key={r.id} className={cn(i < 8 && "animate-fade-in-up")} style={i < 8 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
                   <button
                     type="button"
-                    onClick={() => { hapticImpact("light"); navigate(`/recipes/${r.id}`); }}
+                    onClick={() => { hapticImpact("light"); onOpen(); navigate(`/recipes/${r.id}`); }}
                     className="w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
                   >
                     <RecipePhoto id={r.id} variant="tile" className="h-14 w-14 shrink-0 rounded-xl" />
@@ -273,9 +275,24 @@ const RecipeList = () => {
 
 const Recipes = () => {
   const { id } = useParams<{ id: string }>();
-  const recipe = id ? RECIPES.find((r) => r.id === id) : undefined;
+  const scroller = useScrollContainer();
+  const [opened, setOpened] = useState(false);
+  const listScroll = useRef(0);
   // An unknown id falls back to the list rather than a dead end.
-  return recipe ? <RecipeDetail recipe={recipe} /> : <RecipeList />;
+  const recipe = id ? RECIPES.find((r) => r.id === id) : undefined;
+  // The list stays mounted under the detail, so search, filter and scroll
+  // survive the hop; `entrance-done` keeps it from replaying its entrance.
+  useLayoutEffect(() => {
+    scroller?.current?.scrollTo(0, recipe ? 0 : listScroll.current);
+  }, [recipe, scroller]);
+  return (
+    <>
+      {recipe && <RecipeDetail recipe={recipe} />}
+      <div className={cn(opened && "entrance-done")} hidden={!!recipe}>
+        <RecipeList onOpen={() => { listScroll.current = scroller?.current?.scrollTop ?? 0; setOpened(true); }} />
+      </div>
+    </>
+  );
 };
 
 export default Recipes;

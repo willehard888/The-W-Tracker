@@ -1,5 +1,5 @@
 import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -15,7 +15,9 @@ import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { cancelLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { pageKey } from "@/lib/nav";
+import { setNavigator } from "@/lib/router-bridge";
+import { BrowserRouter, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
@@ -201,6 +203,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
  */
 const AppRoutes = () => {
   const { user } = useAuth();
+  // Native listeners (a push tap) navigate through the router, never through
+  // a raw history.pushState — that dropped the router's idx for the session.
+  const navigate = useNavigate();
+  useEffect(() => { setNavigator(navigate); }, [navigate]);
   const { needsPriming, enablePush, dismissPriming, resyncStreakWarning } = usePushNotifications();
   useOfflineCheckinSync();
   useOfflineNutritionSync();
@@ -216,12 +222,16 @@ const AppRoutes = () => {
   // Every page lands at the top. The main scroll container persists across
   // route changes (it lives outside <Routes>), so without this its scroll
   // position would carry over when navigating between tabs — making a new
-  // page open already scrolled down. Reset it on every pathname change.
+  // page open already scrolled down. Reset it before paint (a post-paint
+  // scrollTo was a second layout on every page change), keyed on the page:
+  // a list↔detail hop inside Exercises/Recipes keeps the page mounted and the
+  // page restores its own list position.
   const location = useLocation();
+  const key = pageKey(location.pathname);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    scrollContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [location.pathname]);
+  useLayoutEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, 0);
+  }, [key]);
 
   // Page-transition wrap was REMOVED — keying a motion.div on
   // location.pathname caused React to unmount + remount the entire
@@ -254,8 +264,9 @@ const AppRoutes = () => {
               UI here so the user can still navigate elsewhere.
               key={pathname}: without it the boundary LATCHED into the error
               state — tapping BottomNav changed the URL but the fallback kept
-              rendering and the user could never navigate out. */}
-          <ErrorBoundary key={location.pathname}>
+              rendering and the user could never navigate out. Keyed on the
+              page, not the path, so a list↔detail hop does not remount. */}
+          <ErrorBoundary key={key}>
           <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
@@ -293,10 +304,10 @@ const AppRoutes = () => {
           <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
           <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
-          <Route path="/recipes" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           {/* A recipe is a route, not local state — so the coach and the Vault
-              can link to a specific dish, and Back actually goes back. */}
-          <Route path="/recipes/:id" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
+              can link to a specific dish, and Back actually goes back. One
+              route for list + detail: the list stays mounted under the detail. */}
+          <Route path="/recipes/:id?" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           <Route path="/nutrition" element={<ProtectedRoute><NutritionDiary /></ProtectedRoute>} />
           <Route path="/nutrition/photo" element={<ProtectedRoute><NutritionPhotoReview /></ProtectedRoute>} />
           <Route path="/nutrition/targets" element={<ProtectedRoute><NutritionTargets /></ProtectedRoute>} />
@@ -305,10 +316,9 @@ const AppRoutes = () => {
           <Route path="/nutrition/recipes" element={<ProtectedRoute><NutritionRecipes /></ProtectedRoute>} />
           <Route path="/nutrition/recipes/new" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
           <Route path="/nutrition/recipes/:id" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
-          <Route path="/exercises" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
-          {/* Same reason as /recipes/:id — a movement the coach prescribes
+          {/* Same reason as /recipes/:id? — a movement the coach prescribes
               should be linkable, and Back should close the detail. */}
-          <Route path="/exercises/:slug" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
+          <Route path="/exercises/:slug?" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />

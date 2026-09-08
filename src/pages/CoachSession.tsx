@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
@@ -368,7 +369,7 @@ const CoachSession = () => {
     };
     return (
       <div className="min-h-full">
-        <PageBar onBack={() => navigate("/coach/program")} title={barTitle} />
+        <PageBar onBack={() => backOr(navigate, "/coach/program")} title={barTitle} />
         <div className="px-4 pt-6 pb-6">
           {/* Opening beat: the day, done. One standing line under it — the
               volume is the screen's one felt number. */}
@@ -500,7 +501,7 @@ const CoachSession = () => {
       {/* Bar and progress hairline stick as one unit, so the way out and how
           much of the session is behind you never scroll away. */}
       <div className="sticky top-0 z-20">
-        <PageBar sticky={false} onBack={() => navigate("/coach/program")} title={barTitle} />
+        <PageBar sticky={false} onBack={() => backOr(navigate, "/coach/program")} title={barTitle} />
         <div className="h-1 bg-border/40">
           <div
             className="h-full bg-foreground/55 transition-[width] duration-300"

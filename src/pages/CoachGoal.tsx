@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import PageBar from "@/components/ui/page-bar";
 import GoalTrackerCard from "@/components/coach/GoalTrackerCard";
@@ -12,7 +13,7 @@ const CoachGoal = () => {
   const navigate = useNavigate();
   return (
     <div className="min-h-full">
-      <PageBar title="North Star goal" onBack={() => navigate(-1)} />
+      <PageBar title="North Star goal" onBack={() => backOr(navigate, "/coach")} />
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">

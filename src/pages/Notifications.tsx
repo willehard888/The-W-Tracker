@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { ActionRow } from "@/components/ActionRow";
 import { fmtInt, fmtRelative } from "@/lib/format";
 import { useState } from "react";
@@ -158,7 +159,7 @@ const Notifications = () => {
     <div className="min-h-full">
       <PageBar
         title="Notifications"
-        onBack={() => navigate(-1)}
+        onBack={() => backOr(navigate, "/")}
         action={
           unread > 0 ? (
             <Button variant="ghost" size="icon" aria-label="Mark all read" onClick={markAllRead}>

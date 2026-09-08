@@ -15,8 +15,7 @@ const renderAt = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/recipes" element={<Recipes />} />
-        <Route path="/recipes/:id" element={<Recipes />} />
+        <Route path="/recipes/:id?" element={<Recipes />} />
       </Routes>
     </MemoryRouter>,
   );

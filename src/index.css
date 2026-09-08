@@ -894,6 +894,10 @@
   .home-rise-3 { animation-delay: 210ms; }
   .home-rise-4 { animation-delay: 280ms; }
   .home-rise-5 { animation-delay: 350ms; }
+  /* A list that stays mounted under its detail (Exercises, Recipes) has
+     settled once; display:none would otherwise restart its entrance every
+     time the detail closes over it. */
+  .entrance-done .home-rise, .entrance-done .animate-fade-in-up { animation: none; }
   @media (prefers-reduced-motion: reduce) {
     .home-rise,
     .home-rise-1, .home-rise-2, .home-rise-3, .home-rise-4, .home-rise-5 {

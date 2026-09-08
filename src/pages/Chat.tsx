@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { Input } from "@/components/ui/input";
 import { fmtRelative } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
@@ -175,7 +176,7 @@ const Chat = () => {
     <div className="flex flex-col h-full bg-background">
       <PageBar
         sticky={false}
-        onBack={() => navigate("/messages")}
+        onBack={() => backOr(navigate, "/messages")}
         title={
           <button
             onClick={() => navigate(`/user/${partnerId}`)}

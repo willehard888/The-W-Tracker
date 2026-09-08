@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import PageBar from "@/components/ui/page-bar";
 
@@ -6,7 +7,7 @@ const PrivacyPolicy = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Privacy Policy" onBack={() => navigate(-1)} />
+      <PageBar title="Privacy Policy" onBack={() => backOr(navigate, "/")} />
 
       <div className="px-4 pt-4 pb-6">
       <p className="text-xs text-muted-foreground mb-6">Last updated: June 8, 2026</p>

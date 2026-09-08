@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 // useParams: an exercise is a route (/exercises/:slug), so the coach can link
 // straight to a movement and the phone's back gesture closes the detail
 // instead of leaving the library entirely.
 import { useNavigate, useParams } from "react-router-dom";
+import { useScrollContainer } from "@/contexts/ScrollContainerContext";
+import { backOr } from "@/lib/nav";
 import { BookOpen, ChevronRight, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Button } from "@/components/ui/button";
@@ -136,8 +138,13 @@ const ExerciseMissing = ({ onBack }: { onBack: () => void }) => (
 const Exercises = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
+  const scroller = useScrollContainer();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string | null>(null);
+  // Set once a row has been opened: the list has settled, and must not replay
+  // its entrance every time a detail closes over it.
+  const [opened, setOpened] = useState(false);
+  const listScroll = useRef(0);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -163,94 +170,107 @@ const Exercises = () => {
 
   // An exercise is a route, not local state — so the coach can link straight to
   // a movement, the URL is shareable, and the phone's back gesture closes the
-  // detail instead of leaving the library entirely.
+  // detail instead of leaving the library entirely. The list stays mounted
+  // under the detail (hidden), so search, filter and scroll survive the hop
+  // and the 269 rows are not rebuilt on the way back.
   const selected = slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) : undefined;
-  const toList = () => navigate("/exercises");
-  if (selected) return <ExerciseDetail ex={selected} onBack={toList} />;
-  if (slug) return <ExerciseMissing onBack={toList} />;
+  useLayoutEffect(() => {
+    scroller?.current?.scrollTo(0, slug ? 0 : listScroll.current);
+  }, [slug, scroller]);
+  const close = () => backOr(navigate, "/exercises");
+  const open = (ex: IllustratedExercise) => {
+    hapticImpact("light");
+    listScroll.current = scroller?.current?.scrollTop ?? 0;
+    setOpened(true);
+    navigate(`/exercises/${ex.slug}`);
+  };
 
   return (
-    <div className="min-h-full">
-      <PageBar title="Exercise library" onBack={() => navigate(-1)} />
+    <>
+      {selected && <ExerciseDetail ex={selected} onBack={close} />}
+      {slug && !selected && <ExerciseMissing onBack={close} />}
+      <div className={cn("min-h-full", opened && "entrance-done")} hidden={!!slug}>
+        <PageBar title="Exercise library" onBack={() => backOr(navigate, "/")} />
 
-      <div className="home-rise px-4 pt-4 pb-6">
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${fmtInt(ILLUSTRATED_EXERCISES.length)} exercises…`}
-            aria-label="Search exercises"
-            className="pl-9 pr-11"
-          />
-          {query && (
-            <button
-              type="button"
-              aria-label="Clear search"
-              onClick={() => setQuery("")}
-              className="absolute right-0 top-0 h-10 min-w-11 flex items-center justify-center text-muted-foreground"
-            >
-              <X size={15} />
-            </button>
-          )}
-        </div>
-
-        {/* Muscle-group filter */}
-        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar mb-4">
-          <div className="flex gap-1.5 w-max">
-            {[null, ...GROUPS.map((g) => g.label)].map((g) => {
-              const active = group === g;
-              return (
-                <button
-                  key={g ?? "all"}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => { hapticImpact("light"); setGroup(g); }}
-                  className={cn(
-                    // A 32 px pill; the invisible ::before lifts its target to the 44 pt floor.
-                    "press relative shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-colors",
-                    "before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']",
-                    active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
-                  )}
-                >
-                  {g ?? "All"}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <ul className="divide-y divide-border/35 border-t border-border/35">
-          {filtered.map((ex, i) => (
-            <li key={ex.slug} style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
+        <div className="home-rise px-4 pt-4 pb-6">
+          {/* Search */}
+          <div className="relative mb-3">
+            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${fmtInt(ILLUSTRATED_EXERCISES.length)} exercises…`}
+              aria-label="Search exercises"
+              className="pl-9 pr-11"
+            />
+            {query && (
               <button
                 type="button"
-                onClick={() => { hapticImpact("light"); navigate(`/exercises/${ex.slug}`); }}
-                className="press w-full min-h-11 flex items-center gap-3 py-2 text-left"
+                aria-label="Clear search"
+                onClick={() => setQuery("")}
+                className="absolute right-0 top-0 h-10 min-w-11 flex items-center justify-center text-muted-foreground"
               >
-                <IllustrationThumb ex={ex} size={48} eager={i < 10} />
-                <span className="flex-1 min-w-0">
-                  <span className="block text-[14px] font-semibold leading-tight truncate">{ex.title}</span>
-                  <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 capitalize truncate">
-                    {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.join(", ")}` : ""}
-                  </span>
-                </span>
-                <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
+                <X size={15} />
               </button>
-            </li>
-          ))}
-        </ul>
-        {filtered.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground py-10">No exercises match — try another search.</p>
-        )}
+            )}
+          </div>
 
-        {/* CC BY-SA attribution — required by the illustration license. */}
-        <p className="mt-8 text-center text-[11px] text-muted-foreground/50">
-          Illustrations © Everkinetic · CC BY-SA 4.0
-        </p>
+          {/* Muscle-group filter */}
+          <div className="-mx-4 px-4 overflow-x-auto no-scrollbar mb-4">
+            <div className="flex gap-1.5 w-max">
+              {[null, ...GROUPS.map((g) => g.label)].map((g) => {
+                const active = group === g;
+                return (
+                  <button
+                    key={g ?? "all"}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => { hapticImpact("light"); setGroup(g); }}
+                    className={cn(
+                      // A 32 px pill; the invisible ::before lifts its target to the 44 pt floor.
+                      "press relative shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-colors",
+                      "before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']",
+                      active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
+                    )}
+                  >
+                    {g ?? "All"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <ul className="divide-y divide-border/35 border-t border-border/35">
+            {filtered.map((ex, i) => (
+              <li key={ex.slug} style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
+                <button
+                  type="button"
+                  onClick={() => open(ex)}
+                  className="press w-full min-h-11 flex items-center gap-3 py-2 text-left"
+                >
+                  <IllustrationThumb ex={ex} size={48} eager={i < 10} />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[14px] font-semibold leading-tight truncate">{ex.title}</span>
+                    <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 capitalize truncate">
+                      {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.join(", ")}` : ""}
+                    </span>
+                  </span>
+                  <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+          {filtered.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-10">No exercises match — try another search.</p>
+          )}
+
+          {/* CC BY-SA attribution — required by the illustration license. */}
+          <p className="mt-8 text-center text-[11px] text-muted-foreground/50">
+            Illustrations © Everkinetic · CC BY-SA 4.0
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

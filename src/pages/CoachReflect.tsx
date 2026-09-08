@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import PageBar from "@/components/ui/page-bar";
 import EveningReflectionCard from "@/components/coach/EveningReflectionCard";
@@ -15,7 +16,7 @@ const CoachReflect = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Evening reflection" onBack={() => navigate(-1)} />
+      <PageBar title="Evening reflection" onBack={() => backOr(navigate, "/coach")} />
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">

@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, HeartPulse, Info } from "lucide-react";
@@ -65,7 +66,7 @@ const NutritionTargets = () => {
   if (profileLoading || targetsLoading) {
     return (
       <div className="min-h-full">
-        <PageBar title="Nutrition targets" onBack={() => navigate(-1)} />
+        <PageBar title="Nutrition targets" onBack={() => backOr(navigate, "/nutrition")} />
         <div className="px-4 pt-4 pb-8">
           <Block height={28} className="w-3/4 !rounded-lg" />
           <Block height={44} delay={40} className="mt-4" />
@@ -110,7 +111,7 @@ const NutritionTargets = () => {
   const commit = async (patch: { kcal: number; protein_g: number; carbs_g: number; fat_g: number; method: string }) => {
     try {
       await save({ ...patch, activity_level: activity });
-      navigate(-1);
+      backOr(navigate, "/nutrition");
     } catch {
       /* the hook already toasted */
     }
@@ -151,7 +152,7 @@ const NutritionTargets = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Nutrition targets" onBack={() => navigate(-1)} />
+      <PageBar title="Nutrition targets" onBack={() => backOr(navigate, "/nutrition")} />
 
       <div className="px-4 pt-4 pb-6 space-y-6">
         <div className="home-rise">

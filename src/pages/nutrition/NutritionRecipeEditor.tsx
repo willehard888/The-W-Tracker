@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Plus, Trash2, X } from "lucide-react";
@@ -163,7 +164,7 @@ const NutritionRecipeEditor = () => {
   if (id && isLoading) {
     return (
       <div className="min-h-full">
-        <PageBar title={title} onBack={() => navigate(-1)} />
+        <PageBar title={title} onBack={() => backOr(navigate, "/nutrition/recipes")} />
         <div className="px-4 pt-4 pb-8">
           <Block height={52} className="!rounded-xl" />
           <Block height={88} delay={40} className="mt-4 !rounded-2xl" />
@@ -175,7 +176,7 @@ const NutritionRecipeEditor = () => {
   if (id && !saved) {
     return (
       <div className="min-h-full">
-        <PageBar title={title} onBack={() => navigate(-1)} />
+        <PageBar title={title} onBack={() => backOr(navigate, "/nutrition/recipes")} />
         <div className="px-4 pt-6">
           <EmptyState title="Recipe not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition/recipes", { replace: true })}>All recipes</Button>} />
         </div>
@@ -187,7 +188,7 @@ const NutritionRecipeEditor = () => {
     <div className="min-h-full">
       <PageBar
         title={title}
-        onBack={() => navigate(-1)}
+        onBack={() => backOr(navigate, "/nutrition/recipes")}
         action={
           id ? (
             <Button variant="ghost" size="icon" aria-label="Delete recipe" className="text-muted-foreground" onClick={() => setConfirmDelete(true)}>

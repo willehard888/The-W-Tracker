@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import { Dumbbell, Sparkles } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
@@ -37,7 +38,7 @@ const CoachProgress = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Progress" onBack={() => navigate(-1)} />
+      <PageBar title="Progress" onBack={() => backOr(navigate, "/coach")} />
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">

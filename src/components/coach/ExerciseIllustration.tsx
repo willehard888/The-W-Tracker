@@ -26,6 +26,7 @@ export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: {
       src={illustrationThumb(ex.idNum)}
       alt=""
       decoding="async"
+      loading={eager ? "eager" : "lazy"}
       className="h-full w-full object-contain p-1"
       style={{ filter: GOLD_LINES }}
       onError={(e) => {

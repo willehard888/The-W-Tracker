@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useSessionDoneToday } from "@/hooks/use-session-done-today";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -711,7 +712,7 @@ const DailyCheckin = () => {
   if (!canCheckin && !submitted) {
     return (
       <div className="min-h-full flex flex-col">
-        <PageBar onBack={() => navigate("/")} />
+        <PageBar onBack={() => backOr(navigate, "/")} />
         <div className="home-rise flex-1 flex flex-col items-center justify-center px-6 pb-6 text-center">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-6">
             <Moon aria-hidden size={36} className="text-muted-foreground" />
@@ -776,7 +777,7 @@ const DailyCheckin = () => {
   return (
     <div className="min-h-full">
       <PageBar
-        onBack={() => navigate("/")}
+        onBack={() => backOr(navigate, "/")}
         title={<p className="eyebrow text-muted-foreground/75 truncate">{dateLine}</p>}
         action={
           <Button variant="ghost" size="icon" aria-label="Customize habits" onClick={() => { hapticSelection(); setPickerOpen(true); }}>

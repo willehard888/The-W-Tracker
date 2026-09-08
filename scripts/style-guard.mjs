@@ -29,6 +29,7 @@ const RULES = [
   // Motion
   { re: /(?<!group-)active:scale-/, msg: "per-element press scale — press depth is global (.press for non-buttons)", exempt: ["src/components/ui/button.tsx"] },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
+  { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },
   // Hit areas: a raw small button without a hit-area expansion
   // Newline- and `=>`-tolerant: the old per-line form could not see a

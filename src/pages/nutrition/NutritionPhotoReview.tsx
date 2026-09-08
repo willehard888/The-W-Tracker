@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { backOr } from "@/lib/nav";
 import { Camera, ImagePlus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -157,7 +158,7 @@ const NutritionPhotoReview = () => {
   };
   const leave = () => {
     cancel();
-    navigate(-1);
+    backOr(navigate, "/nutrition");
   };
   const choosePlate = async (cm: number) => {
     hapticSelection();

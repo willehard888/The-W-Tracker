@@ -125,10 +125,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Membership OR live 14-day trial (hook is isElite-aware) — called before
   // any early return so the hook order stays stable.
   const trial = useTrialAccess();
+  // The router's location, not the window global the component never
+  // subscribed to; a trailing slash used to miss the exemption list.
+  const { pathname } = useLocation();
   if (loading) return <RouteFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
-  const path = window.location.pathname;
+  const path = pathname.replace(/\/+$/, "") || "/";
 
   // DB-driven username gate: anyone whose handle wasn't their own choice
   // (Apple/OAuth placeholder, collision suffix, legacy auto-generation)
@@ -418,9 +421,10 @@ const TabPrefetcher = () => {
           );
         }
 
-        // Tribes tab: the page mounts on "browse" and flips to "mine"
-        // for members after its own probe — warm BOTH variants so the
-        // flip renders from cache and neither state ever spinners.
+        // Tribes tab: the page runs the same membership probe and lands on
+        // "mine" for members, "browse" for everyone else — warm the tab it
+        // will land on. Warming both cost a member ~12 round trips for a tab
+        // they may never open.
         const tribesJob = (async () => {
           const { data: mem } = await supabase
             .from("tribe_members")
@@ -428,21 +432,11 @@ const TabPrefetcher = () => {
             .eq("user_id", userId)
             .eq("status", "active")
             .limit(1);
-          const jobs = [
-            queryClient.prefetchQuery({
-              queryKey: ["tribes-page", "browse", null, userId],
-              queryFn: () => fetchTribesPage("browse", null, userId),
-            }),
-          ];
-          if ((mem?.length ?? 0) > 0) {
-            jobs.push(
-              queryClient.prefetchQuery({
-                queryKey: ["tribes-page", "mine", null, userId],
-                queryFn: () => fetchTribesPage("mine", null, userId),
-              }),
-            );
-          }
-          await Promise.all(jobs);
+          const tab = (mem?.length ?? 0) > 0 ? "mine" : "browse";
+          await queryClient.prefetchQuery({
+            queryKey: ["tribes-page", tab, null, userId],
+            queryFn: () => fetchTribesPage(tab, null, userId),
+          });
         })();
 
         await Promise.all([...seasonJobs, tribesJob]);

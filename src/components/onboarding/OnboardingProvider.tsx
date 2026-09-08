@@ -20,6 +20,9 @@ import {
   parseOnboardingState,
   type ShowQueue,
 } from "@/lib/onboarding/state";
+
+// One "seen" per event per launch — see mark().
+const seenThisLaunch = new Set<string>();
 import type { OnboardingEventId, OnboardingState } from "@/lib/onboarding/types";
 import { OnboardingContext, type OnboardingApi } from "./onboarding-context";
 import OnboardingHost from "./OnboardingHost";
@@ -106,6 +109,13 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
   }, [uid, state]);
 
   const mark = useCallback((kind: keyof typeof RPC_BY_KIND, id: OnboardingEventId) => {
+    // Module scope survives a state reset on uid change (storage unavailable
+    // → empty mirror → the active card re-marking itself before the server
+    // state lands). One "seen" per event per launch, full stop.
+    if (kind === "seen") {
+      if (seenThisLaunch.has(id)) return;
+      seenThisLaunch.add(id);
+    }
     trace("mark", kind, id);
     const next = applyMark(stateRef.current, kind, id, new Date().toISOString());
     stateRef.current = next;

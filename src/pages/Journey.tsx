@@ -33,8 +33,10 @@ const Journey = () => {
   const { profile } = useAuth();
   const { data, isLoading } = useJourney(56);
 
-  const reflections = data?.reflections ?? [];
-  const checkins = data?.checkins ?? [];
+  // Stable identities: `?? []` minted a new array every render and every
+  // memo below re-ran.
+  const reflections = useMemo(() => data?.reflections ?? [], [data]);
+  const checkins = useMemo(() => data?.checkins ?? [], [data]);
 
   const xpWeeksAll = useMemo(() => weeklyXp(checkins), [checkins]);
 

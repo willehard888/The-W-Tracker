@@ -33,6 +33,10 @@ export const useDailyPulse = (
 ) => {
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
+  // The day a snapshot was already written: between the write and the
+  // realtime echo landing on the profile, any rank refetch re-ran this effect
+  // with the stale snapshot and wrote again — zeroing the day's delta.
+  const wroteForRef = useRef<string | null>(null);
   const [state, setState] = useState<DailyPulse>({
     rankDelta: 0,
     scoreDelta: 0,
@@ -54,8 +58,8 @@ export const useDailyPulse = (
 
       const snap = (snapshotRef.current ?? null) as SnapshotShape | null;
       const now = new Date();
-      const todayKey = now.toISOString().slice(0, 10);
-      const snapKey = snap?.timestamp ? snap.timestamp.slice(0, 10) : null;
+      const todayKey = now.toLocaleDateString("en-CA");
+      const snapKey = snap?.timestamp ? new Date(snap.timestamp).toLocaleDateString("en-CA") : null;
 
       let rankDelta = 0;
       let scoreDelta = 0;
@@ -80,7 +84,8 @@ export const useDailyPulse = (
       }
 
       // Refresh snapshot once per day
-      if (snapKey !== todayKey) {
+      if (snapKey !== todayKey && wroteForRef.current !== todayKey) {
+        wroteForRef.current = todayKey;
         await supabase
           .from("profiles")
           .update({

@@ -1,6 +1,7 @@
 import { fmtRelative } from "@/lib/format";
 import { fmtInt } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
+import { backOr } from "@/lib/nav";
 import { ProfileSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -197,7 +198,7 @@ const UserProfile = () => {
     return (
       <div className="min-h-full pb-4 px-4 pt-6 text-center">
         <p className="text-muted-foreground mt-20">User not found</p>
-        <Button variant="ghost" size="sm" className="mt-4" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="sm" className="mt-4" onClick={() => backOr(navigate, "/squad")}>
           <ChevronLeft size={16} /> Go back
         </Button>
       </div>
@@ -228,7 +229,7 @@ const UserProfile = () => {
   return (
     <div className="min-h-full pb-6 relative">
       <PageBar
-        onBack={() => navigate(-1)}
+        onBack={() => backOr(navigate, "/squad")}
         action={
           <button
             onClick={handleShare}
@@ -548,7 +549,7 @@ const UserProfile = () => {
         onOpenChange={setShowBlockConfirm}
         onConfirm={() => {
           block(userId!, profile.username);
-          navigate(-1);
+          backOr(navigate, "/squad");
         }}
       />
     </div>

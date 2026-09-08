@@ -64,9 +64,11 @@ export const useRoadToElite = (): RoadToEliteData => {
         .eq("user_id", userId)
         .gte("checked_in_at", thirtyDaysAgo);
 
+      // Local calendar days, like every other streak surface — a UTC bucket
+      // folded two Helsinki evenings into one day.
       const dayKeys = new Set(
         (checkins ?? []).map((c) =>
-          new Date(c.checked_in_at).toISOString().slice(0, 10),
+          new Date(c.checked_in_at).toLocaleDateString("en-CA"),
         ),
       );
       return dayKeys.size;

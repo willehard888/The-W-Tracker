@@ -202,7 +202,10 @@ const Leaderboard = () => {
     },
   });
 
-  const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
+  const currentLeaders = useMemo(
+    () => (mode === "season" ? seasonData?.top || [] : allTimeLeaders || []),
+    [mode, seasonData, allTimeLeaders],
+  );
   const boardTotal = mode === "season" ? seasonData?.total || 0 : totalCount || 0;
   // All-Time position derives from the SAME XP-ordered list the board shows —
   // the rank_score-based RPC could say "#7" while the user's own highlighted

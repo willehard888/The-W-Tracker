@@ -180,7 +180,7 @@ export const useCoachObservation = ({ context }: UseCoachObservationOptions): Co
       "showing up daily";
 
     return tmpl.replace("{focus}", focus).replace("{adjust}", plan?.adjustment ?? "hold");
-  }, [profile?.tone_pref, plan?.headline, plan?.adjustment, context]);
+  }, [profile?.tone_pref, plan, context]);
 
   return {
     text,

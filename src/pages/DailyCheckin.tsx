@@ -1,4 +1,5 @@
 import { useSessionDoneToday } from "@/hooks/use-session-done-today";
+import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -114,6 +115,11 @@ const HabitToggle = ({
   );
 };
 
+// The habits that render as their own widget (sliders + sport picker), not
+// as grouped rows. Module scope: a Set built inside the component was a new
+// identity every render and defeated the memo below it.
+const CUSTOM = new Set(["sleep", "workout", "hydration"]);
+
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
@@ -153,25 +159,7 @@ const DailyCheckin = () => {
     setOnboardDismissed(true);
   };
 
-  const { data: lastCheckin, isLoading: lastCheckinLoading } = useQuery({
-    queryKey: ["last-checkin", user?.id],
-    staleTime: 0,
-    gcTime:    30 * 60_000,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    queryFn: async () => {
-      if (!user) return null;
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("checked_in_at")
-        .eq("user_id", user.id)
-        .order("checked_in_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user,
-  });
+  const { data: lastCheckin, isLoading: lastCheckinLoading } = useLastCheckin(user?.id);
 
   const { data: recentSleep } = useQuery({
     queryKey: ["recent-sleep-7d", user?.id],
@@ -384,7 +372,6 @@ const DailyCheckin = () => {
 
   // Habits grouped by pillar, excluding the ones with custom widgets
   // (sleep / workout / hydration render as sliders + sport picker).
-  const CUSTOM = new Set(["sleep", "workout", "hydration"]);
   const groupedHabits = useMemo(() => {
     const map = new Map<CheckinPillar, CheckinHabit[]>();
     for (const h of chosenHabits) {
@@ -506,7 +493,9 @@ const DailyCheckin = () => {
         if (!rpcError) break;
         if (rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) break;
         if (isNetworkError(rpcError)) hadNetworkError = true;
-        if (attempt < 2) {
+        // Only a network failure earns a retry — a deterministic error just
+        // cost 1.8 s of spinner before the same toast.
+        if (attempt < 2 && isNetworkError(rpcError)) {
           await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
           await supabase.auth.getSession().catch(() => {});
         }

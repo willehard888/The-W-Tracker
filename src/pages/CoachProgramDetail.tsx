@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { backOr } from "@/lib/nav";
 import { Crown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
@@ -84,7 +85,7 @@ const CoachProgramDetail = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Training program" onBack={() => navigate(-1)} />
+      <PageBar title="Training program" onBack={() => backOr(navigate, "/coach")} />
 
       <div className="px-4 pt-4 pb-6">
         {isLoading && <DetailSkeleton />}

@@ -99,6 +99,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
   const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [joiningId, setJoiningId] = useState<string | null>(null);
   const [tab, setTab] = useState<"mine" | "browse">(initialSub ?? "browse");
   // Two-level activity picker: a group opens its activities; an activity
   // filters server-side (the old flat 26-chip strip filtered client-side over
@@ -209,6 +210,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   }, [listReactor.events, userToTribes]);
 
   const handleJoin = async (id: string) => {
+    if (joiningId) return;
+    setJoiningId(id);
+    try { await joinTribe(id); } finally { setJoiningId(null); }
+  };
+  const joinTribe = async (id: string) => {
     const { data, error } = await supabase.rpc("join_tribe", {
       p_tribe_id: id,
     });
@@ -279,13 +285,13 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
     }
     if (t.visibility === "private") {
       return (
-        <Button size="sm" variant="ember-glass" className={cls} onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}>
+        <Button size="sm" variant="ember-glass" className={cls} disabled={joiningId === t.id} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
           <Lock aria-hidden size={11} /> {wide ? "Request to join" : "Request"}
         </Button>
       );
     }
     return (
-      <Button size="sm" variant="ember" className={cls} onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}>
+      <Button size="sm" variant="ember" className={cls} disabled={joiningId === t.id} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
         Join
       </Button>
     );

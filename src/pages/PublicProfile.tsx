@@ -1,5 +1,6 @@
 import { fmtInt } from "@/lib/format";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { backOr } from "@/lib/nav";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
@@ -118,7 +119,7 @@ const PublicProfile = () => {
     <div className="min-h-full relative pb-10">
       {/* Back button */}
       <button
-        onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
+        onClick={() => backOr(navigate, "/")}
         className="absolute top-4 left-4 z-20 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft size={14} /> Back

@@ -2,6 +2,7 @@ import { fmtInt } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useParams, useNavigate } from "react-router-dom";
+import { backOr } from "@/lib/nav";
 import { motion } from "framer-motion";
 import {
   TrendingUp,
@@ -164,7 +165,7 @@ const WeeklyBriefing = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar onBack={() => navigate(-1)} />
+      <PageBar onBack={() => backOr(navigate, "/coach")} />
       <div className="home-rise px-4 pt-4 pb-6 relative">
       {/* Ambient gold glow */}
       <div

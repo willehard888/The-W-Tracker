@@ -5,7 +5,9 @@
 import { normalizeQuery } from "./format";
 import type { Food } from "./types";
 
-const PREFIX = "nutrition_food_cache_v1:";
+const PREFIX = "nutrition_food_cache_v1:"
+/** Exposed for the sign-out sweep. */
+export const FOOD_CACHE_PREFIX = PREFIX;;
 export const FOOD_CACHE_MAX_FOODS = 150;
 export const FOOD_CACHE_MAX_CHARS = 200 * 1024;
 

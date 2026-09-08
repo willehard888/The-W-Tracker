@@ -1,6 +1,7 @@
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
+import { readSession, writeSession } from "@/lib/storage";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { friendlyError } from "@/lib/error-copy";
@@ -9,7 +10,7 @@ import PageBar from "@/components/ui/page-bar";
 import {
   Crown, ArrowLeft, Loader2, ShieldCheck, Sparkles,
 } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
@@ -57,11 +58,14 @@ const Paywall = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const aliveRef = useRef(true);
+  useEffect(() => () => { aliveRef.current = false; }, []);
+
   // Welcome toast on transition into membership (once per session)
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {
-      if (!sessionStorage.getItem("w_welcome_toast_shown")) {
-        sessionStorage.setItem("w_welcome_toast_shown", "1");
+      if (readSession("w_welcome_toast_shown") !== "1") {
+        writeSession("w_welcome_toast_shown", "1");
         toast.success("Welcome to Premium. Full access unlocked.");
       }
     }
@@ -84,7 +88,9 @@ const Paywall = () => {
   // user's membership flipped on (the hook count differed across renders).
   const pollVerification = useCallback(async (timeoutMs = 8000): Promise<boolean> => {
     const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
+    // The effect above navigates away the moment membership flips; the loop
+    // must stop with the screen instead of polling an unmounted paywall.
+    while (aliveRef.current && Date.now() - start < timeoutMs) {
       try {
         await checkSubscription();
         // checkSubscription updates AuthContext; we read isElite via closure.

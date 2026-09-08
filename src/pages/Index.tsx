@@ -1,4 +1,5 @@
 import { useTrialAccess } from "@/hooks/use-trial-access";
+import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { fmtDate } from "@/lib/format";
 import { fmtInt } from "@/lib/format";
 import { ChevronRight, Award, ArrowUp, Crown } from "lucide-react";
@@ -122,23 +123,7 @@ const Index = () => {
     enabled: !!profile,
   });
 
-  const { data: lastCheckin } = useQuery({
-    queryKey: ["last-checkin", profile?.user_id],
-    staleTime: 5 * 60_000,   // window is the local calendar day — 5 min stale is fine
-    gcTime:    30 * 60_000,
-    queryFn: async () => {
-      if (!profile) return null;
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("checked_in_at")
-        .eq("user_id", profile.user_id)
-        .order("checked_in_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!profile,
-  });
+  const { data: lastCheckin } = useLastCheckin(profile?.user_id);
 
   const { data: rankData } = useMyRank(profile?.user_id);
   const tierRisk = useTierRisk({

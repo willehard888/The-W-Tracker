@@ -875,18 +875,18 @@
 
 
   /* HOME ENTRANCE — the screen settling into place on open. One authored
-     grammar for the first-viewport cascade: a short blur-rise, spring-eased,
+     grammar for the first-viewport cascade: a short rise, spring-eased,
      staggered ~70ms. Fast enough (620ms) to read as a premium settle every
      open rather than a slow reveal — opening Home many times a day, a heavy
      entrance would wear (Emil's frequency rule), so this stays quick and
-     light (blur 5px, GPU transform+opacity). Deliberately OUTSIDE the
+     light (GPU transform+opacity only, no filter). Deliberately OUTSIDE the
      pointer:coarse idle-decoration guard — like commit-pop, this is the
      screen's authored moment and plays on touch. Reduced motion drops to a
-     plain fade with no movement or blur. */
+     plain fade with no movement. */
   .home-rise {
     /* backwards, not both: the `to` frame is identity, and `both` kept a
-       filter: blur(0) + transform pinned on every risen block forever — a
-       permanent compositing layer per card for zero visual gain. */
+       transform pinned on every risen block forever — a permanent
+       compositing layer per card for zero visual gain. */
     animation: home-rise 0.62s var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) backwards;
   }
   .home-rise-1 { animation-delay: 70ms; }
@@ -945,10 +945,11 @@
   .glass-card::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    /* One card's area, not four: the 200% layer sat permanently rasterised
+       at 4× the card for a drift nobody can see past the card's edge. */
+    inset: 0;
+    width: 100%;
+    height: 100%;
     background:
       radial-gradient(ellipse 30% 20% at 30% 30%, hsl(42 78% 54% / 0.04) 0%, transparent 50%),
       radial-gradient(ellipse 25% 15% at 70% 60%, hsl(270 60% 58% / 0.03) 0%, transparent 50%),
@@ -1249,20 +1250,20 @@
 }
 
 
-/* Home first-viewport entrance — blur-rise settle. Emil's blur-to-mask on
-   entry: the element resolves from a soft, slightly-shrunk, lifted state, so
-   it reads as focusing into place rather than sliding up. Never from scale(0)
-   or blur past ~5px (Safari cost + "nothing appears from nothing"). */
+/* Home first-viewport entrance — rise settle. The element resolves from a
+   slightly-shrunk, lifted state, so it reads as settling into place rather
+   than sliding up. Transform + opacity only: the earlier blur(5px) ramp ran
+   on 300+ blocks app-wide and each one re-rasterised for 620 ms — the single
+   largest paint cost at first paint. Never from scale(0) ("nothing appears
+   from nothing"). */
 @keyframes home-rise {
   from {
     opacity: 0;
     transform: translate3d(0, 16px, 0) scale(0.985);
-    filter: blur(5px);
   }
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
   }
 }
 @keyframes home-fade {

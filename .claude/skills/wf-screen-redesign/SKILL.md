@@ -98,16 +98,19 @@ zones (70ms steps), then list stagger with `animate-fade-in-up` and
 
 Rules that were learned the hard way:
 
-- **Entrance goes on a wrapper `<div>`, never on the pressable element.** Both
-  keyframes use `fill-mode: both`, so a finished entrance pins `transform` and silently
-  kills the element's own `:active` scale (the tribe rows shipped that way for months).
+- **Entrance goes on a wrapper `<div>`, never on the pressable element.** A finished
+  entrance with a fill mode pins `transform` and silently kills the element's own
+  `:active` scale (the tribe rows shipped that way for months). `home-rise` is
+  `backwards` for exactly this reason; `animate-fade-in-up` is still `both`.
 - `.animate-reveal` and `home-rise` play on touch; the `<Reveal>` scroll system is
   disabled on `pointer: coarse`. First-viewport entrance on iOS must not depend on
   `<Reveal>`.
 - `commit-pop` on the element the user just committed (a reaction, a tick, a join) —
   it is the app's one "your choice landed" spring; reusing it is what makes the screens
   feel like one product.
-- Blur ≤ 5px, entrance ≤ 620ms, transform + opacity + filter only, custom curves from
+- Entrance ≤ 620ms, transform + opacity only — no `filter` on an entrance (300+ `home-rise`
+  blocks made blur the app's top paint cost); a ≤4px blur is allowed only on a one-shot
+  value swap like `price-in`. Custom curves from
   `--ease-spring` / `--ease-soft` / `--ease-ios`, reduced-motion falls back to a fade.
 - A living ambient (`page-aura-live`, breathing 11s) is allowed once, behind everything,
   and never competes with the hero.

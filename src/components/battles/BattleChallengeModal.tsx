@@ -1,5 +1,5 @@
 import { Clock, Swords, Zap, Snowflake, Dumbbell, Brain, Droplets, Flame } from "lucide-react";
-import { Portal } from "@/components/ui/Portal";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -29,61 +29,61 @@ interface BattleChallengeModalProps {
 const BattleChallengeModal = ({
   username, battleType, setBattleType, duration, setDuration, creating, onClose, onChallenge,
 }: BattleChallengeModalProps) => (
-  <Portal>
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="w-full max-w-md bg-card border-t border-border rounded-t-3xl p-6 home-rise"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="w-10 h-1 rounded-full bg-border mx-auto mb-4" />
-        <h2 className="font-display font-bold text-lg mb-1">Challenge @{username}</h2>
-        <p className="text-xs text-muted-foreground mb-4">Pick a battle type and duration</p>
-
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {BATTLE_TYPES.map((bt) => {
-            const selected = battleType === bt.id;
-            return (
-              <button
-                key={bt.id}
-                onClick={() => setBattleType(bt.id)}
-                className={cn(
-                  "press flex items-center gap-2 rounded-xl border p-3 text-left transition-all ",
-                  selected ? "border-gold/40 bg-gold/5" : "border-border bg-secondary/30 hover:bg-secondary/60",
-                )}
-              >
-                <span className="text-lg">{bt.emoji}</span>
-                <div>
-                  <p className={cn("text-xs font-semibold", selected && "text-gold")}>{bt.label}</p>
-                  <p className="text-[12px] text-muted-foreground">{bt.description}</p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Clock size={12} /> Duration</p>
-        <div className="flex gap-2 mb-5">
-          {BATTLE_DURATIONS.map((d) => (
-            <button
-              key={d}
-              onClick={() => setDuration(d)}
-              className={cn(
-                "press flex-1 rounded-lg border py-2 text-xs font-bold transition-all ",
-                duration === d ? "border-gold/40 bg-gold/10 text-gold" : "border-border bg-secondary/30",
-              )}
-            >
-              {d}d
-            </button>
-          ))}
-        </div>
-
-        <Button variant="ember" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
-          <Swords size={14} />
-          {creating ? "Sending…" : "Send Challenge"}
-        </Button>
-      </div>
+  <BottomSheet
+    open
+    onClose={onClose}
+    label={`Challenge @${username}`}
+    title={`Challenge @${username}`}
+    subtitle="Pick a battle type and duration"
+    footer={
+      <Button variant="ember" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
+        <Swords size={14} />
+        {creating ? "Sending…" : "Send Challenge"}
+      </Button>
+    }
+  >
+    <div className="grid grid-cols-2 gap-2 mb-4">
+      {BATTLE_TYPES.map((bt) => {
+        const selected = battleType === bt.id;
+        return (
+          <button
+            key={bt.id}
+            type="button"
+            onClick={() => setBattleType(bt.id)}
+            aria-pressed={selected}
+            className={cn(
+              "press flex items-center gap-2 rounded-xl border p-3 min-h-11 text-left transition-[border-color,background-color]",
+              selected ? "border-gold/40 bg-gold/5" : "border-border bg-secondary/30",
+            )}
+          >
+            <bt.icon size={16} className={selected ? "text-gold" : "text-muted-foreground"} aria-hidden />
+            <div>
+              <p className={cn("text-xs font-semibold", selected && "text-gold")}>{bt.label}</p>
+              <p className="text-[12px] text-muted-foreground">{bt.description}</p>
+            </div>
+          </button>
+        );
+      })}
     </div>
-  </Portal>
+
+    <p className="text-xs font-semibold mb-2 flex items-center gap-1"><Clock size={12} aria-hidden /> Duration</p>
+    <div className="flex gap-2">
+      {BATTLE_DURATIONS.map((d) => (
+        <button
+          key={d}
+          type="button"
+          onClick={() => setDuration(d)}
+          aria-pressed={duration === d}
+          className={cn(
+            "press flex-1 rounded-lg border min-h-11 text-xs font-bold transition-[border-color,background-color]",
+            duration === d ? "border-gold/40 bg-gold/10 text-gold" : "border-border bg-secondary/30",
+          )}
+        >
+          {d}d
+        </button>
+      ))}
+    </div>
+  </BottomSheet>
 );
 
 export default BattleChallengeModal;

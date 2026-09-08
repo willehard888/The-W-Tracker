@@ -69,7 +69,7 @@ const ProfileHero = ({
         type="button"
         onClick={onShare}
         aria-label="Share profile"
-        className="press absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/80 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 transition before:absolute before:-inset-2 before:content-['']"
+        className="press absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/80 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 transition-colors before:absolute before:-inset-2 before:content-['']"
       >
         <Share2 aria-hidden size={15} />
       </button>

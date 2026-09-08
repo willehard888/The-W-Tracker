@@ -91,7 +91,7 @@ export default function ModerationGate({
             {(state === "blocked" || state === "error") && onDismiss && (
               <button
                 onClick={onDismiss}
-                className="press mt-5 w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition"
+                className="press mt-5 w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors"
               >
                 Try another photo
               </button>
@@ -100,7 +100,7 @@ export default function ModerationGate({
             {state === "reviewing" && slow && onCancel && (
               <button
                 onClick={onCancel}
-                className="mt-5 w-full rounded-lg border border-border py-2.5 text-sm text-muted-foreground transition"
+                className="mt-5 w-full rounded-lg border border-border py-2.5 text-sm text-muted-foreground transition-colors"
               >
                 Cancel
               </button>

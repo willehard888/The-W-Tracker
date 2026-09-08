@@ -59,7 +59,7 @@ const LessonQuiz = ({
                       type="button"
                       disabled={submitted}
                       onClick={() => setAnswers((p) => ({ ...p, [qi]: ci }))}
-                      className="press w-full text-left rounded-xl border px-3 py-2 text-[12px] flex items-start gap-2 transition disabled:"
+                      className="press w-full text-left rounded-xl border px-3 py-2 text-[12px] flex items-start gap-2 transition-colors disabled:"
                       style={{
                         background: showState
                           ? isCorrect
@@ -114,7 +114,7 @@ const LessonQuiz = ({
             setSubmitted(true);
             onScore(score);
           }}
-          className="text-[11px] font-bold text-muted-foreground mt-4 w-full rounded-xl py-2.5 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="text-[11px] font-bold text-muted-foreground mt-4 w-full rounded-xl py-2.5 disabled:opacity-40 disabled:cursor-not-allowed transition-[color,opacity]"
           style={{
             background: accent,
             color: "hsl(var(--background))",

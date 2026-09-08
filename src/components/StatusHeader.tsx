@@ -212,7 +212,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
           <button
             onClick={() => navigate("/notifications")}
             aria-label={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
-            className="press absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition before:absolute before:-inset-1 before:content-['']"
+            className="press absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors before:absolute before:-inset-1 before:content-['']"
           >
             <BellIcon aria-hidden size={18} />
             {unreadCount > 0 && (

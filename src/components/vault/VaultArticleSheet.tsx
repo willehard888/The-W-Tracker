@@ -319,7 +319,7 @@ const VaultArticleSheet = ({
                 type="button"
                 onClick={handleComplete}
                 disabled={completeLesson.isPending || isCompleted}
-                className="press text-[11px] font-bold text-muted-foreground w-full rounded-2xl py-3 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="press text-[11px] font-bold text-muted-foreground w-full rounded-2xl py-3 transition-[color,opacity] disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
                   background: isCompleted ? `${accent}20` : accent,
                   color: isCompleted ? accent : "hsl(var(--background))",

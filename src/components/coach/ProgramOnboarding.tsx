@@ -173,7 +173,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         <div className="flex items-center justify-between mb-3">
           <p className="text-[11px] font-bold text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
-            className="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition">
+            className="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition-colors">
             <Settings2 size={11} /> Edit
           </button>
         </div>

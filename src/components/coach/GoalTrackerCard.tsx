@@ -64,7 +64,7 @@ const GoalTrackerCard = () => {
       <button
         type="button"
         onClick={() => setAdding(true)}
-        className="w-full rounded-2xl border border-dashed border-border/50 bg-card/30 px-4 py-4 flex items-center gap-3 hover:border-[hsl(var(--gold)/0.5)] transition"
+        className="w-full rounded-2xl border border-dashed border-border/50 bg-card/30 px-4 py-4 flex items-center gap-3 hover:border-[hsl(var(--gold)/0.5)] transition-colors"
       >
         <div className="h-9 w-9 rounded-xl bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
           <Target size={16} className="text-gold" />

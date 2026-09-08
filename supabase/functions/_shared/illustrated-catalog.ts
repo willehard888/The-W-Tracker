@@ -142,7 +142,6 @@ export const PRIORITY_SLUGS: string[] = [
   "Dumbbell_Flyes",
   "Cross_Over_-_With_Bands",
   "Barbell_Walking_Lunge",
-  "Barbell_Glute_Bridge",
   "Cable_Incline_Pushdown",
   "Cable_Seated_Crunch",
   "Dumbbell_Side_Bend",

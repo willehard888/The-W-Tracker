@@ -176,9 +176,12 @@ export const ILLUSTRATION_BY_CATALOG: Record<string, string> = {
   Dumbbell_Flyes: "dumbbell-flys",
   "Cross_Over_-_With_Bands": "crossover-bands",
 
-  // ── legs / glutes ────────────────────────────────────────────────────────
+  // ── legs ─────────────────────────────────────────────────────────────────
   Barbell_Walking_Lunge: "walking-lunges",
-  Barbell_Glute_Bridge: "bridging",
+  // Barbell_Glute_Bridge is deliberately NOT mapped to "bridging": that drawing
+  // is a bodyweight floor bridge (equipment: ["body"]). Same muscle, different
+  // exercise — a loaded hip bridge is not a bodyweight one. The equipment
+  // parity test caught this after it had already been written.
 
   // ── back ─────────────────────────────────────────────────────────────────
   Cable_Incline_Pushdown: "incline-pushdown-with-cable",

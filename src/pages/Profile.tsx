@@ -37,6 +37,7 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useModeration } from "@/hooks/use-moderation";
 import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ErrorState } from "@/components/ui/error-state";
 import LiveRivals from "@/components/LiveRivals";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
@@ -156,7 +157,7 @@ const Profile = () => {
   };
 
 
-  const { data: allBadges } = useQuery({
+  const { data: allBadges, isError: badgesError, refetch: refetchBadges } = useQuery({
     queryKey: ["all-badges"],
     staleTime: 60 * 60_000,  // badge catalog is essentially static
     gcTime:    4  * 60 * 60_000,
@@ -166,7 +167,7 @@ const Profile = () => {
     },
   });
 
-  const { data: earnedBadgeIds } = useQuery({
+  const { data: earnedBadgeIds, isError: earnedError, refetch: refetchEarned } = useQuery({
     queryKey: ["earned-badges", profile?.user_id],
     staleTime: 10 * 60_000,  // changes after check-in; 10 min is safe
     gcTime:    30 * 60_000,
@@ -446,7 +447,7 @@ const Profile = () => {
             key={t}
             onClick={() => { void hapticSelection(); setProfileTab(t); }}
             className={cn(
-              "eyebrow flex-1 min-h-11 rounded-lg transition-colors",
+              "flex-1 min-h-11 rounded-lg text-[13px] font-black capitalize transition-colors",
               profileTab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -464,7 +465,7 @@ const Profile = () => {
       {(checkinTotal === undefined || battleStats === undefined || kudosReceived === undefined) ? (
         <div className="skeleton-block h-[46px] rounded-2xl" />
       ) : (
-        <div className="home-rise home-rise-1 surface-card surface-card-quiet flex items-baseline gap-x-4 gap-y-0.5 flex-wrap px-4 py-3">
+        <div className="home-rise home-rise-3 surface-card surface-card-quiet flex items-baseline gap-x-4 gap-y-0.5 flex-wrap px-4 py-3">
           <Standing value={checkinTotal} label={checkinTotal === 1 ? "check-in" : "check-ins"} />
           <Standing value={battleStats.won} label={battleStats.won === 1 ? "battle won" : "battles won"} />
           <Standing value={kudosReceived} label="kudos" />
@@ -480,7 +481,7 @@ const Profile = () => {
           .map((s, i) => `${(i / Math.max(1, series.length - 1)) * 100},${34 - (s.overall / 100) * 30}`)
           .join(" ");
         return (
-          <div className="home-rise home-rise-2">
+          <div className="home-rise home-rise-4">
             <button
               type="button"
               onClick={() => navigate("/journey")}
@@ -488,7 +489,7 @@ const Profile = () => {
             >
               <div className="shrink-0">
                 <p className="font-display font-black text-3xl leading-none text-gold glow-gold-text tabular-nums">{latest.overall}</p>
-                <p className="eyebrow mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
+                <p className="text-[11px] font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
               </div>
               <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
                 <polyline
@@ -507,14 +508,14 @@ const Profile = () => {
           </div>
         );
       })() : (
-        <div className="home-rise home-rise-2 surface-card surface-card-quiet overflow-hidden">
+        <div className="home-rise home-rise-4 surface-card surface-card-quiet overflow-hidden">
           <SettingsRow icon={Compass} label="Your journey" sub="Trends, momentum & your reflection diary" onClick={() => navigate("/journey")} />
         </div>
       )}
 
       {/* Rank Position */}
       {rankData && (
-        <div className="home-rise home-rise-3">
+        <div className="home-rise home-rise-5">
           <RankPressureCard
             tier={tier}
             rank={rankData.rank}
@@ -526,8 +527,8 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Live Rivals — who's ahead, who's behind */}
-      <div className="home-rise home-rise-3">
+      {/* Live Rivals — who's ahead, who's behind. Below the fold: no entrance. */}
+      <div>
         <LiveRivals userId={profile.user_id} myScore={Number(profile.rank_score) || 0} />
       </div>
 
@@ -589,15 +590,23 @@ const Profile = () => {
 
       {/* ─────────────────────── BADGES TAB ─────────────────────── */}
       {profileTab === "badges" && (
-        <div className="home-rise home-rise-1">
-          <BadgeVault
-            allBadges={allBadges || []}
-            earnedBadgeIds={earnedBadgeIds || []}
-            progress={badgeProgress}
-            featuredBadgeId={profile.featured_badge_id}
-            onBadgeClick={(b) => setPreviewBadge(b)}
-            onSetFeatured={handleSetFeatured}
-          />
+        <div className="home-rise">
+          {badgesError || earnedError ? (
+            <ErrorState
+              size="compact"
+              title="Couldn't load your badges"
+              onRetry={() => { void refetchBadges(); void refetchEarned(); }}
+            />
+          ) : (
+            <BadgeVault
+              allBadges={allBadges || []}
+              earnedBadgeIds={earnedBadgeIds || []}
+              progress={badgeProgress}
+              featuredBadgeId={profile.featured_badge_id}
+              onBadgeClick={(b) => setPreviewBadge(b)}
+              onSetFeatured={handleSetFeatured}
+            />
+          )}
         </div>
       )}
 
@@ -607,7 +616,7 @@ const Profile = () => {
 
           {/* Membership status (subscriber line — earned-tier crown lives in hero) */}
           {isElite && (
-            <div className="home-rise home-rise-1 surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
+            <div className="home-rise surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
               <CreditCard aria-hidden size={14} className="text-xp-green shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="eyebrow text-xp-green/90">
@@ -622,7 +631,7 @@ const Profile = () => {
 
           {/* Season Champion lives as a pill in the hero — no duplicate card here. */}
 
-          {/* Grouped nav rows — one visual language (eyebrow + surface-card
+          {/* Grouped nav rows — one visual language (section label + surface-card
               list + chevrons), not a wall of identical gold buttons. */}
           <SettingsGroup title="Account">
             <SettingsRow icon={UserRound} label="Athlete profile" sub="Goals, schedule, injuries — what the coach trains" onClick={() => navigate("/coach/profile")} />
@@ -663,7 +672,7 @@ const Profile = () => {
           </SettingsGroup>
 
           {/* Account actions — destructive looks destructive */}
-          <div className="flex gap-2 pt-2 home-rise home-rise-1">
+          <div className="flex gap-2 pt-2 home-rise home-rise-2">
             <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
               <LogOut aria-hidden size={14} />
               Sign Out

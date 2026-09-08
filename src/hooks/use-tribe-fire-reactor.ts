@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { uniqueChannelName } from "@/lib/realtime";
 
@@ -44,8 +44,10 @@ export function useTribeFireReactor(memberIds: string[]): ReactorState {
   const usernameCache = useRef<Map<string, string>>(new Map());
   const knownStreaks = useRef<Map<string, number>>(new Map());
 
-  // Stable signature so we only re-subscribe when membership truly changes
-  const key = [...memberIds].sort().join(",");
+  // Stable signature so we only re-subscribe when membership truly changes.
+  // Memoised: Tribes re-renders on every fire event and this sorted ~2 000
+  // ids on each of them.
+  const key = useMemo(() => [...memberIds].sort().join(","), [memberIds]);
 
   useEffect(() => {
     if (!memberIds.length) {
@@ -54,11 +56,18 @@ export function useTribeFireReactor(memberIds: string[]): ReactorState {
     }
 
     const idSet = new Set(memberIds);
+    // Scoped to the roster when it is short enough for a realtime filter (one
+    // tribe). The browse page watches ~2 000 members and stays unfiltered:
+    // every profile UPDATE the RLS lets through crosses the wire and is
+    // dropped in JS.
+    // ponytail: unfiltered above 100 ids; a tribe_fire_events table with a
+    // tribe_id filter is the upgrade if the browse page ever hurts.
+    const filter = idSet.size <= 100 ? `user_id=in.(${[...idSet].join(",")})` : undefined;
     const channel = supabase
       .channel(uniqueChannelName("tribe-fire", key.slice(0, 40)))
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "profiles" },
+        { event: "UPDATE", schema: "public", table: "profiles", ...(filter ? { filter } : {}) },
         (payload: any) => {
           const newRow = payload.new ?? {};
           const uid = newRow.user_id as string | undefined;

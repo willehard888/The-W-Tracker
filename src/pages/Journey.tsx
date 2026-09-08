@@ -132,7 +132,7 @@ const Journey = () => {
               {!hasAnyData
                 ? "This is where you watch yourself become who you set out to be."
                 : bestStreak > 0
-                  ? `Best streak ${fmtInt(bestStreak)} days. Every check-in is a vote for who you're becoming.`
+                  ? `Best streak ${fmtInt(bestStreak)} ${bestStreak === 1 ? "day" : "days"}. Every check-in is a vote for who you're becoming.`
                   : "Every check-in is a vote for who you're becoming."}
             </p>
           )}

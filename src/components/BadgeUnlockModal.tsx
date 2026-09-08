@@ -48,7 +48,10 @@ const rarityConfig: Record<string, {
 
 const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
   const [phase, setPhase] = useState<"enter" | "burst" | "reveal" | "details">("enter");
-  useScrollLock(true);
+  // Mounted unconditionally by Profile and the check-in page with a null
+  // badge (it renders nothing then) — the lock must follow the badge, or the
+  // page behind it can never scroll.
+  useScrollLock(!!badge);
 
   useEffect(() => {
     if (!badge) return;

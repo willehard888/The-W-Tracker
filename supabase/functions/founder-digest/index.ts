@@ -7,6 +7,7 @@
 //
 // Cron-only (service role guard, same pattern as coach-insights).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { fetchAll } from "../_shared/fetch-all.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 
 const corsHeaders = {
@@ -35,11 +36,14 @@ const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString()
 
 // deno-lint-ignore no-explicit-any
 async function distinctCheckinUsers(supabase: any, fromISO: string, toISO?: string): Promise<number> {
-  let q = supabase.from("daily_checkins").select("user_id").gte("checked_in_at", fromISO);
-  if (toISO) q = q.lt("checked_in_at", toISO);
-  const { data, error } = await q;
-  if (error) throw error;
-  return new Set((data ?? []).map((r: { user_id: string }) => r.user_id)).size;
+  // Paged: the un-ranged select capped at 1000 check-ins and under-reported
+  // DAU/WAU as soon as a week held more than that.
+  const rows = await fetchAll<{ user_id: string }>((from, to) => {
+    let q = supabase.from("daily_checkins").select("user_id").gte("checked_in_at", fromISO);
+    if (toISO) q = q.lt("checked_in_at", toISO);
+    return q.order("checked_in_at").range(from, to);
+  });
+  return new Set(rows.map((r) => r.user_id)).size;
 }
 
 // deno-lint-ignore no-explicit-any

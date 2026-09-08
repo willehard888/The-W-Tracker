@@ -260,10 +260,11 @@ Deno.serve(async (req) => {
         update.is_apex_subscriber = false;
       }
 
-      const { error: updateError } = await supabase
+      const { data: updated, error: updateError } = await supabase
         .from("profiles")
         .update(update)
-        .eq("user_id", appUserId);
+        .eq("user_id", appUserId)
+        .select("user_id");
 
       if (updateError) {
         console.error("Failed to update profile:", updateError);
@@ -273,6 +274,16 @@ Deno.serve(async (req) => {
             status: 500,
             headers: jsonHeaders,
           }
+        );
+      }
+      // Zero matched rows is not success: an anonymous or stale app_user_id
+      // means the customer was charged and nothing was granted. Fail loudly
+      // so RevenueCat retries and the log shows it.
+      if (!updated || updated.length === 0) {
+        console.error(`No profile row for app_user_id ${appUserId} — entitlement not applied`, update);
+        return new Response(
+          JSON.stringify({ error: "No profile for app_user_id" }),
+          { status: 500, headers: jsonHeaders },
         );
       }
 

@@ -9,9 +9,12 @@ import PageBar from "@/components/ui/page-bar";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
+import { backOr } from "@/lib/nav";
 import TribeFireLite from "@/components/TribeFireLite";
 import { tierPalette } from "@/lib/tribe-streak";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
+
+const LABEL = "text-[11px] font-bold text-muted-foreground";
 
 const TribeNew = () => {
   const navigate = useNavigate();
@@ -90,48 +93,49 @@ const TribeNew = () => {
     }
   };
 
+  const isCreatorActivity = TRIBE_ACTIVITY_GROUPS
+    .find((g) => g.label === "Learn & Grow")
+    ?.items.some((i) => i.name === activity);
+
   return (
     <div className="min-h-full">
-      <PageBar title="Create a tribe" onBack={() => navigate(-1)} />
+      <PageBar onBack={() => backOr(navigate, "/squad?tab=tribes")} />
 
-      <div className="home-rise px-4 pt-4 pb-6">
+      <div className="px-4 pt-3 pb-6">
+      <header className="home-rise">
+        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Light a new fire.</h1>
+        <p className="mt-1.5 text-[13px] text-muted-foreground">Name it, say what it's about, choose who can join.</p>
+      </header>
 
       {/* Live preview — the tribe takes shape as you type */}
-      <div className="relative rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.09] via-card/95 to-card overflow-hidden mb-5 shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 70% 60% at 50% 0%, hsl(var(--gold) / 0.12) 0%, transparent 65%)" }}
-        />
-        <div className="relative flex flex-col items-center text-center px-5 pt-5 pb-5">
-          <TribeFireLite tier={3} palette={tierPalette(3)} variant="standard" size={75} className="mb-1" />
-          <p className={cn(
-            "font-display text-xl font-black tracking-tight leading-tight",
-            name.trim() ? "text-foreground" : "text-muted-foreground/50",
-          )}>
-            {name.trim() || "Your tribe"}
-          </p>
-          <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
-            {activity && (
-              <span className="eyebrow-sm text-gold bg-gold/10 border border-gold/25 rounded-full px-2 py-0.5">
-                {activity}
-              </span>
+      <div className="home-rise home-rise-1 mt-4 mb-5">
+        <div className="relative rounded-3xl border border-gold/30 bg-gradient-to-b from-gold/[0.09] via-card/95 to-card overflow-hidden shadow-[0_18px_56px_-30px_hsl(var(--gold)/0.5)]">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,hsl(var(--gold)/0.12)_0%,transparent_65%)]"
+          />
+          <div className="relative flex flex-col items-center text-center px-5 pt-5 pb-5">
+            <TribeFireLite tier={3} palette={tierPalette(3)} variant="standard" size={75} className="mb-1" />
+            <p className={cn(
+              "font-display text-xl font-black tracking-tight leading-tight",
+              name.trim() ? "text-foreground" : "text-muted-foreground/50",
+            )}>
+              {name.trim() || "Your tribe"}
+            </p>
+            <p className={cn(LABEL, "mt-1.5 inline-flex items-center gap-1")}>
+              {activity && <>{activity} · </>}
+              {visibility === "public" ? <><Globe size={11} aria-hidden /> Open to anyone</> : <><Lock size={11} aria-hidden /> Approval to join</>}
+            </p>
+            {description.trim() && (
+              <p className="text-[12px] text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
             )}
-            <span className="eyebrow-sm inline-flex items-center gap-1 text-muted-foreground bg-secondary/40 border border-border/50 rounded-full px-2 py-0.5">
-              {visibility === "public" ? <><Globe size={11} /> Open</> : <><Lock size={11} /> Approval</>}
-            </span>
           </div>
-          {description.trim() && (
-            <p className="text-[12px] text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
-          )}
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="home-rise home-rise-2 space-y-5">
         <div>
-          <label className="eyebrow text-muted-foreground mb-1.5 block">
-            Name
-          </label>
+          <label className={cn(LABEL, "mb-1.5 block")}>Name</label>
           <div className="relative">
             <Input
               value={name}
@@ -157,7 +161,7 @@ const TribeNew = () => {
             </div>
           </div>
           <div className="flex items-center justify-between mt-1">
-            <p className="text-[11px] text-muted-foreground">{name.length}/40</p>
+            <p className="text-[11px] text-muted-foreground tabular-nums">{name.length}/40</p>
             {nameStatus === "available" && (
               <p className="text-[11px] font-bold text-xp-green">Available</p>
             )}
@@ -171,19 +175,12 @@ const TribeNew = () => {
         </div>
 
         <div>
-          <label className="eyebrow text-muted-foreground mb-1.5 block">
-            What's it about
-          </label>
+          <label className={cn(LABEL, "mb-1.5 block")}>What it's about</label>
           <div className="space-y-3">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="eyebrow-sm text-muted-foreground/60 mb-1.5">
-                  {group.label}
-                </p>
+                <p className="text-[11px] text-muted-foreground/70 mb-1.5">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {/* These chips were a fourth copy of the same hand-rolled
-                      class string, with yet another background opacity. They
-                      now share the tribe surface's one selected language. */}
                   {group.items.map(({ name, icon: Icon }) => (
                     <Button
                       key={name}
@@ -201,11 +198,11 @@ const TribeNew = () => {
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground mt-2">From training to meditation, workshops to book clubs — helps people discover your tribe.</p>
-          {TRIBE_ACTIVITY_GROUPS.find((g) => g.label === "Learn & Grow")?.items.some((i) => i.name === activity) && (
-            <div className="mt-2 rounded-lg border border-gold/35 bg-gold/[0.06] px-3 py-2">
-              <p className="text-[11px] font-bold text-gold">Built for creators</p>
-              <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
-                Host workshops and courses with event series — up to 24 sessions with
+          {isCreatorActivity && (
+            <div className="mt-2 surface-card surface-card-quiet px-3 py-2.5">
+              <p className={LABEL}>Built for creators</p>
+              <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+                Host workshops and courses with event series: up to 24 sessions with
                 meeting links, RSVPs and reminders, right inside your tribe.
               </p>
             </div>
@@ -213,9 +210,7 @@ const TribeNew = () => {
         </div>
 
         <div>
-          <label className="eyebrow text-muted-foreground mb-1.5 block">
-            Description
-          </label>
+          <label className={cn(LABEL, "mb-1.5 block")}>Description</label>
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -223,15 +218,13 @@ const TribeNew = () => {
             rows={3}
             placeholder="What does your tribe stand for?"
           />
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">
             {description.length}/200
           </p>
         </div>
 
         <div>
-          <label className="eyebrow text-muted-foreground mb-1.5 block">
-            Who can join
-          </label>
+          <label className={cn(LABEL, "mb-1.5 block")}>Who can join</label>
           <div className="grid grid-cols-2 gap-2">
             {([
               { v: "public", icon: Globe, t: "Open", d: "Anyone can join instantly" },
@@ -241,12 +234,13 @@ const TribeNew = () => {
                 key={o.v}
                 type="button"
                 onClick={() => setVisibility(o.v)}
+                aria-pressed={visibility === o.v}
                 className={cn(
-                  "press rounded-xl border p-3 text-left transition-all ",
+                  "press min-h-11 rounded-xl border p-3 text-left transition-colors",
                   visibility === o.v ? "border-gold/50 bg-gold/[0.07]" : "border-border/60 bg-card/40",
                 )}
               >
-                <o.icon size={15} className={visibility === o.v ? "text-gold" : "text-muted-foreground"} />
+                <o.icon size={15} className={visibility === o.v ? "text-gold" : "text-muted-foreground"} aria-hidden />
                 <p className={cn("text-[12px] font-black mt-1.5", visibility === o.v ? "text-gold" : "text-foreground")}>{o.t}</p>
                 <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{o.d}</p>
               </button>
@@ -256,6 +250,7 @@ const TribeNew = () => {
 
         <Button
           onClick={handleCreate}
+          loading={submitting}
           disabled={
             submitting ||
             name.trim().length < 3 ||
@@ -266,8 +261,8 @@ const TribeNew = () => {
           className="w-full"
           size="lg"
         >
-          {submitting ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
-          Create Tribe
+          <Users size={16} />
+          Create tribe
         </Button>
       </div>
       </div>

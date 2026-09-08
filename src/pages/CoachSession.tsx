@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { readSession, removeSession, writeSession } from "@/lib/storage";
 import { Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -230,11 +231,41 @@ const CoachSession = () => {
   const { data: recent } = useRecentWorkoutLogs();
   const logSet = useLogSet();
 
-  const [restFor, setRestFor] = useState<number | null>(null);
-  // Bumped on every logged set: the timer is keyed on it, so the same rest
-  // length twice in a row still restarts the clock (a plain state write with
-  // an equal value is a no-op and left the previous deadline running).
-  const [restToken, setRestToken] = useState(0);
+  // The rest deadline is the one piece of runner state not derived from
+  // logged sets, so it is written to sessionStorage: a WKWebView reload after
+  // a long background used to lose the card while the OS notification it had
+  // scheduled still fired. A deadline more than a minute past is history.
+  const restKey = program?.id ? `wf_rest:${program.id}:${week}:${day}` : null;
+  const [rest, setRest] = useState<{ endsAt: number; seconds: number } | null>(null);
+  useEffect(() => {
+    if (!restKey) return;
+    const raw = readSession(restKey);
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw) as { endsAt: number; seconds: number };
+      if (saved.endsAt > Date.now() - 60_000) setRest(saved);
+      else removeSession(restKey);
+    } catch {
+      removeSession(restKey);
+    }
+  }, [restKey]);
+  const startRest = (seconds: number) => {
+    const next = { endsAt: Date.now() + seconds * 1000, seconds };
+    setRest(next);
+    if (restKey) writeSession(restKey, JSON.stringify(next));
+  };
+  const extendRest = (ms: number) => setRest((r) => {
+    if (!r) return r;
+    const next = { ...r, endsAt: r.endsAt + ms };
+    if (restKey) writeSession(restKey, JSON.stringify(next));
+    return next;
+  });
+  const clearRest = () => {
+    setRest(null);
+    if (restKey) removeSession(restKey);
+  };
+  // Which set is being written — before this, logging set 2 spun sets 1..N.
+  const [pendingSet, setPendingSet] = useState<number | null>(null);
   const [showSummary, setShowSummary] = useState(false);
   const [finishAsk, setFinishAsk] = useState(false);
   // Asked once, on the summary, only where Health exists: a yes turns it on
@@ -442,6 +473,7 @@ const CoachSession = () => {
     const r = repsStr.trim() === "" ? null : parseInt(repsStr, 10);
     if (w == null && r == null) { toast.error("Add a weight or reps first."); return; }
     hapticImpact("light");
+    setPendingSet(setIndex);
     try {
       await logSet.mutateAsync({
         programId: program.id, week, day,
@@ -452,10 +484,12 @@ const CoachSession = () => {
       // Rest after every set but the session's last — walking to the next
       // exercise is not a rest, and the clock kept vanishing there.
       const lastOfSession = setIndex >= current.sets && progress.currentExerciseIndex >= plan.length - 1;
-      if (lastOfSession) setRestFor(null);
-      else { setRestFor(current.restSec); setRestToken((t) => t + 1); }
+      if (lastOfSession) clearRest();
+      else startRest(current.restSec);
     } catch {
       toast.error("Couldn't save that set.");
+    } finally {
+      setPendingSet(null);
     }
   };
 
@@ -510,12 +544,13 @@ const CoachSession = () => {
             )}
 
             {/* Arrives after a commit, not on open — no entrance of its own. */}
-            {restFor != null && (
+            {rest && (
               <div className="mt-4">
                 <RestTimer
-                  key={restToken}
-                  seconds={restFor}
-                  onDismiss={() => setRestFor(null)}
+                  endsAt={rest.endsAt}
+                  seconds={rest.seconds}
+                  onExtend={extendRest}
+                  onDismiss={clearRest}
                 />
               </div>
             )}
@@ -539,7 +574,7 @@ const CoachSession = () => {
                       isCurrent={n === nextSet}
                       weight={seed.weight != null ? String(seed.weight) : ""}
                       reps={seed.reps != null ? String(seed.reps) : ""}
-                      saving={logSet.isPending}
+                      saving={pendingSet === n}
                       onLog={(w, r) => logCurrent(n, w, r)}
                     />
                   );

@@ -20,16 +20,21 @@ import { cancelRestDone, scheduleRestDone } from "@/lib/rest-notification";
  * next set whenever they like — the timer is information, never a gate.
  */
 const RestTimer = ({
+  endsAt,
   seconds,
+  onExtend,
   onDone,
   onDismiss,
 }: {
+  /** The deadline, owned by the runner so it survives a reload. */
+  endsAt: number;
+  /** The prescribed rest length — the ring's full circle. */
   seconds: number;
+  onExtend: (ms: number) => void;
   onDone?: () => void;
   onDismiss: () => void;
 }) => {
-  const [endsAt, setEndsAt] = useState(() => Date.now() + seconds * 1000);
-  const [remaining, setRemaining] = useState(seconds);
+  const [remaining, setRemaining] = useState(() => Math.ceil((endsAt - Date.now()) / 1000));
   const firedRef = useRef(false);
   // The parent passes inline callbacks; reading them through a ref keeps the
   // interval alive across parent renders instead of rebuilding it four times a
@@ -38,6 +43,8 @@ const RestTimer = ({
   onDoneRef.current = onDone;
 
   useEffect(() => {
+    // A new deadline (next set, or "+30 s") may buzz again when it lands.
+    firedRef.current = false;
     const tick = () => {
       // Whole seconds: the display cannot show less, and a float re-rendered
       // the row on every 250 ms tick for nothing.
@@ -76,7 +83,7 @@ const RestTimer = ({
   }, [endsAt]);
 
   const over = remaining <= 0;
-  const pct = Math.max(0, Math.min(1, remaining / seconds));
+  const pct = seconds > 0 ? Math.max(0, Math.min(1, remaining / seconds)) : 0;
 
   return (
     <div
@@ -114,7 +121,7 @@ const RestTimer = ({
 
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); setEndsAt((e) => e + 30_000); firedRef.current = false; }}
+        onClick={() => { hapticImpact("light"); onExtend(30_000); }}
         aria-label="Add 30 seconds"
         className="min-h-11 min-w-11 rounded-xl border border-border/50 inline-flex items-center justify-center text-[12px] font-bold text-foreground/85"
       >

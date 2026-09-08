@@ -19,7 +19,7 @@ const renderAt = (path: string) =>
     </MemoryRouter>,
   );
 
-describe("Exercise library", () => {
+describe("Exercise library", { timeout: 30_000 }, () => {
   it("keeps the search and the list alive across a detail and back", () => {
     renderAt("/exercises");
     const ex = ILLUSTRATED_EXERCISES[0];

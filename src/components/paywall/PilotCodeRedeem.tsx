@@ -81,11 +81,11 @@ const PilotCodeRedeem = () => {
 
   if (!open) {
     return (
-      <div className="text-center mt-3">
+      <div className="text-center">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="relative inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2 before:absolute before:-inset-2 before:content-['']"
+          className="press inline-flex items-center gap-1.5 min-h-11 px-3 text-[12px] text-muted-foreground hover:text-gold transition-colors"
         >
           <Ticket size={12} aria-hidden strokeWidth={2.4} />
           Have a pilot code?
@@ -96,10 +96,7 @@ const PilotCodeRedeem = () => {
 
   return (
     <form onSubmit={submit} className="mt-4 mx-auto max-w-[320px]">
-      <label
-        htmlFor="pilot-code"
-        className="eyebrow block text-gold mb-2 text-center"
-      >
+      <label htmlFor="pilot-code" className="block text-[11px] font-bold text-muted-foreground mb-2 text-center">
         Pilot code
       </label>
       <div className="flex gap-2">
@@ -122,7 +119,7 @@ const PilotCodeRedeem = () => {
       <button
         type="button"
         onClick={() => { setOpen(false); setCode(""); }}
-        className="relative block mx-auto mt-2.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
+        className="press block mx-auto mt-1 min-h-11 px-3 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
       >
         Cancel
       </button>

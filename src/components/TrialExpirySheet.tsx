@@ -59,12 +59,12 @@ const TrialExpirySheet = () => {
 
   return (
     <BottomSheet open={open} onClose={dismiss} label="Your trial has ended" bodyClassName="px-6">
-      <div className="mx-auto mt-2 mb-3 h-12 w-12 rounded-2xl bg-gradient-to-br from-gold to-[hsl(42_78%_42%)] flex items-center justify-center shadow-[0_0_18px_hsl(var(--gold)/0.4)]">
-        <Crown size={22} className="text-[hsl(260_18%_4%)]" strokeWidth={2.4} aria-hidden />
+      <div className="mx-auto mt-2 mb-3 h-12 w-12 rounded-2xl gradient-gold flex items-center justify-center">
+        <Crown size={22} className="text-background" strokeWidth={2.4} aria-hidden />
       </div>
 
       <h2 className="text-center font-display text-[22px] leading-[1.06] font-black tracking-tight">
-        Your 14 days built something real
+        Your 14 days built something real.
       </h2>
       {/* The value recap as one standing line — what THEY earned, not tiles. */}
       <p className="mt-2 text-center text-[13px] text-muted-foreground">

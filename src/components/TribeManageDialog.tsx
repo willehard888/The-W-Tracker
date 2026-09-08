@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,9 +70,9 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
   const displayCover = coverPreview?.startsWith("data:") ? coverPreview : storedCoverSrc;
   const [savingMeta, setSavingMeta] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  // Two-tap remove, in the row. A centered ConfirmDialog sits below the sheet
-  // (z 50 under z 120), so the confirm lives where the tap was.
-  const [armedId, setArmedId] = useState<string | null>(null);
+  // The member pending a remove confirm. AlertDialog renders at --z-confirm
+  // (140), above this sheet (120), so the real dialog can be used.
+  const [confirmKick, setConfirmKick] = useState<Member | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -82,7 +83,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       setCoverUrl(tribe.cover_url ?? "");
       setCoverPreview(tribe.cover_url ?? null);
       setCoverFile(null);
-      setArmedId(null);
+      setConfirmKick(null);
     }
   }, [open, tribe]);
 
@@ -213,7 +214,6 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       });
       if (error) throw error;
       toast.success(`${username} removed`);
-      setArmedId(null);
       onChanged();
     } catch (e: any) {
       toast.error(friendlyError(e, "Failed to remove member"));
@@ -361,7 +361,6 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               const isAdmin = m.role === "admin";
               const promoteDisabled = !isAdmin && adminCount >= 2;
               const rowBusy = busyId === m.user_id;
-              const armed = armedId === m.user_id;
               return (
                 <div key={m.user_id} className="flex items-center gap-2.5 py-2 min-h-[52px]">
                   <div className="h-8 w-8 rounded-full bg-secondary overflow-hidden shrink-0">
@@ -381,48 +380,45 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       </span>
                     )}
                   </div>
-                  {armed ? (
-                    <>
-                      <Button size="xs" variant="ghost" disabled={rowBusy} onClick={() => setArmedId(null)}>
-                        Keep
-                      </Button>
-                      <Button size="xs" variant="destructive" loading={rowBusy} onClick={() => handleRemove(m.user_id, m.username)}>
-                        <UserMinus size={12} /> Remove
-                      </Button>
-                    </>
-                  ) : isAdmin ? (
-                    <>
-                      <Button size="xs" variant="ghost" loading={rowBusy} onClick={() => handleRoleChange(m.user_id, "member")}>
-                        <ShieldOff size={12} /> Demote
-                      </Button>
-                      <Button size="xs" variant="ghost" className="text-destructive hover:text-destructive" aria-label="Remove member" disabled={rowBusy} onClick={() => setArmedId(m.user_id)}>
-                        <UserMinus size={12} />
-                      </Button>
-                    </>
+                  {isAdmin ? (
+                    <Button size="sm" variant="ghost" loading={rowBusy} onClick={() => handleRoleChange(m.user_id, "member")}>
+                      <ShieldOff size={12} /> Demote
+                    </Button>
                   ) : (
-                    <>
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        className="text-gold hover:text-gold disabled:opacity-40"
-                        disabled={promoteDisabled}
-                        loading={rowBusy}
-                        onClick={() => handleRoleChange(m.user_id, "admin")}
-                        title={promoteDisabled ? "Max 2 admins reached" : "Promote to admin"}
-                      >
-                        <Shield size={12} /> Promote
-                      </Button>
-                      <Button size="xs" variant="ghost" className="text-destructive hover:text-destructive" aria-label="Remove member" disabled={rowBusy} onClick={() => setArmedId(m.user_id)}>
-                        <UserMinus size={12} />
-                      </Button>
-                    </>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-gold hover:text-gold disabled:opacity-40"
+                      disabled={promoteDisabled}
+                      loading={rowBusy}
+                      onClick={() => handleRoleChange(m.user_id, "admin")}
+                      title={promoteDisabled ? "Max 2 admins reached" : "Promote to admin"}
+                    >
+                      <Shield size={12} /> Promote
+                    </Button>
                   )}
+                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" aria-label={`Remove ${m.username}`} disabled={rowBusy} onClick={() => setConfirmKick(m)}>
+                    <UserMinus size={12} />
+                  </Button>
                 </div>
               );
             })}
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmKick !== null}
+        onOpenChange={(o) => { if (!o) setConfirmKick(null); }}
+        title={confirmKick ? `Remove ${confirmKick.username}?` : "Remove member?"}
+        description="They lose access to the tribe. They can be invited back later."
+        actionLabel="Remove"
+        onConfirm={() => {
+          const m = confirmKick;
+          setConfirmKick(null);
+          if (m) void handleRemove(m.user_id, m.username);
+        }}
+      />
     </BottomSheet>
   );
 };

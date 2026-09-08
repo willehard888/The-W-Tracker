@@ -6,6 +6,7 @@ import AppImage from "@/components/ui/app-image";
 import { useSignedMediaUrl } from "@/lib/signed-url";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
 import { ShieldCheck, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -54,9 +55,9 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
-  // Two-tap remove, in place. A centered ConfirmDialog sits below the sheet
-  // (z 50 under z 120) so the confirm lives in the row itself.
-  const [armedId, setArmedId] = useState<string | null>(null);
+  // The report whose post is pending a delete confirm. AlertDialog renders at
+  // --z-confirm (140), above this sheet (120), so the real dialog can be used.
+  const [confirmRemove, setConfirmRemove] = useState<ReportRow | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -125,7 +126,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
   };
 
   useEffect(() => {
-    if (open) { setArmedId(null); load(); }
+    if (open) { setConfirmRemove(null); load(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, tribeId]);
 
@@ -159,7 +160,6 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
     }
     setReports((prev) => prev.filter((x) => x.post_id !== r.post_id));
     setBusyId(null);
-    setArmedId(null);
     toast.success("Post removed");
     onChanged?.();
   };
@@ -185,7 +185,6 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
         <div className="divide-y divide-border/35">
           {reports.map((r) => {
             const busy = busyId === r.id;
-            const armed = armedId === r.id;
             return (
               <div key={r.id} className="py-4">
                 <p className="text-[11px] font-bold text-destructive">{r.reason}</p>
@@ -225,31 +224,31 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                 )}
 
                 <div className="flex gap-2 mt-3">
-                  {armed ? (
-                    <>
-                      <Button size="sm" variant="outline" className="flex-1 min-h-11" disabled={busy} onClick={() => setArmedId(null)}>
-                        Keep it
-                      </Button>
-                      <Button size="sm" variant="destructive" className="flex-1 min-h-11" loading={busy} onClick={() => removePost(r)}>
-                        <Trash2 size={14} /> Remove for good
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button size="sm" variant="outline" className="flex-1 min-h-11" loading={busy} onClick={() => dismissReport(r)}>
-                        <Check size={14} /> Dismiss
-                      </Button>
-                      <Button size="sm" variant="danger-outline" className="flex-1 min-h-11" disabled={busy || !r.post} onClick={() => setArmedId(r.id)}>
-                        <Trash2 size={14} /> Remove post
-                      </Button>
-                    </>
-                  )}
+                  <Button size="sm" variant="outline" className="flex-1 min-h-11" loading={busy} onClick={() => dismissReport(r)}>
+                    <Check size={14} /> Dismiss
+                  </Button>
+                  <Button size="sm" variant="danger-outline" className="flex-1 min-h-11" disabled={busy || !r.post} onClick={() => setConfirmRemove(r)}>
+                    <Trash2 size={14} /> Remove post
+                  </Button>
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmRemove !== null}
+        onOpenChange={(o) => { if (!o) setConfirmRemove(null); }}
+        title="Remove this post?"
+        description="It disappears from the tribe for everyone. This cannot be undone."
+        actionLabel="Remove post"
+        onConfirm={() => {
+          const r = confirmRemove;
+          setConfirmRemove(null);
+          if (r) void removePost(r);
+        }}
+      />
     </BottomSheet>
   );
 }

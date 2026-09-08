@@ -15,7 +15,6 @@ import { FactRow } from "@/components/coach/rows";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 import BriefingShareCard from "@/components/BriefingShareCard";
-import html2canvas from "html2canvas";
 
 /**
  * /briefing/:id — a letter from the coach. The briefing's own headline opens
@@ -112,6 +111,9 @@ const WeeklyBriefing = () => {
     setSharing(true);
     hapticImpact("medium");
     try {
+      // Loaded at share time: html2canvas is ~200 kB and only this one button
+      // needs it, so the briefing route no longer carries it on open.
+      const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(shareRef.current, {
         backgroundColor: null,
         scale: 1,

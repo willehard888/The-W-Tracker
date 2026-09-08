@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { backOr } from "../nav";
+import { backOr, pageKey } from "../nav";
 
 describe("backOr", () => {
   it("goes back when the router has history", () => {
@@ -17,5 +17,15 @@ describe("backOr", () => {
     window.history.replaceState(null, "");
     backOr(navigate);
     expect(navigate).toHaveBeenLastCalledWith("/", { replace: true });
+  });
+});
+
+describe("pageKey", () => {
+  it("folds a library detail into its list page and leaves other paths alone", () => {
+    expect(pageKey("/exercises/barbell-squat")).toBe("/exercises");
+    expect(pageKey("/recipes/r-12")).toBe("/recipes");
+    expect(pageKey("/exercises")).toBe("/exercises");
+    expect(pageKey("/nutrition/recipes/abc")).toBe("/nutrition/recipes/abc");
+    expect(pageKey("/tribes/x")).toBe("/tribes/x");
   });
 });

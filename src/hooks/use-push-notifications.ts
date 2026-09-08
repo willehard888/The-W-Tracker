@@ -1,3 +1,4 @@
+import { navigateSafely } from "@/lib/router-bridge";
 import { createContext, useContext, useEffect, useCallback, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
@@ -34,14 +35,13 @@ export const isSafeRoute = (r: unknown): r is string => {
   const path = r.split("?")[0];
   return SAFE_ROUTES.has(path) || SAFE_PREFIXES.some((p) => path.startsWith(p));
 };
-// Use history.pushState so React Router picks up the change instead of a
-// full-page reload (window.location.href reboots the WebView).
+// Through the router, never a raw history.pushState: the raw push dropped the
+// router's `idx`, after which every Back in the app fell to its fallback.
 const safeNavigate = (route: string) => {
   if (!isSafeRoute(route)) return;
   // The route already on screen is never pushed again (two Backs to leave).
   if (window.location.pathname + window.location.search === route) return;
-  window.history.pushState({}, "", route);
-  window.dispatchEvent(new PopStateEvent("popstate"));
+  navigateSafely(route);
 };
 
 // Re-prime a dismissed user at most once a week (never nag every launch).

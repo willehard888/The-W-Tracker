@@ -11,3 +11,11 @@ export const backOr = (navigate: NavigateFunction, fallback = "/"): void => {
   if (typeof state?.idx === "number" && state.idx > 0) navigate(-1);
   else navigate(fallback, { replace: true });
 };
+
+/**
+ * The page a path belongs to. `/exercises/:slug` and `/recipes/:id` render
+ * inside their list (one route, one mount); everything else is its own page.
+ * Keys the route ErrorBoundary and the shell's scroll reset.
+ */
+export const pageKey = (pathname: string): string =>
+  pathname.replace(/^(\/(?:exercises|recipes))\/[^/]+$/, "$1");

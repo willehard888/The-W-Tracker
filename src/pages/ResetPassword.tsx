@@ -42,7 +42,7 @@ const ResetPassword = () => {
         if (ok) {
           // Clear the tokens from the URL bar so a refresh doesn't try to
           // re-apply them and the user can't share the link by accident.
-          window.history.replaceState({}, "", window.location.pathname);
+          window.history.replaceState(window.history.state, "", window.location.pathname);
         }
       });
     }

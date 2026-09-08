@@ -1,15 +1,13 @@
-import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { fmtRelative } from "@/lib/format";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
 import AppImage from "@/components/ui/app-image";
 import { useSignedMediaUrl } from "@/lib/signed-url";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
-import { Loader2, ShieldAlert, Trash2, Check } from "lucide-react";
+import EmptyState from "@/components/ui/empty-state";
+import { ShieldCheck, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 
@@ -56,7 +54,9 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<ReportRow | null>(null);
+  // Two-tap remove, in place. A centered ConfirmDialog sits below the sheet
+  // (z 50 under z 120) so the confirm lives in the row itself.
+  const [armedId, setArmedId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -125,7 +125,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
   };
 
   useEffect(() => {
-    if (open) load();
+    if (open) { setArmedId(null); load(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, tribeId]);
 
@@ -159,117 +159,97 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
     }
     setReports((prev) => prev.filter((x) => x.post_id !== r.post_id));
     setBusyId(null);
+    setArmedId(null);
     toast.success("Post removed");
     onChanged?.();
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto bg-card border-border">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-display">
-            <ShieldAlert size={18} className="text-destructive" />
-            Reports
-          </DialogTitle>
-          <DialogDescription>
-            Posts your members flagged. Review and act fast.
-          </DialogDescription>
-        </DialogHeader>
-
-        {loading && (
-          <div className="flex justify-center py-8">
-            <Loader2 size={20} className="animate-spin text-gold" />
-          </div>
-        )}
-
-        {!loading && reports.length === 0 && (
-          <div className="text-center py-8 text-sm text-muted-foreground">
-            No open reports. Tribe vibes are clean. ✨
-          </div>
-        )}
-
-        <div className="space-y-3">
-          {reports.map((r) => (
-            <div key={r.id} className="rounded-xl border border-border bg-secondary/40 p-3">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="min-w-0">
-                  <p className="eyebrow text-destructive">
-                    {r.reason}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    Reported by @{r.reporter?.username ?? "user"} ·{" "}
-                    {fmtRelative(r.created_at)}
-                  </p>
-                </div>
-              </div>
-
-              {r.post ? (
-                <div className="rounded-lg border border-border/60 bg-background/50 p-2.5">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="h-6 w-6 rounded-full bg-secondary overflow-hidden shrink-0">
-                      {r.post.author?.avatar_url ? (
-                        <img loading="lazy" decoding="async" src={avatarUrl(r.post.author.avatar_url, 40)} alt="" className="h-full w-full object-cover" />
-                      ) : null}
-                    </div>
-                    <span className="text-xs font-semibold truncate">
-                      @{r.post.author?.username ?? "user"}
-                    </span>
-                  </div>
-                  {r.post.content && (
-                    <p className="text-xs text-foreground/85 line-clamp-3 italic mb-1.5">
-                      "{r.post.content}"
-                    </p>
-                  )}
-                  {r.post.image_url && (
-                    <AppImage
-                      src={r.post.image_url}
-                      width={320}
-                      alt=""
-                      className="rounded-md max-h-32 w-full object-cover border border-border/40"
-                    />
-                  )}
-                  {r.post.video_url && <ReportVideo src={r.post.video_url} />}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground italic">Post no longer exists.</p>
-              )}
-
-              <div className="flex gap-2 mt-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                  disabled={busyId === r.id}
-                  onClick={() => dismissReport(r)}
-                >
-                  <Check size={14} /> Dismiss
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="flex-1"
-                  disabled={busyId === r.id || !r.post}
-                  onClick={() => setPendingDelete(r)}
-                >
-                  {busyId === r.id ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Trash2 size={14} />
-                  )}
-                  Remove post
-                </Button>
-              </div>
-            </div>
+    <BottomSheet
+      open={open}
+      onClose={() => onOpenChange(false)}
+      label="Reports"
+      title="Reports"
+      subtitle="Posts your members flagged. Review and act fast."
+      height="tall"
+    >
+      {loading ? (
+        <div className="divide-y divide-border/35">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="py-4"><div className="h-20 rounded-xl skeleton-block bg-secondary/30" /></div>
           ))}
         </div>
-      </DialogContent>
-      <ConfirmDialog
-        open={!!pendingDelete}
-        onOpenChange={(o) => { if (!o) setPendingDelete(null); }}
-        title="Delete this post?"
-        description="This cannot be undone."
-        onConfirm={() => { const r = pendingDelete; setPendingDelete(null); if (r) void removePost(r); }}
-      />
-    </Dialog>
+      ) : reports.length === 0 ? (
+        <EmptyState size="compact" icon={ShieldCheck} title="No open reports" description="Tribe vibes are clean." />
+      ) : (
+        <div className="divide-y divide-border/35">
+          {reports.map((r) => {
+            const busy = busyId === r.id;
+            const armed = armedId === r.id;
+            return (
+              <div key={r.id} className="py-4">
+                <p className="text-[11px] font-bold text-destructive">{r.reason}</p>
+                <p className="text-[11px] text-muted-foreground mb-2">
+                  Reported by @{r.reporter?.username ?? "user"} · {fmtRelative(r.created_at)}
+                </p>
+
+                {r.post ? (
+                  <div className="rounded-xl bg-secondary/30 p-2.5">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="h-6 w-6 rounded-full bg-secondary overflow-hidden shrink-0">
+                        {r.post.author?.avatar_url ? (
+                          <img loading="lazy" decoding="async" src={avatarUrl(r.post.author.avatar_url, 40)} alt="" className="h-full w-full object-cover" />
+                        ) : null}
+                      </div>
+                      <span className="text-xs font-semibold truncate">
+                        @{r.post.author?.username ?? "user"}
+                      </span>
+                    </div>
+                    {r.post.content && (
+                      <p className="text-xs text-foreground/85 line-clamp-3 italic mb-1.5">
+                        "{r.post.content}"
+                      </p>
+                    )}
+                    {r.post.image_url && (
+                      <AppImage
+                        src={r.post.image_url}
+                        width={320}
+                        alt=""
+                        className="rounded-md max-h-32 w-full object-cover border border-border/40"
+                      />
+                    )}
+                    {r.post.video_url && <ReportVideo src={r.post.video_url} />}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Post no longer exists.</p>
+                )}
+
+                <div className="flex gap-2 mt-3">
+                  {armed ? (
+                    <>
+                      <Button size="sm" variant="outline" className="flex-1 min-h-11" disabled={busy} onClick={() => setArmedId(null)}>
+                        Keep it
+                      </Button>
+                      <Button size="sm" variant="destructive" className="flex-1 min-h-11" loading={busy} onClick={() => removePost(r)}>
+                        <Trash2 size={14} /> Remove for good
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button size="sm" variant="outline" className="flex-1 min-h-11" loading={busy} onClick={() => dismissReport(r)}>
+                        <Check size={14} /> Dismiss
+                      </Button>
+                      <Button size="sm" variant="danger-outline" className="flex-1 min-h-11" disabled={busy || !r.post} onClick={() => setArmedId(r.id)}>
+                        <Trash2 size={14} /> Remove post
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </BottomSheet>
   );
 }

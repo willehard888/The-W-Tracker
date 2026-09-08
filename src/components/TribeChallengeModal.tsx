@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Swords, Users } from "lucide-react";
+import { Check, Search, Swords, Users } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
@@ -90,97 +90,86 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm bg-background border-border/60">
-        <DialogHeader>
-          <div className="flex items-center gap-2 mb-1">
-            <Swords size={18} className="text-[hsl(var(--ember))]" />
-            <DialogTitle className="font-display font-black">Challenge a tribe</DialogTitle>
-          </div>
-          <DialogDescription className="text-xs">
-            Total XP earned by all members during the battle decides the winner.
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* Search */}
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+    <BottomSheet
+      open={open}
+      onClose={() => onOpenChange(false)}
+      label="Challenge a tribe"
+      title="Challenge a tribe"
+      subtitle="Total XP earned by all members during the battle decides the winner."
+      height="tall"
+      headerExtra={
+        <div className="relative px-4 pb-2">
+          <Search size={14} className="absolute left-7 top-[22px] -translate-y-1/2 text-muted-foreground" aria-hidden />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tribe by name…"
-            className="pl-9"
+            className="pl-9 h-11"
           />
         </div>
-
-        {/* Results */}
-        <div className="max-h-48 overflow-y-auto space-y-1">
-          {searching && (
-            <div className="flex justify-center py-4">
-              <Loader2 size={16} className="animate-spin text-muted-foreground" />
-            </div>
-          )}
-          {!searching && query.trim().length >= 2 && results.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-4">No tribes found.</p>
-          )}
-          {results.map((r) => (
-            <button
-              key={r.id}
-              onClick={() => setSelected(r)}
-              className={cn(
-                "w-full text-left rounded-lg border p-2.5 transition-all flex items-center gap-2",
-                selected?.id === r.id
-                  ? "border-[hsl(var(--ember))]/60 bg-[hsl(var(--ember))]/10"
-                  : "border-border bg-card/50 hover:border-border/80",
-              )}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">{r.name}</p>
-                <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                  <Users size={11} /> {r.member_count} members · {r.visibility}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Duration */}
-        {selected && (
-          <div>
-            <p className="eyebrow text-muted-foreground mb-2">
-              Duration
-            </p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {DURATIONS.map((d) => (
-                <button
-                  key={d.value}
-                  onClick={() => setDuration(d.value)}
-                  className={cn(
-                    "rounded-lg border p-2 text-center transition-all",
-                    duration === d.value
-                      ? "border-gold bg-gold/10 shadow-[0_0_10px_hsl(var(--gold)/0.3)]"
-                      : "border-border bg-card/40 hover:border-border/80",
-                  )}
-                >
-                  <p className="text-xs font-black">{d.label}</p>
-                  <p className="text-[10px] text-muted-foreground">{d.sub}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
+      }
+      footer={
         <Button
           onClick={handleSubmit}
-          disabled={!selected || submitting}
+          disabled={!selected}
+          loading={submitting}
           variant="ember"
+          size="lg"
           className="w-full"
         >
-          {submitting ? <Loader2 size={14} className="animate-spin" /> : <Swords size={14} />}
-          Send Challenge
+          <Swords size={14} /> Send challenge
         </Button>
-      </DialogContent>
-    </Dialog>
+      }
+    >
+      {searching ? (
+        <p className="text-xs text-muted-foreground text-center py-6">Searching…</p>
+      ) : query.trim().length >= 2 && results.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-6">No tribes found.</p>
+      ) : (
+        <div className="divide-y divide-border/35">
+          {results.map((r) => {
+            const on = selected?.id === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setSelected(r)}
+                aria-pressed={on}
+                className="press w-full min-h-11 text-left py-2.5 flex items-center gap-3"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className={cn("text-sm font-bold truncate", on && "text-gold")}>{r.name}</p>
+                  <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1 tabular-nums">
+                    <Users size={11} aria-hidden /> {r.member_count} members · {r.visibility}
+                  </p>
+                </div>
+                {on && <Check size={16} className="commit-pop text-gold shrink-0" aria-hidden />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {selected && (
+        <div className="mt-4">
+          <p className="text-[11px] font-bold text-muted-foreground mb-2">Duration</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {DURATIONS.map((d) => (
+              <Button
+                key={d.value}
+                type="button"
+                variant={duration === d.value ? "gold-outline" : "outline"}
+                className="min-h-11 h-auto py-2 flex-col gap-0"
+                onClick={() => setDuration(d.value)}
+              >
+                <span className="text-xs font-black">{d.label}</span>
+                <span className="text-[10px] font-normal text-muted-foreground">{d.sub}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+    </BottomSheet>
   );
 };
 

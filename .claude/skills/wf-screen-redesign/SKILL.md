@@ -102,9 +102,9 @@ Rules that were learned the hard way:
   entrance with a fill mode pins `transform` and silently kills the element's own
   `:active` scale (the tribe rows shipped that way for months). `home-rise` is
   `backwards` for exactly this reason; `animate-fade-in-up` is still `both`.
-- `.animate-reveal` and `home-rise` play on touch; the `<Reveal>` scroll system is
-  disabled on `pointer: coarse`. First-viewport entrance on iOS must not depend on
-  `<Reveal>`.
+- `home-rise` plays on touch. The old `<Reveal>` scroll-entrance system is gone (it
+  was disabled on `pointer: coarse`, so it never played on an iPhone); a zone below
+  the fold or inside a disclosure gets no entrance at all.
 - `commit-pop` on the element the user just committed (a reaction, a tick, a join) —
   it is the app's one "your choice landed" spring; reusing it is what makes the screens
   feel like one product.

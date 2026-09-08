@@ -15,7 +15,6 @@ import TrainingZone from "@/components/coach/TrainingZone";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import Reveal from "@/components/home/Reveal";
 import EmptyState from "@/components/ui/empty-state";
 import MoreSection from "@/components/ui/more-section";
 import { useNavigate } from "react-router-dom";
@@ -308,7 +307,7 @@ const Index = () => {
       {(rankSane || liveWhealth?.overall != null || profile.level > 1) && (
         <div
           ref={progressionTargetRef}
-          className="home-rise home-rise-2 relative z-10 mb-6 surface-card surface-card-quiet flex items-center"
+          className="home-rise home-rise-3 relative z-10 mb-6 surface-card surface-card-quiet flex items-center"
         >
           <button
             type="button"
@@ -355,7 +354,7 @@ const Index = () => {
       {/* ── FUEL — today's kcal and protein against target, and the two ways
              in (log, or a photo of the plate). A quiet row with no gold of its
              own: the hero and the W-Index keep Home's whole gold budget. ── */}
-      <div className="home-rise home-rise-3 mb-6 relative z-10">
+      <div className="home-rise home-rise-4 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <FuelZone
             loading={fuelLoading || fuelTargetsLoading}
@@ -377,7 +376,7 @@ const Index = () => {
       {/* APPLE HEALTH — the ask that makes check-ins verifiable. Native only,
           until connected; renders nothing on web/Android. */}
       {isNativePlatform() && !healthConnected && (
-        <div className="home-rise home-rise-3 mb-6 relative z-10">
+        <div className="home-rise home-rise-5 mb-6 relative z-10">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
           </ErrorBoundary>
@@ -393,7 +392,7 @@ const Index = () => {
              parallel, cached 10 / 5 min and shared with /coach — only for
              members, who are the only people who can hold a program. */}
       {hasAccess && (
-        <div className="home-rise home-rise-3 mb-6 relative z-10">
+        <div className="home-rise home-rise-5 mb-6 relative z-10">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <TrainingZone />
           </ErrorBoundary>
@@ -403,7 +402,7 @@ const Index = () => {
       {/* ── COACH — a whisper, not a card. The coach's one line in its own
              voice; a low quiet band so it reads as a presence, never a second
              button competing with the hero. ── */}
-      <div className="home-rise home-rise-4 mb-6 relative z-10">
+      <div className="home-rise home-rise-5 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <CoachStrip />
         </ErrorBoundary>
@@ -422,18 +421,18 @@ const Index = () => {
       {/* SECONDARY — Today stays focused. Invite + badges one tap under "More". */}
       <MoreSection label="More" className="relative z-10 mt-1 mb-2">
       {/* EARN FREE MEMBERSHIP — referral CTA */}
-      <Reveal className="mb-4 relative z-10" delay={0}>
+      {/* Inside a disclosure and below the fold: no entrance of their own.
+          The scroll-reveal wrapper these sat in was dead on every iPhone
+          (disabled under pointer: coarse), so they never animated anyway. */}
+      <div className="mb-4 relative z-10">
         <InviteCTA referralCount={profile.referral_count || 0} />
-      </Reveal>
+      </div>
       {/* Recent Badges */}
-      <Reveal className="mb-2" delay={80}>
+      <div className="mb-2">
         <div className="flex items-end justify-between mb-3 px-0.5">
-          <div className="flex flex-col">
-            <span className="eyebrow mb-1">Achievements</span>
-            <h2 className="font-display font-bold text-base tracking-tight leading-none">
-              Recent Badges
-            </h2>
-          </div>
+          <h2 className="font-display font-bold text-base tracking-tight leading-none">
+            Recent Badges
+          </h2>
           <button
             onClick={() => navigate("/profile")}
             className="flex items-center gap-0.5 text-xs text-gold font-semibold active:opacity-70 transition-opacity"
@@ -469,7 +468,7 @@ const Index = () => {
             }
           />
         )}
-      </Reveal>
+      </div>
       </MoreSection>
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}

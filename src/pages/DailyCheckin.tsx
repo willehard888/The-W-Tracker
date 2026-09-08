@@ -983,7 +983,7 @@ const DailyCheckin = () => {
                   so the 24-sport catalog stays collapsed below. */}
               {forYou.length > 0 && (
                 <div>
-                  <p className="eyebrow-sm px-4 pt-3 pb-1.5">For you</p>
+                  <p className="text-[11px] font-bold text-muted-foreground px-4 pt-3 pb-1.5">For you</p>
                   {forYou.map((sport) => (
                     <button
                       key={`fy-${sport.id}`}
@@ -1064,7 +1064,7 @@ const DailyCheckin = () => {
                         onClick={() => setOpenGroup((g) => (g === group ? null : group))}
                         className="flex items-center justify-between w-full min-h-11 px-4 pt-3 pb-1.5 text-left"
                       >
-                        <span className="eyebrow-sm">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
+                        <span className="text-[11px] font-bold">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
                         {forYou.length > 0 && (
                           <ChevronDown aria-hidden size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
                         )}
@@ -1125,7 +1125,7 @@ const DailyCheckin = () => {
           if (!habits?.length) return null;
           return (
             <div key={pillar} className="home-rise home-rise-4 mt-5">
-              <p className="eyebrow-sm mb-2">{PILLAR_LABEL[pillar]}</p>
+              <p className="text-[11px] font-bold text-muted-foreground mb-2">{PILLAR_LABEL[pillar]}</p>
               <div className="space-y-2">
                 {habits.map((h) => (
                   <HabitToggle key={h.key} habit={h} active={done(h.key)} onToggle={() => toggle(h.key)} detected={isDetected(h)} />

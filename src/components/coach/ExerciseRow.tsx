@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
@@ -7,7 +7,11 @@ import { useExerciseLibrary, resolveExercise, exerciseImgBranded } from "@/lib/e
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
 import { IllustrationThumb, IllustrationHero } from "@/components/coach/ExerciseIllustration";
-import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
+// The coaching prose (130 KB of text) rode in the first row's chunk; it only
+// renders once a movement is expanded, so it loads then.
+const ExerciseCoachingCompact = lazy(() =>
+  import("@/components/coach/ExerciseCoachingBlock").then((m) => ({ default: m.ExerciseCoachingCompact })),
+);
 import { resolveIllustration } from "@/lib/exercise-match";
 import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
@@ -176,7 +180,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           {/* Rhythm, the top cue and the worst mistake — the parts of the
               coaching that are worth reading with a loaded bar nearby. The
               full block lives in the library detail. */}
-          <ExerciseCoachingCompact slug={illustrated?.slug} />
+          <Suspense fallback={null}>
+            <ExerciseCoachingCompact slug={illustrated?.slug} />
+          </Suspense>
 
           {/* Instructions come from the 542-photo set, the illustration from the
               269-illustrated set — and only 40 titles match exactly across the

@@ -30,7 +30,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
         className,
       )}
     >
-      <div className="edge-sheen rounded-[15px] bg-black/70 backdrop-blur-xl px-3 py-2">
+      <div className="rounded-[15px] bg-black/85 px-3 py-2">
         {/* Micro wordmark — the brand seal */}
         <p className="eyebrow text-[6.5px] text-gold/80 leading-none">
           Whealth Factory
@@ -40,7 +40,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
         <div className="mt-1.5 flex items-center gap-2">
           {stats.streak_at_day > 0 && (
             <>
-              <StreakFlameInline aria-hidden
+              <StreakFlameInline aria-hidden still
                 streak={stats.streak_at_day}
                 size={16}
                 suffix="d"

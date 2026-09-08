@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Flame, Users } from "lucide-react";
 import EliteFeed from "./EliteFeed";
@@ -32,6 +33,8 @@ const Squad = () => {
   const initialSub = raw === "mine" || raw === "browse" ? raw : undefined;
   const setTab = (next: "feed" | "tribes") =>
     setSearchParams(next === "feed" ? {} : { tab: next }, { replace: true });
+  const [visited, setVisited] = useState<Set<string>>(() => new Set([tab]));
+  useEffect(() => { setVisited((v) => (v.has(tab) ? v : new Set(v).add(tab))); }, [tab]);
   // Contextual onboarding: first /squad visit → explain the Feed/Tribes split.
   const squadTargetRef = useSpotlightTarget("SQUAD_INTRO");
   useOnboardingTrigger("SQUAD_INTRO", true);
@@ -55,7 +58,10 @@ const Squad = () => {
         </div>
       </div>
 
-      {tab === "feed" ? <EliteFeed /> : <Tribes initialSub={initialSub} />}
+      {/* A visited tab stays mounted and parks under display:none — the
+          segment used to destroy and rebuild a 1 000-line tree on every tap. */}
+      {visited.has("feed") && <div hidden={tab !== "feed"}><EliteFeed /></div>}
+      {visited.has("tribes") && <div hidden={tab !== "tribes"}><Tribes initialSub={initialSub} /></div>}
     </div>
   );
 };

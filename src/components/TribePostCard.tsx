@@ -474,7 +474,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                 </span>
               )}
               {(post.author?.streak ?? 0) > 0 && (
-                <><span>•</span><StreakFlameInline streak={post.author?.streak ?? 0} suffix="d" className="text-[11px]" /></>
+                <><span>•</span><StreakFlameInline still streak={post.author?.streak ?? 0} suffix="d" className="text-[11px]" /></>
               )}
             </div>
           </div>
@@ -541,7 +541,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <button onClick={() => toggleLike.mutate()}
               aria-label={post.liked ? "Remove fire" : "Give fire"}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
                 post.liked
                   ? "bg-streak-orange/15 text-streak-orange"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -553,7 +553,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <button onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(!showComments); }}
             aria-label="Toggle comments"
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
               showComments ? "bg-[hsl(var(--ember))]/12 text-[hsl(var(--ember))]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}>
             <MessageCircle aria-hidden size={15} fill={showComments ? "currentColor" : "none"} />
@@ -574,7 +574,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               aria-label={post.kudosed ? "Remove kudos" : "Give kudos"}
               title={`${kudosRemaining}/2 kudos remaining this month`}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-all ",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
                 post.kudosed
                   ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                   : kudosRemaining > 0
@@ -669,7 +669,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                       maxLength={300}
                       className={cn(
-                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-all",
+                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
                         replyTo
                           ? "border-[hsl(var(--ember))]/40 focus:ring-[hsl(var(--ember))]/50 focus:border-[hsl(var(--ember))]/60"
                           : "border-border focus:ring-[hsl(var(--ember))]/40 focus:border-[hsl(var(--ember))]/40",

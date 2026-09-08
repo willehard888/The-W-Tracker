@@ -330,10 +330,10 @@ const StatusHeader = () => {
             {/* Row 3: progress bar — metallic */}
             <div className="h-[3px] rounded-full bg-secondary/70 overflow-hidden mt-1.5 shadow-[inset_0_1px_1px_hsl(0_0%_0%/0.3)]">
               <motion.div
-                className={cn("h-full rounded-full relative", progressBarColor)}
+                className={cn("h-full w-full rounded-full relative origin-left", progressBarColor)}
                 style={{ boxShadow: "inset 0 0.5px 0 hsl(0 0% 100% / 0.45)" }}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.max(6, tierProgress * 100)}%` }}
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: Math.max(0.06, tierProgress) }}
                 transition={{ duration: 0.9, ease: [0.22, 0.61, 0.36, 1] }}
               />
             </div>

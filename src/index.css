@@ -1408,6 +1408,15 @@
 
 /* Flame intake — the flame "inhales" oxygen when fed.
    v2: bigger scale, multi-stage brightness, with a saturation kick. */
+/* Twin of flame-intake — alternating the name restarts the animation without
+   remounting the flame (see intakeStyle in Tribes.tsx). */
+@keyframes flame-intake-b {
+  0%   { transform: scale(1)    translateY(0);   filter: brightness(1)    contrast(1)    saturate(1); }
+  18%  { transform: scale(1.14) translateY(-3px); filter: brightness(1.45) contrast(1.18) saturate(1.32); }
+  42%  { transform: scale(1.08) translateY(-1px); filter: brightness(1.22) contrast(1.10) saturate(1.18); }
+  72%  { transform: scale(1.04) translateY(0);    filter: brightness(1.08) contrast(1.04) saturate(1.08); }
+  100% { transform: scale(1)    translateY(0);    filter: brightness(1)    contrast(1)    saturate(1); }
+}
 @keyframes flame-intake {
   0%   { transform: scale(1)    translateY(0);   filter: brightness(1)    contrast(1)    saturate(1); }
   18%  { transform: scale(1.14) translateY(-3px); filter: brightness(1.45) contrast(1.18) saturate(1.32); }
@@ -1762,19 +1771,6 @@
   [style*="hero-aura-drift"] {
     animation: none !important;
   }
-}
-
-/* === Reveal-on-scroll utility === */
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-  /* No will-change: a one-shot entrance doesn't earn a permanent GPU layer
-     (same reasoning as the global button will-change removal). */
-}
-.reveal-on-scroll.is-visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* === Realistic depth utility v2 — premium 3D card lift with side rims, contact shadow,
@@ -2677,16 +2673,6 @@ p, span.selectable, input, textarea, [contenteditable] {
   .streak-fx-ember,
   .streak-fx-pulse-ring,
   .streak-fx-twinkle {
-    animation: none !important;
-  }
-  /* Make reveal-on-scroll children visible instantly — they normally
-     start with opacity:0/translateY waiting for the IntersectionObserver
-     to add `.is-visible`. With animations disabled, we need to skip the
-     entrance transition entirely so content is visible from first paint. */
-  .reveal-on-scroll {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
     animation: none !important;
   }
 }

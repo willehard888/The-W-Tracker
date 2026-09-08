@@ -206,7 +206,7 @@ const BadgeVault = ({
               style={{ flex }}
             >
               <div
-                className={cn("h-full transition-all duration-700 ease-out", RARITY_META[r].bar)}
+                className={cn("h-full transition-[width] duration-700 ease-out", RARITY_META[r].bar)}
                 style={{ width: `${segPct * 100}%` }}
               />
             </div>
@@ -222,7 +222,7 @@ const BadgeVault = ({
           className={cn(
             "group w-full mb-4 p-3 rounded-2xl border relative overflow-hidden text-left glass-3d depth-realistic",
             "border-gold/25",
-            "transition-all duration-300 hover:border-gold/45 "
+            "transition-[border-color,box-shadow] duration-300 hover:border-gold/45 "
           )}
         >
           <div className="flex items-center gap-3">
@@ -252,7 +252,7 @@ const BadgeVault = ({
               <div className="mt-1.5 flex items-center gap-2">
                 <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className={cn("h-full transition-all duration-700", RARITY_META[nextDrop.badge.rarity].bar)}
+                    className={cn("h-full transition-[width] duration-700", RARITY_META[nextDrop.badge.rarity].bar)}
                     style={{ width: `${nextDrop.p?.percent ?? 0}%` }}
                   />
                 </div>
@@ -272,7 +272,7 @@ const BadgeVault = ({
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-all duration-200 border shrink-0",
+              "px-3 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-[background-color,color,border-color] duration-200 border shrink-0",
               activeCategory === cat.id
                 ? "border-gold/45 bg-gold/12 text-gold shadow-[0_0_12px_hsl(var(--gold)/0.18)]"
                 : "border-border bg-card/60 text-muted-foreground hover:border-gold/25 hover:text-foreground"
@@ -319,7 +319,7 @@ const BadgeVault = ({
                     <div className="h-1 rounded-full bg-secondary overflow-hidden">
                       <div
                         className={cn(
-                          "h-full rounded-full transition-all duration-500",
+                          "h-full rounded-full transition-[width] duration-500",
                           RARITY_META[badge.rarity].bar,
                           "opacity-80"
                         )}

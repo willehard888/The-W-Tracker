@@ -33,7 +33,9 @@ export const useFoodSearch = (query: string, opts: { country?: string; filter?: 
     placeholderData: keepPreviousData,
     queryFn: ({ signal }) => searchFoods(supabase, { query: q, country: opts.country, signal }),
   });
-  const localResults = useMemo(() => (uid ? localSearch(uid, query, opts.filter) : EMPTY_FOODS), [uid, query, opts.filter]);
+  // Keyed on the DEBOUNCED query: on the raw one this parsed the whole
+  // local cache inside render on every keystroke.
+  const localResults = useMemo(() => (uid ? localSearch(uid, q, opts.filter) : EMPTY_FOODS), [uid, q, opts.filter]);
   return {
     results: enabled ? (res.data ?? EMPTY_ROWS) : EMPTY_ROWS,
     isFetching: res.isFetching,

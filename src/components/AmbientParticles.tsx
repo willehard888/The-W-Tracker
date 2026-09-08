@@ -89,6 +89,7 @@ const AmbientParticles = () => {
     // Pause when the browser tab is hidden.
     const onVisibility = () => {
       running.current = canvasVisible && !document.hidden;
+      cancelAnimationFrame(raf.current);
       if (running.current) raf.current = requestAnimationFrame(animate);
     };
     document.addEventListener("visibilitychange", onVisibility);
@@ -100,6 +101,9 @@ const AmbientParticles = () => {
       (entries) => {
         canvasVisible = entries[0]?.isIntersecting ?? true;
         running.current = canvasVisible && !document.hidden;
+        // The initial callback fires right after observe(); without the
+        // cancel it started a second chain beside the mount one.
+        cancelAnimationFrame(raf.current);
         if (running.current) raf.current = requestAnimationFrame(animate);
       },
       { threshold: 0 },

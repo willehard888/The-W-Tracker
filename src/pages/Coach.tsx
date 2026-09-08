@@ -372,11 +372,21 @@ const ChatSheet = ({
   const showMoodSnapshot =
     !reflLoading && !hasTodayReflection && !moodCardDismissed && messages.length === 0;
 
+  // Persist after the stream settles, not per token: every SSE delta used
+  // to stringify the history and write localStorage twice — synchronous disk
+  // I/O at token rate, which is why replies stuttered in instead of flowing.
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40)));
-      localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
-    } catch {}
+    if (streaming) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40)));
+        localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
+      } catch {}
+    }, 500);
+    return () => clearTimeout(t);
+  }, [messages, streaming]);
+
+  useEffect(() => {
     requestAnimationFrame(() => {
       const el = scrollRef.current;
       if (!el) return;

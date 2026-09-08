@@ -199,7 +199,7 @@ const FeedPostCard = memo(function FeedPostCard({
             {post.profile?.streak > 0 && (
               <>
                 <span>•</span>
-                <StreakFlameInline streak={post.profile.streak} suffix="d" className="text-[11px]" />
+                <StreakFlameInline still streak={post.profile.streak} suffix="d" className="text-[11px]" />
               </>
             )}
           </div>
@@ -274,7 +274,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleReaction(post.id)}
           aria-label={liked ? "Remove fire" : "Give fire"}
           className={cn(
-            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
             liked
               ? "bg-streak-orange/15 text-streak-orange commit-pop"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -287,7 +287,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleComments(post.id)}
           aria-label="Toggle comments"
           className={cn(
-            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
             isCommentsOpen
               ? "bg-gold/10 text-gold"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -311,7 +311,7 @@ const FeedPostCard = memo(function FeedPostCard({
             disabled={giveKudosPending}
             aria-label={hasGivenKudos ? "Remove kudos" : "Give kudos"}
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
               hasGivenKudos
                 ? "bg-purple/15 text-purple ring-1 ring-purple/30 commit-pop"
                 : kudosRemaining > 0
@@ -407,7 +407,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                     maxLength={300}
                     className={cn(
-                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-all",
+                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
                       replyTo
                         ? "border-gold/40 focus:ring-gold/50 focus:border-gold/60"
                         : "border-border focus:ring-gold/40 focus:border-gold/40",

@@ -69,10 +69,13 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
 };
 
 /** Realtime intake surge on a tribe's flame (replayed via `key`). */
+// Two identical keyframes alternate by pulse parity: a changed animation
+// name restarts the intake without the `key` remount that used to rebuild
+// the whole flame subtree (SVG + every blurred layer) on each realtime ping.
 const intakeStyle = (pulses: number): React.CSSProperties | undefined =>
   pulses > 0
     ? {
-        animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
+        animation: `${pulses % 2 ? "flame-intake-b" : "flame-intake"} 1100ms cubic-bezier(.2,.8,.2,1)`,
         willChange: "transform, filter",
         transformOrigin: "50% 92%",
       }
@@ -345,7 +348,6 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
 
         <div className="relative flex items-center gap-4">
           <div
-            key={pulses}
             className="relative shrink-0 w-[84px] h-[88px] flex items-end justify-center"
             style={intakeStyle(pulses)}
           >
@@ -447,7 +449,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       <div
         key={t.id}
         className={cn(idx < 8 && "animate-fade-in-up")}
-        style={idx < 8 ? { animationDelay: `${220 + Math.min(idx, 10) * 40}ms` } : undefined}
+        // Rows past the first screenful skip layout and paint until scrolled
+        // near — the same lever the board uses for its chase list.
+        style={idx < 8
+          ? { animationDelay: `${220 + Math.min(idx, 10) * 40}ms` }
+          : { contentVisibility: "auto", containIntrinsicSize: "0 96px" }}
       >
         <div
           role="button"
@@ -470,7 +476,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 />
               )}
               {cTier >= 0 ? (
-                <div key={pulses} className="relative w-full h-full flex items-center justify-center" style={intakeStyle(pulses)}>
+                <div className="relative w-full h-full flex items-center justify-center" style={intakeStyle(pulses)}>
                   <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={36} variant="mini" />
                 </div>
               ) : !t.cover_url ? (
@@ -483,7 +489,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
                 {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
                 {isNew && (
-                  <span className="eyebrow-sm shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
+                  <span className="text-[10px] font-bold shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
                     New
                   </span>
                 )}
@@ -496,7 +502,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               {/* One meta row: activity · members (+spots) · fire · lit today */}
               <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
                 {ActIcon && t.primary_activity && (
-                  <span className="eyebrow inline-flex items-center gap-1 text-muted-foreground">
+                  <span className="text-[11px] font-semibold inline-flex items-center gap-1 text-muted-foreground">
                     <ActIcon aria-hidden size={11} strokeWidth={2.4} /> {t.primary_activity}
                   </span>
                 )}
@@ -543,7 +549,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         <div className="home-rise mb-5">
           <div className="flex items-center gap-2 mb-2">
             <Mail aria-hidden size={12} className="text-[hsl(var(--ember))]" />
-            <h2 className="eyebrow text-[hsl(var(--ember))]">
+            <h2 className="text-[11px] font-bold text-[hsl(var(--ember))]">
               Tribe Invites · {invites.length}
             </h2>
           </div>

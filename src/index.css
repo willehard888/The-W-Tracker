@@ -369,6 +369,7 @@
     --z-sheet: 50;
     --z-modal: 100;
     --z-celebration: 120;
+    --z-confirm: 140; /* a ConfirmDialog opened from inside a BottomSheet */
     --z-onboarding: 160; /* above modal+celebration (a card and a celebration can co-occur), below toasts */
     --z-toast: 200;
     --z-top: 9999;
@@ -876,7 +877,7 @@
 
   /* HOME ENTRANCE — the screen settling into place on open. One authored
      grammar for the first-viewport cascade: a short rise, spring-eased,
-     staggered ~70ms. Fast enough (620ms) to read as a premium settle every
+     staggered 45ms. Fast enough (380ms) to read as a premium settle every
      open rather than a slow reveal — opening Home many times a day, a heavy
      entrance would wear (Emil's frequency rule), so this stays quick and
      light (GPU transform+opacity only, no filter). Deliberately OUTSIDE the
@@ -887,13 +888,13 @@
     /* backwards, not both: the `to` frame is identity, and `both` kept a
        transform pinned on every risen block forever — a permanent
        compositing layer per card for zero visual gain. */
-    animation: home-rise 0.62s var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) backwards;
+    animation: home-rise 0.38s var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) backwards;
   }
-  .home-rise-1 { animation-delay: 70ms; }
-  .home-rise-2 { animation-delay: 140ms; }
-  .home-rise-3 { animation-delay: 210ms; }
-  .home-rise-4 { animation-delay: 280ms; }
-  .home-rise-5 { animation-delay: 350ms; }
+  .home-rise-1 { animation-delay: 45ms; }
+  .home-rise-2 { animation-delay: 90ms; }
+  .home-rise-3 { animation-delay: 135ms; }
+  .home-rise-4 { animation-delay: 180ms; }
+  .home-rise-5 { animation-delay: 225ms; }
   /* A list that stays mounted under its detail (Exercises, Recipes) has
      settled once; display:none would otherwise restart its entrance every
      time the detail closes over it. */

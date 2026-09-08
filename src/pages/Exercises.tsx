@@ -242,13 +242,13 @@ const Exercises = () => {
 
           <ul className="divide-y divide-border/35 border-t border-border/35">
             {filtered.map((ex, i) => (
-              <li key={ex.slug} style={i < 12 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
+              <li key={ex.slug} style={i < 6 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
                 <button
                   type="button"
                   onClick={() => open(ex)}
                   className="press w-full min-h-11 flex items-center gap-3 py-2 text-left"
                 >
-                  <IllustrationThumb ex={ex} size={48} eager={i < 10} />
+                  <IllustrationThumb ex={ex} size={48} eager={i < 6} />
                   <span className="flex-1 min-w-0">
                     <span className="block text-[14px] font-semibold leading-tight truncate">{ex.title}</span>
                     <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 capitalize truncate">

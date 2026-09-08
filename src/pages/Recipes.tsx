@@ -249,7 +249,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
             <ul className="mt-1.5 divide-y divide-border/35 border-t border-border/35">
               {results.map((r, i) => (
                 // Entrance on the wrapper: the keyframe pins transform, which would kill the row's press.
-                <li key={r.id} className={cn(i < 8 && "animate-fade-in-up")} style={i < 8 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
+                <li key={r.id} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${120 + i * 30}ms` } : undefined}>
                   <button
                     type="button"
                     onClick={() => { hapticImpact("light"); onOpen(); navigate(`/recipes/${r.id}`); }}

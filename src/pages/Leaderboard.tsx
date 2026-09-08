@@ -361,9 +361,9 @@ const Leaderboard = () => {
             return (
               <li
                 key={user.user_id}
-                className={cn(i < 8 && "animate-fade-in-up")}
-                style={i < 8
-                  ? { animationDelay: `${210 + i * 40}ms` }
+                className={cn(i < 4 && "animate-fade-in-up")}
+                style={i < 5
+                  ? (i < 4 ? { animationDelay: `${120 + i * 30}ms` } : undefined)
                   : { contentVisibility: "auto", containIntrinsicSize: "auto 60px" }}
               >
                 <button

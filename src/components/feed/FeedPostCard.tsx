@@ -135,7 +135,7 @@ const FeedPostCard = memo(function FeedPostCard({
         // Skip layout/paint for off-screen posts (cheap virtualization
         // without restructuring the scroll container). First few stay
         // eager so the initial paint isn't blank.
-        contentVisibility: index < 4 ? undefined : "auto",
+        contentVisibility: index < 2 ? undefined : "auto",
         containIntrinsicSize: index < 4 ? undefined : "auto 480px",
       }}
     >

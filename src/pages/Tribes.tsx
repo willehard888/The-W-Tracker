@@ -448,11 +448,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       // used to kill the row's own press scale on the first eight rows.
       <div
         key={t.id}
-        className={cn(idx < 8 && "animate-fade-in-up")}
+        className={cn(idx < 4 && "animate-fade-in-up")}
         // Rows past the first screenful skip layout and paint until scrolled
         // near — the same lever the board uses for its chase list.
         style={idx < 8
-          ? { animationDelay: `${220 + Math.min(idx, 10) * 40}ms` }
+          ? (idx < 4 ? { animationDelay: `${120 + idx * 30}ms` } : undefined)
           : { contentVisibility: "auto", containIntrinsicSize: "0 96px" }}
       >
         <div

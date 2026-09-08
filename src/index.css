@@ -1590,14 +1590,6 @@
   font-feature-settings: "ss01", "ss02";
 }
 
-/* Premium text gradient */
-.text-gradient-gold {
-  background: linear-gradient(135deg, hsl(42 85% 70%), hsl(42 78% 54%), hsl(42 60% 40%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 /* Smooth scrollbar */
 ::-webkit-scrollbar {
   width: 0px;
@@ -2533,15 +2525,6 @@
   }
 
   
-
-  /* Gold-tinted text gradient — drop-in for headings */
-  .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold-light)) 0%, hsl(var(--gold)) 50%, hsl(var(--gold-dark)) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
 
   /* Lava text gradient — for fire/streak headings */
 

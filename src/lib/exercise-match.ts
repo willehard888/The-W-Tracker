@@ -98,5 +98,28 @@ export const resolveIllustration = (
     for (const e of ILLUSTRATED_EXERCISES) byNormTitle.set(normalizeExerciseName(e.title), e.slug);
   }
   const slug = bestTokenSubsetSlug(name, byNormTitle);
-  return slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) ?? null : null;
+  const hit = slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) ?? null : null;
+  if (!hit) reportMissingIllustration(catalogSlug, name);
+  return hit;
+};
+
+/**
+ * Dev-only breadcrumb for a movement with no drawing.
+ *
+ * A miss is invisible in the product — the row quietly renders the old photo
+ * layout instead — which is exactly how a handful of exercises came to look
+ * like they belonged to a different app without anyone noticing. Silent in
+ * production; never shown to a member.
+ */
+const reportedMisses = new Set<string>();
+const reportMissingIllustration = (catalogSlug?: string | null, name?: string | null) => {
+  if (!import.meta.env.DEV) return;
+  const key = `${catalogSlug ?? "?"}|${name ?? "?"}`;
+  if (reportedMisses.has(key)) return;
+  reportedMisses.add(key);
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[illustration] no drawing for "${name ?? "?"}" (${catalogSlug ?? "no slug"}). ` +
+    "Add a row to src/data/illustration-map.ts — but only if the drawing shows THIS movement.",
+  );
 };

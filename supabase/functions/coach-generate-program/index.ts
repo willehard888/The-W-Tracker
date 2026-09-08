@@ -323,7 +323,16 @@ Deno.serve(async (req) => {
     // survive the 200 cap. Every exercise the AI picks maps to a real library
     // entry on the client, so programs are illustrated and self-explanatory.
     const banned = bannedSlugs(EXERCISE_CATALOG, injuryTags, experience);
-    const catalogItems = filterCatalog(equipment_arr, 200, { exclude: banned, priority: PRIORITY_SLUGS });
+    // `only`, not just `priority`: the model can no longer reach a movement the
+    // app cannot draw, so no session mixes a gold rep animation with a stock
+    // photo in the old layout. filterCatalog drops the restriction by itself if
+    // the athlete's equipment leaves too small a pool to program from.
+    const drawable = new Set(PRIORITY_SLUGS);
+    const catalogItems = filterCatalog(equipment_arr, 200, {
+      exclude: banned,
+      priority: PRIORITY_SLUGS,
+      only: drawable,
+    });
     const allowedSlugs = new Set(catalogItems.map((c) => c.slug));
     const safetyLine = banned.size
       ? `\n- ${banned.size} movements are excluded for this athlete (${[

@@ -25,7 +25,28 @@ export interface FilterCatalogOpts {
   exclude?: Set<string>;
   /** Slugs ordered first inside every bucket — the ones the app can demonstrate. */
   priority?: string[];
+  /**
+   * Restrict the pool to these slugs entirely.
+   *
+   * `priority` only reorders, so a prescribed lift could still be one the app
+   * has no drawing for — and the runner then fell back to a stock photo in the
+   * old layout, one exercise in a session looking like it came from a different
+   * product. This makes "every prescribed lift can be demonstrated" a property
+   * of the pool rather than a preference.
+   *
+   * Ignored when it would leave too small a pool to build a real program from
+   * (see MIN_POOL): a bands-only athlete gets a complete program that mixes in
+   * a few undrawn movements, which is better than four weeks of three lifts.
+   */
+  only?: Set<string>;
 }
+
+/**
+ * Below this many usable movements, `only` is abandoned. Four weeks needs
+ * enough distinct lifts to progress without repeating the same three —
+ * visual consistency is not worth shipping a program nobody can train on.
+ */
+const MIN_POOL = 24;
 
 /** Loaded / external-resistance equipment — the default for a gym program. */
 const WEIGHTED = new Set(["barbell", "dumbbell", "machine", "cable", "kettlebells"]);
@@ -55,11 +76,20 @@ export function filterCatalog(equipment: string[] | null | undefined, cap = 200,
   const equipOk = (e: CatalogItem) =>
     (assumeFullGym || have.has(e.equipment)) && !opts.exclude?.has(e.slug);
 
+  // Restrict to demonstrable movements — unless that leaves too little to build
+  // a program from, in which case the athlete's program wins over the polish.
+  const restricted = opts.only
+    ? EXERCISE_CATALOG.filter((e) => equipOk(e) && opts.only!.has(e.slug))
+    : null;
+  const useOnly = !!restricted && restricted.length >= MIN_POOL;
+  const inPool = (e: CatalogItem) =>
+    equipOk(e) && (!useOnly || opts.only!.has(e.slug));
+
   const rank = new Map((opts.priority ?? []).map((s, i) => [s, i] as const));
   const unranked = rank.size;
   const pool = opts.priority
-    ? EXERCISE_CATALOG.filter(equipOk).sort((a, b) => (rank.get(a.slug) ?? unranked) - (rank.get(b.slug) ?? unranked))
-    : EXERCISE_CATALOG.filter(equipOk);
+    ? EXERCISE_CATALOG.filter(inPool).sort((a, b) => (rank.get(a.slug) ?? unranked) - (rank.get(b.slug) ?? unranked))
+    : EXERCISE_CATALOG.filter(inPool);
   const weighted = pool.filter((e) => WEIGHTED.has(e.equipment));
   const bodyweight = pool.filter((e) => !WEIGHTED.has(e.equipment));
 

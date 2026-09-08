@@ -124,6 +124,68 @@ export const ILLUSTRATION_BY_CATALOG: Record<string, string> = {
   Flutter_Kicks: "flutter-kicks",
   Air_Bike: "air-bike",
   Barbell_Ab_Rollout: "ab-rollout-with-barbell",
+
+  // ── arms: the drawings were all here, unmapped ───────────────────────────
+  // Biceps had 2 mapped movements against the 15 the generator offers, while
+  // the illustrated set carried more than fifty curls sitting unused. Triceps
+  // the same. This is where "a few exercises look different" actually came
+  // from — not missing art, missing rows.
+  Alternate_Hammer_Curl: "alternating-hammer-curl-with-dumbbell",
+  Alternate_Incline_Dumbbell_Curl: "alternating-incline-curl-with-dumbbell",
+  Barbell_Curl: "biceps-curls-with-barbell",
+  Barbell_Curls_Lying_Against_An_Incline: "lying-incline-curl-with-barbell",
+  "Cable_Hammer_Curls_-_Rope_Attachment": "hammer-curls-with-rope-and-cable",
+  Cable_Preacher_Curl: "preacher-curl-with-cable",
+  "Close-Grip_EZ_Bar_Curl": "close-grip-ez-bar-curl-with-barbell",
+  "Close-Grip_Standing_Barbell_Curl": "close-grip-standing-biceps-curls-with-barbell",
+  Concentration_Curls: "concentration-curls-with-dumbbell",
+  Cross_Body_Hammer_Curl: "cross-body-hammer-curl-with-dumbbell",
+  Dumbbell_Alternate_Bicep_Curl: "alternating-biceps-curl-with-dumbbell",
+  Dumbbell_Bicep_Curl: "biceps-curl-with-dumbbell",
+  Dumbbell_Prone_Incline_Curl: "prone-incline-biceps-curl-with-dumbbell",
+  "EZ-Bar_Curl": "ez-bar-curl-with-barbell",
+
+  Cable_Incline_Triceps_Extension: "incline-triceps-extension-with-cable",
+  Cable_Lying_Triceps_Extension: "lying-triceps-extension-with-cable",
+  Cable_One_Arm_Tricep_Extension: "one-arm-tricep-extension-with-cable",
+  Decline_Dumbbell_Triceps_Extension: "decline-triceps-extension-with-dumbbell",
+  Decline_EZ_Bar_Triceps_Extension: "decline-ez-bar-triceps-extension-with-barbell",
+  "Dips_-_Triceps_Version": "tricep-dips-using-body-weight",
+  "Dumbbell_One-Arm_Triceps_Extension": "seated-one-arm-triceps-extension-with-dumbbell",
+  "Dumbbell_Tricep_Extension_-Pronated_Grip": "single-arm-triceps-extension-with-dumbbell",
+
+  // ── shoulders ────────────────────────────────────────────────────────────
+  // Side_Lateral_Raise is the reported case: the drawing existed and sat
+  // unused while the prescribed row fell through to a stock photo.
+  Side_Lateral_Raise: "lateral-dumbbell-raises",
+  "Back_Flyes_-_With_Bands": "back-flys-exercise-band",
+  Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench: "bent-over-rear-deltoid-raise-with-head-on-bench",
+  "Bent_Over_Low-Pulley_Side_Lateral": "bent-over-lateral-cable-raises",
+
+  // ── traps ────────────────────────────────────────────────────────────────
+  Barbell_Shrug: "barbell-shrugs",
+  Cable_Shrugs: "cable-shoulder-shrugs",
+  Dumbbell_Shrug: "shoulder-shrugs",
+
+  // ── calves ───────────────────────────────────────────────────────────────
+  Barbell_Seated_Calf_Raise: "seated-calf-raise-with-barbell",
+  "Dumbbell_Seated_One-Leg_Calf_Raise": "seated-one-leg-calf-raise-with-dumbbell",
+
+  // ── chest ────────────────────────────────────────────────────────────────
+  Decline_Dumbbell_Flyes: "decline-dumbbell-flys",
+  Dumbbell_Flyes: "dumbbell-flys",
+  "Cross_Over_-_With_Bands": "crossover-bands",
+
+  // ── legs / glutes ────────────────────────────────────────────────────────
+  Barbell_Walking_Lunge: "walking-lunges",
+  Barbell_Glute_Bridge: "bridging",
+
+  // ── back ─────────────────────────────────────────────────────────────────
+  Cable_Incline_Pushdown: "incline-pushdown-with-cable",
+
+  // ── core ─────────────────────────────────────────────────────────────────
+  Cable_Seated_Crunch: "seated-ab-crunch-with-cable",
+  Dumbbell_Side_Bend: "side-bend-with-dumbbell",
 };
 
 /** Catalog slugs the generator should prefer: every one has a demonstrable illustration. */

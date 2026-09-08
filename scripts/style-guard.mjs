@@ -31,7 +31,10 @@ const RULES = [
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },
   // Hit areas: a raw small button without a hit-area expansion
-  { re: /<button[^>]*className="[^"]*\b(h-([6-9]|10)|w-([6-9]|10)|p-1(\.5)?)\b(?![^"]*(min-h-11|before:-inset|min-w-11))[^"]*"/, msg: "sub-44 pt raw button — add min-h-11 / a before:-inset hit area or use <Button>", exempt: [UI, "src/components/StatusHeader.tsx"] },
+  // Newline- and `=>`-tolerant: the old per-line form could not see a
+  // <button whose className sat two lines below an onClick arrow, and 13
+  // sub-floor buttons shipped through it.
+  { re: /<button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-([6-9]|10)|w-([6-9]|10)|p-1(\.5)?)\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt raw button — add min-h-11 / a before:-inset hit area or use <Button>", exempt: [UI, "src/components/StatusHeader.tsx"] },
 ];
 
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/[^\n]*/g, "$1");
@@ -49,10 +52,11 @@ const walk = (dir) => {
       if (rule.only && !rule.only.test(rel)) continue;
       if (isExempt(rule, rel)) continue;
       const src = rule.stripComments ? stripComments(raw) : raw;
-      const lines = src.split("\n");
-      for (let i = 0; i < lines.length; i++) {
-        const m = lines[i].match(rule.re);
-        if (m) hits.push(`${rel}:${i + 1}: ${rule.msg} (found "${m[0].slice(0, 60)}")`);
+      // Whole-file matching (rules may span lines); the line is derived from
+      // the match index so a hit stays one click away.
+      for (const m of src.matchAll(new RegExp(rule.re.source, rule.re.flags.replace("g", "") + "g"))) {
+        const line = src.slice(0, m.index).split("\n").length;
+        hits.push(`${rel}:${line}: ${rule.msg} (found "${m[0].replace(/\s+/g, " ").slice(-60)}")`);
       }
     }
   }

@@ -436,7 +436,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   disabled={!commentText.trim() || addCommentPending}
                   aria-label={replyTo ? "Send reply" : "Send comment"}
                   className={cn(
-                    "h-9 w-9 rounded-full flex items-center justify-center transition-all shrink-0",
+                    "relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full flex items-center justify-center transition-[background-color,color,box-shadow] shrink-0",
                     commentText.trim()
                       ? "gradient-gold text-primary-foreground glow-gold"
                       : "bg-secondary text-muted-foreground/75 cursor-not-allowed"

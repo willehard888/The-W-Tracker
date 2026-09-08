@@ -244,6 +244,11 @@ const buttonVariants = cva(
       { variant: [...HIT_AREA_VARIANTS], size: "icon-sm", class: "before:absolute before:-inset-1.5 before:content-['']" },
       { variant: [...HIT_AREA_VARIANTS], size: "xs", class: "before:absolute before:-inset-2 before:content-['']" },
       { variant: [...HIT_AREA_VARIANTS], size: "icon", class: "before:absolute before:-inset-0.5 before:content-['']" },
+      // sm / pill are 36 pt and the most-used size in the app (100+ sites):
+      // a 4 px halo on every free-::before variant lifts them to the 44 pt
+      // floor without a visual change. Surface-owning variants (ember,
+      // default…) keep the rule above: min-h-11 where the row is dense.
+      { variant: [...HIT_AREA_VARIANTS], size: ["sm", "pill"], class: "before:absolute before:-inset-1 before:content-['']" },
     ],
     defaultVariants: {
       variant: "default",

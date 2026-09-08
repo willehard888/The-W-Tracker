@@ -235,7 +235,7 @@ const RecipeList = () => {
             <button
               onClick={() => setQuery("")}
               aria-label="Clear search"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-9 flex items-center justify-center text-muted-foreground"
+              className="absolute right-1 top-1/2 -translate-y-1/2 before:absolute before:-inset-x-1 before:inset-y-0 before:content-[''] h-11 w-9 flex items-center justify-center text-muted-foreground"
             >
               <X size={15} />
             </button>

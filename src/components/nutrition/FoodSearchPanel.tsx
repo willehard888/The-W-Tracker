@@ -84,7 +84,7 @@ const FoodSearchPanel = ({
         />
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
           {query && (
-            <button type="button" onClick={() => onQueryChange("")} aria-label="Clear search" className="h-11 w-9 flex items-center justify-center text-muted-foreground">
+            <button type="button" onClick={() => onQueryChange("")} aria-label="Clear search" className="h-11 min-w-11 flex items-center justify-center text-muted-foreground">
               <X size={15} />
             </button>
           )}

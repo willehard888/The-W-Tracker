@@ -45,7 +45,7 @@ const Squad = () => {
               key={s.key}
               onClick={() => { hapticSelection(); setTab(s.key); }}
               className={cn(
-                "flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-black transition-all",
+                "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-black transition-colors",
                 tab === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
               )}
             >

@@ -33,7 +33,7 @@ const Scale = ({
             type="button"
             onClick={() => { hapticImpact("light"); onChange(n); }}
             className={cn(
-              "flex-1 h-9 rounded-lg text-[12px] font-black transition-all border",
+              "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 h-9 rounded-lg text-[12px] font-black transition-[background-color,border-color,color] border",
               active
                 ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] border-[hsl(42_78%_48%)] shadow-[0_2px_8px_-2px_hsl(var(--gold)/0.6)]"
                 : "bg-card/40 border-border/40 text-muted-foreground/60 hover:border-border/80",

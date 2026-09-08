@@ -92,7 +92,7 @@ const CommentThread = memo(function CommentThread({
             <div className="flex items-center gap-1.5">
               <span className="text-[12px] font-bold text-gold">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="eyebrow-sm text-gold/70 italic">
+                <span className="text-[10px] font-bold text-gold/70 italic">
                   · edited
                 </span>
               )}
@@ -117,7 +117,7 @@ const CommentThread = memo(function CommentThread({
                     type="button"
                     onClick={cancelEdit}
                     disabled={saving}
-                    className="eyebrow text-muted-foreground hover:text-foreground px-2 py-1 rounded-md transition-colors"
+                    className="text-[11px] font-bold text-muted-foreground hover:text-foreground min-h-11 px-2 rounded-md transition-colors"
                   >
                     Cancel
                   </button>
@@ -125,7 +125,7 @@ const CommentThread = memo(function CommentThread({
                     type="button"
                     onClick={() => { hapticImpact("light"); saveEdit(); }}
                     disabled={saving || !draft.trim()}
-                    className="eyebrow gradient-gold text-primary-foreground px-3 py-1 rounded-md disabled:opacity-50"
+                    className="text-[11px] font-bold gradient-gold text-primary-foreground min-h-11 px-3 rounded-md disabled:opacity-50"
                   >
                     {saving ? "Saving…" : "Save"}
                   </button>
@@ -149,7 +149,7 @@ const CommentThread = memo(function CommentThread({
                     hapticSelection();
                     onReply(node.id, username, node.content || "");
                   }}
-                  className="eyebrow-sm flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
+                  className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
                 >
                   <Reply aria-hidden size={12} />
                   Reply
@@ -159,7 +159,7 @@ const CommentThread = memo(function CommentThread({
                 <button
                   type="button"
                   onClick={() => onReport(node.id, node.user_id)}
-                  className="eyebrow-sm flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
+                  className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
                 >
                   <Flag size={12} aria-hidden /> Report
                 </button>
@@ -173,14 +173,14 @@ const CommentThread = memo(function CommentThread({
                       setDraft(node.content || "");
                       setEditingId(node.id);
                     }}
-                    className="eyebrow-sm flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
+                    className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
-                    className="eyebrow-sm flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
+                    className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
                   >
                     Delete
                   </button>

@@ -338,7 +338,7 @@ const VaultCategoryBlock = ({
                     {a.subtitle && (
                       <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{a.subtitle}</span>
                     )}
-                    <span className="eyebrow-sm block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
+                    <span className="text-[10px] font-bold text-muted-foreground block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
                       {EVIDENCE_LABEL[a.evidence_tier]} · {a.read_time_min} min
                     </span>
                   </span>

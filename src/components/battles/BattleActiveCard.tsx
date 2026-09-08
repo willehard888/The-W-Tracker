@@ -53,7 +53,7 @@ const BattleActiveCard = ({
   return (
     <div className="surface-card p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="eyebrow">{typeInfo.label} · {battle.duration_days} days</p>
+        <p className="text-[11px] font-bold text-muted-foreground">{typeInfo.label} · {battle.duration_days} days</p>
         <div className="flex items-center gap-1">
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--streak-orange))]">
             <Clock size={11} aria-hidden /> {daysLeft === 0 ? "Final day" : `${daysLeft}d left`}

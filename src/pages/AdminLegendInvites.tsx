@@ -161,7 +161,7 @@ export default function AdminLegendInvites() {
         </Button>
       </div>
 
-      <h3 className="eyebrow text-muted-foreground mb-3">
+      <h3 className="text-[11px] font-bold text-muted-foreground mb-3">
         All invites ({invites?.length ?? 0})
       </h3>
 

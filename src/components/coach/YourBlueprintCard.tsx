@@ -72,7 +72,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
       <div className="flex items-start gap-3">
         <Sparkles size={14} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
         <div className="min-w-0 flex-1">
-          <p className="eyebrow">
+          <p className="text-[11px] font-bold text-muted-foreground">
             Your blueprint
           </p>
           <p className="text-sm font-bold text-foreground">
@@ -87,7 +87,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
           detail. Falls back gracefully when not yet authored. */}
       {why && (
         <div className="mt-4">
-          <p className="eyebrow-sm mb-1">
+          <p className="text-[10px] font-bold text-muted-foreground mb-1">
             Who I'm becoming
           </p>
           <p className="font-display text-[17px] font-black leading-snug tracking-tight text-foreground">
@@ -107,7 +107,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
 
       {hobbies.length > 0 && (
         <div className="mt-3 flex items-center gap-2 flex-wrap">
-          <span className="eyebrow inline-flex items-center gap-1 text-muted-foreground/70">
+          <span className="text-[11px] font-bold inline-flex items-center gap-1 text-muted-foreground/70">
             <Heart size={12} aria-hidden /> Joy
           </span>
           {hobbies.map((h) => (
@@ -142,7 +142,7 @@ const Row = ({
   <div className="surface-inset rounded-xl px-3 py-2 min-w-0">
     <div className="flex items-center gap-1 text-muted-foreground/70 mb-0.5">
       <span className="shrink-0">{icon}</span>
-      <p className="eyebrow-sm">{label}</p>
+      <p className="text-[10px] font-bold text-muted-foreground">{label}</p>
     </div>
     <p className="text-[12px] font-bold text-foreground/95 leading-tight truncate">{value}</p>
   </div>

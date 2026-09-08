@@ -19,7 +19,7 @@ const MacroRow = ({ nutrition, className }: { nutrition: MacroSummary; className
       <p className="font-display text-[30px] font-black leading-none text-gold tabular-nums">
         {fmt(nutrition.protein)}<span className="text-[17px]">g</span>
       </p>
-      <p className="eyebrow text-muted-foreground mt-1.5">Protein</p>
+      <p className="text-[11px] font-bold text-muted-foreground mt-1.5">Protein</p>
     </div>
     <div className="flex-1 grid grid-cols-3 gap-x-3 gap-y-2 content-center">
       {[
@@ -29,7 +29,7 @@ const MacroRow = ({ nutrition, className }: { nutrition: MacroSummary; className
       ].map((m) => (
         <div key={m.l}>
           <p className="text-[15px] font-black leading-none tabular-nums">{m.v}</p>
-          <p className="eyebrow text-muted-foreground mt-1">{m.l}</p>
+          <p className="text-[11px] font-bold text-muted-foreground mt-1">{m.l}</p>
         </div>
       ))}
     </div>

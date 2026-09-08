@@ -24,7 +24,7 @@ const ProgressionSummaryCard = () => {
     >
       <div className="flex items-center gap-2 mb-2">
         <TrendingUp size={13} className="text-muted-foreground" />
-        <p className="eyebrow">Strength progress</p>
+        <p className="text-[11px] font-bold text-muted-foreground">Strength progress</p>
         <span className="ml-auto text-[11px] font-bold text-muted-foreground">This week</span>
       </div>
 
@@ -57,7 +57,7 @@ const ProgressionSummaryCard = () => {
         </>
       )}
 
-      <div className="eyebrow flex items-center justify-end mt-2">
+      <div className="text-[11px] font-bold text-muted-foreground flex items-center justify-end mt-2">
         Open program <ChevronRight size={12} />
       </div>
     </button>

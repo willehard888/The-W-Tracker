@@ -88,7 +88,7 @@ const PortionPanel = ({
       )}
 
       <div>
-        <p className="eyebrow text-muted-foreground/80 mb-1.5">Meal</p>
+        <p className="text-[11px] font-bold text-muted-foreground/80 mb-1.5">Meal</p>
         <div className={SEGMENT_TRACK} role="group" aria-label="Meal slot">
           {MEAL_SLOTS.map((s) => (
             <button

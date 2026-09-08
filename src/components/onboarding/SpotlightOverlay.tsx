@@ -196,7 +196,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
               <Icon size={17} strokeWidth={2.4} />
             </div>
             <div className="min-w-0">
-              <p className="eyebrow-sm mb-0.5 text-gold">
+              <p className="text-[10px] font-bold mb-0.5 text-gold">
                 <span aria-hidden className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-gold align-middle" />
                 AI Coach
               </p>

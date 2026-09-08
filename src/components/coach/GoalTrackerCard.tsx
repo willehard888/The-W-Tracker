@@ -80,7 +80,7 @@ const GoalTrackerCard = () => {
   if (adding) {
     return (
       <div className="rounded-2xl border border-border/40 bg-card/50 p-4 space-y-3">
-        <p className="eyebrow text-gold">New goal</p>
+        <p className="text-[11px] font-bold text-gold">New goal</p>
         <Input placeholder="Title (e.g. Bench 100 kg)" value={draft.title}
           onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />
         <div className="grid grid-cols-2 gap-2">
@@ -114,7 +114,7 @@ const GoalTrackerCard = () => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="eyebrow text-gold flex items-center gap-1">
+          <p className="text-[11px] font-bold text-gold flex items-center gap-1">
             <Target size={12} /> North Star
           </p>
           <h3 className="font-display text-base font-black mt-0.5 truncate">{activeGoal.title}</h3>
@@ -124,7 +124,7 @@ const GoalTrackerCard = () => {
           </p>
         </div>
         <span className={cn(
-          "eyebrow px-2 py-1 rounded-full",
+          "text-[11px] font-bold text-muted-foreground px-2 py-1 rounded-full",
           onPace ? "bg-xp-green/15 text-xp-green" : "bg-rose-500/15 text-rose-300"
         )}>
           {onPace ? "On pace" : "Off pace"}

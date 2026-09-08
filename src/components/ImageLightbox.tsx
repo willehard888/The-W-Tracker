@@ -148,7 +148,7 @@ const ImageLightbox = ({
               </span>
             )}
             {!showMetric(likes) && !showMetric(comments) && !showMetric(kudos) && (
-              <span className="eyebrow text-muted-foreground/60">
+              <span className="text-[11px] font-bold text-muted-foreground/60">
                 Be the first to react
               </span>
             )}

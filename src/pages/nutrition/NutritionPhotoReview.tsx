@@ -416,7 +416,7 @@ const NutritionPhotoReview = () => {
           {result.scene_notes && <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{result.scene_notes}</p>}
         </div>
         <div className="surface-inset rounded-xl px-3 py-2.5">
-          <p className="eyebrow text-muted-foreground">{basis}</p>
+          <p className="text-[11px] font-bold text-muted-foreground">{basis}</p>
           <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-[13px] tabular-nums">
             {rows.map(([n, v]) => (
               <div key={n} className="flex justify-between gap-2">

@@ -282,7 +282,7 @@ const Leaderboard = () => {
                 "Your first check-in puts you on the board."
               )}
             </h1>
-            <p className="eyebrow mt-2">
+            <p className="text-[11px] font-bold text-muted-foreground mt-2">
               {mode === "season" ? (
                 <>
                   {activeSeason?.name || "Season"}
@@ -306,7 +306,7 @@ const Leaderboard = () => {
               role="tab"
               aria-selected={mode === m}
               onClick={() => { void hapticSelection(); setMode(m); }}
-              className={cn("eyebrow flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+              className={cn("text-[11px] font-bold text-muted-foreground flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {m === "season" ? "Season" : "All time"}
             </button>
@@ -491,7 +491,7 @@ const PodiumCard = ({ user, rank, points, isMe, wins, onClick }: PodiumCardProps
       )}
     >
       {isFirst && <Crown aria-hidden size={22} className="absolute -top-3 left-1/2 -translate-x-1/2 text-gold" />}
-      <span className={cn("eyebrow-sm absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
+      <span className={cn("text-[10px] font-bold text-muted-foreground absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
         {PODIUM[rank].label}
       </span>
       <StatusAvatar

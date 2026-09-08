@@ -123,13 +123,13 @@ export default function AdminModeration() {
         <div className="mt-3 flex items-center gap-4">
           <a
             href="/admin/legend-invites"
-            className="eyebrow inline-flex items-center gap-1.5 text-gold hover:underline"
+            className="text-[11px] font-bold inline-flex items-center gap-1.5 text-gold hover:underline"
           >
             → Legend invites
           </a>
           <a
             href="/admin/metrics"
-            className="eyebrow inline-flex items-center gap-1.5 text-gold hover:underline"
+            className="text-[11px] font-bold inline-flex items-center gap-1.5 text-gold hover:underline"
           >
             → Command Center
           </a>
@@ -166,11 +166,11 @@ export default function AdminModeration() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="eyebrow text-muted-foreground">
+                  <span className="text-[11px] font-bold text-muted-foreground">
                     {item.content_type}
                   </span>
                   {item.severity && (
-                    <span className="eyebrow text-destructive">
+                    <span className="text-[11px] font-bold text-destructive">
                       {item.severity}
                     </span>
                   )}

@@ -483,7 +483,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
             <p className="font-bold tracking-[0.22em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
             <p className={cn(
-              "eyebrow mb-4",
+              "text-[11px] font-bold text-muted-foreground mb-4",
               tier === 'legend' ? "text-[hsl(280_70%_60%)]" :
               tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
               tier === 'elite' ? "text-gold" : "text-muted-foreground/40"

@@ -192,7 +192,7 @@ const Chat = () => {
               <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
                 @{partner?.username || "…"}
                 {partnerIsElite && (
-                  <span className="eyebrow-sm text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
+                  <span className="text-[10px] font-bold text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
                     Elite
                   </span>
                 )}

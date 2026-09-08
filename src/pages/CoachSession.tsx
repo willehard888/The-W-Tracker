@@ -559,7 +559,7 @@ const CoachSession = () => {
             )}
 
             <div className="home-rise home-rise-3 mt-5" ref={loggingTargetRef}>
-              <p className="eyebrow mb-2">Sets</p>
+              <p className="text-[11px] font-bold text-muted-foreground mb-2">Sets</p>
               <div className="space-y-1">
                 {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
                   const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);

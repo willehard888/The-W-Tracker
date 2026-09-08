@@ -114,7 +114,7 @@ const ButtonGallery = () => {
         if (items.length === 0) return null;
         return (
           <section key={group} className="mb-7">
-            <h2 className="eyebrow text-[hsl(var(--gold-soft))] mb-3 px-1">
+            <h2 className="text-[11px] font-bold text-[hsl(var(--gold-soft))] mb-3 px-1">
               {group}
             </h2>
             <div className="space-y-3">
@@ -219,7 +219,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
 
 const StateCell = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-1.5">
-    <span className="eyebrow-sm text-muted-foreground/70 text-center">
+    <span className="text-[10px] font-bold text-muted-foreground/70 text-center">
       {label}
     </span>
     {children}

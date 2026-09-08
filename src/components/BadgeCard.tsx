@@ -159,7 +159,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
           </p>
           <span
             className={cn(
-              "eyebrow-sm inline-block mt-1 px-1.5 py-[1px] rounded-full border",
+              "text-[10px] font-bold text-muted-foreground inline-block mt-1 px-1.5 py-[1px] rounded-full border",
               style.labelChip,
               style.label
             )}

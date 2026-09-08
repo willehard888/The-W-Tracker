@@ -144,7 +144,7 @@ const FeedPostCard = memo(function FeedPostCard({
         <div className="flex items-center justify-between mb-3 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20">
           <div className="flex items-center gap-1.5">
             <AlertTriangle aria-hidden size={12} className="text-destructive" />
-            <span className="eyebrow text-destructive">Reported</span>
+            <span className="text-[11px] font-bold text-destructive">Reported</span>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -338,7 +338,7 @@ const FeedPostCard = memo(function FeedPostCard({
       {isCommentsOpen && (
         <div className="mt-2 rounded-2xl bg-secondary/25 px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="eyebrow text-muted-foreground">
+            <p className="text-[11px] font-bold text-muted-foreground">
               Discussion
             </p>
             <p className="text-[11px] text-muted-foreground/75 tabular-nums">
@@ -375,7 +375,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] p-2 animate-fade-in">
                   <div className="w-0.5 rounded-full bg-gold shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="eyebrow flex items-center gap-1 text-gold">
+                    <div className="text-[11px] font-bold flex items-center gap-1 text-gold">
                       <Reply aria-hidden size={12} />
                       Replying to @{replyTo.username}
                     </div>

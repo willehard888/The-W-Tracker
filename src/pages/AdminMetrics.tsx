@@ -120,7 +120,7 @@ const StatTile = ({
       format={fmt}
       className={cn("font-display text-xl font-black tracking-tight", accent && "text-gold")}
     />
-    <p className="eyebrow text-muted-foreground mt-0.5">
+    <p className="text-[11px] font-bold text-muted-foreground mt-0.5">
       {label}
     </p>
   </div>
@@ -132,7 +132,7 @@ const SectionHeader = ({ icon: Icon, title, sub }: { icon: typeof Users; title: 
       <Icon size={13} className="text-gold" />
     </div>
     <h2 className="font-display font-bold text-base tracking-tight">{title}</h2>
-    {sub && <span className="eyebrow ml-auto text-muted-foreground">{sub}</span>}
+    {sub && <span className="text-[11px] font-bold ml-auto text-muted-foreground">{sub}</span>}
   </div>
 );
 
@@ -259,7 +259,7 @@ export default function AdminMetrics() {
         </p>
         <a
           href="/admin/moderation"
-          className="eyebrow mt-3 inline-flex items-center gap-1.5 text-gold hover:underline"
+          className="text-[11px] font-bold mt-3 inline-flex items-center gap-1.5 text-gold hover:underline"
         >
           → Moderation queue
         </a>
@@ -314,7 +314,7 @@ export default function AdminMetrics() {
         <div className="surface-card overflow-hidden">
           <table className="w-full text-[12px]">
             <thead>
-              <tr className="eyebrow-sm border-b border-border/60 text-muted-foreground">
+              <tr className="text-[10px] font-bold border-b border-border/60 text-muted-foreground">
                 <th className="text-left font-semibold px-3 py-2">Week</th>
                 <th className="text-right font-semibold px-2 py-2">Users</th>
                 <th className="text-right font-semibold px-2 py-2">D1</th>
@@ -350,11 +350,11 @@ export default function AdminMetrics() {
       ) : (
         <div className="space-y-5">
           <div className="surface-card p-4">
-            <p className="eyebrow text-muted-foreground mb-3">Activation</p>
+            <p className="text-[11px] font-bold text-muted-foreground mb-3">Activation</p>
             <FunnelBars steps={ACTIVATION_STEPS} byStep={steps} />
           </div>
           <div className="surface-card p-4">
-            <p className="eyebrow text-muted-foreground mb-3">Monetization</p>
+            <p className="text-[11px] font-bold text-muted-foreground mb-3">Monetization</p>
             <FunnelBars steps={MONETIZATION_STEPS} byStep={steps} />
           </div>
         </div>
@@ -396,7 +396,7 @@ export default function AdminMetrics() {
 
           {Object.keys(waitlist.goal_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="eyebrow text-muted-foreground mb-3">Goals people chase</p>
+              <p className="text-[11px] font-bold text-muted-foreground mb-3">Goals people chase</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.goal_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))
@@ -424,7 +424,7 @@ export default function AdminMetrics() {
           {/* Struggles — the "what's holding you back" answer, aggregated. */}
           {Object.keys(waitlist.struggle_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="eyebrow text-muted-foreground mb-3">What holds them back</p>
+              <p className="text-[11px] font-bold text-muted-foreground mb-3">What holds them back</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.struggle_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))

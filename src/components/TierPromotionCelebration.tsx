@@ -93,7 +93,7 @@ const TierPromotionCelebration = () => {
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="eyebrow text-gold/80 mb-3"
+                className="text-[11px] font-bold text-gold/80 mb-3"
               >
                 Status Promotion
               </motion.p>
@@ -177,7 +177,7 @@ const TierPromotionCelebration = () => {
                 </Button>
                 <button
                   onClick={() => setShowCelebration(false)}
-                  className="eyebrow text-muted-foreground/60 hover:text-foreground transition-colors py-2 w-full"
+                  className="text-[11px] font-bold text-muted-foreground/60 hover:text-foreground transition-colors py-2 w-full"
                 >
                   Continue
                 </button>

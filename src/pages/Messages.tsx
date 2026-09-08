@@ -151,7 +151,7 @@ const Messages = () => {
   const rows: { key: string; node: ReactNode }[] = [
     ...friendConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} isFriend /> })),
     ...friendsWithoutConvo.map((f) => ({ key: f.user_id, node: <PersonRow profile={f} subtitle="Start a conversation" onClick={() => navigate(`/chat/${f.user_id}`)} /> })),
-    ...(friendIds.size > 0 && otherConvos.length > 0 ? [{ key: "others", node: <p className="eyebrow pt-4 pb-1">Others</p> }] : []),
+    ...(friendIds.size > 0 && otherConvos.length > 0 ? [{ key: "others", node: <p className="text-[11px] font-bold text-muted-foreground pt-4 pb-1">Others</p> }] : []),
     ...otherConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} /> })),
   ];
 

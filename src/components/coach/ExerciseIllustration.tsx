@@ -137,7 +137,7 @@ export const IllustrationPlayer = ({ ex, className }: { ex: IllustratedExercise;
           {playing ? <Pause size={15} /> : <Play size={15} />}
         </button>
 
-        <span className="absolute bottom-4 left-4 eyebrow text-gold/70">
+        <span className="absolute bottom-4 left-4 text-[11px] font-bold text-gold/70">
           {playing ? "Full rep" : "Start position"}
         </span>
       </div>
@@ -172,7 +172,7 @@ export const IllustrationHero = ({ ex, className }: { ex: IllustratedExercise; c
             if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationUrl(ex.idNum, state); }
           }}
         />
-        <span className="absolute bottom-2 left-1/2 -translate-x-1/2 eyebrow text-gold/70">
+        <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-gold/70">
           {i === 0 ? "Start" : "Finish"}
         </span>
         <div aria-hidden className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />

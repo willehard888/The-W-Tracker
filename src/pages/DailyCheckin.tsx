@@ -523,6 +523,7 @@ const DailyCheckin = () => {
         setSubmitting(false);
         void hapticNotification("success");
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+        queryClient.invalidateQueries({ queryKey: ["my-rank"] });
         try { await refreshProfile(); } catch { /* non-critical */ }
       };
 

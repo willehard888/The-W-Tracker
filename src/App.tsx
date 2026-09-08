@@ -1,5 +1,5 @@
 import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -90,7 +90,7 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 import RouteFallback from "@/components/RouteFallback";
 import { fetchFeedPosts } from "@/lib/feed-query";
 import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/leaderboard-query";
-import { fetchTribesPage } from "@/lib/tribes-query";
+import { fetchMyTribeMembership, fetchTribesPage } from "@/lib/tribes-query";
 import { afterIdle } from "@/lib/idle";
 
 // Paths reachable WITHOUT an active subscription/trial — the paywall itself,
@@ -208,6 +208,12 @@ const AppRoutes = () => {
   const navigate = useNavigate();
   useEffect(() => { setNavigator(navigate); }, [navigate]);
   const { needsPriming, enablePush, dismissPriming, resyncStreakWarning } = usePushNotifications();
+  // One object identity per callback set — a fresh literal re-rendered every
+  // context consumer on each shell render.
+  const pushControls = useMemo(
+    () => ({ enablePush, dismissPriming, resyncStreakWarning }),
+    [enablePush, dismissPriming, resyncStreakWarning],
+  );
   useOfflineCheckinSync();
   useOfflineNutritionSync();
   useActivityHeartbeat();
@@ -245,7 +251,7 @@ const AppRoutes = () => {
   // re-mount tax.
 
   return (
-    <PushControlsContext.Provider value={{ enablePush, dismissPriming, resyncStreakWarning }}>
+    <PushControlsContext.Provider value={pushControls}>
     <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
@@ -406,6 +412,11 @@ const TabPrefetcher = () => {
         void import("./pages/Profile");
         void import("./pages/DailyCheckin");
         void import("./pages/TribeDetail");
+        // Reached from the Today card, the diary door and the library door —
+        // each was a Suspense skeleton on first tap.
+        void import("./pages/Coach");
+        void import("./pages/nutrition/NutritionDiary");
+        void import("./pages/Exercises");
 
         // Ranks: season chain + all-time board (keys match Leaderboard.tsx).
         await queryClient.prefetchQuery({
@@ -431,18 +442,18 @@ const TabPrefetcher = () => {
           );
         }
 
-        // Tribes tab: the page runs the same membership probe and lands on
-        // "mine" for members, "browse" for everyone else — warm the tab it
-        // will land on. Warming both cost a member ~12 round trips for a tab
-        // they may never open.
+        // Tribes tab: members land on "mine", everyone else on "browse" —
+        // warm the tab it will land on (warming both cost a member ~12 round
+        // trips for a tab they may never open). The membership answer is
+        // cached under the key the page reads, so it decides the tab on its
+        // first render instead of probing again.
         const tribesJob = (async () => {
-          const { data: mem } = await supabase
-            .from("tribe_members")
-            .select("tribe_id")
-            .eq("user_id", userId)
-            .eq("status", "active")
-            .limit(1);
-          const tab = (mem?.length ?? 0) > 0 ? "mine" : "browse";
+          const isMember = await queryClient.fetchQuery({
+            queryKey: ["my-tribe-membership", userId],
+            queryFn: () => fetchMyTribeMembership(userId),
+            staleTime: 5 * 60_000,
+          });
+          const tab = isMember ? "mine" : "browse";
           await queryClient.prefetchQuery({
             queryKey: ["tribes-page", tab, null, userId],
             queryFn: () => fetchTribesPage(tab, null, userId),

@@ -27,7 +27,7 @@ import TribeFireLite from "@/components/TribeFireLite";
 import TribeEmberSeed from "@/components/TribeEmberSeed";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon } from "@/lib/tribe-activities";
-import { fetchTribesPage, EMPTY_TRIBES_PAGE, type Tribe, type TribesPageData } from "@/lib/tribes-query";
+import { fetchMyTribeMembership, fetchTribesPage, EMPTY_TRIBES_PAGE, type Tribe, type TribesPageData } from "@/lib/tribes-query";
 import { collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette, withAlpha } from "@/lib/tribe-streak";
 
 interface Invite {
@@ -103,29 +103,29 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [joiningId, setJoiningId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"mine" | "browse">(initialSub ?? "browse");
+  // Members land on My Tribes, newcomers on Browse. The shell prefetches the
+  // same key, so a warmed cache decides on the first render (no browse→mine
+  // flip after a round trip); a ?tab=mine/browse link always wins.
+  const memKey = ["my-tribe-membership", profile?.user_id];
+  const [tab, setTab] = useState<"mine" | "browse">(
+    () => initialSub ?? (queryClient.getQueryData<boolean>(memKey) ? "mine" : "browse"),
+  );
   // Two-level activity picker: a group opens its activities; an activity
   // filters server-side (the old flat 26-chip strip filtered client-side over
   // a top-50 slice, hiding every small tribe).
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
-  // Members land on My Tribes, newcomers on Browse — decided once on load,
-  // never fighting a tab the user (or a ?tab=mine/browse link) has picked.
+  // Never fights a tab the user (or a link) has picked.
   const tabTouched = useRef(!!initialSub);
+  const { data: isMember } = useQuery({
+    queryKey: memKey,
+    enabled: !!profile?.user_id,
+    staleTime: 5 * 60_000,
+    queryFn: () => fetchMyTribeMembership(profile!.user_id),
+  });
   useEffect(() => {
-    if (!profile?.user_id || tabTouched.current) return;
-    let alive = true;
-    void supabase
-      .from("tribe_members")
-      .select("tribe_id")
-      .eq("user_id", profile.user_id)
-      .eq("status", "active")
-      .limit(1)
-      .then(({ data }) => {
-        if (alive && !tabTouched.current && (data?.length ?? 0) > 0) setTab("mine");
-      });
-    return () => { alive = false; };
-  }, [profile?.user_id]);
+    if (isMember && !tabTouched.current) setTab("mine");
+  }, [isMember]);
 
   // ── Tribe list (browse / mine) ───────────────────────────────────────────
   const tribesQuery = useQuery<TribesPageData>({
@@ -148,10 +148,15 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
 
   // Seed the live collective-streak map from the rows themselves —
   // tribes.collective_streak is server-owned (nightly refresh_tribe_fire);
-  // the reactor layers live deltas on top.
-  useEffect(() => {
+  // the reactor layers live deltas on top. Re-seeded during render when the
+  // rows change (React re-runs the render before committing), not in an
+  // effect after paint — that was a second render and paint of the whole
+  // list on every load.
+  const [seededFrom, setSeededFrom] = useState<Tribe[] | null>(null);
+  if (seededFrom !== tribes) {
+    setSeededFrom(tribes);
     setCollectiveStreaks(new Map(tribes.map((t) => [t.id, t.collective_streak ?? 0])));
-  }, [tribes]);
+  }
 
   // ── Pending invites ──────────────────────────────────────────────────────
   const invitesQuery = useQuery<Invite[]>({
@@ -342,7 +347,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-8 -bottom-12 h-48 w-48 rounded-full blur-2xl"
+          className="pointer-events-none absolute -left-8 -bottom-12 h-48 w-48 rounded-full"
           style={{ background: `radial-gradient(circle, ${withAlpha(edge, 0.2)}, transparent 70%)` }}
         />
 

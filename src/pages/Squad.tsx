@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Flame, Users } from "lucide-react";
 import EliteFeed from "./EliteFeed";
@@ -24,6 +23,11 @@ const SUB = [
   { key: "tribes", label: "Tribes", icon: Users },
 ] as const;
 
+// Module-level, not state: leaving the Squad tab unmounts the page, and a
+// per-mount set meant Feed and Tribes were rebuilt from scratch on every
+// return (their queries are cached; their trees were not).
+const visited = new Set<string>();
+
 const Squad = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const raw = searchParams.get("tab");
@@ -33,8 +37,7 @@ const Squad = () => {
   const initialSub = raw === "mine" || raw === "browse" ? raw : undefined;
   const setTab = (next: "feed" | "tribes") =>
     setSearchParams(next === "feed" ? {} : { tab: next }, { replace: true });
-  const [visited, setVisited] = useState<Set<string>>(() => new Set([tab]));
-  useEffect(() => { setVisited((v) => (v.has(tab) ? v : new Set(v).add(tab))); }, [tab]);
+  visited.add(tab);
   // Contextual onboarding: first /squad visit → explain the Feed/Tribes split.
   const squadTargetRef = useSpotlightTarget("SQUAD_INTRO");
   useOnboardingTrigger("SQUAD_INTRO", true);

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchTribesPage, EMPTY_TRIBES_PAGE } from "@/lib/tribes-query";
+import { fetchMyTribeMembership, fetchTribesPage, EMPTY_TRIBES_PAGE } from "@/lib/tribes-query";
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { from: vi.fn(), rpc: vi.fn() },
@@ -93,5 +93,17 @@ describe("fetchTribesPage", () => {
   it("EMPTY_TRIBES_PAGE is a stable empty shape", () => {
     expect(EMPTY_TRIBES_PAGE.tribes).toEqual([]);
     expect(EMPTY_TRIBES_PAGE.pulse.size).toBe(0);
+  });
+});
+
+describe("fetchMyTribeMembership", () => {
+  it("is true only when an active membership row exists", async () => {
+    const from = supabase.from as ReturnType<typeof vi.fn>;
+    from.mockImplementation(() => chain({ data: [{ tribe_id: "t1" }] }));
+    await expect(fetchMyTribeMembership("me")).resolves.toBe(true);
+    from.mockImplementation(() => chain({ data: [] }));
+    await expect(fetchMyTribeMembership("me")).resolves.toBe(false);
+    from.mockImplementation(() => chain({ data: null }));
+    await expect(fetchMyTribeMembership("me")).resolves.toBe(false);
   });
 });

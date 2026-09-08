@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { subDays, format } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
+import { onIdle } from "@/lib/idle";
 import { getTierConfig } from "@/lib/status-tiers";
 import RoadToElite from "@/components/RoadToElite";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
@@ -316,35 +317,35 @@ const Profile = () => {
     staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
     queryFn: () => getBadgeProgress(profile!.user_id),
-    enabled: !!profile,
+    // Eleven progress reads for a tab most visits never open.
+    enabled: !!profile && profileTab === "badges",
   });
 
   const { data: rankData } = useMyRank(profile?.user_id);
 
   useEffect(() => {
-    if (!profile?.user_id) return;
-    if (syncedBadgesForUserRef.current === profile.user_id) return;
-
-    syncedBadgesForUserRef.current = profile.user_id;
+    const userId = profile?.user_id;
+    if (!userId) return;
+    if (syncedBadgesForUserRef.current === userId) return;
     let cancelled = false;
-
-    (async () => {
-      try {
-        await checkAndAwardBadges(profile.user_id);
-        if (cancelled) return;
-
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["earned-badges", profile.user_id] }),
-          queryClient.invalidateQueries({ queryKey: ["badge-progress", profile.user_id] }),
-        ]);
-      } catch (error) {
-        console.error("Badge sync failed", error);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    // Once the screen has painted and settled: the award pass is a batch of
+    // reads that used to compete with the profile's first paint.
+    const cancelIdle = onIdle(() => {
+      syncedBadgesForUserRef.current = userId;
+      void (async () => {
+        try {
+          await checkAndAwardBadges(userId);
+          if (cancelled) return;
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["earned-badges", userId] }),
+            queryClient.invalidateQueries({ queryKey: ["badge-progress", userId] }),
+          ]);
+        } catch (error) {
+          console.error("Badge sync failed", error);
+        }
+      })();
+    });
+    return () => { cancelled = true; cancelIdle(); };
   }, [profile?.user_id, queryClient]);
 
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
@@ -619,7 +620,7 @@ const Profile = () => {
             <div className="home-rise surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
               <CreditCard aria-hidden size={14} className="text-xp-green shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="eyebrow text-xp-green/90">
+                <p className="text-[11px] font-bold text-xp-green/90">
                   Membership active
                 </p>
                 <p className="text-[12px] text-muted-foreground">

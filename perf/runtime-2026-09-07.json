@@ -1,0 +1,15 @@
+{
+  "note": "Vite preview in the Browser pane, 375x812, QA account (@mogger888), 6 s after navigation. 'before' = 5868dd2a (pre-round tip), 'after' = 38644c3e + backend commit. Frame timing needs a visible pane; only one after-sample of a scripted feed scroll was possible (99 frames, 0 % over 20 ms, p95 19 ms, 0 long tasks). Prod has 1 tribe and 4 feed posts, so the 50-row cases are not measurable on real data.",
+  "home": {
+    "before": { "runningAnimations": 9, "blurLayers": 12, "backdropLayers": 0, "supabaseResourceEntries6s": 39 },
+    "after":  { "runningAnimations": 2, "blurLayers": 5,  "backdropLayers": 0, "supabaseResourceEntries6s": 35 }
+  },
+  "feed": {
+    "before": { "runningAnimations": 13, "blurLayers": 3, "backdropLayers": 3, "posts": 4 },
+    "after":  { "runningAnimations": 4,  "blurLayers": 0, "backdropLayers": 2, "posts": 4 }
+  },
+  "tribesBrowse": {
+    "before": { "runningAnimations": 11, "rows": 1 },
+    "after":  { "runningAnimations": 7,  "rows": 1 }
+  }
+}

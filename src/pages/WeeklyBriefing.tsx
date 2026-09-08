@@ -3,24 +3,26 @@ import { useEffect, useRef, useState } from "react";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useParams, useNavigate } from "react-router-dom";
 import { backOr } from "@/lib/nav";
-import { motion } from "framer-motion";
-import {
-  TrendingUp,
-  AlertTriangle,
-  Trophy,
-  Eye,
-  Share2,
-  Loader2,
-} from "lucide-react";
+import { Share2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
+import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
+import { FactRow } from "@/components/coach/rows";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 import BriefingShareCard from "@/components/BriefingShareCard";
 import html2canvas from "html2canvas";
+
+/**
+ * /briefing/:id — a letter from the coach. The briefing's own headline opens
+ * it, the summary is the body, the week's numbers are facts, and the insights
+ * and next week's protocol follow as prose under hairline rules. The share
+ * card at the end is the only colour block.
+ */
 
 interface Briefing {
   id: string;
@@ -47,42 +49,39 @@ interface Briefing {
   viewed_at: string | null;
 }
 
-const insightIcon = (kind: string) => {
-  switch (kind) {
-    case "warning":
-      return <AlertTriangle size={18} className="text-orange-400" />;
-    case "win":
-      return <Trophy size={18} className="text-gold" />;
-    case "pattern":
-      return <Eye size={18} className="text-gold-light" />;
-    case "trend":
-    default:
-      return <TrendingUp size={18} className="text-gold" />;
-  }
-};
+const utc = (iso: string) => new Date(iso + "T00:00:00Z");
 
 const formatDateRange = (start: string, end: string) => {
   const fmt = (s: string) =>
-    new Date(s + "T00:00:00Z").toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    });
+    utc(s).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
   return `${fmt(start)} – ${fmt(end)}`;
 };
+
+/** ISO week number: the week that holds the Thursday. */
+const isoWeek = (iso: string) => {
+  const d = utc(iso);
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 3);
+  const jan1 = Date.UTC(d.getUTCFullYear(), 0, 1);
+  return Math.ceil(((d.getTime() - jan1) / 86400000 + 1) / 7);
+};
+
+const weekday = (iso: string) =>
+  utc(iso).toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
 
 const WeeklyBriefing = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [briefing, setBriefing] = useState<Briefing | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<"loading" | "ready" | "missing" | "failed">("loading");
+  const [attempt, setAttempt] = useState(0);
   const [sharing, setSharing] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
+    setStatus("loading");
     (async () => {
       const { data, error } = await supabase
         .from("weekly_briefings")
@@ -91,13 +90,10 @@ const WeeklyBriefing = () => {
         .maybeSingle();
 
       if (cancelled) return;
-      if (error || !data) {
-        toast.error("Briefing not found");
-        navigate("/", { replace: true });
-        return;
-      }
+      if (error) { setStatus("failed"); return; }
+      if (!data) { setStatus("missing"); return; }
       setBriefing(data as unknown as Briefing);
-      setLoading(false);
+      setStatus("ready");
 
       if (!data.viewed_at) {
         await supabase
@@ -109,7 +105,7 @@ const WeeklyBriefing = () => {
     return () => {
       cancelled = true;
     };
-  }, [id, navigate]);
+  }, [id, attempt]);
 
   const handleShare = async () => {
     if (!shareRef.current || !briefing) return;
@@ -153,177 +149,121 @@ const WeeklyBriefing = () => {
     }
   };
 
-  if (loading || !briefing) {
+  if (status !== "ready" || !briefing) {
     return (
-      <div className="min-h-full px-4 pt-4">
-        <DetailSkeleton />
+      <div className="min-h-full">
+        <PageBar onBack={() => backOr(navigate, "/coach")} />
+        <div className="px-4 pt-4">
+          {status === "failed" ? (
+            <ErrorState title="Couldn't load this briefing" onRetry={() => setAttempt((n) => n + 1)} />
+          ) : status === "missing" ? (
+            <EmptyState
+              title="This briefing isn't here"
+              description="It may have been removed, or the link is old. Your coach has the rest."
+              action={
+                <Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => navigate("/coach", { replace: true })}>
+                  Go to Coach
+                </Button>
+              }
+            />
+          ) : (
+            <DetailSkeleton />
+          )}
+        </div>
       </div>
     );
   }
 
   const stats = briefing.stats_snapshot ?? {};
+  const weekRange = formatDateRange(briefing.week_start, briefing.week_end);
 
   return (
     <div className="min-h-full">
       <PageBar onBack={() => backOr(navigate, "/coach")} />
-      <div className="home-rise px-4 pt-4 pb-6 relative">
-      {/* Ambient gold glow */}
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] pointer-events-none z-0"
-        style={{
-          background:
-            "radial-gradient(ellipse at center top, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
-        }}
-      />
-
-      <div className="relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
-        >
-          <p className="eyebrow text-gold/80 mb-2">
-            Weekly Briefing · {formatDateRange(briefing.week_start, briefing.week_end)}
-          </p>
-          <h1 className="font-display font-black text-2xl leading-tight tracking-tight text-gradient-gold">
-            "{briefing.headline}"
+      <div className="px-4 pt-4 pb-6">
+        {/* ── OPENING BEAT — the dateline, then the coach's own headline. ── */}
+        <header className="home-rise">
+          <p className="eyebrow">Week {isoWeek(briefing.week_start)} · {weekRange}</p>
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight mt-1.5">
+            {briefing.headline}
           </h1>
-        </motion.div>
+          <p className="mt-2 text-[15px] leading-snug">
+            <span className="text-gold glow-gold-text font-black tabular-nums">{fmtInt(stats.total_xp ?? 0)} XP</span>
+            <span className="text-muted-foreground"> this week.</span>
+          </p>
+        </header>
 
-        {/* Stats grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="grid grid-cols-2 gap-3 mb-6"
-        >
-          <StatTile label="Week XP" value={fmtInt(stats.total_xp ?? 0)} />
-          <StatTile label="Perfect Days" value={`${stats.perfect_days ?? 0}/7`} />
-          <StatTile label="Workouts" value={`${stats.workouts ?? 0}/7`} />
-          <StatTile label="Check-ins" value={`${stats.days_checked_in ?? 0}/7`} />
-        </motion.div>
-
-        {/* Key insights */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-6"
-        >
-          <h2 className="eyebrow text-muted-foreground mb-3">
-            Key Insights
-          </h2>
-          <div className="space-y-2">
-            {briefing.key_insights?.map((insight, i) => (
-              <div
-                key={i}
-                className="rounded-xl glass-card p-4 border border-gold/15 flex gap-3"
-              >
-                <div className="shrink-0 mt-0.5">{insightIcon(insight.icon)}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm leading-tight mb-0.5">
-                    {insight.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground leading-snug">
-                    {insight.detail}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Next week protocol */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mb-6"
-        >
-          <h2 className="eyebrow text-muted-foreground mb-3">
-            Next Week Protocol
-          </h2>
-          <div className="space-y-2">
-            {briefing.next_week_protocol?.map((item, i) => (
-              <div
-                key={i}
-                className="rounded-xl glass-card-gold p-4 border border-gold/25"
-              >
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="font-display font-black text-gold text-base tabular-nums">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <p className="font-bold text-sm leading-tight flex-1">
-                    {item.action}
-                  </p>
-                </div>
-                <p className="text-xs text-muted-foreground leading-snug ml-6">
-                  {item.why}
-                </p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mb-6 rounded-xl glass-card p-4 prose prose-invert prose-sm max-w-none prose-p:text-muted-foreground prose-strong:text-foreground prose-headings:text-foreground"
-        >
+        {/* ── THE BODY — the letter itself. ── */}
+        <div className="home-rise home-rise-1 mt-5 prose prose-invert prose-sm max-w-none prose-p:text-foreground/85 prose-p:leading-relaxed prose-strong:text-foreground prose-headings:text-foreground">
           <ReactMarkdown>{briefing.summary_md}</ReactMarkdown>
-        </motion.div>
+        </div>
 
-        {/* Share button */}
-        <Button
-          variant="ember"
-          size="xl"
-          className="w-full"
-          onClick={handleShare}
-          disabled={sharing}
-        >
-          {sharing ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <Share2 size={18} />
+        {/* ── THE NUMBERS — facts, not tiles. ── */}
+        <div className="home-rise home-rise-2 mt-5 divide-y divide-border/35 border-t border-border/35">
+          <FactRow k="Perfect days" v={`${stats.perfect_days ?? 0} of 7`} />
+          <FactRow k="Workouts" v={`${stats.workouts ?? 0} of 7`} />
+          <FactRow k="Check-ins" v={`${stats.days_checked_in ?? 0} of 7`} />
+          {stats.best_day && (
+            <FactRow k="Best day" v={`${weekday(stats.best_day.date)} · ${fmtInt(stats.best_day.xp)} XP`} />
           )}
-          {sharing ? "Generating…" : "Share Briefing"}
-        </Button>
-      </div>
+        </div>
 
-      {/* Offscreen share card */}
-      <div
-        style={{
-          position: "fixed",
-          top: -10000,
-          left: -10000,
-          pointerEvents: "none",
-        }}
-      >
-        <BriefingShareCard
-          ref={shareRef}
-          username={profile?.username ?? "operator"}
-          weekRange={formatDateRange(briefing.week_start, briefing.week_end)}
-          headline={briefing.headline}
-          totalXp={stats.total_xp ?? 0}
-          perfectDays={stats.perfect_days ?? 0}
-          workouts={stats.workouts ?? 0}
-          daysCheckedIn={stats.days_checked_in ?? 0}
-        />
-      </div>
+        {/* ── WHAT STOOD OUT ── */}
+        {briefing.key_insights?.length > 0 && (
+          <section className="home-rise home-rise-3 mt-7">
+            <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">What stood out</h2>
+            <div className="mt-1 divide-y divide-border/35">
+              {briefing.key_insights.map((insight, i) => (
+                <div key={i} className="py-3.5">
+                  <p className="text-[14px] font-bold leading-snug">{insight.title}</p>
+                  <p className="mt-0.5 text-[13px] text-muted-foreground leading-snug">{insight.detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── NEXT WEEK — numbered plainly. ── */}
+        {briefing.next_week_protocol?.length > 0 && (
+          <section className="home-rise home-rise-4 mt-7">
+            <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">Next week</h2>
+            <ol className="mt-1 divide-y divide-border/35">
+              {briefing.next_week_protocol.map((item, i) => (
+                <li key={i} className="py-3.5 flex gap-3">
+                  <span className="w-5 shrink-0 text-[14px] font-bold tabular-nums text-muted-foreground">{i + 1}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[14px] font-bold leading-snug">{item.action}</span>
+                    <span className="block mt-0.5 text-[13px] text-muted-foreground leading-snug">{item.why}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        <div className="home-rise home-rise-5 mt-8">
+          <Button variant="ember" size="xl" className="w-full" onClick={handleShare} loading={sharing}>
+            <Share2 size={18} />
+            Share this week
+          </Button>
+        </div>
+
+        {/* Offscreen share card */}
+        <div style={{ position: "fixed", top: -10000, left: -10000, pointerEvents: "none" }}>
+          <BriefingShareCard
+            ref={shareRef}
+            username={profile?.username ?? "operator"}
+            weekRange={weekRange}
+            headline={briefing.headline}
+            totalXp={stats.total_xp ?? 0}
+            perfectDays={stats.perfect_days ?? 0}
+            workouts={stats.workouts ?? 0}
+            daysCheckedIn={stats.days_checked_in ?? 0}
+          />
+        </div>
       </div>
     </div>
   );
 };
-
-const StatTile = ({ label, value }: { label: string; value: string }) => (
-  <div className="surface-card border-gold/15 p-4">
-    <p className="eyebrow mb-1">{label}</p>
-    <p className="font-display font-black text-2xl text-gold tabular-nums">{value}</p>
-  </div>
-);
 
 export default WeeklyBriefing;

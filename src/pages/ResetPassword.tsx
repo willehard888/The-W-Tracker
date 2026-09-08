@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Check } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 
+/**
+ * /reset-password — the auth family's third screen: a beat, the one field,
+ * an ember CTA. One password with a reveal toggle; a confirm field only
+ * guards against typos the eye already catches.
+ */
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -52,10 +58,6 @@ const ResetPassword = () => {
       setError("Password must be at least 6 characters");
       return;
     }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
 
     if (!sessionReady) {
       // Make the "Auth session missing!" failure mode self-explanatory
@@ -80,13 +82,12 @@ const ResetPassword = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center home-rise">
-          <h1 className="font-display text-2xl font-bold mb-2">Invalid link</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            This password reset link is invalid or has expired.
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">This link has expired.</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Reset links work once. Sign in and request a new one.
           </p>
-          <Button variant="gold-outline" onClick={() => navigate("/auth")}>
-            <ArrowLeft size={14} />
-            Back to Login
+          <Button variant="ember" size="xl" className="mt-6 w-full" onClick={() => navigate("/auth")}>
+            Back to sign in
           </Button>
         </div>
       </div>
@@ -97,14 +98,11 @@ const ResetPassword = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center home-rise">
-          <div className="h-14 w-14 mx-auto rounded-xl bg-xp-green/20 border border-xp-green/30 flex items-center justify-center mb-6">
-            <Check size={24} className="text-xp-green" />
-          </div>
-          <h1 className="font-display text-2xl font-bold mb-2">Password updated</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Your password has been successfully reset.
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Password updated.</h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            You're signed in. Your streak is waiting.
           </p>
-          <Button variant="ember" size="xl" className="w-full" onClick={() => navigate("/")}>
+          <Button variant="ember" size="xl" className="mt-6 w-full" onClick={() => navigate("/")}>
             Continue
           </Button>
         </div>
@@ -114,61 +112,50 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm home-rise">
-        <div className="flex flex-col items-center mb-10">
-          <BrandLogo size={56} priority className="rounded-xl glow-gold mb-4" />
-          <h1 className="font-display text-2xl font-bold tracking-tight">Set new password</h1>
-          <p className="text-sm text-muted-foreground mt-1">Enter your new password below</p>
-        </div>
+      <div className="w-full max-w-sm">
+        <header className="home-rise flex flex-col items-center text-center mb-8">
+          <BrandLogo size={48} priority className="rounded-xl mb-5" />
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Set a new password.</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Six characters or more.</p>
+        </header>
 
-        <form onSubmit={handleReset} className="space-y-4">
+        <form onSubmit={handleReset} className="home-rise home-rise-1 space-y-4">
           <div>
-            <label className="eyebrow text-muted-foreground mb-1.5 block">
-              New Password
-            </label>
+            <Label htmlFor="reset-password" className="mb-1.5 block text-muted-foreground">New password</Label>
             <div className="relative">
-              <input
+              <Input
+                id="reset-password"
                 type={showPass ? "text" : "password"}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 minLength={6}
-                className="w-full h-12 px-4 pr-12 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40 transition-all"
+                className="h-12 rounded-xl pr-12 text-sm"
                 required
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-lg"
+                aria-label={showPass ? "Hide password" : "Show password"}
+                aria-pressed={showPass}
                 onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-0 top-0 rounded-xl text-muted-foreground"
               >
-                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+                {showPass ? <EyeOff /> : <Eye />}
+              </Button>
             </div>
-          </div>
-
-          <div>
-            <label className="eyebrow text-muted-foreground mb-1.5 block">
-              Confirm Password
-            </label>
-            <input
-              type={showPass ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              minLength={6}
-              className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/40 transition-all"
-              required
-            />
           </div>
 
           {error && (
-            <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <p role="alert" className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
               {error}
-            </div>
+            </p>
           )}
 
-          <Button variant="ember" size="xl" className="w-full" type="submit" disabled={loading}>
-            {loading ? "Updating…" : "Update Password"}
+          <Button variant="ember" size="xl" className="w-full" type="submit" loading={loading}>
+            Save password
           </Button>
         </form>
       </div>

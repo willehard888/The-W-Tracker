@@ -1,36 +1,33 @@
-import { fmtInt } from "@/lib/format";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Swords, Loader2, ChevronRight, Flame, Clock, Trophy } from "lucide-react";
+import { Swords } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
+import { DoorRow } from "@/components/coach/rows";
+import { Block } from "@/components/skeletons/PageSkeleton";
+import { TribeBattleRow, type TribeBattleLite } from "@/components/TribeBattleCard";
 
 interface MyTribe {
   id: string;
   name: string;
 }
 
-interface TribeBattleRow {
-  id: string;
-  status: "pending" | "active" | "completed" | "declined" | "expired";
-  challenger_tribe_id: string;
-  opponent_tribe_id: string;
-  challenger_score: number;
-  opponent_score: number;
-  duration_days: number;
-  started_at: string | null;
-  ended_at: string | null;
-  winner_tribe_id: string | null;
-  challenger_name?: string;
-  opponent_name?: string;
-}
+/** The label above the rows. Plain 11 px, ember only when something is live. */
+const Label = ({ live }: { live: number }) => (
+  <h3 className="text-[11px] font-bold text-muted-foreground">
+    Tribe battles{live > 0 && <span className="text-[hsl(var(--ember))]"> · {live} live</span>}
+  </h3>
+);
 
+/**
+ * Tribe wars on the Battles page: the same hairline row grammar one level
+ * down, and one door to the arena. Rows lead to the tribe's own arena.
+ */
 const MyTribeBattles = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [tribes, setTribes] = useState<MyTribe[]>([]);
-  const [battles, setBattles] = useState<TribeBattleRow[]>([]);
+  const [battles, setBattles] = useState<TribeBattleLite[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -79,7 +76,7 @@ const MyTribeBattles = () => {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    const raw: TribeBattleRow[] = (battleData ?? []) as TribeBattleRow[];
+    const raw: TribeBattleLite[] = (battleData ?? []) as TribeBattleLite[];
     const allTribeIds = Array.from(
       new Set(raw.flatMap((b) => [b.challenger_tribe_id, b.opponent_tribe_id])),
     );
@@ -88,12 +85,10 @@ const MyTribeBattles = () => {
         .from("tribes")
         .select("id, name")
         .in("id", allTribeIds);
-      const nameMap = new Map<string, string>(
-        (nameRows ?? []).map((t) => [t.id, t.name]),
-      );
+      const sides = new Map((nameRows ?? []).map((t) => [t.id, t]));
       raw.forEach((b) => {
-        b.challenger_name = nameMap.get(b.challenger_tribe_id);
-        b.opponent_name = nameMap.get(b.opponent_tribe_id);
+        b.challenger = sides.get(b.challenger_tribe_id);
+        b.opponent = sides.get(b.opponent_tribe_id);
       });
     }
 
@@ -107,175 +102,61 @@ const MyTribeBattles = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-6">
-        <Loader2 size={16} className="animate-spin text-[hsl(var(--ember))]" />
-      </div>
+      <section>
+        <Label live={0} />
+        <div className="mt-1 animate-fade-in">
+          {[0, 1].map((i) => <Block key={i} height={52} delay={i * 40} className="mt-2" />)}
+        </div>
+      </section>
     );
   }
 
   if (tribes.length === 0) {
-    // User has no tribes — soft CTA
     return (
-      <div className="rounded-xl border border-dashed border-border/60 p-4 text-center">
-        <div className="flex items-center justify-center gap-2 mb-1.5">
-          <Swords size={14} className="text-[hsl(var(--ember))]" />
-          <p className="eyebrow text-muted-foreground">
-            Tribe Battles
-          </p>
+      <section>
+        <Label live={0} />
+        <div className="mt-1 border-y border-border/35">
+          <DoorRow
+            icon={Swords}
+            label="Find a tribe"
+            sub="Join or found one to wage collective battles."
+            onClick={() => navigate("/squad?tab=tribes")}
+          />
         </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          Join or found a tribe to wage collective battles.
-        </p>
-        <button
-          onClick={() => navigate("/squad?tab=tribes")}
-          className="eyebrow text-gold inline-flex items-center gap-1"
-        >
-          Find a tribe <ChevronRight size={12} />
-        </button>
-      </div>
+      </section>
     );
   }
 
   const active = battles.filter((b) => b.status === "active");
   const pending = battles.filter((b) => b.status === "pending");
   const recent = battles.filter((b) => ["completed", "expired", "declined"].includes(b.status)).slice(0, 3);
+  const rows = [...active, ...pending, ...recent];
 
   const tribeIdSet = new Set(tribes.map((t) => t.id));
-
-  const renderRow = (b: TribeBattleRow) => {
-    const myIsChallenger = tribeIdSet.has(b.challenger_tribe_id);
-    const meName = myIsChallenger ? b.challenger_name : b.opponent_name;
-    const themName = myIsChallenger ? b.opponent_name : b.challenger_name;
-    const myTribeId = myIsChallenger ? b.challenger_tribe_id : b.opponent_tribe_id;
-    const myScore = myIsChallenger ? b.challenger_score : b.opponent_score;
-    const theirScore = myIsChallenger ? b.opponent_score : b.challenger_score;
-    const totalScore = Math.max(myScore + theirScore, 1);
-    const myPct = (myScore / totalScore) * 100;
-
-    const startedAt = b.started_at ? new Date(b.started_at) : null;
-    const endsAt = startedAt
-      ? new Date(startedAt.getTime() + b.duration_days * 24 * 60 * 60 * 1000)
-      : null;
-    const daysLeft = endsAt
-      ? Math.max(0, Math.ceil((endsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-      : null;
-
-    const iWon = b.winner_tribe_id === myTribeId;
-    const isDraw = b.status === "completed" && !b.winner_tribe_id;
-
-    return (
-      <button
-        key={b.id}
-        onClick={() => navigate(`/tribes/${myTribeId}/battles`)}
-        className={cn(
-          "w-full text-left rounded-xl border p-3 transition-transform ",
-          b.status === "active" &&
-            "border-[hsl(var(--ember))]/45 bg-gradient-to-br from-[hsl(var(--ember))]/[0.07] to-card/60 shadow-[0_0_18px_hsl(var(--ember)/0.12)]",
-          b.status === "pending" && "border-gold/40 bg-gradient-to-br from-gold/[0.05] to-card/60",
-          b.status === "completed" && iWon && "border-gold/50 bg-gradient-to-br from-gold/[0.08] to-card/60",
-          b.status === "completed" && !iWon && !isDraw && "border-border/50 bg-card/50",
-          b.status === "completed" && isDraw && "border-border/60 bg-card/50",
-          (b.status === "declined" || b.status === "expired") && "border-border/40 bg-card/30 opacity-80",
-        )}
-      >
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="eyebrow flex items-center gap-1.5 text-muted-foreground">
-            <Swords size={12} className="text-[hsl(var(--ember))]" />
-            {b.status === "pending" && (myIsChallenger ? "Awaiting" : "Incoming")}
-            {b.status === "active" && <span className="text-[hsl(var(--ember))]">Live</span>}
-            {b.status === "completed" && (iWon ? <span className="text-gold">Victory</span> : isDraw ? "Draw" : "Defeat")}
-            {b.status === "declined" && "Declined"}
-            {b.status === "expired" && "Expired"}
-          </div>
-          {b.status === "active" && daysLeft !== null && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-foreground/80">
-              <Clock size={11} /> {daysLeft === 0 ? "Ending" : `${daysLeft}d left`}
-            </span>
-          )}
-          {b.status === "completed" && iWon && <Trophy size={12} className="text-gold" />}
-        </div>
-
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="font-display font-black text-xs truncate text-gold flex-1 min-w-0">
-            {meName ?? "Your tribe"}
-          </span>
-          <span className="text-[11px] font-black text-muted-foreground">VS</span>
-          <span className="font-display font-black text-xs truncate text-foreground flex-1 min-w-0 text-right">
-            {themName ?? "—"}
-          </span>
-        </div>
-
-        {(b.status === "active" || b.status === "completed") && (
-          <>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[12px] font-black tabular-nums text-gold">{fmtInt(myScore)} XP</span>
-              <span className="text-[12px] font-black tabular-nums text-foreground/80">{fmtInt(theirScore)} XP</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-secondary overflow-hidden flex">
-              <div
-                className="h-full bg-gradient-to-r from-gold to-[hsl(var(--ember))] transition-all"
-                style={{ width: `${myPct}%` }}
-              />
-              <div className="h-full bg-foreground/30" style={{ width: `${100 - myPct}%` }} />
-            </div>
-          </>
-        )}
-      </button>
-    );
-  };
-
-  const showSection = active.length + pending.length + recent.length > 0;
+  const myTribeIdOf = (b: TribeBattleLite) =>
+    tribeIdSet.has(b.challenger_tribe_id) ? b.challenger_tribe_id : b.opponent_tribe_id;
+  const arena = tribes.length === 1 ? `/tribes/${tribes[0].id}/battles` : "/squad?tab=tribes";
 
   return (
-    <div className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Swords size={13} className="text-[hsl(var(--ember))]" />
-          <h2 className="font-display font-bold text-sm tracking-tight">Tribe Battles</h2>
-          {active.length > 0 && (
-            <span className="eyebrow-sm inline-flex items-center gap-1 text-[hsl(var(--ember))] px-1.5 py-0.5 rounded-full bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
-              <Flame size={10} /> {active.length} live
-            </span>
-          )}
-        </div>
-        {tribes.length === 1 ? (
-          <button
-            onClick={() => navigate(`/tribes/${tribes[0].id}/battles`)}
-            className="eyebrow text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
-          >
-            View all <ChevronRight size={12} />
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate("/squad?tab=tribes")}
-            className="eyebrow text-muted-foreground hover:text-gold inline-flex items-center gap-0.5"
-          >
-            My tribes <ChevronRight size={12} />
-          </button>
-        )}
+    <section>
+      <Label live={active.length} />
+      <div className="mt-1 divide-y divide-border/35 border-y border-border/35">
+        {rows.map((b) => (
+          <TribeBattleRow
+            key={b.id}
+            battle={b}
+            myTribeId={myTribeIdOf(b)}
+            onClick={() => navigate(`/tribes/${myTribeIdOf(b)}/battles`)}
+          />
+        ))}
+        <DoorRow
+          icon={Swords}
+          label={tribes.length === 1 ? "Open the arena" : "My tribes"}
+          sub={rows.length === 0 ? "No tribe battles yet. Challenge another tribe." : undefined}
+          onClick={() => navigate(arena)}
+        />
       </div>
-
-      {!showSection ? (
-        <div className="rounded-xl border border-dashed border-border/60 p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-2">
-            No tribe battles yet. Owners can challenge another tribe.
-          </p>
-          {tribes.length === 1 ? (
-            <button
-              onClick={() => navigate(`/tribes/${tribes[0].id}/battles`)}
-              className="eyebrow text-[hsl(var(--ember))] inline-flex items-center gap-1"
-            >
-              Open arena <ChevronRight size={12} />
-            </button>
-          ) : null}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {[...active, ...pending, ...recent].map(renderRow)}
-        </div>
-      )}
-    </div>
+    </section>
   );
 };
 

@@ -3,13 +3,12 @@ import { ChevronDown, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
-import { useExerciseLibrary, resolveExercise, exerciseImgBranded } from "@/lib/exercise-library";
+import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
 import { IllustrationThumb, IllustrationHero } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import { resolveIllustration } from "@/lib/exercise-match";
-import BrandedExercisePhoto from "@/components/coach/BrandedExercisePhoto";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
 import Sparkline from "@/components/coach/Sparkline";
 
@@ -40,9 +39,9 @@ const daysAgo = (iso: string) => {
 };
 
 /**
- * One exercise in a session: photo + name + target, expandable to step-by-step
- * instructions and an inline "log your set" row (weight × reps). The logged
- * result is what the AI coach reads to progress the next block.
+ * One exercise in a session: its drawing + name + target, expandable to
+ * step-by-step instructions and an inline "log your set" row (weight × reps).
+ * The logged result is what the AI coach reads to progress the next block.
  */
 const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Props) => {
   const libReady = useExerciseLibrary();
@@ -85,8 +84,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
     if (r != null) setReps(String(r));
   };
 
-  // Illustration first (the consistent hand-drawn set), then the duotone
-  // photo, then the muscle-group glyph — every row stays on brand.
+  // The drawing, or the muscle-group glyph. There is no third option any
+  // more: the duotone photo that used to sit between them was the one thing
+  // in a session that looked like it came from somewhere else.
   const illustrated = resolveIllustration(block.slug, block.name) ?? (ex ? resolveIllustration(null, ex.name) : null);
   const group = resolveGroup(block.name, ex?.primary);
   const hasMore = !!(ex || illustrated || block.notes || block.alt || block.rest_sec || block.tempo);
@@ -126,18 +126,13 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
         onClick={() => hasMore && (hapticImpact("light"), setOpen((v) => !v))}
         className="w-full flex items-center gap-2.5 py-1.5 text-left"
       >
+        {/* The drawing, or the muscle-group glyph. The stock photo that used to
+            sit between them is gone: one exercise rendered as a photograph in a
+            list of gold line art reads as a different product, and a member
+            noticed. The glyph is the same black-and-gold vocabulary at any
+            size, so a session looks like one thing whatever it prescribes. */}
         {illustrated ? (
           <IllustrationThumb ex={illustrated} size={40} className="rounded-lg" />
-        ) : ex?.images?.[0] ? (
-          <div className="shrink-0 h-10 w-10 rounded-lg overflow-hidden border border-gold/25 bg-[hsl(258_16%_6%)]">
-            <img
-              src={exerciseImgBranded(ex.images[0], 96)}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover"
-            />
-          </div>
         ) : (
           <ExerciseTile group={group} size={40} />
         )}
@@ -161,11 +156,19 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
         <div className="pl-0 pb-2 space-y-2.5">
           {/* The static Start/Finish pair here; the rep only plays in the
               detail and the runner, so a list never carries a loop per row. */}
+          {/* No photo fallback. A movement with no drawing shows the glyph in
+              the same frame and leans on its written steps below — the
+              generator no longer prescribes undrawn lifts, so this is only
+              reached by programs built before that, and even there a session
+              should look like one product. */}
           {illustrated ? (
             <IllustrationHero ex={illustrated} />
-          ) : ex?.images?.[0] ? (
-            <BrandedExercisePhoto src={ex.images[ex.images.length - 1]} alt={block.name} width={640} imgClassName="max-h-56" />
-          ) : null}
+          ) : (
+            <div className="rounded-2xl border border-gold/20 bg-[hsl(258_16%_6%)] py-7 flex flex-col items-center gap-2">
+              <ExerciseTile group={group} size={56} />
+              <p className="eyebrow text-muted-foreground/60">Follow the steps below</p>
+            </div>
+          )}
 
           {ex && (ex.primary.length > 0 || ex.equipment) && (
             <p className="text-[11px] font-bold text-muted-foreground">

@@ -4,6 +4,7 @@ import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
+import { readLocal, writeLocal } from "@/lib/storage";
 import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
@@ -140,10 +141,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Onboarding gate — the DB flag (profiles.onboarded_at) is the authority so
   // a reinstall / new device / signOut on a shared device never replays the
   // flow; localStorage stays as a sync fast-path cache for the same device.
-  const onboarded = !!profile?.onboarded_at || !!localStorage.getItem("w_onboarding_done");
-  if (profile?.onboarded_at && !localStorage.getItem("w_onboarding_done")) {
-    try { localStorage.setItem("w_onboarding_done", "true"); } catch { /* noop */ }
-  }
+  const onboardedLocally = readLocal("w_onboarding_done") === "true";
+  const onboarded = !!profile?.onboarded_at || onboardedLocally;
+  if (profile?.onboarded_at && !onboardedLocally) writeLocal("w_onboarding_done", "true");
   if (!onboarded && path !== "/onboarding" && path !== "/choose-username") {
     return <Navigate to="/onboarding" replace />;
   }

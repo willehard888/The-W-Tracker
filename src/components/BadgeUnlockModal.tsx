@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
 interface BadgeUnlockModalProps {
   badge: { name: string; icon: string; rarity: string; description?: string } | null;
@@ -47,6 +48,7 @@ const rarityConfig: Record<string, {
 
 const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
   const [phase, setPhase] = useState<"enter" | "burst" | "reveal" | "details">("enter");
+  useScrollLock(true);
 
   useEffect(() => {
     if (!badge) return;
@@ -70,7 +72,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center" onClick={onClose}>
+    <div role="dialog" aria-modal="true" aria-label="Badge unlocked" className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center" onClick={onClose}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/95 backdrop-blur-xl transition-opacity duration-700"

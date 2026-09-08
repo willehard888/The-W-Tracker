@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import StoryShareModal from "@/components/StoryShareModal";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { readLocal, writeLocal } from "@/lib/storage";
+import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
 // Stores the highest ladder RUNG (tier×division) the user has seen, so each new
 // high-water rung celebrates exactly once — no spam if the division dips + rises.
@@ -26,11 +28,11 @@ const TierPromotionCelebration = () => {
     const division = profile.tier_division ?? 0;
     const current = ladderRankValue(profile.status_tier, division);
     const key = `${STORAGE_KEY}_${user.id}`;
-    const storedRaw = localStorage.getItem(key);
+    const storedRaw = readLocal(key);
 
     // First time we see this user — just store, don't celebrate.
     if (storedRaw === null) {
-      localStorage.setItem(key, String(current));
+      writeLocal(key, String(current));
       return;
     }
     const stored = Number(storedRaw);
@@ -40,10 +42,11 @@ const TierPromotionCelebration = () => {
       setPreviousTier(formatTier(tierFromLadder(stored), divisionFromLadder(stored)));
       setShowCelebration(true);
       hapticNotification("success");
-      localStorage.setItem(key, String(current));
+      writeLocal(key, String(current));
     }
     // On a dip we keep the max (no punish, no re-celebrate) — do nothing.
   }, [profile?.status_tier, profile?.tier_division, user?.id]);
+  useScrollLock(showCelebration);
 
   if (!profile) return null;
   const tier = profile.status_tier || 'recruit';
@@ -69,6 +72,9 @@ const TierPromotionCelebration = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tier promotion"
             className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center px-6"
             style={{ background: heroGradient, backdropFilter: "blur(20px)" }}
           >

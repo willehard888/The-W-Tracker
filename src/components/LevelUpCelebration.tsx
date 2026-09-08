@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
 interface LevelUpCelebrationProps {
   newLevel: number;
@@ -10,6 +11,7 @@ interface LevelUpCelebrationProps {
 
 const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) => {
   const [phase, setPhase] = useState<"enter" | "show" | "exit">("enter");
+  useScrollLock(true);
 
   useEffect(() => {
     // The biggest dopamine beat in the app deserves a felt success buzz.
@@ -22,8 +24,8 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
 
   return (
     <Portal>
-    <div className={cn(
-      "fixed inset-0 z-[var(--z-modal)] flex items-center justify-center transition-all duration-500",
+    <div role="dialog" aria-modal="true" aria-label="Level up" className={cn(
+      "fixed inset-0 z-[var(--z-modal)] flex items-center justify-center transition-[opacity,transform] duration-500",
       phase === "enter" ? "opacity-0" : phase === "exit" ? "opacity-0 scale-110" : "opacity-100"
     )}>
       {/* Backdrop */}

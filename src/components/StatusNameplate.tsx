@@ -52,13 +52,14 @@ const StatusNameplate = ({
   const isPerformer = tier === "performer";
   const isOperator = tier === "operator";
 
-  // Per-tier label gradient/color
+  // Per-tier label colour. Solid, never gradient text — clipped-background
+  // text renders soft on iOS and the label is the biggest type on the screen.
   const labelClass = isLegend
-    ? "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(280_70%_75%)] via-gold to-[hsl(350_80%_70%)] drop-shadow-[0_2px_22px_hsl(280_70%_60%/0.55)]"
+    ? "text-[hsl(280_70%_75%)] drop-shadow-[0_2px_22px_hsl(280_70%_60%/0.55)]"
     : isApex
-    ? "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(18_95%_62%)] via-gold to-[hsl(18_95%_62%)] drop-shadow-[0_2px_22px_hsl(var(--ember)/0.55)]"
+    ? "text-[hsl(var(--ember))] drop-shadow-[0_2px_22px_hsl(var(--ember)/0.55)]"
     : isElite
-    ? "text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark drop-shadow-[0_2px_18px_hsl(var(--gold)/0.5)]"
+    ? "text-gold drop-shadow-[0_2px_18px_hsl(var(--gold)/0.5)]"
     : isHigh
     ? "text-[hsl(var(--purple))] drop-shadow-[0_2px_14px_hsl(var(--purple)/0.5)]"
     : isPerformer
@@ -80,7 +81,7 @@ const StatusNameplate = ({
     ? "border-[hsl(210_90%_56%)]/35 bg-[radial-gradient(120%_140%_at_50%_0%,hsl(210_90%_56%/0.12),transparent_70%)]"
     : isOperator
     ? "border-[hsl(var(--teal))]/35 bg-[radial-gradient(120%_140%_at_50%_0%,hsl(var(--teal)/0.12),transparent_70%)]"
-    : "border-border/60 bg-secondary/30";
+    : "border-border/60 bg-[radial-gradient(120%_140%_at_50%_0%,hsl(var(--secondary)/0.55),transparent_70%)]";
 
   // Glow shadow per tier
   const glowClass = isLegend
@@ -136,7 +137,7 @@ const StatusNameplate = ({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
       className={cn(
-        "relative w-full max-w-[420px] mx-auto rounded-2xl border backdrop-blur-sm overflow-hidden",
+        "relative w-full max-w-[420px] mx-auto rounded-2xl border bg-background/70 overflow-hidden",
         padding,
         wrapperClass,
         glowClass,
@@ -278,17 +279,16 @@ const StatusNameplate = ({
         </div>
       )}
 
-      {/* Animated ember dots — apex (legacy decorative) */}
+      {/* Ember dots — apex. Static: the rising embers above are the motion. */}
       {isApex && (
         <>
           <span
             aria-hidden
-            className="absolute top-3 right-5 h-1 w-1 rounded-full bg-[hsl(var(--ember))] animate-pulse"
+            className="absolute top-3 right-5 h-1 w-1 rounded-full bg-[hsl(var(--ember))]"
           />
           <span
             aria-hidden
-            className="absolute bottom-3 left-6 h-0.5 w-0.5 rounded-full bg-gold animate-pulse"
-            style={{ animationDelay: "0.6s" }}
+            className="absolute bottom-3 left-6 h-0.5 w-0.5 rounded-full bg-gold"
           />
         </>
       )}
@@ -296,14 +296,10 @@ const StatusNameplate = ({
       {/* Sparkle accents — legend */}
       {isLegend && (
         <>
-          <Sparkles
-            size={11}
-            className="absolute top-2.5 right-3 text-gold/80 animate-pulse"
-          />
+          <Sparkles size={11} className="absolute top-2.5 right-3 text-gold/80" />
           <Sparkles
             size={10}
-            className="absolute bottom-3 left-3 text-[hsl(280_70%_75%)]/70 animate-pulse"
-            style={{ animationDelay: "0.9s" }}
+            className="absolute bottom-3 left-3 text-[hsl(280_70%_75%)]/70"
           />
         </>
       )}
@@ -324,8 +320,8 @@ const StatusNameplate = ({
       )}
 
       <div className="relative flex flex-col items-center text-center gap-1.5">
-        {/* Tiny eyebrow */}
-        <p className="eyebrow-sm text-muted-foreground/70">
+        {/* Tiny label */}
+        <p className="text-[11px] font-bold text-muted-foreground/70">
           Status
         </p>
 
@@ -365,7 +361,7 @@ const StatusNameplate = ({
         <div className="flex items-center gap-2 mt-1">
           <span
             className={cn(
-              "eyebrow px-2.5 py-1 rounded-full border",
+              "text-[11px] font-bold px-2.5 py-1 rounded-full border",
               isLegend && "border-[hsl(280_70%_60%)]/40 text-[hsl(280_70%_80%)] bg-[hsl(280_70%_55%)]/10",
               isApex && "border-[hsl(var(--ember))]/45 text-[hsl(18_95%_70%)] bg-[hsl(var(--ember))]/10",
               isElite && "border-gold/45 text-gold bg-gold/10",
@@ -378,7 +374,7 @@ const StatusNameplate = ({
             {percentLabel}
           </span>
           {showRank && (
-            <span className="eyebrow text-muted-foreground/80">
+            <span className="text-[11px] font-bold text-muted-foreground/80">
               #{fmtInt(rank!)}
               <span className="text-muted-foreground/50 font-bold">
                 {" / "}

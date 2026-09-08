@@ -275,18 +275,20 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
 
             {/* Row 2: tier label + next-tier CTA */}
             <div className="flex items-center justify-between gap-2 mt-1.5">
-              {/* Label may truncate (never overflow under the chip); the
-                  percentile is the first thing to give way. */}
+              {/* The tier name is identity — it never truncates. The
+                  percentile is the first thing to give way, and on a 402pt
+                  phone with the next-tier chip up it gives way immediately
+                  (it was rendering "RECRUIT · Top 50%" as "REC… · To…"). */}
               <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <span
                   className={cn(
-                    "truncate min-w-0 text-[11px] uppercase tracking-[0.22em] font-black leading-none",
+                    "shrink-0 whitespace-nowrap text-[11px] uppercase tracking-[0.22em] font-black leading-none",
                     config.textClass,
                   )}
                 >
                   {formatTier(tier, division)}
                 </span>
-                <span className="hidden min-[400px]:inline truncate shrink-[2] text-[11px] text-muted-foreground/70 leading-none">
+                <span className="hidden min-[430px]:inline truncate shrink text-[11px] text-muted-foreground/70 leading-none">
                   · {topShareLabel(tier, rankData)}
                 </span>
               </div>

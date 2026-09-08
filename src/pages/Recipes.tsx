@@ -149,9 +149,9 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         <section className="home-rise home-rise-5 mt-7">
           <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">Keeps</h2>
           <div className="mt-1 divide-y divide-border/35">
-            <FactRow k="Fridge" v={`${recipe.mealPrep.fridgeDays} days`} />
+            <FactRow k="Fridge" v={`${recipe.mealPrep.fridgeDays} ${recipe.mealPrep.fridgeDays === 1 ? "day" : "days"}`} />
             {recipe.mealPrep.freezerWeeks != null && (
-              <FactRow k="Freezer" v={`${recipe.mealPrep.freezerWeeks} weeks`} />
+              <FactRow k="Freezer" v={`${recipe.mealPrep.freezerWeeks} ${recipe.mealPrep.freezerWeeks === 1 ? "week" : "weeks"}`} />
             )}
             <FactRow k="Reheat" v={recipe.mealPrep.reheat} />
             {recipe.mealPrep.tips.length > 0 && <FactRow k="Tips" v={recipe.mealPrep.tips.join(" ")} />}

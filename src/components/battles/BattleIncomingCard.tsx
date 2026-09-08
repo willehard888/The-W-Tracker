@@ -1,6 +1,4 @@
-import { fmtInt } from "@/lib/format";
-import { CheckCircle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ActionRow } from "@/components/ActionRow";
 import type { BattleTypeInfo } from "@/components/battles/types";
 
 interface Props {
@@ -12,34 +10,20 @@ interface Props {
   responding?: boolean;
 }
 
-/** An incoming challenge awaiting the user's accept/decline. */
+/** An incoming challenge awaiting the user's accept/decline — the app's one response row. */
 const BattleIncomingCard = ({ battle, opp, typeInfo, onRespond, responding = false }: Props) => (
-  <div className="rounded-xl border border-gold/20 p-4 glass-3d depth-realistic">
-    <div className="flex items-center gap-3 mb-3">
-      <div className="h-10 w-10 rounded-full gradient-gold flex items-center justify-center text-sm font-black text-primary-foreground">
+  <ActionRow
+    leading={
+      <span className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-black text-muted-foreground">
         {opp.username?.charAt(0)?.toUpperCase()}
-      </div>
-      <div className="flex-1">
-        <p className="font-bold text-sm">@{opp.username}</p>
-        <p className="text-xs text-muted-foreground flex items-center gap-1">
-          <span>{typeInfo.emoji}</span>
-          {battle.duration_days}d {typeInfo.label} battle
-        </p>
-      </div>
-      <div className="text-right">
-        <p className="text-xs text-muted-foreground">{fmtInt(opp.xp ?? 0)} XP</p>
-        <p className="text-xs text-[hsl(var(--streak-orange))]">{opp.streak}d streak</p>
-      </div>
-    </div>
-    <div className="flex gap-2">
-      <Button variant="ember" size="sm" className="flex-1" disabled={responding} loading={responding} onClick={() => onRespond(battle.id, true)}>
-        <CheckCircle size={14} /> Accept
-      </Button>
-      <Button variant="secondary" size="sm" className="flex-1" disabled={responding} onClick={() => onRespond(battle.id, false)}>
-        <XCircle size={14} /> Decline
-      </Button>
-    </div>
-  </div>
+      </span>
+    }
+    title={`@${opp.username}`}
+    subtitle={`${battle.duration_days}-day ${typeInfo.label} · ${opp.streak ?? 0}-day streak`}
+    busy={responding}
+    onAccept={() => onRespond(battle.id, true)}
+    onDecline={() => onRespond(battle.id, false)}
+  />
 );
 
 export default BattleIncomingCard;

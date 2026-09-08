@@ -1,9 +1,11 @@
-import { Clock, Camera, Image, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import { Clock, Camera, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSignedMediaUrl } from "@/lib/signed-url";
+import { fmtInt, fmtUnit } from "@/lib/format";
 import type { BattleTypeInfo } from "@/components/battles/types";
 
 interface Props {
@@ -24,7 +26,10 @@ interface Props {
   onAdminDelete: (battleId: string) => void;
 }
 
-/** A live battle: VS scoreboard, time left, and the required proof photos. */
+/**
+ * The hero: the one live battle that matters most. Two scores, one bar, the
+ * time left, and the proof photo that keeps the battle valid.
+ */
 const BattleActiveCard = ({
   battle, opp, typeInfo, profileUsername, myScore, oppScore, amWinning, daysLeft,
   myProof, oppProof, isAdmin, isUploading, onRequestUpload, onAdminCancel, onAdminDelete,
@@ -32,28 +37,33 @@ const BattleActiveCard = ({
   // proof-photos is a private bucket — render via signed URLs.
   const myProofSrc = useSignedMediaUrl(myProof);
   const oppProofSrc = useSignedMediaUrl(oppProof);
-  const TypeIcon = typeInfo.icon;
+  // 0–0 splits the bar, not "the other side has it all".
+  const total = myScore + oppScore;
+  const myPct = total === 0 ? 50 : (myScore / total) * 100;
+  const gap = Math.abs(myScore - oppScore);
+  const score = (n: number, felt: boolean) => (
+    <p className={cn(
+      "font-display font-black text-[22px] tabular-nums leading-none shrink-0",
+      felt ? "text-gold glow-gold-text" : "text-foreground/70",
+    )}>
+      {fmtInt(n)}
+    </p>
+  );
+
   return (
-    <div className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 pb-2">
-        <div className="flex items-center gap-2">
-          <TypeIcon size={14} className={typeInfo.color} />
-          <span className="eyebrow" style={{ color: "hsl(var(--gold))" }}>
-            {typeInfo.emoji} {typeInfo.label} Battle
+    <div className="surface-card p-5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="eyebrow">{typeInfo.label} · {battle.duration_days} days</p>
+        <div className="flex items-center gap-1">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--streak-orange))]">
+            <Clock size={11} aria-hidden /> {daysLeft === 0 ? "Final day" : `${daysLeft}d left`}
           </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(var(--streak-orange))]/10 border border-[hsl(var(--streak-orange))]/20">
-            <Clock size={12} className="text-[hsl(var(--streak-orange))]" />
-            <span className="text-[11px] font-bold text-[hsl(var(--streak-orange))]">{daysLeft}d left</span>
-          </div>
           {isAdmin && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button aria-label="Battle options" className="relative p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/60 hover:text-muted-foreground before:absolute before:-inset-2.5 before:content-['']">
+                <Button variant="ghost" size="icon-sm" aria-label="Battle options" className="text-muted-foreground/60">
                   <MoreHorizontal size={14} />
-                </button>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[160px]">
                 <DropdownMenuItem onClick={() => onAdminCancel(battle.id)} className="text-[hsl(var(--streak-orange))]">
@@ -70,103 +80,73 @@ const BattleActiveCard = ({
         </div>
       </div>
 
-      {/* VS Display */}
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className="flex-1 text-center">
-          <div className="h-12 w-12 rounded-full gradient-gold flex items-center justify-center text-lg font-black text-primary-foreground mx-auto mb-1">
-            {profileUsername?.charAt(0)?.toUpperCase()}
-          </div>
-          <p className="text-xs font-bold truncate text-gold">@{profileUsername} <span className="text-[11px] text-gold/70 font-medium">(you)</span></p>
-          <p className={cn("text-lg font-black font-display tabular-nums", amWinning ? "text-gold" : "text-muted-foreground")}>
-            {myScore}
-          </p>
-          <p className="text-[11px] text-muted-foreground">{typeInfo.label}</p>
-        </div>
-
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-xl font-black text-muted-foreground/40">VS</span>
-        </div>
-
-        <div className="flex-1 text-center">
-          <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center text-lg font-black text-muted-foreground mx-auto mb-1">
-            {opp.username?.charAt(0)?.toUpperCase()}
-          </div>
-          <p className="text-xs font-bold truncate">@{opp.username}</p>
-          <p className={cn("text-lg font-black font-display tabular-nums", !amWinning ? "text-gold" : "text-muted-foreground")}>
-            {oppScore}
-          </p>
-          <p className="text-[11px] text-muted-foreground">{typeInfo.label}</p>
-        </div>
-      </div>
-
-      <div className={cn(
-        "text-center text-xs font-bold py-1.5 mx-4 rounded-lg",
-        amWinning ? "bg-gold/10 text-gold" : "bg-destructive/10 text-destructive",
-      )}>
-        {amWinning ? "You're winning 🔥" : "You're behind — grind harder"}
-      </div>
-
-      {/* Proof Section — REQUIRED */}
-      <div className="p-4 pt-3 border-t border-border mt-3">
-        <p className="eyebrow text-muted-foreground mb-2 flex items-center gap-1">
-          <Camera size={12} /> Proof Photos <span className="text-destructive ml-1">(required)</span>
+      {/* Scoreboard — the leading score is the screen's one felt number. */}
+      <div className="mt-4 flex items-end justify-between gap-3">
+        <p className="text-[13px] font-bold truncate">
+          @{profileUsername} <span className="text-muted-foreground font-medium">you</span>
         </p>
+        {score(myScore, amWinning)}
+      </div>
+      <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden flex">
+        <div className="h-full bg-gold" style={{ width: `${myPct}%` }} />
+        <div className="h-full bg-foreground/25" style={{ width: `${100 - myPct}%` }} />
+      </div>
+      <div className="mt-2 flex items-end justify-between gap-3">
+        <p className="text-[13px] font-bold truncate">@{opp.username}</p>
+        {score(oppScore, !amWinning)}
+      </div>
+      <p className={cn("mt-3 text-[12px] font-bold", amWinning ? "text-gold" : "text-[hsl(var(--ember))]")}>
+        {gap === 0 ? "Dead even." : amWinning ? `Ahead by ${fmtUnit(gap, typeInfo.unit)}.` : `Behind by ${fmtUnit(gap, typeInfo.unit)}.`}
+      </p>
 
-        {!myProof && (
-          <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-2.5 mb-3 flex items-center gap-2">
-            <Camera size={14} className="text-destructive shrink-0" />
-            <p className="text-[12px] text-destructive font-semibold">
-              Upload your proof to validate this battle. No proof = automatic forfeit.
-            </p>
+      {/* Proof — required; no photo by the end is a forfeit. */}
+      <div className="mt-4 pt-4 border-t border-border/35 flex items-center gap-3">
+        {(myProofSrc || oppProofSrc) && (
+          <div className="flex -space-x-2 shrink-0">
+            {myProofSrc && <img loading="lazy" decoding="async" src={myProofSrc} alt="Your proof" className="h-10 w-10 rounded-lg object-cover ring-2 ring-card" />}
+            {oppProofSrc && <img loading="lazy" decoding="async" src={oppProofSrc} alt={`@${opp.username}'s proof`} className="h-10 w-10 rounded-lg object-cover ring-2 ring-card" />}
           </div>
         )}
-
-        <div className="flex gap-2">
-          {/* My proof */}
-          <div className="flex-1">
-            {myProof ? (
-              <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                {myProofSrc && <img loading="lazy" decoding="async" src={myProofSrc} alt="My proof" className="w-full h-full object-cover" />}
-                <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                  <span className="text-[10px] font-bold text-white">You ✅</span>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => onRequestUpload(battle.id)}
-                disabled={isUploading}
-                className="press w-full aspect-square rounded-lg border-2 border-dashed border-destructive/40 bg-destructive/5 flex flex-col items-center justify-center gap-1 transition-all hover:bg-destructive/10 animate-pulse"
-              >
-                {isUploading ? (
-                  <span className="text-[11px] text-muted-foreground animate-pulse">Uploading…</span>
-                ) : (
-                  <>
-                    <Camera size={20} className="text-destructive" />
-                    <span className="text-[10px] font-bold text-destructive">UPLOAD NOW</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Opponent proof */}
-          <div className="flex-1">
-            {oppProof ? (
-              <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                {oppProofSrc && <img loading="lazy" decoding="async" src={oppProofSrc} alt="Opponent proof" className="w-full h-full object-cover" />}
-                <div className="absolute bottom-0 inset-x-0 bg-black/60 py-1 text-center">
-                  <span className="text-[10px] font-bold text-white">@{opp.username} ✅</span>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full aspect-square rounded-lg border border-border bg-secondary/50 flex flex-col items-center justify-center gap-1">
-                <Image size={16} className="text-muted-foreground/40" />
-                <span className="text-[10px] text-muted-foreground">No proof yet</span>
-              </div>
-            )}
-          </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-bold leading-tight">
+            {!myProof ? "Your proof is missing." : !oppProof ? "Your proof is in." : "Both proofs are in."}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {!myProof ? "No photo by the end is a forfeit." : !oppProof ? `Waiting on @${opp.username}.` : "The score decides."}
+          </p>
         </div>
+        {!myProof && (
+          <Button variant="ember" size="sm" className="min-h-11 shrink-0" loading={isUploading} onClick={() => onRequestUpload(battle.id)}>
+            <Camera size={14} aria-hidden /> Add proof
+          </Button>
+        )}
       </div>
+    </div>
+  );
+};
+
+/** A second live battle: a hairline row with the score and, if needed, the proof button. */
+export const BattleActiveRow = ({
+  battle, opp, typeInfo, myScore, oppScore, daysLeft, myProof, isUploading, onRequestUpload,
+}: Pick<Props, "battle" | "opp" | "typeInfo" | "myScore" | "oppScore" | "daysLeft" | "myProof" | "isUploading" | "onRequestUpload">) => {
+  const TypeIcon = typeInfo.icon;
+  return (
+    <div className="flex items-center gap-3 py-3 min-h-11">
+      <TypeIcon size={15} className="text-muted-foreground shrink-0" aria-hidden />
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-semibold leading-tight truncate">@{opp.username}</p>
+        <p className="text-[12px] text-muted-foreground mt-0.5">{typeInfo.label} · {daysLeft === 0 ? "final day" : `${daysLeft}d left`}</p>
+      </div>
+      <p className="text-[13px] tabular-nums shrink-0">
+        <span className={cn("font-black", myScore < oppScore && "text-muted-foreground")}>{fmtInt(myScore)}</span>
+        <span className="text-muted-foreground/60">–</span>
+        <span className={cn("font-black", myScore > oppScore && "text-muted-foreground")}>{fmtInt(oppScore)}</span>
+      </p>
+      {!myProof && (
+        <Button variant="ember" size="sm" className="min-h-11 shrink-0" loading={isUploading} aria-label="Add proof photo" onClick={() => onRequestUpload(battle.id)}>
+          <Camera size={14} aria-hidden />
+        </Button>
+      )}
     </div>
   );
 };

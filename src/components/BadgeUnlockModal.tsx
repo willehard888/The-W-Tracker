@@ -152,7 +152,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         {/* Badge Icon */}
         <div
           className={cn(
-            "transition-all ease-out",
+            "transition-[transform,opacity] ease-out",
             phase === "enter" && "scale-0 opacity-0 duration-300",
             phase === "burst" && "scale-[2] opacity-80 duration-500",
             phase === "reveal" && "scale-110 opacity-100 duration-600",
@@ -161,7 +161,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         >
           <div
             className={cn(
-              "relative h-32 w-32 rounded-full border-2 flex items-center justify-center text-6xl transition-all duration-700",
+              "relative h-32 w-32 rounded-full border-2 flex items-center justify-center text-6xl transition-[border-color,box-shadow] duration-700",
               style.ring,
               style.glow,
               isLegendary && "badge-shine"
@@ -190,7 +190,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         {/* Title */}
         <div
           className={cn(
-            "text-center transition-all duration-600",
+            "text-center transition-[transform,opacity] duration-600",
             phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           )}
         >
@@ -218,7 +218,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         {/* Tap to dismiss */}
         <p
           className={cn(
-            "text-xs text-muted-foreground transition-all duration-500 mt-2",
+            "text-xs text-muted-foreground transition-opacity duration-500 mt-2",
             phase === "details" ? "opacity-50" : "opacity-0"
           )}
         >

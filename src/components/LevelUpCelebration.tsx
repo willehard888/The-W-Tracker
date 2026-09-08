@@ -66,7 +66,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
 
       {/* Main content */}
       <div className={cn(
-        "relative flex flex-col items-center transition-all duration-700",
+        "relative flex flex-col items-center transition-transform duration-700",
         phase === "show" ? "scale-100 translate-y-0" : "scale-75 translate-y-4"
       )}>
         {/* Level number */}

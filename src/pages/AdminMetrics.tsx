@@ -160,7 +160,7 @@ const FunnelBars = ({ steps, byStep }: { steps: ReadonlyArray<readonly [string, 
             </div>
             <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-gold/70 to-gold transition-all duration-700"
+                className="h-full rounded-full bg-gradient-to-r from-gold/70 to-gold transition-[width] duration-700"
                 style={{ width: `${widthPct}%` }}
               />
             </div>
@@ -410,7 +410,7 @@ export default function AdminMetrics() {
                         </div>
                         <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-gold/70 to-gold transition-all duration-700"
+                            className="h-full rounded-full bg-gradient-to-r from-gold/70 to-gold transition-[width] duration-700"
                             style={{ width: `${(num(n) / max) * 100}%` }}
                           />
                         </div>
@@ -438,7 +438,7 @@ export default function AdminMetrics() {
                         </div>
                         <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--ember))]/70 to-[hsl(var(--ember))] transition-all duration-700"
+                            className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--ember))]/70 to-[hsl(var(--ember))] transition-[width] duration-700"
                             style={{ width: `${(num(n) / max) * 100}%` }}
                           />
                         </div>

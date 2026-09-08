@@ -53,7 +53,7 @@ export default function ModerationGate({
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.98 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
+            className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-3)]"
           >
             {thumbnailUrl && (
               <div className="mb-4 aspect-square w-full overflow-hidden rounded-xl border border-border/50">

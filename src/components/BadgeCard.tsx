@@ -103,7 +103,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
       <div
         ref={ref}
         className={cn(
-          "group relative flex flex-col items-center gap-2 rounded-2xl border overflow-hidden transition-all duration-500",
+          "group relative flex flex-col items-center gap-2 rounded-2xl border overflow-hidden transition-transform duration-500",
           compact ? "p-3" : "p-4",
           style.border,
           style.surface,

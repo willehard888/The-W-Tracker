@@ -218,7 +218,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           {/* Level */}
           <div
             className={cn(
-              "rounded-xl border-2 p-3 text-left transition-all relative overflow-hidden",
+              "rounded-xl border-2 p-3 text-left transition-[border-color,background-color,box-shadow] relative overflow-hidden",
               leveledUp
                 ? "border-gold/60 bg-gold/12 shadow-[0_0_18px_hsl(var(--gold)/0.4)]"
                 : "border-border bg-card",
@@ -262,7 +262,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           {/* Streak */}
           <div
             className={cn(
-              "rounded-xl border-2 p-3 text-left transition-all relative overflow-hidden",
+              "rounded-xl border-2 p-3 text-left transition-[border-color,background-color,box-shadow] relative overflow-hidden",
               summary.streakBroken
                 ? "border-destructive/50 bg-destructive/12"
                 : summary.newStreak >= 30

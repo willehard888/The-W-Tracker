@@ -333,7 +333,7 @@ const NutritionRecipeEditor = () => {
                     hapticSelection();
                     setLogSlot(s.key);
                   }}
-                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-all ", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-[color,box-shadow] ", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>

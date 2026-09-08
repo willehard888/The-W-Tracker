@@ -261,7 +261,7 @@ const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => voi
   ({ active, onClick, children }, ref) => (
     <button ref={ref} type="button" onClick={onClick}
       className={cn(
-        "rounded-full border transition-all px-3 py-1.5 text-xs",
+        "rounded-full border transition-colors px-3 py-1.5 text-xs",
         active
           ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
           : "border-border/40 bg-card/40 text-muted-foreground"

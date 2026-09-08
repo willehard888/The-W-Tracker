@@ -507,7 +507,7 @@ const NutritionPhotoReview = () => {
                     hapticSelection();
                     setSlot(s.key);
                   }}
-                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-all ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>
@@ -550,7 +550,7 @@ const NutritionPhotoReview = () => {
                 type="button"
                 aria-pressed={plateCm === cm}
                 onClick={() => void choosePlate(cm)}
-                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-all ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-[color,box-shadow] ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {PLATE_LABEL[cm]} {cm}
               </button>

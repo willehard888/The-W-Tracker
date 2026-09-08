@@ -124,7 +124,7 @@ const PerformanceOSDashboard = () => {
             <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-[11px] text-muted-foreground/60">/{c.max}</span></p>
             <div className="h-1 rounded-full bg-card mt-1 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] transition-all"
+                className="h-full bg-gradient-to-r from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] transition-[width]"
                 style={{ width: `${Math.min(100, (c.val / c.max) * 100)}%` }}
               />
             </div>

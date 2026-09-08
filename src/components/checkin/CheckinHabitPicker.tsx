@@ -109,7 +109,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                             aria-pressed={on}
                             disabled={h.core}
                             className={cn(
-                              "press flex items-center gap-3 w-full rounded-2xl border p-3.5 text-left transition-all ",
+                              "press flex items-center gap-3 w-full rounded-2xl border p-3.5 text-left transition-colors ",
                               on ? "border-gold/40 bg-gold/[0.07]" : "border-border bg-card hover:bg-secondary/50",
                             )}
                           >
@@ -127,7 +127,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                               </span>
                             ) : (
                               <div className={cn(
-                                "h-6 w-6 rounded-full border-2 shrink-0 flex items-center justify-center transition-all",
+                                "h-6 w-6 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors",
                                 on ? "border-gold bg-gold" : "border-muted-foreground/30",
                               )}>
                                 {on && <Check aria-hidden size={13} className="text-primary-foreground" strokeWidth={3} />}

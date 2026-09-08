@@ -191,7 +191,7 @@ const NutritionTargets = () => {
                   hapticSelection();
                   setActivityChoice(a.key);
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-[11px] font-black transition-all ", activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[11px] font-black transition-[color,box-shadow] ", activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {a.label}
               </button>

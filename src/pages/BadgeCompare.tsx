@@ -1,8 +1,8 @@
 import { Input } from "@/components/ui/input";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Shield, Check, Minus } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +29,11 @@ const Has = ({ yes, mine }: { yes: boolean; mine?: boolean }) => (
 const BadgeCompare = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
+  // A profile's Compare button arrives with ?user=<username>; the page used
+  // to drop it and open on "Pick someone".
+  const [searchParams] = useSearchParams();
+  const preset = searchParams.get("user") ?? "";
+  const [searchQuery, setSearchQuery] = useState(preset);
   const [selectedUser, setSelectedUser] = useState<{ user_id: string; username: string } | null>(null);
 
   const badgesQ = useQuery({
@@ -67,6 +71,11 @@ const BadgeCompare = () => {
     },
     enabled: searchQuery.length >= 2,
   });
+  useEffect(() => {
+    if (selectedUser || !preset || !users) return;
+    const hit = users.find((u) => u.username.toLowerCase() === preset.toLowerCase());
+    if (hit) setSelectedUser(hit);
+  }, [users, preset, selectedUser]);
 
   const theirsQ = useQuery({
     queryKey: ["their-badges", selectedUser?.user_id],

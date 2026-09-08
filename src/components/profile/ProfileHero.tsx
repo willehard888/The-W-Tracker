@@ -54,10 +54,11 @@ const ProfileHero = ({
       "home-rise home-rise-1 relative mb-6 overflow-hidden rounded-3xl border p-6 pt-8 pb-7",
       surface.bgClass,
     )}>
-      {/* Top vignette glow */}
+      {/* Top vignette glow — a painted radial, not a blurred layer: blur-3xl
+          here cost a compositing layer inside the app's one scroller. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[160%] h-64 blur-3xl opacity-40"
+        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[160%] h-64 opacity-50"
         style={{ background: surface.glowStyle }}
       />
       {/* Top accent line */}
@@ -68,7 +69,7 @@ const ProfileHero = ({
         type="button"
         onClick={onShare}
         aria-label="Share profile"
-        className="press absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/50 border border-border/60 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 transition before:absolute before:-inset-1 before:content-['']"
+        className="press absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-background/80 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/40 transition before:absolute before:-inset-2 before:content-['']"
       >
         <Share2 aria-hidden size={15} />
       </button>
@@ -91,13 +92,12 @@ const ProfileHero = ({
               className="hidden"
               onChange={onAvatarUpload}
             />
-            <div className="absolute inset-0 -m-3 rounded-full bg-gold/15 blur-2xl" aria-hidden />
             <StatusAvatar
               src={profile.avatar_url}
               name={profile.username}
               tier={tier}
               size="xl"
-              className="relative"
+              className="relative rounded-full shadow-[0_0_0_3px_hsl(var(--gold)/0.18)]"
             />
             <button
               onClick={() => avatarInputRef.current?.click()}

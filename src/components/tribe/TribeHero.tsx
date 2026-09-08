@@ -277,7 +277,7 @@ const TribeHero = ({
         <div className="relative flex items-end justify-center mt-2 mb-2 w-[var(--fs)] h-[calc(var(--fs)*1.2)]">
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full blur-[1px] bottom-[calc(var(--fs)*0.02)] w-[calc(var(--fs)*0.92)] h-[calc(var(--fs)*0.12)] bg-[radial-gradient(60%_120%_at_50%_0%,var(--pl-hi),var(--pl-lo)_55%,transparent_78%)] shadow-[0_0_calc(var(--fs)*0.28)_calc(var(--fs)*0.06)_var(--pl-lo)]"
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full bottom-[calc(var(--fs)*0.02)] w-[calc(var(--fs)*0.92)] h-[calc(var(--fs)*0.12)] bg-[radial-gradient(60%_120%_at_50%_0%,var(--pl-hi),var(--pl-lo)_55%,transparent_78%)] shadow-[0_0_calc(var(--fs)*0.28)_calc(var(--fs)*0.06)_var(--pl-lo)]"
           />
           {isCold ? (
             // Cold ≠ dead: the same premium engine in kindling mode — a small

@@ -463,7 +463,7 @@ const NutritionPhotoReview = () => {
       <div className="space-y-6">
         <div className="home-rise">
           {photo(
-            <span className="eyebrow absolute left-3 bottom-3 inline-flex items-center rounded-full border border-border/60 bg-background/80 backdrop-blur-sm px-2.5 py-1 tabular-nums">
+            <span className="eyebrow absolute left-3 bottom-3 inline-flex items-center rounded-full border border-border/60 bg-background/90 px-2.5 py-1 tabular-nums">
               Estimated · {pct} % confident
             </span>,
           )}

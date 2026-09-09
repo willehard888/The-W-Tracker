@@ -7,6 +7,8 @@
 const KNOWN: Array<{ pattern: RegExp; copy: string }> = [
   { pattern: /up to 25 clubs|up to \d+ clubs/i, copy: "You can be in up to 25 tribes — leave one first." },
   { pattern: /already.*member/i, copy: "You're already in this tribe." },
+  // Must precede the generic duplicate-key line — reporting twice is not a naming clash.
+  { pattern: /tribe_post_reports_post_reporter_key/, copy: "You already reported this post — the owner is on it." },
   { pattern: /duplicate key/i, copy: "That already exists — try a different name." },
   { pattern: /row-level security|permission denied/i, copy: "You don't have access to do that." },
   { pattern: /rate limit/i, copy: "Slow down a moment and try again." },

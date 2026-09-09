@@ -379,18 +379,20 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   const reportPost = useMutation({
     mutationFn: async () => {
       if (!user) return;
-      const { error: reportErr } = await supabase.from("tribe_post_reports").insert({
+      // The report row is the whole write — a trigger derives tribe_posts.reported
+      // from it. This card used to set that flag itself, which RLS silently
+      // dropped (author-only UPDATE), so every report toasted success and did
+      // nothing.
+      const { error } = await supabase.from("tribe_post_reports").insert({
         post_id: post.id, reporter_id: user.id, reason: "Reported by user",
       });
-      if (reportErr) throw reportErr;
-      const { error: flagErr } = await supabase.from("tribe_posts").update({ reported: true }).eq("id", post.id);
-      if (flagErr) throw flagErr;
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Post reported", { description: "Tribe owner will review it." });
       onChanged();
     },
-    onError: () => toast.error("Failed to report"),
+    onError: (e: any) => toast.error(friendlyError(e, "Failed to report")),
   });
 
   const [confirmDeletePost, setConfirmDeletePost] = useState(false);

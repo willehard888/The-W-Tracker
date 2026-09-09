@@ -8,7 +8,7 @@ import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
-import { ShieldCheck, Trash2, Check } from "lucide-react";
+import { ShieldAlert, ShieldCheck, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 
@@ -58,15 +58,25 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
   // The report whose post is pending a delete confirm. AlertDialog renders at
   // --z-confirm (140), above this sheet (120), so the real dialog can be used.
   const [confirmRemove, setConfirmRemove] = useState<ReportRow | null>(null);
+  // A failed query used to render as "No open reports" — the one message an
+  // owner must never be told when moderation is actually broken.
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
+    setLoadError(null);
 
     // Get all post ids in this tribe first (RLS allows owner to view reports for their posts)
-    const { data: tribePosts } = await supabase
+    const { data: tribePosts, error: postsErr } = await supabase
       .from("tribe_posts")
       .select("id")
       .eq("tribe_id", tribeId);
+    if (postsErr) {
+      setLoadError(friendlyError(postsErr));
+      setReports([]);
+      setLoading(false);
+      return;
+    }
     const postIds = ((tribePosts as any) ?? []).map((p: any) => p.id);
     if (!postIds.length) {
       setReports([]);
@@ -74,13 +84,19 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
       return;
     }
 
-    const { data: rawReports } = await supabase
+    const { data: rawReports, error: reportsErr } = await supabase
       .from("tribe_post_reports")
       .select("*")
       .in("post_id", postIds)
       .eq("resolved", false)
       .order("created_at", { ascending: false })
       .limit(50);
+    if (reportsErr) {
+      setLoadError(friendlyError(reportsErr));
+      setReports([]);
+      setLoading(false);
+      return;
+    }
 
     const list = ((rawReports as any) ?? []) as ReportRow[];
     if (list.length === 0) {
@@ -132,13 +148,18 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
 
   const dismissReport = async (r: ReportRow) => {
     setBusyId(r.id);
-    // Owners can't UPDATE reports (admin-only RLS) — instead we just hide it locally
-    // and clear the post.reported flag so the badge disappears on the post card.
-    if (r.post?.id) {
-      await supabase
-        .from("tribe_posts")
-        .update({ reported: false })
-        .eq("id", r.post.id);
+    // Resolving the report is the whole dismiss: a trigger clears the post's
+    // reported flag once no open report is left. This used to write that flag
+    // directly, which RLS dropped without an error, so Dismiss did nothing and
+    // the badge came back on the next load.
+    const { error } = await supabase
+      .from("tribe_post_reports")
+      .update({ resolved: true })
+      .eq("id", r.id);
+    if (error) {
+      toast.error(friendlyError(error));
+      setBusyId(null);
+      return;
     }
     setReports((prev) => prev.filter((x) => x.id !== r.id));
     setBusyId(null);
@@ -179,6 +200,8 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
             <div key={i} className="py-4"><div className="h-20 rounded-xl skeleton-block bg-secondary/30" /></div>
           ))}
         </div>
+      ) : loadError ? (
+        <EmptyState size="compact" icon={ShieldAlert} title="Couldn't load reports" description={loadError} />
       ) : reports.length === 0 ? (
         <EmptyState size="compact" icon={ShieldCheck} title="No open reports" description="Tribe vibes are clean." />
       ) : (

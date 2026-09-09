@@ -43,6 +43,7 @@ import { normalizeBarcode } from "@/lib/nutrition/barcode";
 import { itemToDisplay, targetsToMacros } from "@/lib/nutrition/diary-view";
 import { touchFood } from "@/lib/nutrition/food-cache";
 import { fmtKcal } from "@/lib/nutrition/format";
+import { beatFor, subFor } from "@/lib/nutrition/day-copy";
 import type { MealSource } from "@/lib/nutrition/offline-meals";
 import { fetchDay, lookupBarcode, recipePerServing, searchOnline } from "@/lib/nutrition/queries";
 import { roundTo, scale } from "@/lib/nutrition/scale";
@@ -81,30 +82,6 @@ const validDate = (raw: string | null): string => {
 const nowSlot = () => {
   const d = new Date();
   return defaultSlotForHour(d.getHours(), d.getMinutes());
-};
-
-/** The five things the opening line can say. */
-function beatFor(state: DayState, kcal: number, targetKcal: number | null): string {
-  switch (state) {
-    case "no_targets":
-      return "Set your targets.";
-    case "empty":
-      return "Nothing logged yet.";
-    case "complete":
-      return "Fueled.";
-    case "over":
-      return `${fmtKcal(kcal - (targetKcal ?? 0))} over today.`;
-    default:
-      return `${fmtKcal((targetKcal ?? 0) - kcal)} kcal to go.`;
-  }
-}
-
-const subFor = (state: DayState, kcal: number, targetKcal: number | null, meals: number): string => {
-  if (state === "no_targets") return kcal > 0 ? `${fmtKcal(kcal)} kcal logged. Targets turn it into a plan.` : "Targets turn the diary into a plan.";
-  if (state === "empty") return `Your target is ${fmtKcal(targetKcal ?? 0)} kcal.`;
-  const m = `${meals} meal${meals === 1 ? "" : "s"}`;
-  if (state === "complete") return `${fmtKcal(kcal)} of ${fmtKcal(targetKcal ?? 0)} kcal · protein hit · ${m}`;
-  return `${fmtKcal(kcal)} of ${fmtKcal(targetKcal ?? 0)} kcal · ${m}`;
 };
 
 /** A logged row re-expressed as log_meal input (undo, duplicate, copy yesterday). */

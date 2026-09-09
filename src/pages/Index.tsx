@@ -351,9 +351,10 @@ const Index = () => {
         </div>
       )}
 
-      {/* ── FUEL — today's kcal and protein against target, and the two ways
-             in (log, or a photo of the plate). A quiet row with no gold of its
-             own: the hero and the W-Index keep Home's whole gold budget. ── */}
+      {/* ── FUEL — what is left of today, the shape of the day as a rail, and
+             the camera. Home's one nutrition door: the Library's duplicate
+             "Fuel diary" row is gone. No gold of its own — the hero and the
+             W-Index keep Home's whole gold budget. ── */}
       <div className="home-rise home-rise-4 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <FuelZone
@@ -361,6 +362,7 @@ const Index = () => {
             totals={fuelTotals}
             targets={fuelTargetMacros}
             state={fuelState}
+            mealCount={fuelDay?.meal_count ?? 0}
             unavailable={!!fuelError && !fuelDay}
             onOpenDiary={() => navigate("/nutrition")}
             onOpenTargets={() => navigate("/nutrition/targets")}

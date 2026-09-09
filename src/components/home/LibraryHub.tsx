@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Crown, ChevronRight, Flame, Utensils } from "lucide-react";
+import { Crown, ChevronRight, Utensils } from "lucide-react";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { RECIPE_COUNT } from "@/data/library-counts";
 import { GOLD_LINES } from "@/components/coach/gold-lines";
@@ -12,6 +12,10 @@ import { cn } from "@/lib/utils";
  * The Vault) that gave the home screen five same-weight cards in a row —
  * founder feedback: "liian paljon nappeja, yhdistä selkeästi ja arvokkaasti".
  *
+ * Content only: the Fuel diary row lived here too and was a second door to
+ * /nutrition on a screen that already has the Fuel card — one screen, two rows
+ * saying Fuel, same destination.
+ *
  * Sits on the QUIET surface tier. It's the tallest block on Home and it's a
  * content menu, not the day's work — it should recede behind the check-in and
  * the coach rather than compete with them. Gold here is reserved for the one
@@ -19,15 +23,6 @@ import { cn } from "@/lib/utils";
  */
 
 const ROWS = [
-  {
-    key: "nutrition",
-    path: "/nutrition",
-    title: "Fuel diary",
-    sub: "Log meals, scan barcodes, hit your macros",
-    /** "New" is a signpost, not a gate — it stays neutral like the counts. */
-    chip: "New",
-    chipGold: false,
-  },
   {
     key: "recipes",
     path: "/recipes",
@@ -68,15 +63,6 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${recipeSquare("greek-chicken-bowl") ?? recipeThumb("greek-chicken-bowl")})` }}
         />
-      </div>
-    );
-  }
-  if (id === "nutrition") {
-    // Same outline tile as the exercises thumb: black ground, gold hairline,
-    // a drawn icon — never the gold-filled tile, which belongs to the hero.
-    return (
-      <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 bg-black border border-gold/25 flex items-center justify-center">
-        <Flame aria-hidden size={17} className="text-gold" strokeWidth={2.2} />
       </div>
     );
   }

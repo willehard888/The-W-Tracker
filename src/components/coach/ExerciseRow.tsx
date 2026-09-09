@@ -170,7 +170,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           ) : (
             <div className="rounded-2xl border border-gold/20 bg-[hsl(258_16%_6%)] py-7 flex flex-col items-center gap-2">
               <ExerciseTile group={group} size={56} />
-              <p className="eyebrow text-muted-foreground/60">Follow the steps below</p>
+              <p className="text-[11px] font-bold text-muted-foreground/75">Follow the steps below</p>
             </div>
           )}
 

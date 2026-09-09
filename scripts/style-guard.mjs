@@ -38,6 +38,30 @@ const RULES = [
   { re: /<button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-([6-9]|10)|w-([6-9]|10)|p-1(\.5)?)\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt raw button — add min-h-11 / a before:-inset hit area or use <Button>", exempt: [UI, "src/components/StatusHeader.tsx"] },
 ];
 
+/**
+ * Whole-file assertions that the RULES walker can't express — it skips
+ * src/index.css and matches per-file, so anything about a token's *value*, or
+ * about two files agreeing, lives here. Each returns a hit string or null.
+ */
+const CHECKS = [
+  // A ConfirmDialog opened from inside a BottomSheet must land above it, or the
+  // confirm is invisible and the destructive action is unreachable — that is
+  // how "Remove post" and "Remove member" reach a tribe owner.
+  () => {
+    const css = readFileSync("src/index.css", "utf8");
+    const tok = (name) => Number(css.match(new RegExp(`--${name}:\\s*(\\d+)`))?.[1]);
+    const confirm = tok("z-confirm");
+    const celebration = tok("z-celebration");
+    if (!(confirm > celebration)) {
+      return `src/index.css: --z-confirm (${confirm}) must sit above --z-celebration (${celebration}) — a confirm inside a sheet has to be clickable`;
+    }
+    if (!readFileSync("src/components/ui/alert-dialog.tsx", "utf8").includes("z-[var(--z-confirm)]")) {
+      return "src/components/ui/alert-dialog.tsx: lost z-[var(--z-confirm)] — every ConfirmDialog falls back under the sheet";
+    }
+    return null;
+  },
+];
+
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/[^\n]*/g, "$1");
 const isExempt = (rule, rel) => (rule.exempt ?? []).some((e) => (e instanceof RegExp ? e.test(rel) : e === rel));
 
@@ -63,9 +87,13 @@ const walk = (dir) => {
   }
 };
 walk("src");
+for (const check of CHECKS) {
+  const hit = check();
+  if (hit) hits.push(hit);
+}
 
 if (hits.length) {
   console.error(`✗ Style guard: ${hits.length} hit(s):\n` + hits.map((h) => "  " + h).join("\n"));
   process.exit(1);
 }
-console.log(`✓ Style guard: ${RULES.length} rules, no hits. 👍`);
+console.log(`✓ Style guard: ${RULES.length + CHECKS.length} rules, no hits. 👍`);

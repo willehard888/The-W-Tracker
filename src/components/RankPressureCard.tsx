@@ -130,8 +130,11 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <Trophy size={11} className={cn("shrink-0", config.textClass)} />
-                  <p className="font-display font-black text-sm uppercase tracking-wider">
-                    Your Position
+                  {/* Sentence case, not a second tracked micro-label: the
+                      profile screen already spends its one eyebrow on
+                      "Member since". */}
+                  <p className="font-display font-black text-sm">
+                    Your position
                   </p>
                 </div>
                 {hasRank ? (

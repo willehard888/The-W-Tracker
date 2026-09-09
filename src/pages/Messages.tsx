@@ -1,18 +1,18 @@
 import { backOr } from "@/lib/nav";
-import { ActionRow } from "@/components/ActionRow";
 import { Input } from "@/components/ui/input";
 import { fmtInt, fmtRelative } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Search, X, SearchX } from "lucide-react";
+import { MessageCircle, Search, Users, X, SearchX } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { hapticImpact } from "@/lib/haptics";
+import { usePendingFriendCount } from "@/hooks/use-friends";
 import { useState, type ReactNode } from "react";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
@@ -21,9 +21,9 @@ import PageBar from "@/components/ui/page-bar";
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["friends"], ["conversations"]]);
+  const pending = usePendingFriendCount().data ?? 0;
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["friends"], ["conversations"], ["friend-request-count"]]);
 
   // Fetch accepted friends
   const { data: friends } = useQuery({
@@ -45,33 +45,6 @@ const Messages = () => {
         .select("user_id, username, avatar_url, status_tier")
         .in("user_id", friendIds);
       return profiles || [];
-    },
-    enabled: !!user,
-  });
-
-  // Fetch pending incoming requests
-  const { data: pendingRequests } = useQuery({
-    queryKey: ["pending-friend-requests", user?.id],
-    staleTime: 2 * 60_000,   // pending requests should be reasonably fresh
-    gcTime:    10 * 60_000,
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("friendships")
-        .select("*")
-        .eq("addressee_id", user.id)
-        .eq("status", "pending");
-      if (!data || data.length === 0) return [];
-
-      const requesterIds = data.map((f) => f.requester_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url, status_tier")
-        .in("user_id", requesterIds);
-      return (data || []).map((f: any) => ({
-        ...f,
-        profile: (profiles || []).find((p) => p.user_id === f.requester_id),
-      }));
     },
     enabled: !!user,
   });
@@ -144,7 +117,6 @@ const Messages = () => {
 
   const unread = (conversations || []).reduce((n, c) => n + c.unread, 0);
   const searching = searchQuery.trim().length >= 2;
-  const invalidate = (...keys: string[]) => keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
 
   // One hairline list: friends' threads, friends you haven't written to, then
   // everyone else under the screen's single eyebrow.
@@ -157,7 +129,27 @@ const Messages = () => {
 
   return (
     <div ref={scrollRef} className="min-h-full" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-      <PageBar title="Messages" onBack={() => backOr(navigate, "/squad")} />
+      <PageBar
+        title="Messages"
+        onBack={() => backOr(navigate, "/squad")}
+        action={
+          /* The other orphan route. The requests card that used to sit in this
+             list lives on /friends, next to the rest of the friend graph. */
+          <button
+            type="button"
+            aria-label={pending > 0 ? `Friends — ${pending} pending` : "Friends"}
+            onClick={() => { hapticImpact("light"); navigate("/friends"); }}
+            className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground/80 hover:text-foreground hover:bg-secondary transition-colors"
+          >
+            <Users aria-hidden size={18} />
+            {pending > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[10px] font-black flex items-center justify-center tabular-nums">
+                {pending > 99 ? "99+" : pending}
+              </span>
+            )}
+          </button>
+        }
+      />
 
       <div className="px-4 pt-4 pb-6">
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
@@ -196,33 +188,6 @@ const Messages = () => {
         </div>
       ) : (
         <>
-          {/* REQUESTS — the one quiet card: people asking for a yes. */}
-          {pendingRequests && pendingRequests.length > 0 && (
-            <section className="home-rise home-rise-2 mb-5">
-              <h3 className="font-display text-base font-bold tracking-tight mb-2">Friend requests</h3>
-              <div className="surface-card surface-card-quiet divide-y divide-border/35 px-1">
-                {pendingRequests.map((req: any) => (
-                  <ActionRow
-                    key={req.id}
-                    leading={<StatusAvatar src={req.profile?.avatar_url} name={req.profile?.username} tier={req.profile?.status_tier || "recruit"} size="sm" animated={false} />}
-                    title={<TierUsername as="span" username={req.profile?.username} tier={req.profile?.status_tier || "recruit"} className="text-sm font-semibold" />}
-                    subtitle="Wants to be friends"
-                    onAccept={async () => {
-                      const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", req.id);
-                      if (error) { toast.error("Could not accept — try again."); return; }
-                      invalidate("pending-friend-requests", "friends", "friend-requests", "conversations");
-                    }}
-                    onDecline={async () => {
-                      const { error } = await supabase.from("friendships").update({ status: "declined" }).eq("id", req.id);
-                      if (error) { toast.error("Could not decline — try again."); return; }
-                      invalidate("pending-friend-requests", "friend-requests");
-                    }}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
           {/* THE LIST — hairline rows, no card per thread. Entrance on the
               wrapper div so the row's own press still fires. */}
           {rows.length > 0 && (

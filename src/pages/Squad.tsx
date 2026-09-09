@@ -1,10 +1,11 @@
-import { useSearchParams } from "react-router-dom";
-import { Flame, Users } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Flame, MessageCircle, Users } from "lucide-react";
 import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
-import { hapticSelection } from "@/lib/haptics";
+import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { useUnreadMessageCount } from "@/hooks/use-messages";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 /**
@@ -29,7 +30,9 @@ const SUB = [
 const visited = new Set<string>();
 
 const Squad = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const unread = useUnreadMessageCount().data ?? 0;
   const raw = searchParams.get("tab");
   const tab: "feed" | "tribes" =
     raw === "tribes" || raw === "mine" || raw === "browse" ? "tribes" : "feed";
@@ -44,8 +47,8 @@ const Squad = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="home-rise px-4 pt-3 pb-2">
-        <div ref={squadTargetRef} className={SEGMENT_TRACK}>
+      <div className="home-rise px-4 pt-3 pb-2 flex items-center gap-2">
+        <div ref={squadTargetRef} className={cn(SEGMENT_TRACK, "flex-1")}>
           {SUB.map((s) => (
             <button
               key={s.key}
@@ -59,6 +62,21 @@ const Squad = () => {
             </button>
           ))}
         </div>
+        {/* The door the tab bar always implied: /messages maps to this tab but
+            nothing on screen went there. */}
+        <button
+          type="button"
+          aria-label={unread > 0 ? `Messages — ${unread} unread` : "Messages"}
+          onClick={() => { hapticImpact("light"); navigate("/messages"); }}
+          className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground/80 hover:text-foreground hover:bg-secondary transition-colors"
+        >
+          <MessageCircle aria-hidden size={18} />
+          {unread > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[10px] font-black flex items-center justify-center tabular-nums">
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* A visited tab stays mounted and parks under display:none — the

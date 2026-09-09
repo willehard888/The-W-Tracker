@@ -76,7 +76,12 @@ const Chat = () => {
         .eq("sender_id", partnerId)
         .eq("read", false)
         .then(({ error }) => {
-          if (!error) queryClient.invalidateQueries({ queryKey: ["conversations"] });
+          if (!error) {
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
+            // Squad's Messages badge counts unread rows — reading a thread
+            // must clear it too.
+            queryClient.invalidateQueries({ queryKey: ["direct-messages"] });
+          }
         });
     }
   }, [messages, user, partnerId, queryClient]);
@@ -160,6 +165,7 @@ const Chat = () => {
       setJustSentId(sent?.id ?? null);
       queryClient.invalidateQueries({ queryKey: ["chat-messages", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["direct-messages"] });
     } catch {
       toast.error("Message didn't send — try again.");
     } finally {

@@ -12,43 +12,37 @@ import { ErrorState } from "@/components/ui/error-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
-import { usePendingFriendCount } from "@/hooks/use-friends";
+import { useFriends, usePendingFriendCount } from "@/hooks/use-friends";
 import { useUnreadMessageCount } from "@/hooks/use-messages";
 import { useState, type ReactNode } from "react";
+import type { NavigateFunction } from "react-router-dom";
+import type { Tables } from "@/integrations/supabase/types";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import PageBar from "@/components/ui/page-bar";
+
+type DirectMessage = Tables<"direct_messages">;
+type ThreadProfile = Pick<Tables<"profiles">, "user_id" | "username" | "avatar_url" | "status_tier">;
+/** One partner's thread, grouped client-side: there is no conversations table. */
+interface Thread {
+  partnerId: string;
+  lastMessage: DirectMessage;
+  unread: number;
+  profile?: ThreadProfile;
+}
 
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const pending = usePendingFriendCount().data ?? 0;
-  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["friends"], ["conversations"], ["friend-request-count"]]);
+  const { scrollRef, pullDistance, isRefreshing, onTouchStart, onTouchMove, onTouchEnd, PULL_THRESHOLD } = usePullRefresh([["friends-list"], ["conversations"], ["friend-request-count"], ["direct-messages"]]);
 
-  // Fetch accepted friends
-  const { data: friends } = useQuery({
-    queryKey: ["friends", user?.id],
-    staleTime: 5 * 60_000,
-    gcTime:    15 * 60_000,
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase
-        .from("friendships")
-        .select("*")
-        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
-        .eq("status", "accepted");
-      if (!data || data.length === 0) return [];
-
-      const friendIds = data.map((f) => f.requester_id === user.id ? f.addressee_id : f.requester_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url, status_tier")
-        .in("user_id", friendIds);
-      return profiles || [];
-    },
-    enabled: !!user,
-  });
+  // The friend list comes from the same RPC the Friends screen reads. This
+  // screen used to roll its own two-step query against `friendships` +
+  // `profiles`, and it came back empty while /friends showed the very same
+  // person — so a friend you had never written to never appeared here.
+  const { data: friends } = useFriends();
 
   // Search users
   const { data: searchResults } = useQuery({
@@ -85,7 +79,7 @@ const Messages = () => {
         .limit(400);
       if (!msgs || msgs.length === 0) return [];
 
-      const convMap = new Map<string, { partnerId: string; lastMessage: any; unread: number }>();
+      const convMap = new Map<string, { partnerId: string; lastMessage: DirectMessage; unread: number }>();
       for (const msg of msgs) {
         const partnerId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
         if (!convMap.has(partnerId)) {
@@ -251,7 +245,7 @@ const PersonRow = ({ profile, subtitle, onClick }: {
   </button>
 );
 
-const ConversationRow = ({ conv, userId, navigate }: { conv: any; userId?: string; navigate: any; isFriend?: boolean }) => {
+const ConversationRow = ({ conv, userId, navigate }: { conv: Thread; userId?: string; navigate: NavigateFunction; isFriend?: boolean }) => {
   const unread = conv.unread > 0;
   return (
     <button type="button" onClick={() => navigate(`/chat/${conv.partnerId}`)} className="w-full flex items-center gap-3 py-3 text-left">

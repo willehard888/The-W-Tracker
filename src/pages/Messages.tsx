@@ -13,6 +13,7 @@ import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { usePendingFriendCount } from "@/hooks/use-friends";
+import { useUnreadMessageCount } from "@/hooks/use-messages";
 import { useState, type ReactNode } from "react";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
@@ -71,11 +72,17 @@ const Messages = () => {
     gcTime:    5 * 60_000,
     queryFn: async () => {
       if (!user) return [];
+      // Newest first, bounded: there is no conversations table, so the list is
+      // grouped client-side from raw messages. Unbounded, this downloaded every
+      // message the user had ever sent or received on every visit — and this
+      // screen now has a door on the Squad tab. 400 covers far more than the
+      // list can show; a real conversations view is the proper fix.
       const { data: msgs } = await supabase
         .from("direct_messages")
         .select("*")
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(400);
       if (!msgs || msgs.length === 0) return [];
 
       const convMap = new Map<string, { partnerId: string; lastMessage: any; unread: number }>();
@@ -115,7 +122,9 @@ const Messages = () => {
     (f) => !conversations?.some((c) => c.partnerId === f.user_id)
   );
 
-  const unread = (conversations || []).reduce((n, c) => n + c.unread, 0);
+  // The exact count, not the sum over the fetched window — the same head query
+  // the Squad door's badge reads, so the two can never disagree.
+  const unread = useUnreadMessageCount().data ?? 0;
   const searching = searchQuery.trim().length >= 2;
 
   // One hairline list: friends' threads, friends you haven't written to, then

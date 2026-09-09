@@ -44,8 +44,8 @@ export const HomeSkeleton = () => (
     <Block height={168} delay={80} className="mt-4 !rounded-3xl" />
     {/* Standing row */}
     <Block height={56} delay={140} className="mt-6" />
-    {/* Fuel card */}
-    <Block height={104} delay={170} className="mt-6" />
+    {/* Fuel card: label row + the remaining number + rail + macro line */}
+    <Block height={128} delay={170} className="mt-6" />
     {/* Coach whisper */}
     <Block height={82} delay={210} className="mt-6" />
     {/* Library zone: pull-quote + shelf */}

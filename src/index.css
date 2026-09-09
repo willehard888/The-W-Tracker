@@ -369,6 +369,7 @@
     --z-sheet: 50;
     --z-modal: 100;
     --z-celebration: 120;
+    --z-confirm: 140; /* a ConfirmDialog opened from inside a BottomSheet */
     --z-onboarding: 160; /* above modal+celebration (a card and a celebration can co-occur), below toasts */
     --z-toast: 200;
     --z-top: 9999;
@@ -875,25 +876,29 @@
 
 
   /* HOME ENTRANCE — the screen settling into place on open. One authored
-     grammar for the first-viewport cascade: a short blur-rise, spring-eased,
-     staggered ~70ms. Fast enough (620ms) to read as a premium settle every
+     grammar for the first-viewport cascade: a short rise, spring-eased,
+     staggered 45ms. Fast enough (380ms) to read as a premium settle every
      open rather than a slow reveal — opening Home many times a day, a heavy
      entrance would wear (Emil's frequency rule), so this stays quick and
-     light (blur 5px, GPU transform+opacity). Deliberately OUTSIDE the
+     light (GPU transform+opacity only, no filter). Deliberately OUTSIDE the
      pointer:coarse idle-decoration guard — like commit-pop, this is the
      screen's authored moment and plays on touch. Reduced motion drops to a
-     plain fade with no movement or blur. */
+     plain fade with no movement. */
   .home-rise {
     /* backwards, not both: the `to` frame is identity, and `both` kept a
-       filter: blur(0) + transform pinned on every risen block forever — a
-       permanent compositing layer per card for zero visual gain. */
-    animation: home-rise 0.62s var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) backwards;
+       transform pinned on every risen block forever — a permanent
+       compositing layer per card for zero visual gain. */
+    animation: home-rise 0.38s var(--ease-spring, cubic-bezier(0.16, 1.2, 0.32, 1)) backwards;
   }
-  .home-rise-1 { animation-delay: 70ms; }
-  .home-rise-2 { animation-delay: 140ms; }
-  .home-rise-3 { animation-delay: 210ms; }
-  .home-rise-4 { animation-delay: 280ms; }
-  .home-rise-5 { animation-delay: 350ms; }
+  .home-rise-1 { animation-delay: 45ms; }
+  .home-rise-2 { animation-delay: 90ms; }
+  .home-rise-3 { animation-delay: 135ms; }
+  .home-rise-4 { animation-delay: 180ms; }
+  .home-rise-5 { animation-delay: 225ms; }
+  /* A list that stays mounted under its detail (Exercises, Recipes) has
+     settled once; display:none would otherwise restart its entrance every
+     time the detail closes over it. */
+  .entrance-done .home-rise, .entrance-done .animate-fade-in-up { animation: none; }
   @media (prefers-reduced-motion: reduce) {
     .home-rise,
     .home-rise-1, .home-rise-2, .home-rise-3, .home-rise-4, .home-rise-5 {
@@ -945,10 +950,11 @@
   .glass-card::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    /* One card's area, not four: the 200% layer sat permanently rasterised
+       at 4× the card for a drift nobody can see past the card's edge. */
+    inset: 0;
+    width: 100%;
+    height: 100%;
     background:
       radial-gradient(ellipse 30% 20% at 30% 30%, hsl(42 78% 54% / 0.04) 0%, transparent 50%),
       radial-gradient(ellipse 25% 15% at 70% 60%, hsl(270 60% 58% / 0.03) 0%, transparent 50%),
@@ -1249,20 +1255,20 @@
 }
 
 
-/* Home first-viewport entrance — blur-rise settle. Emil's blur-to-mask on
-   entry: the element resolves from a soft, slightly-shrunk, lifted state, so
-   it reads as focusing into place rather than sliding up. Never from scale(0)
-   or blur past ~5px (Safari cost + "nothing appears from nothing"). */
+/* Home first-viewport entrance — rise settle. The element resolves from a
+   slightly-shrunk, lifted state, so it reads as settling into place rather
+   than sliding up. Transform + opacity only: the earlier blur(5px) ramp ran
+   on 300+ blocks app-wide and each one re-rasterised for 620 ms — the single
+   largest paint cost at first paint. Never from scale(0) ("nothing appears
+   from nothing"). */
 @keyframes home-rise {
   from {
     opacity: 0;
     transform: translate3d(0, 16px, 0) scale(0.985);
-    filter: blur(5px);
   }
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
   }
 }
 @keyframes home-fade {
@@ -1407,6 +1413,15 @@
 
 /* Flame intake — the flame "inhales" oxygen when fed.
    v2: bigger scale, multi-stage brightness, with a saturation kick. */
+/* Twin of flame-intake — alternating the name restarts the animation without
+   remounting the flame (see intakeStyle in Tribes.tsx). */
+@keyframes flame-intake-b {
+  0%   { transform: scale(1)    translateY(0);   filter: brightness(1)    contrast(1)    saturate(1); }
+  18%  { transform: scale(1.14) translateY(-3px); filter: brightness(1.45) contrast(1.18) saturate(1.32); }
+  42%  { transform: scale(1.08) translateY(-1px); filter: brightness(1.22) contrast(1.10) saturate(1.18); }
+  72%  { transform: scale(1.04) translateY(0);    filter: brightness(1.08) contrast(1.04) saturate(1.08); }
+  100% { transform: scale(1)    translateY(0);    filter: brightness(1)    contrast(1)    saturate(1); }
+}
 @keyframes flame-intake {
   0%   { transform: scale(1)    translateY(0);   filter: brightness(1)    contrast(1)    saturate(1); }
   18%  { transform: scale(1.14) translateY(-3px); filter: brightness(1.45) contrast(1.18) saturate(1.32); }
@@ -1573,14 +1588,6 @@
 .font-display {
   letter-spacing: -0.022em;
   font-feature-settings: "ss01", "ss02";
-}
-
-/* Premium text gradient */
-.text-gradient-gold {
-  background: linear-gradient(135deg, hsl(42 85% 70%), hsl(42 78% 54%), hsl(42 60% 40%));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* Smooth scrollbar */
@@ -1761,19 +1768,6 @@
   [style*="hero-aura-drift"] {
     animation: none !important;
   }
-}
-
-/* === Reveal-on-scroll utility === */
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-  /* No will-change: a one-shot entrance doesn't earn a permanent GPU layer
-     (same reasoning as the global button will-change removal). */
-}
-.reveal-on-scroll.is-visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* === Realistic depth utility v2 — premium 3D card lift with side rims, contact shadow,
@@ -2532,15 +2526,6 @@
 
   
 
-  /* Gold-tinted text gradient — drop-in for headings */
-  .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold-light)) 0%, hsl(var(--gold)) 50%, hsl(var(--gold-dark)) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
-
   /* Lava text gradient — for fire/streak headings */
 
   
@@ -2676,16 +2661,6 @@ p, span.selectable, input, textarea, [contenteditable] {
   .streak-fx-ember,
   .streak-fx-pulse-ring,
   .streak-fx-twinkle {
-    animation: none !important;
-  }
-  /* Make reveal-on-scroll children visible instantly — they normally
-     start with opacity:0/translateY waiting for the IntersectionObserver
-     to add `.is-visible`. With animations disabled, we need to skip the
-     entrance transition entirely so content is visible from first paint. */
-  .reveal-on-scroll {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
     animation: none !important;
   }
 }

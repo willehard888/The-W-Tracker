@@ -92,7 +92,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
       frame.current = requestAnimationFrame(measure);
     };
     window.addEventListener("resize", onMove);
-    window.addEventListener("scroll", onMove, true);
+    window.addEventListener("scroll", onMove, { capture: true, passive: true });
     // SPA navigation moves/hides targets without firing scroll or resize —
     // the observers catch it (display:none reads as a 0×0 resize), so no
     // 300 ms polling timer runs for the life of the card.
@@ -104,7 +104,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
     io?.observe(target);
     return () => {
       window.removeEventListener("resize", onMove);
-      window.removeEventListener("scroll", onMove, true);
+      window.removeEventListener("scroll", onMove, { capture: true });
       ro?.disconnect();
       io?.disconnect();
       cancelAnimationFrame(frame.current);
@@ -196,7 +196,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
               <Icon size={17} strokeWidth={2.4} />
             </div>
             <div className="min-w-0">
-              <p className="eyebrow-sm mb-0.5 text-gold">
+              <p className="text-[10px] font-bold mb-0.5 text-gold">
                 <span aria-hidden className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-gold align-middle" />
                 AI Coach
               </p>

@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import PageBar from "@/components/ui/page-bar";
 import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
@@ -168,7 +170,7 @@ const Vault = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Vault" onBack={() => navigate(-1)} />
+      <PageBar title="Vault" onBack={() => backOr(navigate, "/")} />
 
       <div className="px-4 pt-4 pb-6">
         {/* Opening beat — the reader's own count, then one whisper of type. */}
@@ -306,14 +308,7 @@ const VaultCategoryBlock = ({
             ))}
 
           {!isLoading && error && (
-            <div className="py-4 text-center">
-              {/* Real retry — this page has no pull-to-refresh, so the old
-                  "Pull to refresh" copy asked for something impossible. */}
-              <p className="text-[12px] text-rose-400/90 mb-2">Couldn't load articles.</p>
-              <Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => refetch()}>
-                Try again
-              </Button>
-            </div>
+            <ErrorState size="compact" title="Couldn't load articles" onRetry={refetch} />
           )}
 
           {!isLoading && !error && articles.length === 0 && (
@@ -343,7 +338,7 @@ const VaultCategoryBlock = ({
                     {a.subtitle && (
                       <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{a.subtitle}</span>
                     )}
-                    <span className="eyebrow-sm block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
+                    <span className="text-[10px] font-bold text-muted-foreground block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
                       {EVIDENCE_LABEL[a.evidence_tier]} · {a.read_time_min} min
                     </span>
                   </span>

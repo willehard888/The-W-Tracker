@@ -1,7 +1,6 @@
 import { Home, Trophy, User, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { memo, useCallback, useRef } from "react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 
@@ -94,6 +93,10 @@ const BottomNav = () => {
     navigate(path);
   }, [location.pathname, navigate]);
 
+  const activeTab = activeTabFor(location.pathname);
+  const activeIdx = tabs.findIndex((t) => t.path === activeTab);
+  const activeColor = colorMap[activeIdx < 0 ? "gold" : tabs[activeIdx].color];
+
   // The active workout owns the whole screen: nothing should compete with the
   // set in front of the athlete, and a stray tab tap mid-session loses their place.
   if (HIDDEN_PATHS.has(location.pathname)
@@ -139,9 +142,30 @@ const BottomNav = () => {
         }}
       />
 
-      <div className="relative max-w-lg mx-auto flex items-center justify-around px-1.5 pt-2 pb-1.5">
-        {tabs.map(({ icon: Icon, label, path, color }) => {
-          const active = activeTabFor(location.pathname) === path;
+      <div className="relative max-w-lg mx-auto grid grid-cols-4 px-1.5 pt-2 pb-1.5">
+        {/* One indicator slides between columns on a CSS transition. The
+            framer layoutId pill measured both pills during the commit — a
+            forced synchronous layout of the incoming page on every tab tap. */}
+        <span
+          aria-hidden
+          data-nav-indicator
+          className={cn(
+            "pointer-events-none absolute inset-y-0 left-1.5 w-[calc((100%-0.75rem)/4)]",
+            "motion-safe:transition-[transform,opacity] motion-safe:duration-300",
+            "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
+          )}
+          style={{ transform: `translateX(${Math.max(activeIdx, 0) * 100}%)`, opacity: activeIdx < 0 ? 0 : 1 }}
+        >
+          <span
+            className="absolute left-1/2 -translate-x-1/2 top-2.5 bottom-3 w-16 rounded-xl"
+            style={{
+              background: `linear-gradient(180deg, hsl(${activeColor.rgb} / 0.14), hsl(${activeColor.rgb} / 0.04))`,
+              border: `1px solid hsl(${activeColor.rgb} / 0.22)`,
+            }}
+          />
+        </span>
+        {tabs.map(({ icon: Icon, label, path, color }, i) => {
+          const active = i === activeIdx;
           const c = colorMap[color];
           const colorVar = `hsl(${c.rgb})`;
 
@@ -158,27 +182,13 @@ const BottomNav = () => {
               onPointerEnter={() => prefetchRoute(path)}
               onFocus={() => prefetchRoute(path)}
               className={cn(
-                "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl min-w-[44px]",
+                "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl min-w-[44px] justify-self-center",
                 "transition-[transform,color,opacity] duration-150 will-change-transform",
                 "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
                 active ? c.text : "text-muted-foreground/80",
               )}
               style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
             >
-              {/* Active pill — animates between tabs via shared layoutId */}
-              {active && (
-                <motion.span
-                  layoutId="bottom-nav-pill"
-                  aria-hidden
-                  className="absolute inset-x-1 top-0.5 bottom-1.5 rounded-xl pointer-events-none"
-                  style={{
-                    background: `linear-gradient(180deg, ${colorVar.replace(")", " / 0.14)")}, ${colorVar.replace(")", " / 0.04)")})`,
-                    border: `1px solid ${colorVar.replace(")", " / 0.22)")}`,
-                  }}
-                  transition={{ type: "spring", stiffness: 380, damping: 34 }}
-                />
-              )}
-
               <span className="relative flex items-center justify-center h-6 w-6">
                 <Icon aria-hidden
                   size={20}

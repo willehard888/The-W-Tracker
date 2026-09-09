@@ -113,7 +113,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
           <div
             key={quest.id}
             className={cn(
-              "flex items-center gap-3 rounded-lg border p-3 transition-all duration-300",
+              "flex items-center gap-3 rounded-lg border p-3 transition-colors duration-300",
               quest.completed
                 ? "border-gold/30 bg-gold/10"
                 : "border-border/50 bg-card/50"

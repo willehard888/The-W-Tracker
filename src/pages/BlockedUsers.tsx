@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { UserX } from "lucide-react";
@@ -44,7 +45,7 @@ const BlockedUsers = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Blocked users" onBack={() => navigate(-1)} />
+      <PageBar title="Blocked users" onBack={() => backOr(navigate, "/profile")} />
 
       <div className="home-rise px-4 pt-4 pb-6">
       {isLoading ? (

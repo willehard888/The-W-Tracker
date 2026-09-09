@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { fetchAll } from "../_shared/fetch-all.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
@@ -71,23 +72,10 @@ serve(async (req) => {
     const GRACE_WINDOW_DAYS = 8;
     const windowStartISO = new Date(Date.now() - GRACE_WINDOW_DAYS * DAY_MS).toISOString();
 
-    // CRITICAL: paginate BOTH reads. PostgREST caps un-ranged selects (default
-    // max-rows 1000 on hosted projects). Without paging, any active user whose
-    // latest check-in fell outside the first page vanished from the map below
-    // and had their live streak wrongly zeroed — a mass streak wipe that grows
-    // with the user base.
-    const PAGE = 1000;
-    const fetchAll = async <T>(build: (from: number, to: number) => any): Promise<T[]> => {
-      const all: T[] = [];
-      for (let from = 0; ; from += PAGE) {
-        const { data, error } = await build(from, from + PAGE - 1);
-        if (error) throw error;
-        const rows = (data ?? []) as T[];
-        all.push(...rows);
-        if (rows.length < PAGE) break;
-      }
-      return all;
-    };
+    // CRITICAL: paginate BOTH reads (see _shared/fetch-all.ts). Without
+    // paging, any active user whose latest check-in fell outside the first
+    // page vanished from the map below and had their live streak wrongly
+    // zeroed — a mass streak wipe that grows with the user base.
 
     const profiles = await fetchAll<{ user_id: string; streak: number; streak_shields?: number }>(
       (from, to) =>

@@ -34,6 +34,20 @@ const ZoomableImage = forwardRef<ZoomableImageHandle, ZoomableImageProps>(
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const [dragY, setDragY] = useState(0);
     const [loaded, setLoaded] = useState(false);
+    // During a gesture the transform is written straight to the element —
+    // one React render per touchmove at 120 Hz was the pinch's jank. State
+    // commits on touchend.
+    const imgRef = useRef<HTMLImageElement>(null);
+    const live = useRef({ scale: 1, x: 0, y: 0, dragY: 0 });
+    const paint = () => {
+      const el = imgRef.current;
+      if (!el) return;
+      const { scale: s, x, y, dragY: d } = live.current;
+      const ratio = Math.min(1, d / 240);
+      el.style.transition = "none";
+      el.style.transform = `translate3d(${x}px, ${y + d}px, 0) scale(${s * (1 - ratio * 0.12)})`;
+      el.style.opacity = String(1 - ratio * 0.35);
+    };
     const g = useRef({
       mode: null as null | "pinch" | "pan" | "dismiss",
       startDist: 0, startScale: 1,
@@ -57,6 +71,7 @@ const ZoomableImage = forwardRef<ZoomableImageHandle, ZoomableImageProps>(
 
     const onTouchStart = (e: React.TouchEvent) => {
       const c = g.current;
+      live.current = { scale, x: pos.x, y: pos.y, dragY: 0 };
       if (e.touches.length === 2) {
         c.mode = "pinch";
         c.startDist = dist(e.touches);
@@ -87,27 +102,36 @@ const ZoomableImage = forwardRef<ZoomableImageHandle, ZoomableImageProps>(
 
     const onTouchMove = (e: React.TouchEvent) => {
       const c = g.current;
+      const l = live.current;
       if (c.mode === "pinch" && e.touches.length === 2) {
-        setScale(clamp(c.startScale * (dist(e.touches) / c.startDist)));
+        l.scale = clamp(c.startScale * (dist(e.touches) / c.startDist));
+        paint();
       } else if (c.mode === "pan" && e.touches.length === 1 && scale > 1) {
-        setPos({ x: c.baseX + (e.touches[0].clientX - c.startX), y: c.baseY + (e.touches[0].clientY - c.startY) });
+        l.x = c.baseX + (e.touches[0].clientX - c.startX);
+        l.y = c.baseY + (e.touches[0].clientY - c.startY);
+        paint();
       } else if (c.mode === "dismiss" && e.touches.length === 1) {
         const dy = Math.max(0, e.touches[0].clientY - c.startY); // downward only
-        setDragY(dy);
+        l.dragY = dy;
+        paint();
         onDismissProgress?.(Math.min(1, dy / 240));
       }
     };
 
     const onTouchEnd = (e: React.TouchEvent) => {
       const c = g.current;
+      const l = live.current;
       if (e.touches.length === 0) {
         if (c.mode === "dismiss") {
-          if (dragY > 110) { onClose(); return; }
+          if (l.dragY > 110) { onClose(); return; }
+          l.dragY = 0;
           setDragY(0);
           onDismissProgress?.(0);
         }
         c.mode = null;
-        if (scale <= 1) setPos({ x: 0, y: 0 });
+        if (imgRef.current) imgRef.current.style.transition = "";
+        setScale(l.scale);
+        setPos(l.scale <= 1 ? { x: 0, y: 0 } : { x: l.x, y: l.y });
       }
     };
 
@@ -122,6 +146,7 @@ const ZoomableImage = forwardRef<ZoomableImageHandle, ZoomableImageProps>(
         onTouchEnd={onTouchEnd}
       >
         <img
+          ref={imgRef}
           src={url}
           alt={alt}
           draggable={false}

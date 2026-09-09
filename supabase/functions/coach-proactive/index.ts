@@ -12,9 +12,22 @@
 // never double-nudge. Every trigger has a deterministic fallback message, so the
 // engine still delivers if the AI provider is unavailable.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { fetchAll } from "../_shared/fetch-all.ts";
 import { gatherSituation } from "../_shared/situation.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { prefAllows } from "../_shared/push-targets.ts";
+
+/** The profile columns the run reads (see the select below). */
+type ProactiveUser = {
+  user_id: string;
+  username: string | null;
+  status_tier: string | null;
+  level: number | null;
+  streak: number | null;
+  timezone: string | null;
+  last_active_at: string | null;
+  notification_prefs: unknown;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -109,13 +122,20 @@ Deno.serve(async (req) => {
 
   // Active members: a live streak OR activity in the last 3 days. Bounds cost and
   // targets people the nudge can actually help.
-  const { data: users, error: usersErr } = await supabase
-    .from("profiles")
-    .select("user_id, username, status_tier, level, streak, timezone, last_active_at, notification_prefs")
-    .or(`streak.gt.0,last_active_at.gte.${threeDaysAgoISO}`);
-
-  if (usersErr) {
-    return new Response(JSON.stringify({ error: usersErr.message }), {
+  // Paged (see _shared/fetch-all.ts): the un-ranged select stopped at 1000
+  // members and nobody past the cap was ever nudged.
+  let users: ProactiveUser[];
+  try {
+    users = await fetchAll<ProactiveUser>((from, to) =>
+      supabase
+        .from("profiles")
+        .select("user_id, username, status_tier, level, streak, timezone, last_active_at, notification_prefs")
+        .or(`streak.gt.0,last_active_at.gte.${threeDaysAgoISO}`)
+        .order("user_id")
+        .range(from, to),
+    );
+  } catch (e) {
+    return new Response(JSON.stringify({ error: (e as { message?: string })?.message ?? String(e) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

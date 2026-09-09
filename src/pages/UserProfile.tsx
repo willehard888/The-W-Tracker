@@ -1,11 +1,11 @@
-import { fmtRelative } from "@/lib/format";
-import { fmtInt } from "@/lib/format";
+import { fmtUnit } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
-import { ProfileSkeleton } from "@/components/skeletons/PageSkeleton";
+import { backOr } from "@/lib/nav";
+import { SubPageSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Award, ChevronLeft, Swords, MessageCircle, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Camera, Ban, Flag } from "lucide-react";
+import { Award, Swords, MessageCircle, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Ban, Flag, MoreVertical, UserRound } from "lucide-react";
 import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
 import BattleChallengeModal from "@/components/battles/BattleChallengeModal";
@@ -13,19 +13,24 @@ import ImageLightbox from "@/components/ImageLightbox";
 import GridMedia from "@/components/feed/GridMedia";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import BadgeCard from "@/components/BadgeCard";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import HeadToHead from "@/components/HeadToHead";
 import ProfileActivityPulse from "@/components/ProfileActivityPulse";
 import IdentityCore from "@/components/profile/IdentityCore";
 import { useMyRank } from "@/hooks/use-my-rank";
-import { getTierConfig, getTierHeroSurface, type StatusTier } from "@/lib/status-tiers";
+import { getTierConfig, getTierHeroSurface, formatTier, type StatusTier } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 
-
+/**
+ * /user/:userId — another athlete, proven. Same thesis as /u/: the beat
+ * names the rung and the best streak, the shared identity block is the
+ * hero, and everything you can do to them is one strip under it.
+ */
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { profile: myProfile } = useAuth();
@@ -39,15 +44,18 @@ const UserProfile = () => {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxPost, setLightboxPost] = useState<any>(null);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  // The friend button pops once a choice has landed, never on entrance.
+  const [landed, setLanded] = useState(false);
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, isError, refetch } = useQuery({
     queryKey: ["user-profile", userId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", userId!)
-        .single();
+        .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !!userId,
@@ -69,18 +77,6 @@ const UserProfile = () => {
         .select("badge_id")
         .eq("user_id", userId!);
       return data?.map((b) => b.badge_id) || [];
-    },
-    enabled: !!userId,
-  });
-
-  const { data: battleStats } = useQuery({
-    queryKey: ["user-battle-stats", userId],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("battles")
-        .select("*", { count: "exact", head: true })
-        .eq("winner_id", userId!);
-      return { won: count || 0 };
     },
     enabled: !!userId,
   });
@@ -175,6 +171,7 @@ const UserProfile = () => {
         if (error) throw error;
         toast(action === "cancel" ? "Request cancelled" : "Friend removed");
       }
+      setLanded(true);
       ["friendship", "friends", "friends-list", "friend-requests",
        "sent-friend-requests", "friend-request-count"].forEach((k) =>
         queryClient.invalidateQueries({ queryKey: [k] }));
@@ -185,31 +182,43 @@ const UserProfile = () => {
 
   const areFriends = friendship?.status === "accepted";
 
-  if (isLoading) {
-    return (
-      <div className="min-h-full px-4 pt-4">
-        <ProfileSkeleton />
-      </div>
-    );
-  }
+  if (isLoading) return <SubPageSkeleton />;
 
-  if (!profile) {
+  if (isError || !profile) {
     return (
-      <div className="min-h-full pb-4 px-4 pt-6 text-center">
-        <p className="text-muted-foreground mt-20">User not found</p>
-        <Button variant="ghost" size="sm" className="mt-4" onClick={() => navigate(-1)}>
-          <ChevronLeft size={16} /> Go back
-        </Button>
+      <div className="min-h-full">
+        <PageBar onBack={() => backOr(navigate, "/squad")} />
+        <div className="px-4 pt-6">
+          {isError ? (
+            <ErrorState title="Couldn't load this profile" onRetry={refetch} />
+          ) : (
+            <EmptyState
+              icon={UserRound}
+              title="User not found"
+              action={
+                <Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => backOr(navigate, "/squad")}>
+                  Back to Squad
+                </Button>
+              }
+            />
+          )}
+        </div>
       </div>
     );
   }
 
   const isOwnProfile = myProfile?.user_id === userId;
-  const tier = getTierConfig(profile.status_tier || 'recruit');
+  const tierKey = profile.status_tier || 'recruit';
+  const tier = getTierConfig(tierKey);
   // One shared tier ladder for every profile hero (same as /profile).
-  const heroSurface = getTierHeroSurface(profile.status_tier || 'recruit');
+  const heroSurface = getTierHeroSurface(tierKey);
+  const best = profile.longest_streak ?? 0;
 
   const earnedBadges = (allBadges || []).filter((b) => earnedBadgeIds?.includes(b.id));
+
+  const incoming = friendship?.status === "pending" && friendship.addressee_id === myProfile?.user_id;
+  const sent = friendship?.status === "pending" && friendship.requester_id === myProfile?.user_id;
+  const friendState = areFriends ? "friends" : incoming ? "incoming" : sent ? "sent" : "none";
 
   const handleShare = async () => {
     const url = `${window.location.origin}/u/${profile.username}`;
@@ -226,153 +235,111 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-full pb-6 relative">
+    <div className="min-h-full">
       <PageBar
-        onBack={() => navigate(-1)}
+        title={`@${profile.username}`}
+        onBack={() => backOr(navigate, "/squad")}
         action={
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-full border border-border/50 bg-card/40 backdrop-blur-sm"
-          >
-            <Share2 size={12} /> Share
-          </button>
+          <Button variant="ghost" size="icon" aria-label="Share profile" onClick={handleShare}>
+            <Share2 size={18} aria-hidden />
+          </Button>
         }
       />
-      {/* Hero — full-bleed variant of the shared tier surface */}
-      <div
-        className={cn(
-          "relative px-4 pt-6 pb-6 overflow-hidden border-x-0 border-t-0 rounded-none",
-          heroSurface.bgClass,
-        )}
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-64 blur-3xl opacity-60"
-          style={{ background: heroSurface.glowStyle }}
-        />
 
-        <div className="relative z-10 text-center">
-          {/* Shared identity block — identical to /profile (page owns the
-              background + entrance animation; rank comes from the same RPC) */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-          >
-            <IdentityCore
-              profile={profile}
-              rankData={rankData}
-              championWins={championHistory?.wins ?? 0}
-              tierMessage={tier.message}
-              featuredBadge={featuredBadge}
-              nameplateSize="md"
-              nameSuffix={
-                isOwnProfile ? (
-                  <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>
-                ) : undefined
-              }
-              afterPills={
-                <div className="mt-3 flex justify-center">
-                  <ProfileActivityPulse userId={userId!} />
-                </div>
-              }
-            />
-          </motion.div>
-
-          {/* Bottom hairline divider */}
-          <div className="pointer-events-none mx-auto mt-6 h-px w-3/4 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+      <div className="px-4 pt-3 pb-6">
+        {/* ── OPENING BEAT — the rung and the proof, stated once ── */}
+        <div className="home-rise mb-5">
+          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            {best > 0 ? `${formatTier(tierKey, profile.tier_division)}. ${best}-day best.` : `${tier.label}. Day one.`}
+          </h2>
         </div>
-      </div>
 
-      <div className="px-4 -mt-2">
+        {/* ── HERO — the shared identity block, on the tier surface ── */}
+        <div className={cn("home-rise home-rise-1 relative overflow-hidden rounded-3xl border p-6 pt-8 pb-7", heroSurface.bgClass)}>
+          <IdentityCore
+            profile={profile}
+            rankData={rankData}
+            championWins={championHistory?.wins ?? 0}
+            tierMessage={tier.message}
+            featuredBadge={featuredBadge}
+            nameplateSize="md"
+            nameSuffix={
+              isOwnProfile ? (
+                <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>
+              ) : undefined
+            }
+            afterPills={
+              <div className="mt-3 flex justify-center">
+                <ProfileActivityPulse userId={userId!} />
+              </div>
+            }
+          />
+        </div>
+
+        {/* ── ACTIONS — everything you can do to them, one strip ── */}
         {!isOwnProfile && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mb-5 mt-4"
-          >
-            <div className="surface-card backdrop-blur-sm p-2.5 space-y-2">
-              {/* Primary row — connect + battle */}
-              <div className="grid grid-cols-2 gap-2">
-                {/* Friend status (adapts) */}
-                {(() => {
-                  const incoming = friendship?.status === "pending" && friendship.addressee_id === myProfile?.user_id;
-                  const sent = friendship?.status === "pending" && friendship.requester_id === myProfile?.user_id;
-                  if (areFriends) {
-                    return (
-                      <Button variant="gold-outline" size="sm" onClick={() => handleFriendAction("remove")} className="w-full">
-                        <UserCheck size={15} /> Friends
-                      </Button>
-                    );
-                  }
-                  if (incoming) {
-                    return (
-                      <div className="flex gap-1.5">
-                        <Button variant="ember" size="sm" onClick={() => handleFriendAction("accept")} className="flex-1">
-                          <UserCheck size={15} /> Accept
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={() => handleFriendAction("decline")} className="px-3" aria-label="Decline">
-                          <UserX size={15} />
-                        </Button>
-                      </div>
-                    );
-                  }
-                  if (sent) {
-                    return (
-                      <Button variant="secondary" size="sm" onClick={() => handleFriendAction("cancel")} className="w-full">
-                        <Clock size={14} /> Pending
-                      </Button>
-                    );
-                  }
-                  return (
-                    <Button variant="ember" size="sm" onClick={() => handleFriendAction("send")} className="w-full">
-                      <UserPlus size={15} /> Add friend
-                    </Button>
-                  );
-                })()}
-
-                {/* Challenge — battle is friends-only */}
-                <Button
-                  variant={areFriends ? "ember" : "secondary"}
-                  size="sm"
-                  onClick={() =>
-                    areFriends
-                      ? setShowBattleModal(true)
-                      : toast(`Add @${profile.username} as a friend to battle them`)
-                  }
-                  className="w-full"
-                >
-                  <Swords size={15} /> Challenge
+          <div className="home-rise home-rise-2 mt-4 flex items-center gap-1.5">
+            <div key={friendState} className={cn("flex-1 min-w-0 flex items-center gap-1.5", landed && "commit-pop")}>
+              {friendState === "friends" ? (
+                <Button variant="gold-outline" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("remove")}>
+                  <UserCheck size={15} aria-hidden /> Friends
                 </Button>
-              </div>
-
-              {/* Secondary row — message + compare */}
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="gold-outline" size="sm" onClick={() => navigate(`/chat/${userId}`)} className="w-full">
-                  <MessageCircle size={15} /> Message
+              ) : friendState === "incoming" ? (
+                <>
+                  <Button variant="ember" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("accept")}>
+                    <UserCheck size={15} aria-hidden /> Accept
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground" aria-label="Decline request" onClick={() => handleFriendAction("decline")}>
+                    <UserX size={18} aria-hidden />
+                  </Button>
+                </>
+              ) : friendState === "sent" ? (
+                <Button variant="secondary" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("cancel")}>
+                  <Clock size={14} aria-hidden /> Pending
                 </Button>
-                <Button variant="gold-outline" size="sm" onClick={() => navigate(`/badges/compare?user=${profile.username}`)} className="w-full">
-                  <GitCompare size={15} /> Compare
+              ) : (
+                <Button variant="ember" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("send")}>
+                  <UserPlus size={15} aria-hidden /> Add friend
                 </Button>
-              </div>
-
-              {/* Safety row — report + block (App Store 1.2) */}
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="secondary" size="sm" onClick={() => report("profile", userId!, userId!, `Reported profile @${profile.username}`)} className="w-full text-muted-foreground">
-                  <Flag size={15} /> Report
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowBlockConfirm(true)}
-                  className="w-full text-destructive"
-                >
-                  <Ban size={15} /> Block
-                </Button>
-              </div>
+              )}
             </div>
-          </motion.div>
+            <Button variant="ghost" size="icon" aria-label="Message" onClick={() => navigate(`/chat/${userId}`)}>
+              <MessageCircle size={18} aria-hidden />
+            </Button>
+            {/* Challenge — battle is friends-only */}
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Challenge to a battle"
+              className={cn(areFriends && "text-ember")}
+              onClick={() =>
+                areFriends
+                  ? setShowBattleModal(true)
+                  : toast(`Add @${profile.username} as a friend to battle them`)
+              }
+            >
+              <Swords size={18} aria-hidden />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Compare badges" onClick={() => navigate(`/badges/compare?user=${profile.username}`)}>
+              <GitCompare size={18} aria-hidden />
+            </Button>
+            {/* Report + block (App Store 1.2) live behind the one menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="More actions">
+                  <MoreVertical size={18} aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={() => report("profile", userId!, userId!, `Reported profile @${profile.username}`)}>
+                  <Flag aria-hidden size={14} className="mr-2 text-muted-foreground" /> Report
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setShowBlockConfirm(true)}>
+                  <Ban aria-hidden size={14} className="mr-2" /> Block
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
 
         {showBattleModal && profile && (
@@ -411,28 +378,44 @@ const UserProfile = () => {
           />
         )}
 
-        {/* Elite Feed media — IG-style 3-col grid, edge-to-edge */}
+        {/* ── HEAD TO HEAD — you against them ── */}
+        {!isOwnProfile && myProfile && (
+          <div className="home-rise home-rise-3 mt-4">
+            <HeadToHead
+              me={{
+                username: myProfile.username,
+                xp: myProfile.xp,
+                streak: myProfile.streak,
+                level: myProfile.level,
+                rank_score: Number(myProfile.rank_score) || 0,
+                avatarUrl: myProfile.avatar_url,
+                tier: myProfile.status_tier,
+              }}
+              them={{
+                username: profile.username,
+                xp: profile.xp,
+                streak: profile.streak,
+                level: profile.level,
+                rank_score: Number(profile.rank_score) || 0,
+                avatarUrl: profile.avatar_url,
+                tier: profile.status_tier,
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── PROOF — the media grid, edge to edge ── */}
         {mediaPosts && mediaPosts.length > 0 && (
-          <div className="mb-6 -mx-4 mt-2">
-            <div className="flex items-center justify-center border-t border-border">
-              <div className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-t-2 border-foreground -mt-px">
-                <Camera size={12} className="text-foreground" />
-                <span className="eyebrow text-foreground">
-                  Posts · {mediaPosts.length}
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-[2px]">
-              {mediaPosts.map((p: any, i) => {
+          <div className="home-rise home-rise-4 mt-7">
+            <p className="text-[11px] font-bold text-muted-foreground mb-2">Posts · {mediaPosts.length}</p>
+            <div className="-mx-4 grid grid-cols-3 gap-[2px]">
+              {mediaPosts.map((p: any) => {
                 const isVideo = !!p.video_url;
                 const src = p.image_url || p.video_url;
                 return (
-                  <motion.button
+                  <button
                     type="button"
                     key={p.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.05 + i * 0.02 }}
                     onClick={() => {
                       setLightboxUrl(src);
                       setLightboxPost(p);
@@ -442,85 +425,62 @@ const UserProfile = () => {
                     <GridMedia src={src} isVideo={isVideo} alt={`@${profile.username} post`} />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
                       <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
-                        <Heart size={12} fill="currentColor" />
+                        <Heart size={12} fill="currentColor" aria-hidden />
                         {p.likes_count ?? 0}
                       </span>
                       <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
-                        <MessageSquare size={12} fill="currentColor" />
+                        <MessageSquare size={12} fill="currentColor" aria-hidden />
                         {p.comments_count ?? 0}
                       </span>
                     </div>
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
           </div>
         )}
 
-        {/* Head-to-head comparison (only when viewing another user) */}
-        {!isOwnProfile && myProfile && (
-          <HeadToHead
-            me={{
-              username: myProfile.username,
-              xp: myProfile.xp,
-              streak: myProfile.streak,
-              level: myProfile.level,
-              rank_score: Number(myProfile.rank_score) || 0,
-            }}
-            them={{
-              username: profile.username,
-              xp: profile.xp,
-              streak: profile.streak,
-              level: profile.level,
-              rank_score: Number(profile.rank_score) || 0,
-            }}
-          />
-        )}
-
-      {/* Champion History */}
-      {championHistory && championHistory.wins > 0 && (
-        <div className="mb-6 home-rise home-rise-1">
-          <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 glow-gold-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <Medal size={18} className="text-gold" />
-              <h2 className="font-display font-bold text-base tracking-tight">Season Champion</h2>
-              <span className="ml-auto text-gold font-display font-bold text-lg">{championHistory.wins}x</span>
+        {/* ── CHAMPION HISTORY — a quiet ledger ── */}
+        {championHistory && championHistory.wins > 0 && (
+          <div className="mt-7 surface-card surface-card-quiet px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Medal size={14} className="text-muted-foreground shrink-0" aria-hidden />
+              <h2 className="flex-1 text-[13px] font-bold">Season Champion</h2>
+              <span className="font-display font-black text-[17px] tabular-nums leading-none">{championHistory.wins}×</span>
             </div>
-            <div className="space-y-1.5">
+            <div className="mt-1 divide-y divide-border/35">
               {championHistory.seasons.map((s: any, i: number) => (
-                <div key={i} className="flex items-center justify-between text-sm">
+                <div key={i} className="py-2 flex items-center justify-between text-[12px]">
                   <span className="text-muted-foreground">{s.name}</span>
-                  <span className="text-gold font-semibold">{fmtInt(s.points)} XP</span>
+                  <span className="font-semibold tabular-nums">{fmtUnit(s.points, "XP")}</span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Earned Badges */}
-      <div className="home-rise home-rise-2">
-        <h2 className="font-display font-bold text-sm mb-3 tracking-tight">
-          Badges ({earnedBadges.length})
-        </h2>
-        {earnedBadges.length === 0 ? (
-          <EmptyState size="compact" icon={Award} title="No badges earned yet" />
-        ) : (
-          <div className="grid grid-cols-3 gap-3">
-            {earnedBadges.map((badge) => (
-              <BadgeCard
-                key={badge.id}
-                name={badge.name}
-                icon={badge.icon}
-                rarity={badge.rarity}
-                earned
-                description={badge.description || undefined}
-              />
-            ))}
-          </div>
         )}
-      </div>
 
+        {/* ── BADGES ── */}
+        <div className="mt-7">
+          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">
+            Badges ({earnedBadges.length})
+          </h2>
+          {earnedBadges.length === 0 ? (
+            <EmptyState size="compact" icon={Award} title="No badges earned yet" />
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {earnedBadges.map((badge) => (
+                <BadgeCard
+                  key={badge.id}
+                  name={badge.name}
+                  icon={badge.icon}
+                  rarity={badge.rarity}
+                  earned
+                  description={badge.description || undefined}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <ImageLightbox
@@ -529,7 +489,7 @@ const UserProfile = () => {
         isVideo={!!lightboxPost?.video_url}
         username={profile.username}
         avatarUrl={profile.avatar_url}
-        tier={(profile.status_tier || "recruit") as StatusTier}
+        tier={tierKey as StatusTier}
         level={profile.level}
         streak={profile.streak}
         likes={lightboxPost?.likes_count}
@@ -548,7 +508,7 @@ const UserProfile = () => {
         onOpenChange={setShowBlockConfirm}
         onConfirm={() => {
           block(userId!, profile.username);
-          navigate(-1);
+          backOr(navigate, "/squad");
         }}
       />
     </div>

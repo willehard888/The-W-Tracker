@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
 import { useAuth } from "@/contexts/AuthContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, UserPlus, Check, Users } from "lucide-react";
+import { Search, UserPlus, Check, Users } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
+import { useCommitPop } from "@/hooks/use-commit-pop";
+import { cn } from "@/lib/utils";
 
 interface Props {
   tribeId: string;
@@ -90,58 +92,46 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
     toast.success(`Invite sent to @${u.username}`);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="font-display font-black flex items-center gap-2">
-            <UserPlus size={16} className="text-[hsl(var(--ember))]" />
-            Invite to Tribe
-          </DialogTitle>
-        </DialogHeader>
+  const hint = searching
+    ? "Searching…"
+    : query.trim().length < 2
+    ? "Type at least 2 characters to search"
+    : hits.length === 0
+    ? `No users matching "${query}"`
+    : null;
 
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      label="Invite to tribe"
+      title="Invite to tribe"
+      height="tall"
+      headerExtra={
+        <div className="relative px-4 pb-2">
+          <Search size={14} className="absolute left-7 top-[22px] -translate-y-1/2 text-muted-foreground" aria-hidden />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by username…"
-            className="pl-9"
+            className="pl-9 h-11"
             autoFocus
           />
         </div>
-
-        <div className="max-h-72 overflow-y-auto space-y-1 -mr-2 pr-2">
-          {searching && (
-            <div className="flex justify-center py-4">
-              <Loader2 size={16} className="animate-spin text-muted-foreground" />
-            </div>
-          )}
-
-          {!searching && query.trim().length >= 2 && hits.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-6">
-              No users matching "{query}"
-            </p>
-          )}
-
-          {!searching && query.trim().length < 2 && (
-            <p className="text-xs text-muted-foreground text-center py-6">
-              Type at least 2 characters to search
-            </p>
-          )}
-
+      }
+    >
+      {hint ? (
+        <p className="text-xs text-muted-foreground text-center py-8">{hint}</p>
+      ) : (
+        <div className="divide-y divide-border/35">
           {hits.map((u) => {
             const isMember = memberIds.has(u.user_id);
             const isInvited = invitedIds.has(u.user_id);
-            const isSending = sendingId === u.user_id;
             return (
-              <div
-                key={u.user_id}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-              >
-                <div className="h-8 w-8 rounded-full bg-secondary border border-border overflow-hidden shrink-0">
+              <div key={u.user_id} className="flex items-center gap-3 py-2.5">
+                <div className="h-9 w-9 rounded-full bg-secondary border border-border overflow-hidden shrink-0">
                   {u.avatar_url ? (
-                    <img loading="lazy" decoding="async" src={avatarUrl(u.avatar_url, 48)} alt={u.username} className="h-full w-full object-cover" />
+                    <img loading="lazy" decoding="async" src={avatarUrl(u.avatar_url, 48)} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
                       {u.username.slice(0, 2).toUpperCase()}
@@ -149,7 +139,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold truncate">@{u.username}</p>
+                  <p className="text-[13px] font-bold truncate">@{u.username}</p>
                   {u.status_tier && (
                     <p className="text-[11px] text-muted-foreground capitalize">
                       {u.status_tier.replace("_", " ")}
@@ -157,35 +147,36 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                   )}
                 </div>
                 {isMember ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground px-2 py-1 rounded-md bg-secondary/60">
-                    <Users size={12} /> Member
-                  </span>
-                ) : isInvited ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--ember))] px-2 py-1 rounded-md bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/30">
-                    <Check size={12} /> Invited
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+                    <Users size={12} aria-hidden /> Member
                   </span>
                 ) : (
-                  <Button
-                    onClick={() => handleInvite(u)}
-                    disabled={isSending}
-                    size="sm"
-                    variant="ember"
-                    className="h-8 px-2.5 text-[11px]"
-                  >
-                    {isSending ? (
-                      <Loader2 size={12} className="animate-spin" />
-                    ) : (
-                      <UserPlus size={12} />
-                    )}
-                    Invite
-                  </Button>
+                  <InviteAction invited={isInvited} sending={sendingId === u.user_id} onInvite={() => handleInvite(u)} />
                 )}
               </div>
             );
           })}
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </BottomSheet>
+  );
+};
+
+/** Invite button that becomes "Invited", popping only on the user's own tap
+ *  (a row that was already invited when it appeared stays still). */
+const InviteAction = ({ invited, sending, onInvite }: { invited: boolean; sending: boolean; onInvite: () => void }) => {
+  const pop = useCommitPop(invited);
+  if (invited) {
+    return (
+      <span className={cn("inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--ember))]", pop && "commit-pop")}>
+        <Check size={12} aria-hidden /> Invited
+      </span>
+    );
+  }
+  return (
+    <Button onClick={onInvite} loading={sending} size="sm" variant="ember" className="min-h-11">
+      <UserPlus size={12} /> Invite
+    </Button>
   );
 };
 

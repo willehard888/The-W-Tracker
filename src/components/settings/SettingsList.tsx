@@ -9,7 +9,7 @@ import { hapticSelection } from "@/lib/haptics";
 /** Settings section: eyebrow + surface-card list of rows. */
 export const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="home-rise home-rise-1">
-    <p className="eyebrow px-1 mb-1.5">{title}</p>
+    <p className="text-[11px] font-bold text-muted-foreground px-1 mb-1.5">{title}</p>
     <div className="surface-card overflow-hidden divide-y divide-border/30">{children}</div>
   </div>
 );

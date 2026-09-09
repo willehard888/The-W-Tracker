@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useState } from "react";
 import { Copy, Check, Share2, Image as ImageIcon } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
@@ -81,7 +82,7 @@ const Referrals = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Referrals" onBack={() => navigate(-1)} />
+      <PageBar title="Referrals" onBack={() => backOr(navigate, "/")} />
 
       <div className="px-4 pt-4 pb-6">
         {/* Opening beat — the deal, in the user's own numbers. */}

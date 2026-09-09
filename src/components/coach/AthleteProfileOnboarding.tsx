@@ -1,11 +1,18 @@
 import { forwardRef, useEffect, useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import { SPORTS } from "@/lib/sports";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Sparkles, Minus, Plus } from "lucide-react";
+import {
+  ChevronRight, ChevronLeft, Minus, Plus, Check,
+  Zap, Dumbbell, BicepsFlexed, Flame, Footprints, Leaf, Brain,
+  Sprout, TrendingUp, Medal,
+  Feather, Megaphone, FlaskConical,
+  Home, Trees, Swords,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import { useCommitPop } from "@/hooks/use-commit-pop";
 import { useAthleteProfile, type ToneId, type GoalId, type TrainingExperience } from "@/hooks/use-athlete-profile";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -15,14 +22,18 @@ const STEP_KEY = "w_coach_onboarding_step_v2";
 
 interface Props { onDone: () => void }
 
-const GOALS: { id: GoalId; label: string; sub: string; emoji: string }[] = [
-  { id: "all",        label: "All-around",     sub: "Strong, lean, sharp — balanced progress everywhere", emoji: "⚡" },
-  { id: "strength",   label: "Get stronger",   sub: "Lift heavier, build raw power", emoji: "🏋️" },
-  { id: "hypertrophy",label: "Build muscle",   sub: "Visible size, lean mass", emoji: "💪" },
-  { id: "fat_loss",   label: "Lose fat",       sub: "Lean down, keep muscle", emoji: "🔥" },
-  { id: "endurance",  label: "Endurance",      sub: "Run, ride, last longer", emoji: "🏃" },
-  { id: "longevity",  label: "Longevity",      sub: "Health-span, energy 20y out", emoji: "🌱" },
-  { id: "focus",      label: "Sharpen focus",  sub: "Mind, deep work, sleep", emoji: "🧠" },
+type Option<Id extends string = string> = { id: Id; label: string; sub: string; icon: LucideIcon };
+
+// The option lists are exported: the read view (/coach/profile) renders the
+// same labels, so the two screens can never drift apart.
+export const GOALS: Option<GoalId>[] = [
+  { id: "all",        label: "All-around",     sub: "Strong, lean, sharp — balanced progress everywhere", icon: Zap },
+  { id: "strength",   label: "Get stronger",   sub: "Lift heavier, build raw power", icon: Dumbbell },
+  { id: "hypertrophy",label: "Build muscle",   sub: "Visible size, lean mass", icon: BicepsFlexed },
+  { id: "fat_loss",   label: "Lose fat",       sub: "Lean down, keep muscle", icon: Flame },
+  { id: "endurance",  label: "Endurance",      sub: "Run, ride, last longer", icon: Footprints },
+  { id: "longevity",  label: "Longevity",      sub: "Health-span, energy 20y out", icon: Leaf },
+  { id: "focus",      label: "Sharpen focus",  sub: "Mind, deep work, sleep", icon: Brain },
 ];
 
 /**
@@ -33,40 +44,38 @@ const GOALS: { id: GoalId; label: string; sub: string; emoji: string }[] = [
  * answer decides whether someone starts on the written 8-week path or goes
  * straight to the AI generator.
  */
-export const EXPERIENCE: { id: TrainingExperience; label: string; sub: string; emoji: string }[] = [
-  { id: "never_trained",  label: "New to the gym",       sub: "Never trained, or it has been years — we start from the beginning", emoji: "🌱" },
-  { id: "under_6_months", label: "Some experience",      sub: "A few months in. You know the machines, still finding your footing", emoji: "📈" },
-  { id: "experienced",    label: "I know my way around", sub: "Comfortable with the main lifts and training on your own", emoji: "🏋️" },
+export const EXPERIENCE: Option<TrainingExperience>[] = [
+  { id: "never_trained",  label: "New to the gym",       sub: "Never trained, or it has been years — we start from the beginning", icon: Sprout },
+  { id: "under_6_months", label: "Some experience",      sub: "A few months in. You know the machines, still finding your footing", icon: TrendingUp },
+  { id: "experienced",    label: "I know my way around", sub: "Comfortable with the main lifts and training on your own", icon: Medal },
 ];
 
-const TONES: { id: ToneId; label: string; sub: string }[] = [
-  { id: "calm_mentor",    label: "Calm mentor",    sub: "Steady, supportive, precise" },
-  { id: "drill_sergeant", label: "Drill sergeant", sub: "Blunt. No excuses." },
-  { id: "scientist",      label: "Scientist",      sub: "Evidence, mechanisms, numbers" },
-  { id: "hype",           label: "Hype coach",     sub: "Energy. Wins. Momentum." },
+export const TONES: Option<ToneId>[] = [
+  { id: "calm_mentor",    label: "Calm mentor",    sub: "Steady, supportive, precise", icon: Feather },
+  { id: "drill_sergeant", label: "Drill sergeant", sub: "Blunt. No excuses.", icon: Megaphone },
+  { id: "scientist",      label: "Scientist",      sub: "Evidence, mechanisms, numbers", icon: FlaskConical },
+  { id: "hype",           label: "Hype coach",     sub: "Energy. Wins. Momentum.", icon: Flame },
 ];
-
 
 // 4 environment presets replace the previous 9-item granular list.
 // User feedback: "tee välinevalinnasta todella simppeli esim full gym jne."
 // The AI program generator expands these into fine-grained equipment lists
 // via expandEquipmentPresets() in src/lib/coach/equipment-presets.ts.
-const EQUIPMENT_PRESETS: { id: string; label: string; emoji: string; sub: string }[] = [
-  { id: "full_gym",      label: "Full gym",           emoji: "🏋️", sub: "Barbells, racks, machines" },
-  { id: "home_minimal",  label: "Home minimal",       emoji: "🏠", sub: "Bodyweight + dumbbells + bands" },
-  { id: "outdoor",       label: "Outdoor / running",  emoji: "🌳", sub: "Runs, hikes, calisthenics" },
-  { id: "combat_sport",  label: "Combat / sport gym", emoji: "🥊", sub: "Bags, mats, partner work" },
+export const EQUIPMENT_PRESETS: Option[] = [
+  { id: "full_gym",      label: "Full gym",           sub: "Barbells, racks, machines", icon: Dumbbell },
+  { id: "home_minimal",  label: "Home minimal",       sub: "Bodyweight + dumbbells + bands", icon: Home },
+  { id: "outdoor",       label: "Outdoor / running",  sub: "Runs, hikes, calisthenics", icon: Trees },
+  { id: "combat_sport",  label: "Combat / sport gym", sub: "Bags, mats, partner work", icon: Swords },
 ];
 const DIET = ["Omnivore","Vegetarian","Vegan","Lactose-free","Gluten-free","Halal","Keto"];
 const INJURIES = ["Lower back","Knee","Shoulder","Hip","Wrist","Elbow","Neck"];
-
 
 // Mind & life step (migration 20260511181220).
 const HOBBIES = [
   "Reading", "Music", "Gaming", "Outdoors",
   "Cooking", "Creative work", "Family", "Social", "Sport",
 ];
-const MENTAL_FOCUS: { id: string; label: string }[] = [
+export const MENTAL_FOCUS: { id: string; label: string }[] = [
   { id: "anxiety",  label: "Anxiety"   },
   { id: "low_mood", label: "Low mood"  },
   { id: "focus",    label: "Focus"     },
@@ -74,8 +83,9 @@ const MENTAL_FOCUS: { id: string; label: string }[] = [
   { id: "burnout",  label: "Burnout"   },
   { id: "none",     label: "None"      },
 ];
-const STRESS_EMOJI = ["😌", "🙂", "😐", "😬", "😫"];
-const MOOD_EMOJI   = ["😢", "😕", "😐", "🙂", "😄"];
+/** The 1–5 scales in words, index = value − 1. Shared with the read view. */
+export const STRESS_WORDS = ["Calm", "Settled", "Steady", "Tense", "Overwhelmed"];
+export const MOOD_WORDS   = ["Down", "Low", "Flat", "Good", "Energised"];
 
 const loadDraft = (): any | null => {
   try {
@@ -134,6 +144,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
     const arr: any[] = draft[key] ?? [];
     set({ [key]: arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val] });
   };
+  const pick = (key: string, val: any) => { hapticImpact("light"); set({ [key]: val }); };
 
   const STEPS = [
     // 0 — goal first (most important)
@@ -141,43 +152,26 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       title: "What do you want?",
       sub: "Pick your main focus. The Coach builds everything around this.",
       content: (
-        <div className="space-y-2">
-          {GOALS.map(g => (
-            <button key={g.id} type="button"
-              onClick={() => { hapticImpact("light"); set({ primary_goal: g.id }); }}
-              className={cn(
-                "w-full text-left rounded-2xl px-4 py-3.5 border transition-all flex items-center gap-3",
-                draft.primary_goal === g.id
-                  ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)] shadow-[0_0_24px_-8px_hsl(var(--gold)/0.6)]"
-                  : "surface-card"
-              )}>
-              <span className="text-2xl">{g.emoji}</span>
-              <div className="flex-1">
-                <div className="text-sm font-bold">{g.label}</div>
-                <div className="text-xs text-muted-foreground leading-tight">{g.sub}</div>
-              </div>
-            </button>
-          ))}
+        <div>
+          <div className="space-y-1">
+            {GOALS.map(g => (
+              <OptionRow key={g.id} {...g} active={draft.primary_goal === g.id} onClick={() => pick("primary_goal", g.id)} />
+            ))}
+          </div>
 
           {/* Sports — the coach's standing sport context ("lajivalmennus").
               Separate from hobbies on purpose: hobbies steer recovery framing,
               sports steer programming. */}
-          <div className="pt-3">
-            <p className="eyebrow mb-2">What do you train? <span className="normal-case tracking-normal font-semibold text-muted-foreground/70">(pick any)</span></p>
-            <div className="flex flex-wrap gap-1.5">
-              {SPORTS.map((sp) => (
-                <button key={sp.id} type="button"
-                  onClick={() => { hapticImpact("light"); toggle("sports", sp.id); }}
-                  className={cn(
-                    "px-2.5 py-1.5 rounded-full border text-[12px] font-bold transition-all",
-                    (draft.sports ?? []).includes(sp.id)
-                      ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.1)] text-foreground"
-                      : "surface-card text-muted-foreground"
-                  )}>
-                  {sp.emoji} {sp.label}
-                </button>
-              ))}
-            </div>
+          <div className="pt-5">
+            <Field label="What do you train? Pick any.">
+              <div className="flex flex-wrap gap-1.5">
+                {SPORTS.map((sp) => (
+                  <Chip key={sp.id} active={(draft.sports ?? []).includes(sp.id)} onClick={() => { hapticImpact("light"); toggle("sports", sp.id); }}>
+                    {sp.label}
+                  </Chip>
+                ))}
+              </div>
+            </Field>
           </div>
         </div>
       ),
@@ -191,25 +185,12 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       // exactly the person the written beginner path exists to catch.
       required: true,
       content: (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {EXPERIENCE.map(e => (
-            <button key={e.id} type="button"
-              onClick={() => { hapticImpact("light"); set({ training_experience: e.id }); }}
-              className={cn(
-                "w-full text-left rounded-2xl px-4 py-3.5 border transition-all flex items-center gap-3",
-                draft.training_experience === e.id
-                  ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)] shadow-[0_0_24px_-8px_hsl(var(--gold)/0.6)]"
-                  : "surface-card"
-              )}>
-              <span className="text-2xl">{e.emoji}</span>
-              <div className="flex-1">
-                <div className="text-sm font-bold">{e.label}</div>
-                <div className="text-xs text-muted-foreground leading-tight">{e.sub}</div>
-              </div>
-            </button>
+            <OptionRow key={e.id} {...e} active={draft.training_experience === e.id} onClick={() => pick("training_experience", e.id)} />
           ))}
           {draft.training_experience === "never_trained" && (
-            <p className="text-[12px] text-muted-foreground leading-snug pt-1">
+            <p className="text-[12px] text-muted-foreground leading-snug pt-2 px-3">
               You will start on a written 8-week plan: three sessions a week, a handful of
               movements, and proper coaching on every one of them. Your coach takes over once
               they feel familiar.
@@ -236,7 +217,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
                 {id:"male",l:"Male"},{id:"female",l:"Female"},
                 {id:"other",l:"Other"},{id:"prefer_not_say",l:"Skip"}
               ].map(s => (
-                <Chip key={s.id} small active={draft.sex === s.id} onClick={() => set({ sex: s.id })}>
+                <Chip key={s.id} active={draft.sex === s.id} onClick={() => set({ sex: s.id })}>
                   {s.l}
                 </Chip>
               ))}
@@ -254,12 +235,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
           <Field label="What do you do for joy?">
             <div className="flex flex-wrap gap-1.5">
               {HOBBIES.map(h => (
-                <Chip
-                  key={h}
-                  small
-                  active={draft.hobbies.includes(h)}
-                  onClick={() => toggle("hobbies", h)}
-                >
+                <Chip key={h} active={draft.hobbies.includes(h)} onClick={() => toggle("hobbies", h)}>
                   {h}
                 </Chip>
               ))}
@@ -272,72 +248,23 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               value={draft.life_context ?? ""}
               onChange={e => set({ life_context: e.target.value.slice(0, 160) })}
               placeholder="e.g. New baby, working remote, training around 6am only."
-              className="w-full resize-none surface-inset rounded-2xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
+              className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[11px] text-muted-foreground/70 mt-1">{(draft.life_context ?? "").length}/160</p>
+            <p className="text-[11px] text-muted-foreground/70 mt-1 tabular-nums">{(draft.life_context ?? "").length}/160</p>
           </Field>
 
           <Field label="Stress lately">
-            <div className="flex justify-between gap-1.5">
-              {STRESS_EMOJI.map((emoji, i) => {
-                const value = i + 1;
-                const active = draft.stress_baseline === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => { hapticImpact("light"); set({ stress_baseline: value }); }}
-                    className={cn(
-                      "flex-1 h-12 rounded-xl text-xl border transition-all",
-                      active
-                        ? "bg-[hsl(var(--gold)/0.15)] border-[hsl(var(--gold)/0.55)]"
-                        : "surface-card",
-                    )}
-                    aria-label={`Stress level ${value} of 5`}
-                  >
-                    {emoji}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[11px] text-muted-foreground/70 mt-1">Calm → overwhelmed</p>
+            <Scale name="Stress level" value={draft.stress_baseline} words={STRESS_WORDS} onChange={v => pick("stress_baseline", v)} />
           </Field>
 
           <Field label="Mood lately">
-            <div className="flex justify-between gap-1.5">
-              {MOOD_EMOJI.map((emoji, i) => {
-                const value = i + 1;
-                const active = draft.mood_baseline === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => { hapticImpact("light"); set({ mood_baseline: value }); }}
-                    className={cn(
-                      "flex-1 h-12 rounded-xl text-xl border transition-all",
-                      active
-                        ? "bg-[hsl(var(--gold)/0.15)] border-[hsl(var(--gold)/0.55)]"
-                        : "surface-card",
-                    )}
-                    aria-label={`Mood level ${value} of 5`}
-                  >
-                    {emoji}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[11px] text-muted-foreground/70 mt-1">Down → energised</p>
+            <Scale name="Mood level" value={draft.mood_baseline} words={MOOD_WORDS} onChange={v => pick("mood_baseline", v)} />
           </Field>
 
           <Field label="Anything to focus on? Optional, private.">
             <div className="flex flex-wrap gap-1.5">
               {MENTAL_FOCUS.map(m => (
-                <Chip
-                  key={m.id}
-                  small
-                  active={draft.mental_health_focus.includes(m.id)}
-                  onClick={() => toggle("mental_health_focus", m.id)}
-                >
+                <Chip key={m.id} active={draft.mental_health_focus.includes(m.id)} onClick={() => toggle("mental_health_focus", m.id)}>
                   {m.label}
                 </Chip>
               ))}
@@ -353,41 +280,24 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       optional: true,
       content: (
         <div className="space-y-5">
-          <Field label="Where do you train?">
-            <div className="grid grid-cols-2 gap-2">
+          <Field label="Where do you train? Pick any.">
+            <div className="space-y-1">
               {EQUIPMENT_PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => { hapticImpact("light"); toggle("equipment", p.id); }}
-                  className={cn(
-                    "press rounded-2xl border px-3 py-2.5 text-left transition-all ",
-                    draft.equipment.includes(p.id)
-                      ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)]"
-                      : "surface-card hover:bg-card/60",
-                  )}
-                >
-                  <div className="text-lg mb-0.5">{p.emoji}</div>
-                  <div className="text-[12px] font-bold leading-tight">{p.label}</div>
-                  <div className="text-[11px] text-muted-foreground leading-snug mt-0.5">{p.sub}</div>
-                </button>
+                <OptionRow key={p.id} {...p} active={draft.equipment.includes(p.id)} onClick={() => { hapticImpact("light"); toggle("equipment", p.id); }} />
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              Pick any that apply — the program adapts to what you actually have.
-            </p>
           </Field>
           <Field label="Injuries / no-go zones">
             <div className="flex flex-wrap gap-1.5">
               {INJURIES.map(i => (
-                <Chip key={i} small active={draft.injuries.includes(i)} onClick={() => toggle("injuries", i)}>{i}</Chip>
+                <Chip key={i} active={draft.injuries.includes(i)} onClick={() => toggle("injuries", i)}>{i}</Chip>
               ))}
             </div>
           </Field>
           <Field label="Diet">
             <div className="flex flex-wrap gap-1.5">
               {DIET.map(d => (
-                <Chip key={d} small active={draft.dietary.includes(d)} onClick={() => toggle("dietary", d)}>{d}</Chip>
+                <Chip key={d} active={draft.dietary.includes(d)} onClick={() => toggle("dietary", d)}>{d}</Chip>
               ))}
             </div>
           </Field>
@@ -399,29 +309,21 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       title: "Coach voice",
       sub: "How should I talk to you? Change anytime.",
       content: (
-        <div className="space-y-2">
-          {TONES.map(t => (
-            <button key={t.id} type="button"
-              onClick={() => { hapticImpact("light"); set({ tone_pref: t.id }); }}
-              className={cn(
-                "w-full text-left rounded-2xl px-4 py-3 border transition-all",
-                draft.tone_pref === t.id
-                  ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)]"
-                  : "surface-card"
-              )}>
-              <div className="text-sm font-bold">{t.label}</div>
-              <div className="text-xs text-muted-foreground">{t.sub}</div>
-            </button>
-          ))}
+        <div className="space-y-5">
+          <div className="space-y-1">
+            {TONES.map(t => (
+              <OptionRow key={t.id} {...t} active={draft.tone_pref === t.id} onClick={() => pick("tone_pref", t.id)} />
+            ))}
+          </div>
           <Field label="Your why — who are you becoming?">
             <textarea
               rows={2}
               value={draft.i_am}
               onChange={e => set({ i_am: e.target.value.slice(0, 160) })}
               placeholder="e.g. The dad my kids see show up strong every day. Someone who keeps promises to himself."
-              className="w-full resize-none surface-inset rounded-2xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
+              className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[11px] text-muted-foreground/70 mt-1">
+            <p className="text-[11px] text-muted-foreground/70 mt-1 tabular-nums">
               {draft.i_am.length}/160 · This is what every check-in is really for.
             </p>
           </Field>
@@ -460,35 +362,44 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-5 pt-2 pb-8">
-      {/* progress */}
-      <div className="flex gap-1 mb-5">
-        {STEPS.map((_, i) => (
-          <div key={i} className={cn(
-            "flex-1 h-1 rounded-full transition-colors",
-            i <= step ? "bg-[hsl(var(--gold))]" : "bg-border/40"
-          )} />
-        ))}
-      </div>
+    <div className="flex-1 overflow-y-auto px-4 pt-2 pb-8">
+      {/* BEAT: the progress and the question. The step title is the display line. */}
+      <header className="home-rise">
+        <div className="flex items-center gap-3 mb-5">
+          <div
+            className="flex-1 flex gap-1"
+            role="progressbar"
+            aria-label="Profile setup"
+            aria-valuemin={1}
+            aria-valuemax={STEPS.length}
+            aria-valuenow={step + 1}
+          >
+            {STEPS.map((_, i) => (
+              <div key={i} className={cn(
+                "flex-1 h-1 rounded-full transition-colors",
+                i <= step ? "bg-gold" : "bg-border/40"
+              )} />
+            ))}
+          </div>
+          <span className="text-[11px] font-bold text-muted-foreground tabular-nums">{step + 1}/{STEPS.length}</span>
+        </div>
+        <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{cur.title}</h2>
+        <p className="mt-1.5 text-[13px] text-muted-foreground mb-5">{cur.sub}</p>
+      </header>
 
-      <div className="flex items-center gap-2 mb-1">
-        <Sparkles size={14} className="text-gold" />
-        <p className="eyebrow text-gold">Step {step + 1} of {STEPS.length}</p>
+      <div className="home-rise home-rise-1">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -18 }}
+            transition={{ duration: 0.2 }}
+          >
+            {cur.content}
+          </motion.div>
+        </AnimatePresence>
       </div>
-      <h2 className="font-display text-2xl font-black tracking-tight leading-tight">{cur.title}</h2>
-      <p className="text-sm text-muted-foreground mt-1 mb-5">{cur.sub}</p>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 18 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -18 }}
-          transition={{ duration: 0.2 }}
-        >
-          {cur.content}
-        </motion.div>
-      </AnimatePresence>
 
       <div className="flex gap-2 mt-7 sticky bottom-0 pt-2 pb-2 bg-gradient-to-t from-background via-background/95 to-transparent">
         {step > 0 && (
@@ -504,25 +415,100 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
   );
 };
 
+/**
+ * One choice as a 44 pt row: icon, label, line, and a check that lands with
+ * the app's commit-pop. Only the chosen row carries a border, and it is gold.
+ */
+const OptionRow = ({
+  icon: Icon, label, sub, active, onClick,
+}: {
+  icon: LucideIcon; label: string; sub?: string; active: boolean; onClick: () => void;
+}) => {
+  const popping = useCommitPop(active);
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        "w-full min-h-11 flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors",
+        active ? "border-gold/70 bg-gold/[0.06]" : "border-transparent",
+      )}
+    >
+      <Icon size={16} className={cn("shrink-0", active ? "text-gold" : "text-muted-foreground")} aria-hidden />
+      <span className="flex-1 min-w-0">
+        <span className="block text-[14px] font-semibold leading-tight">{label}</span>
+        {sub && <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{sub}</span>}
+      </span>
+      <span
+        className={cn(
+          "h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center",
+          active ? "border-gold bg-gold text-background" : "border-muted-foreground/35",
+          popping && "commit-pop",
+        )}
+        aria-hidden
+      >
+        {active && <Check size={12} strokeWidth={3} />}
+      </span>
+    </button>
+  );
+};
+
+/** A 1–5 scale as five 44 pt numerals; the ends are named beneath. */
+const Scale = ({
+  name, value, words, onChange,
+}: {
+  name: string; value: number | null; words: readonly string[]; onChange: (v: number) => void;
+}) => (
+  <div>
+    <div className="grid grid-cols-5 gap-1.5">
+      {words.map((word, i) => {
+        const v = i + 1;
+        const active = value === v;
+        return (
+          <button
+            key={v}
+            type="button"
+            aria-label={`${name} ${v} of 5, ${word}`}
+            aria-pressed={active}
+            onClick={() => onChange(v)}
+            className={cn(
+              "h-11 rounded-xl border font-display font-black text-[15px] tabular-nums transition-colors",
+              active ? "border-gold/70 bg-gold/[0.08] text-gold" : "border-border/50 text-muted-foreground",
+            )}
+          >
+            {v}
+          </button>
+        );
+      })}
+    </div>
+    <p className="mt-1 flex justify-between text-[11px] text-muted-foreground/70">
+      <span>{words[0]}</span>
+      <span>{words[words.length - 1]}</span>
+    </p>
+  </div>
+);
+
 const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
   ({ label, children }, ref) => (
     <div ref={ref}>
-      <label className="eyebrow text-muted-foreground mb-2 block">{label}</label>
+      <label className="block text-[11px] font-bold text-muted-foreground mb-2">{label}</label>
       {children}
     </div>
   ),
 );
 Field.displayName = "Field";
 
-const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => void; children: React.ReactNode; small?: boolean }>(
-  ({ active, onClick, children, small }, ref) => (
-    <button ref={ref} type="button" onClick={onClick}
+// 36 px tall so a wrapped row stays a row; the invisible ::before brings the
+// hit area to the 44 pt floor.
+const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => void; children: React.ReactNode }>(
+  ({ active, onClick, children }, ref) => (
+    <button ref={ref} type="button" aria-pressed={active} onClick={onClick}
       className={cn(
-        "rounded-full border transition-all capitalize",
-        small ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm",
+        "relative h-9 rounded-full border px-3 text-xs font-semibold transition-colors before:absolute before:-inset-1 before:content-['']",
         active
-          ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
-          : "surface-card text-muted-foreground"
+          ? "border-gold/70 bg-gold/[0.08] text-gold"
+          : "border-border/50 text-muted-foreground"
       )}>
       {children}
     </button>
@@ -540,18 +526,20 @@ const Stepper = ({
   const inc = () => { hapticImpact("light"); onChange(Math.min(max, value + step)); };
   return (
     <div>
-      <label className="eyebrow text-muted-foreground mb-2 block">{label}</label>
-      <div className="flex items-center gap-2 surface-card surface-card-quiet px-2 py-2">
-        <button type="button" onClick={dec} aria-label="Decrease"
-          className="min-h-11 min-w-11 surface-card surface-card-quiet rounded-xl flex items-center justify-center">
+      <label className="block text-[11px] font-bold text-muted-foreground mb-2">{label}</label>
+      {/* No box around the number: the value is the type moment, the two
+          44 pt rings are the only chrome. */}
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={dec} aria-label={`Decrease ${label.toLowerCase()}`}
+          className="h-11 w-11 shrink-0 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground">
           <Minus size={16} />
         </button>
         <div className="flex-1 text-center">
           <span className="font-display text-2xl font-black tabular-nums">{value}</span>
           <span className="text-xs text-muted-foreground ml-1.5">{unit}</span>
         </div>
-        <button type="button" onClick={inc} aria-label="Increase"
-          className="min-h-11 min-w-11 surface-card surface-card-quiet rounded-xl flex items-center justify-center">
+        <button type="button" onClick={inc} aria-label={`Increase ${label.toLowerCase()}`}
+          className="h-11 w-11 shrink-0 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground">
           <Plus size={16} />
         </button>
       </div>

@@ -21,6 +21,7 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
@@ -135,7 +136,7 @@ const Leaderboard = () => {
     swipe.current = null;
   };
 
-  const { data: allTimeLeaders, isLoading: allTimeLoading } = useQuery({
+  const { data: allTimeLeaders, isLoading: allTimeLoading, isError: allTimeError, refetch: refetchAllTime } = useQuery({
     queryKey: ["leaderboard-all-time"],
     staleTime: 5 * 60_000,   // leaderboard refreshes every 5 min is more than enough
     gcTime:    15 * 60_000,
@@ -164,7 +165,7 @@ const Leaderboard = () => {
     queryFn: fetchActiveSeason,
   });
 
-  const { data: seasonData, isLoading: seasonLoading } = useQuery({
+  const { data: seasonData, isLoading: seasonLoading, isError: seasonError, refetch: refetchSeason } = useQuery({
     queryKey: ["leaderboard-season", activeSeason?.id, profile?.user_id],
     enabled: !!activeSeason?.id,
     staleTime: 5 * 60_000,
@@ -201,7 +202,10 @@ const Leaderboard = () => {
     },
   });
 
-  const currentLeaders = mode === "season" ? seasonData?.top || [] : allTimeLeaders || [];
+  const currentLeaders = useMemo(
+    () => (mode === "season" ? seasonData?.top || [] : allTimeLeaders || []),
+    [mode, seasonData, allTimeLeaders],
+  );
   const boardTotal = mode === "season" ? seasonData?.total || 0 : totalCount || 0;
   // All-Time position derives from the SAME XP-ordered list the board shows —
   // the rank_score-based RPC could say "#7" while the user's own highlighted
@@ -234,6 +238,9 @@ const Leaderboard = () => {
   const boardLoading = mode === "season"
     ? seasonMetaLoading || seasonLoading
     : allTimeLoading || totalCount === undefined;
+  // A failed fetch used to read "the board is warming up" — an empty board and
+  // a dead connection are different screens.
+  const boardError = mode === "season" ? seasonError : allTimeError;
 
   // Who is just above you: the lead of the person one place up, when both of
   // you are on the visible board. Off the board, the beat states rank alone.
@@ -275,7 +282,7 @@ const Leaderboard = () => {
                 "Your first check-in puts you on the board."
               )}
             </h1>
-            <p className="eyebrow mt-2">
+            <p className="text-[11px] font-bold text-muted-foreground mt-2">
               {mode === "season" ? (
                 <>
                   {activeSeason?.name || "Season"}
@@ -299,7 +306,7 @@ const Leaderboard = () => {
               role="tab"
               aria-selected={mode === m}
               onClick={() => { void hapticSelection(); setMode(m); }}
-              className={cn("eyebrow flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+              className={cn("text-[11px] font-bold text-muted-foreground flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {m === "season" ? "Season" : "All time"}
             </button>
@@ -354,9 +361,9 @@ const Leaderboard = () => {
             return (
               <li
                 key={user.user_id}
-                className={cn(i < 8 && "animate-fade-in-up")}
-                style={i < 8
-                  ? { animationDelay: `${210 + i * 40}ms` }
+                className={cn(i < 4 && "animate-fade-in-up")}
+                style={i < 5
+                  ? (i < 4 ? { animationDelay: `${120 + i * 30}ms` } : undefined)
                   : { contentVisibility: "auto", containIntrinsicSize: "auto 60px" }}
               >
                 <button
@@ -403,7 +410,12 @@ const Leaderboard = () => {
       {/* Nobody on the board yet (fresh deploy / new season) — invite action.
           Gated on the ACTIVE mode's loading state so a cold cache doesn't flash
           "the board is warming up" before data lands. */}
-      {!boardLoading && currentLeaders.length === 0 && (
+      {!boardLoading && boardError && currentLeaders.length === 0 && (
+        <div className="home-rise home-rise-2">
+          <ErrorState title="Couldn't load the board" onRetry={() => { void refetchAllTime(); void refetchSeason(); }} />
+        </div>
+      )}
+      {!boardLoading && !boardError && currentLeaders.length === 0 && (
         <div className="home-rise home-rise-2">
           <EmptyState
             icon={Trophy}
@@ -479,7 +491,7 @@ const PodiumCard = ({ user, rank, points, isMe, wins, onClick }: PodiumCardProps
       )}
     >
       {isFirst && <Crown aria-hidden size={22} className="absolute -top-3 left-1/2 -translate-x-1/2 text-gold" />}
-      <span className={cn("eyebrow-sm absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
+      <span className={cn("text-[10px] font-bold text-muted-foreground absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
         {PODIUM[rank].label}
       </span>
       <StatusAvatar

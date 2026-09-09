@@ -1,9 +1,21 @@
 // Coach Morning Nudge — runs daily 07:00 UTC via pg_cron
 // Generates short proactive AI message for each Elite user with a checkin yesterday
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { fetchAll } from "../_shared/fetch-all.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { prefAllows } from "../_shared/push-targets.ts";
+
+/** The profile columns the run reads (see the select below). */
+type NudgeUser = {
+  user_id: string;
+  username: string | null;
+  status_tier: string | null;
+  level: number | null;
+  streak: number | null;
+  timezone: string | null;
+  notification_prefs: unknown;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,15 +117,22 @@ Deno.serve(async (req) => {
   // Skip duplicates: don't send a second nudge today
   const todayStartISO = todayStart.toISOString();
 
-  const { data: eliteUsers, error: usersErr } = await supabase
-    .from("profiles")
-    .select("user_id, username, status_tier, level, streak, timezone, notification_prefs")
-    // Paid members OR live membership credits (referral rewards + pilot
-    // codes) — pilot testers should wake up to the same nudge.
-    .or(`is_elite.eq.true,membership_credits_until.gt.${new Date().toISOString()}`);
-
-  if (usersErr) {
-    return new Response(JSON.stringify({ error: usersErr.message }), {
+  // Paged (see _shared/fetch-all.ts): the un-ranged select stopped at 1000
+  // members and nobody past the cap got a morning nudge.
+  let eliteUsers: NudgeUser[];
+  try {
+    eliteUsers = await fetchAll<NudgeUser>((from, to) =>
+      supabase
+        .from("profiles")
+        .select("user_id, username, status_tier, level, streak, timezone, notification_prefs")
+        // Paid members OR live membership credits (referral rewards + pilot
+        // codes) — pilot testers should wake up to the same nudge.
+        .or(`is_elite.eq.true,membership_credits_until.gt.${new Date().toISOString()}`)
+        .order("user_id")
+        .range(from, to),
+    );
+  } catch (e) {
+    return new Response(JSON.stringify({ error: (e as { message?: string })?.message ?? String(e) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

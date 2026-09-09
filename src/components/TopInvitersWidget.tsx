@@ -39,7 +39,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
           <Trophy size={16} className="text-gold shrink-0" />
           <h2 className="font-display font-bold text-sm tracking-tight truncate">Top Inviters This Month</h2>
         </div>
-        <span className="eyebrow shrink-0 whitespace-nowrap text-muted-foreground">
+        <span className="text-[11px] font-bold shrink-0 whitespace-nowrap text-muted-foreground">
           Resets 1st
         </span>
       </header>

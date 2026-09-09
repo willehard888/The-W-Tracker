@@ -61,7 +61,7 @@ const TargetsProposal = ({
   return (
     <div className="surface-card p-4 space-y-4">
       <div>
-        <p className="eyebrow text-gold/85 mb-1">Proposed targets</p>
+        <p className="text-[11px] font-bold text-gold/85 mb-1">Proposed targets</p>
         <p className="font-display text-[30px] font-black tracking-tight leading-none tabular-nums">
           {result.kcal.toLocaleString("en-US").replace(",", " ")}
           <span className="text-[15px] text-muted-foreground font-bold"> kcal / day</span>

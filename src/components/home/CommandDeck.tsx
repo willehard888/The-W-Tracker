@@ -151,7 +151,7 @@ const CommandDeck = ({
           lockTimer.current = setTimeout(() => navigate("/checkin"), 150);
         }}
         className={cn(
-          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-all duration-200 ",
+          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-transform duration-200 ",
           locking && "cta-locking",
         )}
         style={{
@@ -174,7 +174,7 @@ const CommandDeck = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="eyebrow text-gold mb-0.5">Lock your day</p>
+              <p className="text-[11px] font-bold text-gold/85 mb-0.5">Lock your day</p>
               <p className="font-display font-black text-[19px] leading-none tracking-tight">
                 Daily Check-In
               </p>

@@ -123,7 +123,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
                   hapticSelection();
                   onChange({ ...value, qty: String(q) });
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-all ", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-[color,box-shadow] ", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {massUnit ? q : fmtQty(q)}
                 {massUnit ? <span className="text-[10px] font-bold ml-0.5">{value.unit}</span> : "×"}

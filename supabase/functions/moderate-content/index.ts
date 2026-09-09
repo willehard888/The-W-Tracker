@@ -24,10 +24,17 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 
 // Per-instance ad-hoc rate limit. Backend doesn't have a dedicated rate-limit
 // primitive yet (see internal guidance) — this is a best-effort throttle.
+// ponytail: per-isolate, so N warm isolates allow N× the limit; a
+// bump_ai_usage-style RPC is the upgrade if abuse ever shows up.
 const rateBuckets = new Map<string, number[]>();
 
 function checkRate(userId: string): { allowed: boolean; retryAfter: number } {
   const now = Date.now();
+  // Prune users whose window has fully expired — the map grew for the life
+  // of the isolate.
+  for (const [k, ts] of rateBuckets) {
+    if (ts.every((t) => now - t >= RATE_LIMIT_WINDOW_MS)) rateBuckets.delete(k);
+  }
   const arr = (rateBuckets.get(userId) ?? []).filter(
     (t) => now - t < RATE_LIMIT_WINDOW_MS,
   );

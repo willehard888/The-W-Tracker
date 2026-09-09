@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import TierUsername from "@/components/TierUsername";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,11 +43,10 @@ const PRESSURE_QUOTES = [
 // ever-growing hidden-routes list — a new route is a sub-page by default.
 const BRAND_ROUTES = new Set(["/", "/squad", "/leaderboard", "/profile"]);
 
-const StatusHeader = () => {
+const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
   const { user, profile, isElite } = useAuth();
   const { isInTrial, daysRemaining, hoursRemaining } = useTrialAccess();
   const navigate = useNavigate();
-  const location = useLocation();
   // Live rank — the SAME get_user_rank source and shared cache every other
   // surface uses, so the header can never contradict the profile nameplate.
   const { data: rankData } = useMyRank(profile?.user_id);
@@ -82,10 +81,6 @@ const StatusHeader = () => {
   });
 
   if (!user || !profile) return null;
-  // A whitelist of tab roots. Any pushed screen — including the active workout
-  // at /coach/session/* — gets no brand strip without having to opt out, which
-  // the previous blacklist required every new full-screen route to remember.
-  if (!BRAND_ROUTES.has(location.pathname)) return null;
 
   // Canonical id — legacy 'normal' rows must behave exactly like recruit in
   // every ladder computation below (indexOf on the raw value returned -1).
@@ -141,11 +136,6 @@ const StatusHeader = () => {
       : tier === "operator"
       ? "bg-[hsl(var(--teal))]"
       : "bg-muted-foreground/40";
-
-  // Full identity strip (avatar, tier, progress, Premium/Legend) only on Home
-  // and the Leaderboard. Every other tab gets just the brand strip.
-  const showIdentity =
-    location.pathname === "/" || location.pathname === "/leaderboard";
 
   return (
     <header className="sticky top-0 z-40 safe-top">
@@ -214,7 +204,7 @@ const StatusHeader = () => {
             aria-label="Whealth Factory — Home"
           >
             <BrandLogo aria-hidden size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
-            <span className="font-display font-black tracking-[0.22em] uppercase text-gradient-gold leading-none text-lg">
+            <span className="font-display font-black tracking-[0.22em] uppercase text-gold leading-none text-lg">
               Whealth Factory
             </span>
           </button>
@@ -222,7 +212,7 @@ const StatusHeader = () => {
           <button
             onClick={() => navigate("/notifications")}
             aria-label={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
-            className="press absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition before:absolute before:-inset-1 before:content-['']"
+            className="press absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors before:absolute before:-inset-1 before:content-['']"
           >
             <BellIcon aria-hidden size={18} />
             {unreadCount > 0 && (
@@ -285,18 +275,20 @@ const StatusHeader = () => {
 
             {/* Row 2: tier label + next-tier CTA */}
             <div className="flex items-center justify-between gap-2 mt-1.5">
-              {/* Label may truncate (never overflow under the chip); the
-                  percentile is the first thing to give way. */}
+              {/* The tier name is identity — it never truncates. The
+                  percentile is the first thing to give way, and on a 402pt
+                  phone with the next-tier chip up it gives way immediately
+                  (it was rendering "RECRUIT · Top 50%" as "REC… · To…"). */}
               <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <span
                   className={cn(
-                    "truncate min-w-0 text-[11px] uppercase tracking-[0.22em] font-black leading-none",
+                    "shrink-0 whitespace-nowrap text-[11px] uppercase tracking-[0.22em] font-black leading-none",
                     config.textClass,
                   )}
                 >
                   {formatTier(tier, division)}
                 </span>
-                <span className="hidden min-[400px]:inline truncate shrink-[2] text-[11px] text-muted-foreground/70 leading-none">
+                <span className="hidden min-[430px]:inline truncate shrink text-[11px] text-muted-foreground/70 leading-none">
                   · {topShareLabel(tier, rankData)}
                 </span>
               </div>
@@ -313,7 +305,7 @@ const StatusHeader = () => {
                     type="button"
                     onClick={() => navigate(target)}
                     className={cn(
-                      "pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 text-[11px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 h-[22px] rounded-full border transition-all cursor-pointer before:absolute before:-inset-3 before:content-['']",
+                      "pointer-events-auto relative shrink-0 inline-flex items-center gap-0.5 text-[11px] uppercase tracking-wider font-black leading-none whitespace-nowrap px-2 h-[22px] rounded-full border transition-colors cursor-pointer before:absolute before:-inset-3 before:content-['']",
                       isLegendTarget
                         ? "text-gold border-gold/55 bg-gradient-to-r from-[hsl(280_70%_55%)]/15 via-gold/12 to-[hsl(350_80%_55%)]/15 hover:border-gold shadow-[0_0_8px_hsl(var(--gold)/0.30)]"
                         : "text-[hsl(18_95%_62%)] border-[hsl(var(--ember))]/50 bg-[hsl(var(--ember))]/10 hover:border-[hsl(var(--ember))] shadow-[0_0_6px_hsl(var(--ember)/0.20)]",
@@ -330,10 +322,10 @@ const StatusHeader = () => {
             {/* Row 3: progress bar — metallic */}
             <div className="h-[3px] rounded-full bg-secondary/70 overflow-hidden mt-1.5 shadow-[inset_0_1px_1px_hsl(0_0%_0%/0.3)]">
               <motion.div
-                className={cn("h-full rounded-full relative", progressBarColor)}
+                className={cn("h-full w-full rounded-full relative origin-left", progressBarColor)}
                 style={{ boxShadow: "inset 0 0.5px 0 hsl(0 0% 100% / 0.45)" }}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.max(6, tierProgress * 100)}%` }}
+                initial={false}
+                animate={{ scaleX: Math.max(0.06, tierProgress) }}
                 transition={{ duration: 0.9, ease: [0.22, 0.61, 0.36, 1] }}
               />
             </div>
@@ -390,6 +382,20 @@ const StatusHeader = () => {
       </div>
     </header>
   );
+});
+StatusHeaderBody.displayName = "StatusHeaderBody";
+
+// The route check comes first: the body's six hooks (rank, unread count,
+// last check-in…) used to run on every sub-page only to return null.
+const StatusHeader = () => {
+  const { pathname } = useLocation();
+  // A whitelist of tab roots. Any pushed screen — including the active workout
+  // at /coach/session/* — gets no brand strip without having to opt out, which
+  // the previous blacklist required every new full-screen route to remember.
+  if (!BRAND_ROUTES.has(pathname)) return null;
+  // Full identity strip (avatar, tier, progress, Premium/Legend) only on Home
+  // and the Leaderboard. Every other tab gets just the brand strip.
+  return <StatusHeaderBody showIdentity={pathname === "/" || pathname === "/leaderboard"} />;
 };
 
 export default StatusHeader;

@@ -1,5 +1,5 @@
 import { fmtInt } from "@/lib/format";
-import { useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   Crown, Lock, Settings, UserPlus, Trash2, LogOut, Share2, Swords,
 } from "lucide-react";
@@ -36,8 +36,6 @@ interface TribeHeroProps {
   members: TribeMember[];
   isMember: boolean;
   isOwner: boolean;
-  /** Cover-image parallax offset in px (from the page scroll listener). */
-  parallax: number;
   /** Realtime reactor — intake surge + ember-rise overlay + LIVE dot. */
   reactor?: { events: FireEvent[]; pulseToken: number; connected: boolean };
   /** Today's check-in pulse for everyone (aggregate only — privacy decision). */
@@ -82,7 +80,7 @@ const SegmentBar = ({ pct, color }: { pct: number; color: string }) => (
       return (
         <span
           key={i}
-          className="flex-1 transition-all"
+          className="flex-1"
           style={{
             background: filled
               ? color
@@ -97,12 +95,21 @@ const SegmentBar = ({ pct, color }: { pct: number; color: string }) => (
   </div>
 );
 
+/** One warm tone for a cold hero (it used to drift across four). */
+const COLD_ACCENT = "hsl(24 60% 58%)";
+const COLD_PLATE = "hsl(22 96% 54%)";
+
+const LABEL = "text-[11px] font-bold text-muted-foreground";
+
 /**
  * The tribe's one cinematic hero — collective fire, identity, and actions in
- * a single card. Merges the former TribeCollectiveFlame (hero variant) and
- * TribeHeader: cover photo lives as a deep background under a heavy scrim,
- * the canvas flame is the centerpiece, and the chrome stays quiet (v2 DNA —
- * the fire is the spectacle, everything else supports it).
+ * a single card. Cover photo lives as a deep background under a heavy scrim,
+ * the canvas flame is the centerpiece, and the chrome stays quiet: the fire
+ * is the spectacle, everything else supports it.
+ *
+ * Every tier-dependent colour is written once as a CSS variable on the root
+ * (`--acc` + four alphas, the plate pair, the flame size) and read by
+ * classes below, so the tree carries one style object instead of fourteen.
  */
 const TribeHero = ({
   tribe,
@@ -110,7 +117,6 @@ const TribeHero = ({
   members,
   isMember,
   isOwner,
-  parallax,
   reactor,
   todayPulse,
   onNavigateUser,
@@ -123,10 +129,10 @@ const TribeHero = ({
   onShare,
 }: TribeHeroProps) => {
   const [descExpanded, setDescExpanded] = useState(false);
+  const coverRef = useRef<HTMLImageElement>(null);
 
   const tier = collectiveStreakTier(total);
   const isCold = tier < 0;
-  const isFirestorm = tier >= 6;
   const accent = collectiveAccent(total);
   const palette = collectivePalette(total);
   const tierLabel = collectiveTierName(total);
@@ -147,65 +153,81 @@ const TribeHero = ({
     tier >= 1 ? 140 :
     tier >= 0 ? 132 : 124;
 
+  const acc = isCold ? COLD_ACCENT : accent;
+  const plate = isCold ? COLD_PLATE : accent;
+  const vars = {
+    "--ember-accent": accent,
+    "--acc": acc,
+    "--acc-a": withAlpha(acc, 0.1),
+    "--acc-b": withAlpha(acc, 0.3),
+    "--acc-c": withAlpha(acc, 0.5),
+    "--acc-d": withAlpha(acc, 0.6),
+    "--pl-hi": withAlpha(plate, 0.95),
+    "--pl-lo": withAlpha(plate, 0.45),
+    "--fs": `${size}px`,
+  } as CSSProperties;
+
   // Covers live in the private feed-images bucket — sign + resize in one round.
   const coverSrc = useSignedMediaUrl(tribe.cover_url, { width: 640, quality: 68 });
   const checkedToday = todayPulse && todayPulse.total > 0 ? todayPulse.checked : null;
 
+  // Cover parallax follows the shell scroller. The offset is written straight
+  // onto the cover image as a custom property (no React state: the old setParallax
+  // re-rendered the whole 900-line page per scroll pixel and broke every
+  // post card's memo). Set on the image itself, the variable inherits to
+  // nothing, so the write costs one element's style.
+  useEffect(() => {
+    const img = coverRef.current;
+    if (!img || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    let parent: HTMLElement | null = img.parentElement;
+    while (parent && !/auto|scroll/.test(getComputedStyle(parent).overflowY)) parent = parent.parentElement;
+    const target: HTMLElement | Window = parent ?? window;
+    const onScroll = () => {
+      const top = parent ? parent.scrollTop : window.scrollY;
+      img.style.setProperty("--par", `${Math.min(top * 0.15, 40)}px`);
+    };
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => target.removeEventListener("scroll", onScroll);
+  }, [coverSrc]);
+
   return (
     <div
       className={cn(
-        "relative rounded-3xl overflow-hidden border p-6 mb-4",
+        "relative rounded-3xl overflow-hidden border p-6",
         isCold
-          ? "border-[hsl(22_60%_34%)]/40"
+          // Warm the cold hero so the fire has an atmosphere to live in: ember
+          // glow rising from the base, deep body.
+          ? "border-[hsl(22_60%_34%)]/40 bg-[radial-gradient(135%_74%_at_50%_118%,hsl(24_92%_42%/0.42),hsl(18_80%_30%/0.12)_44%,transparent_64%),linear-gradient(180deg,hsl(258_20%_8%),hsl(258_22%_5%))]"
           : "border-[hsl(var(--ember))]/40 surface-ember shadow-[0_0_40px_hsl(var(--ember)/0.20)]",
       )}
-      style={
-        isCold
-          ? {
-              // Warm the cold hero so the fire has an atmosphere to live in
-              // (v2): ember glow rising from the base, deep body.
-              background:
-                "radial-gradient(135% 74% at 50% 118%, hsl(24 92% 42% / 0.42), hsl(18 80% 30% / 0.12) 44%, transparent 64%), linear-gradient(180deg, hsl(258 20% 8%), hsl(258 22% 5%))",
-            }
-          : ({ ["--ember-accent" as string]: accent } as React.CSSProperties)
-      }
+      style={vars}
     >
       {/* Cover photo — deep background under a heavy scrim, parallaxed */}
       {coverSrc && (
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           <img
             src={coverSrc}
+            ref={coverRef}
             alt=""
             decoding="async"
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover opacity-30"
-            style={{ transform: `translateY(${parallax * 0.5}px) scale(1.08)` }}
+            className="absolute inset-0 h-full w-full object-cover opacity-30 will-change-transform [transform:translateY(var(--par,0px))_scale(1.08)]"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/55 via-background/75 to-background/92" />
         </div>
       )}
 
-      {/* Polished top hairline — warm gold, both states (v2 craft detail) */}
+      {/* Polished top hairline — warm gold, both states */}
       <div
         aria-hidden
-        className="pointer-events-none absolute top-0 left-[10%] right-[10%] h-px"
-        style={{ background: "linear-gradient(90deg, transparent, hsl(42 95% 74% / 0.55), transparent)" }}
+        className="pointer-events-none absolute top-0 left-[10%] right-[10%] h-px bg-[linear-gradient(90deg,transparent,hsl(42_95%_74%/0.55),transparent)]"
       />
 
       {/* Aurora rim — slow pulsing border highlight (hot tribes only) */}
       {!isCold && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-3xl"
-          style={{
-            background: `linear-gradient(135deg, ${withAlpha(accent, 0)} 0%, ${withAlpha(accent, 0.35)} 50%, ${withAlpha(accent, 0)} 100%)`,
-            padding: 1,
-            WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-            WebkitMaskComposite: "xor" as any,
-            maskComposite: "exclude",
-            animation: "flame-rim-pulse 4.5s ease-in-out infinite",
-            opacity: 0.85,
-          }}
+          className="pointer-events-none absolute inset-0 rounded-3xl p-px opacity-85 [background:linear-gradient(135deg,transparent_0%,var(--acc-b)_50%,transparent_100%)] [mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] [mask-composite:exclude] [-webkit-mask-composite:xor] animate-[flame-rim-pulse_4.5s_ease-in-out_infinite]"
         />
       )}
 
@@ -213,27 +235,19 @@ const TribeHero = ({
       {!isCold && (
         <>
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse at 50% 95%, ${withAlpha(accent, 0.3)} 0%, transparent 55%), radial-gradient(ellipse at 50% 50%, ${withAlpha(accent, 0.1)} 0%, transparent 70%)`,
-            }}
+            className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_95%,var(--acc-b)_0%,transparent_55%),radial-gradient(ellipse_at_50%_50%,var(--acc-a)_0%,transparent_70%)]"
             aria-hidden
           />
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
             {Array.from({ length: 6 }).map((_, i) => (
               <span
                 key={i}
-                className="absolute rounded-full"
+                className="absolute -bottom-1 rounded-full opacity-0 bg-[var(--acc)] shadow-[0_0_6px_var(--acc)]"
                 style={{
                   width: 2 + (i % 3),
                   height: 2 + (i % 3),
                   left: `${i % 2 === 0 ? 4 + i * 3 : 92 - i * 3}%`,
-                  bottom: -4,
-                  background: accent,
-                  boxShadow: `0 0 6px ${accent}`,
-                  opacity: 0,
-                  animation: `ember-drift ${5 + (i % 3) * 0.8}s ease-out infinite`,
-                  animationDelay: `${i * 0.7}s`,
+                  animation: `ember-drift ${5 + (i % 3) * 0.8}s ease-out infinite ${i * 0.7}s`,
                 }}
               />
             ))}
@@ -242,69 +256,28 @@ const TribeHero = ({
       )}
 
       <div className="relative flex flex-col items-center text-center pt-1">
-        {/* Top row — Tribe Fire chip + lit-today + LIVE */}
-        <div className="w-full flex items-center justify-center relative mb-3">
-          <div
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm border"
-            style={{
-              borderColor: isCold ? "hsl(var(--border))" : withAlpha(accent, 0.5),
-              boxShadow: isCold ? undefined : `0 0 18px ${withAlpha(accent, 0.4)}`,
-            }}
+        {reactor && (
+          <span
+            className="absolute right-0 top-0 inline-flex items-center gap-1"
+            aria-label={reactor.connected ? "Live updates connected" : "Connecting live updates"}
           >
             <span
-              className="eyebrow"
-              style={{ color: isCold ? "hsl(var(--muted-foreground))" : accent }}
-            >
-              Tribe Fire
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                reactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/50",
+              )}
+            />
+            <span className="text-[10px] font-bold text-muted-foreground/70">
+              {reactor.connected ? "Live" : "…"}
             </span>
-            {checkedToday !== null && checkedToday > 0 && !isCold && (
-              <span
-                className="eyebrow-sm ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full border"
-                style={{
-                  color: accent,
-                  borderColor: withAlpha(accent, 0.5),
-                  background: withAlpha(accent, 0.1),
-                }}
-              >
-                +{checkedToday} today
-              </span>
-            )}
-          </div>
-          {reactor && (
-            <span
-              className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1"
-              aria-label={reactor.connected ? "Live updates connected" : "Connecting live updates"}
-            >
-              <span
-                className={cn(
-                  "h-1.5 w-1.5 rounded-full",
-                  reactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/50",
-                )}
-              />
-              <span className="eyebrow-sm text-muted-foreground/70">
-                {reactor.connected ? "Live" : "…"}
-              </span>
-            </span>
-          )}
-        </div>
+          </span>
+        )}
 
         {/* The flame — canvas fire on its glowing ember plate */}
-        <div
-          className="relative flex items-end justify-center mb-2"
-          style={{ width: size, height: size * 1.2 }}
-        >
+        <div className="relative flex items-end justify-center mt-2 mb-2 w-[var(--fs)] h-[calc(var(--fs)*1.2)]">
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-            style={{
-              bottom: size * 0.02,
-              width: size * 0.92,
-              height: size * 0.12,
-              borderRadius: "50%",
-              background: `radial-gradient(60% 120% at 50% 0%, ${withAlpha(isCold ? "hsl(28 100% 60%)" : accent, 0.95)}, ${withAlpha(isCold ? "hsl(14 90% 42%)" : accent, 0.45)} 55%, transparent 78%)`,
-              boxShadow: `0 0 ${size * 0.28}px ${size * 0.06}px ${withAlpha(isCold ? "hsl(20 100% 50%)" : accent, 0.4)}`,
-              filter: "blur(1px)",
-            }}
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full bottom-[calc(var(--fs)*0.02)] w-[calc(var(--fs)*0.92)] h-[calc(var(--fs)*0.12)] bg-[radial-gradient(60%_120%_at_50%_0%,var(--pl-hi),var(--pl-lo)_55%,transparent_78%)] shadow-[0_0_calc(var(--fs)*0.28)_calc(var(--fs)*0.06)_var(--pl-lo)]"
           />
           {isCold ? (
             // Cold ≠ dead: the same premium engine in kindling mode — a small
@@ -333,43 +306,14 @@ const TribeHero = ({
           )}
         </div>
 
-        {/* Number */}
+        {/* The number, then the fire's name under it */}
         <div className="flex items-baseline gap-2">
-          <span
-            className="font-display font-black text-4xl tabular-nums leading-none"
-            style={{
-              color: isCold ? "hsl(24 45% 62%)" : accent,
-              textShadow: isCold
-                ? "0 0 24px hsl(18 90% 50% / 0.25)"
-                : `0 0 32px ${withAlpha(accent, 0.6)}`,
-            }}
-          >
+          <span className="font-display font-black text-4xl tabular-nums leading-none text-[var(--acc)] [text-shadow:0_0_32px_var(--acc-d)]">
             {fmtInt(total)}
           </span>
           <span className="text-sm font-bold text-muted-foreground">days</span>
         </div>
-
-        {/* Tier headline */}
-        <p
-          className={cn(
-            "font-display font-black text-sm mt-1.5 uppercase tracking-wider",
-            isFirestorm && "bg-clip-text text-transparent",
-          )}
-          style={
-            isFirestorm
-              ? {
-                  backgroundImage:
-                    "linear-gradient(90deg, hsl(195 90% 65%), hsl(265 80% 65%), hsl(310 85% 65%), hsl(195 90% 65%))",
-                  backgroundSize: "200% 100%",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  animation: "flame-plasma-hue 4s linear infinite, shimmer-slide 5s linear infinite",
-                }
-              : isCold
-              ? { color: "hsl(20 55% 55%)", textShadow: "0 0 14px hsl(18 90% 50% / 0.3)" }
-              : { color: accent, textShadow: `0 0 18px ${withAlpha(accent, 0.4)}` }
-          }
-        >
+        <p className="font-display font-black text-sm mt-1.5 text-[var(--acc)] [text-shadow:0_0_18px_var(--acc-c)]">
           {tierLabel}
         </p>
 
@@ -386,30 +330,31 @@ const TribeHero = ({
             <> · avg <span className="font-black text-foreground/85">{avg}</span></>
           )}
           {checkedToday !== null && (
-            <> · <span className="font-black" style={{ color: isCold ? undefined : accent }}>{checkedToday}/{todayPulse!.total}</span> lit today</>
+            <> · <span className={cn("font-black", !isCold && "text-[var(--acc)]")}>{checkedToday}/{todayPulse!.total}</span> lit today</>
           )}
         </p>
 
         {isCold && (
           <p className="text-[12px] text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
-            The embers are waiting. <span className="font-black text-[hsl(24_80%_62%)]">{Math.max(0, 30 - total)} combined day{Math.max(0, 30 - total) === 1 ? "" : "s"}</span> of streaks to ignition.
+            The embers are waiting. <span className="font-black text-[var(--acc)]">{Math.max(0, 30 - total)} combined day{Math.max(0, 30 - total) === 1 ? "" : "s"}</span> of streaks to ignition.
           </p>
         )}
 
         {/* Identity — founder + description */}
         {(founder || tribe.description) && (
-          <div className="mt-3 flex flex-col items-center gap-1.5 max-w-[300px]">
+          <div className="mt-2 flex flex-col items-center gap-1 max-w-[300px]">
             {founder && (
               <button
+                type="button"
                 onClick={() => onNavigateUser(founder.user_id)}
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-gold/20 to-[hsl(var(--ember))]/15 border border-gold/45 hover:from-gold/25 transition-colors"
+                className="min-h-11 inline-flex items-center gap-1.5 px-2 text-[12px]"
               >
-                <Crown size={11} className="text-gold" strokeWidth={2.8} fill="currentColor" />
-                <span className="eyebrow-sm text-gold">Founder</span>
+                <Crown size={11} className="text-gold" strokeWidth={2.8} fill="currentColor" aria-hidden />
+                <span className="font-bold text-muted-foreground">Founder</span>
                 <TierUsername
                   username={founder.username}
                   tier={founder.status_tier || "recruit"}
-                  className="text-[11px] font-bold truncate max-w-[120px]"
+                  className="font-bold truncate max-w-[140px]"
                 />
               </button>
             )}
@@ -433,16 +378,10 @@ const TribeHero = ({
           </div>
         )}
 
-        {/* Paused banner */}
         {tribe.is_paused && (
-          <div className="mt-3 w-full rounded-xl border border-muted-foreground/30 bg-gradient-to-br from-secondary/30 via-card/70 to-secondary/20 p-3 text-left">
-            <div className="flex items-center gap-2">
-              <Crown size={12} className="text-muted-foreground shrink-0" aria-hidden />
-              <p className="eyebrow text-muted-foreground">
-                Tribe paused
-              </p>
-            </div>
-          </div>
+          <p className={cn(LABEL, "mt-3 inline-flex items-center gap-1.5")}>
+            <Crown size={12} aria-hidden /> Tribe paused
+          </p>
         )}
       </div>
 
@@ -450,9 +389,7 @@ const TribeHero = ({
       {isCold && (
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="eyebrow-sm text-[hsl(20_60%_55%)]">
-              Ignition
-            </span>
+            <span className={LABEL}>Ignition</span>
             <span className="text-[11px] font-bold tabular-nums text-foreground/70">
               {total} / 30 days
             </span>
@@ -465,9 +402,7 @@ const TribeHero = ({
       {!isCold && !atMax && (
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="eyebrow-sm text-muted-foreground/80">
-              Next: {collectiveTierName(next)}
-            </span>
+            <span className={LABEL}>Next: {collectiveTierName(next)}</span>
             <span className="text-[11px] font-bold tabular-nums text-foreground/70">
               {fmtInt(Math.max(0, next - total))} to go
             </span>
@@ -476,10 +411,7 @@ const TribeHero = ({
         </div>
       )}
       {!isCold && atMax && (
-        <p
-          className="eyebrow mt-3 text-center"
-          style={{ color: accent, textShadow: `0 0 10px ${withAlpha(accent, 0.5)}` }}
-        >
+        <p className="mt-3 text-center text-[11px] font-bold text-[var(--acc)]">
           Max tier reached — Legendary fire
         </p>
       )}
@@ -490,39 +422,39 @@ const TribeHero = ({
           // No Join button here: the sticky bar at the bottom of TribeDetail
           // owns joining (incl. private-tribe "Request to join") — two join
           // CTAs on one screen read as a mistake, not emphasis.
-          <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3 ml-auto" aria-label="Share tribe">
+          <Button onClick={onShare} size="sm" variant="ember-outline" className="min-h-11 px-3 ml-auto" aria-label="Share tribe">
             <Share2 size={14} />
           </Button>
         ) : isOwner ? (
           <>
-            <Button onClick={onManage} size="sm" variant="gold-outline" className="flex-1">
+            <Button onClick={onManage} size="sm" variant="gold-outline" className="min-h-11 flex-1">
               <Settings size={14} /> Manage
             </Button>
-            <Button onClick={onInvite} size="sm" variant="ember-outline" className="flex-1">
+            <Button onClick={onInvite} size="sm" variant="ember-outline" className="min-h-11 flex-1">
               <UserPlus size={14} /> Invite
             </Button>
-            <Button onClick={onNavigateBattles} size="sm" variant="ember-outline" className="px-3" aria-label="Tribe battles">
+            <Button onClick={onNavigateBattles} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Tribe battles">
               <Swords size={14} />
             </Button>
-            <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3" aria-label="Share tribe">
+            <Button onClick={onShare} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Share tribe">
               <Share2 size={14} />
             </Button>
-            <Button onClick={onDelete} variant="destructive" size="sm" className="px-3" aria-label="Delete tribe">
+            <Button onClick={onDelete} variant="destructive" size="sm" className="min-h-11 px-3" aria-label="Delete tribe">
               <Trash2 size={14} />
             </Button>
           </>
         ) : (
           <>
-            <Button onClick={onInvite} size="sm" variant="ember-outline" className="flex-1">
+            <Button onClick={onInvite} size="sm" variant="ember-outline" className="min-h-11 flex-1">
               <UserPlus size={14} /> Invite
             </Button>
-            <Button onClick={onNavigateBattles} size="sm" variant="ember-outline" className="px-3" aria-label="Tribe battles">
+            <Button onClick={onNavigateBattles} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Tribe battles">
               <Swords size={14} />
             </Button>
-            <Button onClick={onShare} size="sm" variant="ember-outline" className="px-3" aria-label="Share tribe">
+            <Button onClick={onShare} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Share tribe">
               <Share2 size={14} />
             </Button>
-            <Button onClick={onLeave} variant="ember-outline" size="sm" className="flex-1 opacity-80 hover:opacity-100">
+            <Button onClick={onLeave} variant="ember-outline" size="sm" className="min-h-11 flex-1 opacity-80 hover:opacity-100">
               <LogOut size={14} /> Leave
             </Button>
           </>

@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { flushPendingCheckin, getPendingCheckin } from "@/lib/offline-checkin";
 
+const STATIC_KEYS = new Set(["vault-articles", "nutrient-definitions", "food", "food-search", "food-sources", "recipe-per-serving", "exercise-library"]);
+
 /**
  * Mount once at the app root. Replays a check-in that was queued offline as soon
  * as connectivity returns (online event), the app is foregrounded
@@ -24,7 +26,10 @@ export function useOfflineCheckinSync() {
         const res = await flushPendingCheckin(supabase);
         if (!alive) return;
         if (res === "synced") {
-          qc.invalidateQueries(); // refresh streak, profile, leaderboard, etc.
+          // Refresh streak, board, home and coach reads — not the static
+          // catalogs (exercise library, vault, nutrient definitions, food
+          // cache) that a bare invalidateQueries() used to throw away too.
+          qc.invalidateQueries({ predicate: (q) => !STATIC_KEYS.has(String(q.queryKey[0])) });
           toast.success("Your offline check-in synced ✓", {
             description: "We saved it while you were offline and just logged it.",
           });

@@ -1,4 +1,6 @@
+import { backOr } from "@/lib/nav";
 import { useSessionDoneToday } from "@/hooks/use-session-done-today";
+import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -114,6 +116,11 @@ const HabitToggle = ({
   );
 };
 
+// The habits that render as their own widget (sliders + sport picker), not
+// as grouped rows. Module scope: a Set built inside the component was a new
+// identity every render and defeated the memo below it.
+const CUSTOM = new Set(["sleep", "workout", "hydration"]);
+
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
@@ -153,25 +160,7 @@ const DailyCheckin = () => {
     setOnboardDismissed(true);
   };
 
-  const { data: lastCheckin, isLoading: lastCheckinLoading } = useQuery({
-    queryKey: ["last-checkin", user?.id],
-    staleTime: 0,
-    gcTime:    30 * 60_000,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    queryFn: async () => {
-      if (!user) return null;
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("checked_in_at")
-        .eq("user_id", user.id)
-        .order("checked_in_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user,
-  });
+  const { data: lastCheckin, isLoading: lastCheckinLoading } = useLastCheckin(user?.id);
 
   const { data: recentSleep } = useQuery({
     queryKey: ["recent-sleep-7d", user?.id],
@@ -384,7 +373,6 @@ const DailyCheckin = () => {
 
   // Habits grouped by pillar, excluding the ones with custom widgets
   // (sleep / workout / hydration render as sliders + sport picker).
-  const CUSTOM = new Set(["sleep", "workout", "hydration"]);
   const groupedHabits = useMemo(() => {
     const map = new Map<CheckinPillar, CheckinHabit[]>();
     for (const h of chosenHabits) {
@@ -506,7 +494,9 @@ const DailyCheckin = () => {
         if (!rpcError) break;
         if (rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) break;
         if (isNetworkError(rpcError)) hadNetworkError = true;
-        if (attempt < 2) {
+        // Only a network failure earns a retry — a deterministic error just
+        // cost 1.8 s of spinner before the same toast.
+        if (attempt < 2 && isNetworkError(rpcError)) {
           await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
           await supabase.auth.getSession().catch(() => {});
         }
@@ -533,6 +523,7 @@ const DailyCheckin = () => {
         setSubmitting(false);
         void hapticNotification("success");
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+        queryClient.invalidateQueries({ queryKey: ["my-rank"] });
         try { await refreshProfile(); } catch { /* non-critical */ }
       };
 
@@ -722,7 +713,7 @@ const DailyCheckin = () => {
   if (!canCheckin && !submitted) {
     return (
       <div className="min-h-full flex flex-col">
-        <PageBar onBack={() => navigate("/")} />
+        <PageBar onBack={() => backOr(navigate, "/")} />
         <div className="home-rise flex-1 flex flex-col items-center justify-center px-6 pb-6 text-center">
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-6">
             <Moon aria-hidden size={36} className="text-muted-foreground" />
@@ -787,7 +778,7 @@ const DailyCheckin = () => {
   return (
     <div className="min-h-full">
       <PageBar
-        onBack={() => navigate("/")}
+        onBack={() => backOr(navigate, "/")}
         title={<p className="eyebrow text-muted-foreground/75 truncate">{dateLine}</p>}
         action={
           <Button variant="ghost" size="icon" aria-label="Customize habits" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
@@ -994,7 +985,7 @@ const DailyCheckin = () => {
                   so the 24-sport catalog stays collapsed below. */}
               {forYou.length > 0 && (
                 <div>
-                  <p className="eyebrow-sm px-4 pt-3 pb-1.5">For you</p>
+                  <p className="text-[11px] font-bold text-muted-foreground px-4 pt-3 pb-1.5">For you</p>
                   {forYou.map((sport) => (
                     <button
                       key={`fy-${sport.id}`}
@@ -1075,7 +1066,7 @@ const DailyCheckin = () => {
                         onClick={() => setOpenGroup((g) => (g === group ? null : group))}
                         className="flex items-center justify-between w-full min-h-11 px-4 pt-3 pb-1.5 text-left"
                       >
-                        <span className="eyebrow-sm">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
+                        <span className="text-[11px] font-bold">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
                         {forYou.length > 0 && (
                           <ChevronDown aria-hidden size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
                         )}
@@ -1136,7 +1127,7 @@ const DailyCheckin = () => {
           if (!habits?.length) return null;
           return (
             <div key={pillar} className="home-rise home-rise-4 mt-5">
-              <p className="eyebrow-sm mb-2">{PILLAR_LABEL[pillar]}</p>
+              <p className="text-[11px] font-bold text-muted-foreground mb-2">{PILLAR_LABEL[pillar]}</p>
               <div className="space-y-2">
                 {habits.map((h) => (
                   <HabitToggle key={h.key} habit={h} active={done(h.key)} onToggle={() => toggle(h.key)} detected={isDetected(h)} />

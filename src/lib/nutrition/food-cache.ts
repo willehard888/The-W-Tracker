@@ -5,7 +5,9 @@
 import { normalizeQuery } from "./format";
 import type { Food } from "./types";
 
-const PREFIX = "nutrition_food_cache_v1:";
+const PREFIX = "nutrition_food_cache_v1:"
+/** Exposed for the sign-out sweep. */
+export const FOOD_CACHE_PREFIX = PREFIX;;
 export const FOOD_CACHE_MAX_FOODS = 150;
 export const FOOD_CACHE_MAX_CHARS = 200 * 1024;
 
@@ -22,19 +24,29 @@ export interface FoodCache {
 
 const empty = (): FoodCache => ({ foods: {}, recents: {}, counts: {}, favorites: [] });
 
+// Parsed once per distinct stored string: the blob is up to 200 KB and was
+// re-parsed on every read, including inside render. The raw string is still
+// compared on each read (cheap; getItem is memory-backed after the first
+// hit) so a write from anywhere else invalidates it.
+const parsedByUid = new Map<string, { raw: string; cache: FoodCache }>();
+
 /** Read the cache for a user; any storage/parse failure yields an empty cache. */
 export function readFoodCache(uid: string): FoodCache {
   try {
     const raw = localStorage.getItem(PREFIX + uid);
     if (!raw) return empty();
+    const hit = parsedByUid.get(uid);
+    if (hit && hit.raw === raw) return hit.cache;
     const parsed = JSON.parse(raw) as Partial<FoodCache> | null;
     if (!parsed || typeof parsed !== "object") return empty();
-    return {
+    const c: FoodCache = {
       foods: parsed.foods && typeof parsed.foods === "object" ? parsed.foods : {},
       recents: parsed.recents && typeof parsed.recents === "object" ? parsed.recents : {},
       counts: parsed.counts && typeof parsed.counts === "object" ? parsed.counts : {},
       favorites: Array.isArray(parsed.favorites) ? parsed.favorites.filter((f): f is string => typeof f === "string") : [],
     };
+    parsedByUid.set(uid, { raw, cache: c });
+    return c;
   } catch {
     return empty();
   }
@@ -43,24 +55,38 @@ export function readFoodCache(uid: string): FoodCache {
 /** Drop least-recently-used non-favorite foods until both caps hold (favorites are never evicted). */
 function evict(c: FoodCache): void {
   const fav = new Set(c.favorites);
-  // ponytail: re-serialises per check on the byte cap (≤150 × 200 KB worst case, write path only).
-  const over = () =>
-    Object.keys(c.foods).length > FOOD_CACHE_MAX_FOODS || JSON.stringify(c).length > FOOD_CACHE_MAX_CHARS;
+  // Serialised once; each eviction subtracts its entry's size instead of
+  // re-stringifying the whole cache per check.
+  let size = JSON.stringify(c).length;
+  const over = () => Object.keys(c.foods).length > FOOD_CACHE_MAX_FOODS || size > FOOD_CACHE_MAX_CHARS;
   const lru = Object.keys(c.foods)
     .filter((id) => !fav.has(id))
     .sort((a, b) => (c.recents[a] ?? 0) - (c.recents[b] ?? 0));
-  for (const id of lru) {
-    if (!over()) break;
+  const drop = (id: string) => {
     delete c.foods[id];
     delete c.recents[id];
     delete c.counts[id];
+  };
+  for (const id of lru) {
+    if (!over()) break;
+    size -= JSON.stringify(c.foods[id]).length + 48;
+    drop(id);
+  }
+  // The estimate can land a hair over the byte cap; settle it with the real
+  // number — this loop runs zero or one stringify in practice.
+  for (const id of lru) {
+    if (!(id in c.foods)) continue;
+    if (JSON.stringify(c).length <= FOOD_CACHE_MAX_CHARS) break;
+    drop(id);
   }
 }
 
 function write(uid: string, c: FoodCache): void {
   try {
     evict(c);
-    localStorage.setItem(PREFIX + uid, JSON.stringify(c));
+    const raw = JSON.stringify(c);
+    parsedByUid.set(uid, { raw, cache: c });
+    localStorage.setItem(PREFIX + uid, raw);
   } catch {
     /* quota / private mode — the cache is a convenience */
   }

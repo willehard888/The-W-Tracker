@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Database } from "@/integrations/supabase/types";
 
 export interface WorkoutSetLog {
@@ -20,14 +21,18 @@ export interface WorkoutSetLog {
 const tbl = () => supabase.from("workout_set_logs");
 
 /** Last N logs for one exercise — powers the "last time" hint + progression. */
-export const useExerciseHistory = (slug?: string | null) =>
-  useQuery<WorkoutSetLog[]>({
-    queryKey: ["exercise-history", slug],
-    enabled: !!slug,
+export const useExerciseHistory = (slug?: string | null) => {
+  const { user } = useAuth();
+  return useQuery<WorkoutSetLog[]>({
+    queryKey: ["exercise-history", user?.id, slug],
+    enabled: !!slug && !!user?.id,
     staleTime: 30_000,
     queryFn: async () => {
+      // Tenancy is RLS's job; the predicate keeps the plan on the index and
+      // matches every other per-user read in the app.
       const { data, error } = await tbl()
         .select("*")
+        .eq("user_id", user!.id)
         .eq("exercise_slug", slug!)
         .order("logged_on", { ascending: false })
         .limit(8);
@@ -35,6 +40,7 @@ export const useExerciseHistory = (slug?: string | null) =>
       return (data as WorkoutSetLog[]) ?? [];
     },
   });
+};
 
 /**
  * All logs for a program-day slot, keyed by exercise slug — prefills inputs.
@@ -47,14 +53,16 @@ export const useExerciseHistory = (slug?: string | null) =>
  *
  * The runner reads every set — see `useDaySets`.
  */
-export const useDayLogs = (programId?: string | null, week?: number, day?: number) =>
-  useQuery<Record<string, WorkoutSetLog>>({
+export const useDayLogs = (programId?: string | null, week?: number, day?: number) => {
+  const { user } = useAuth();
+  return useQuery<Record<string, WorkoutSetLog>>({
     queryKey: ["day-logs", programId, week, day],
-    enabled: !!programId && week != null && day != null,
+    enabled: !!programId && week != null && day != null && !!user?.id,
     staleTime: 15_000,
     queryFn: async () => {
       const { data, error } = await tbl()
         .select("*")
+        .eq("user_id", user!.id)
         .eq("program_id", programId!)
         .eq("week", week!)
         .eq("day_index", day!)
@@ -68,20 +76,23 @@ export const useDayLogs = (programId?: string | null, week?: number, day?: numbe
       return map;
     },
   });
+};
 
 /**
  * Every logged set for a program-day slot, grouped by exercise and ordered by
  * set number. This is what the workout runner reads to know which sets of
  * which exercise are already done.
  */
-export const useDaySets = (programId?: string | null, week?: number, day?: number) =>
-  useQuery<Record<string, WorkoutSetLog[]>>({
+export const useDaySets = (programId?: string | null, week?: number, day?: number) => {
+  const { user } = useAuth();
+  return useQuery<Record<string, WorkoutSetLog[]>>({
     queryKey: ["day-sets", programId, week, day],
-    enabled: !!programId && week != null && day != null,
+    enabled: !!programId && week != null && day != null && !!user?.id,
     staleTime: 15_000,
     queryFn: async () => {
       const { data, error } = await tbl()
         .select("*")
+        .eq("user_id", user!.id)
         .eq("program_id", programId!)
         .eq("week", week!)
         .eq("day_index", day!)
@@ -95,6 +106,7 @@ export const useDaySets = (programId?: string | null, week?: number, day?: numbe
       return map;
     },
   });
+};
 
 /**
  * The heaviest set per exercise per day, newest first (one RPC). The runner's

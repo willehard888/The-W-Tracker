@@ -93,7 +93,7 @@ const PerformanceOSDashboard = () => {
       >
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="eyebrow text-gold/80">Performance Score</p>
+            <p className="text-[11px] font-bold text-gold/80">Performance Score</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="font-display text-4xl font-black tabular-nums leading-none">
                 {latest ?? "—"}
@@ -120,11 +120,11 @@ const PerformanceOSDashboard = () => {
           { label: "Consistency", val: consistencyAvg, max: 20 },
         ].map((c) => (
           <div key={c.label} className="surface-card p-3">
-            <p className="eyebrow-sm text-muted-foreground">{c.label}</p>
+            <p className="text-[10px] font-bold text-muted-foreground">{c.label}</p>
             <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-[11px] text-muted-foreground/60">/{c.max}</span></p>
             <div className="h-1 rounded-full bg-card mt-1 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] transition-all"
+                className="h-full bg-gradient-to-r from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] transition-[width]"
                 style={{ width: `${Math.min(100, (c.val / c.max) * 100)}%` }}
               />
             </div>
@@ -141,25 +141,25 @@ const PerformanceOSDashboard = () => {
         >
           <div className="flex items-center gap-2 mb-2">
             <Calendar size={12} className="text-gold" />
-            <p className="eyebrow text-gold/80">
+            <p className="text-[11px] font-bold text-gold/80">
               Week of {fmtDate(review.week_starts_on)}
             </p>
           </div>
           {review.driver_of_week && (
             <div className="mb-2.5">
-              <p className="eyebrow-sm text-muted-foreground">Driver of the week</p>
+              <p className="text-[10px] font-bold text-muted-foreground">Driver of the week</p>
               <p className="text-sm font-bold mt-0.5">{review.driver_of_week}</p>
             </div>
           )}
           {review.next_week_focus && (
             <div className="mb-2.5">
-              <p className="eyebrow-sm text-muted-foreground">Next week focus</p>
+              <p className="text-[10px] font-bold text-muted-foreground">Next week focus</p>
               <p className="text-[12px] mt-0.5 leading-relaxed">{review.next_week_focus}</p>
             </div>
           )}
           {review.program_tweak && (
             <div className="rounded-lg border border-gold/20 bg-gold/5 px-2.5 py-1.5 mt-2">
-              <p className="eyebrow-sm text-gold/80">Program tweak</p>
+              <p className="text-[10px] font-bold text-gold/80">Program tweak</p>
               <p className="text-[12px] mt-0.5">{review.program_tweak}</p>
             </div>
           )}

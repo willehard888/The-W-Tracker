@@ -38,7 +38,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
   return (
     <div className={cn("mb-4", className)}>
       <div className="flex items-center justify-between mb-2 px-1">
-        <h2 className="eyebrow">
+        <h2 className="text-[11px] font-bold text-muted-foreground">
           Who's feeding the fire
         </h2>
         <span className="text-[11px] font-bold tabular-nums text-muted-foreground/70">
@@ -71,7 +71,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
               {/* TOP STOKER ribbon above #1 */}
               {isTopStoker && (
                 <span
-                  className="eyebrow-sm absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full border whitespace-nowrap"
+                  className="text-[10px] font-bold text-muted-foreground absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full border whitespace-nowrap"
                   style={{
                     color: accent,
                     background: `linear-gradient(180deg, ${withAlpha(accent, 0.18)} 0%, ${withAlpha(accent, 0.06)} 100%)`,

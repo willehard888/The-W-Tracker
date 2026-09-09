@@ -21,7 +21,7 @@ const Scale = ({
 }) => (
   <div className="space-y-1.5">
     <div className="flex items-center justify-between">
-      <span className="eyebrow text-muted-foreground">{label}</span>
+      <span className="text-[11px] font-bold text-muted-foreground">{label}</span>
       {value != null && <span className="text-[12px] font-black text-gold">{value}/{max}</span>}
     </div>
     <div className="flex gap-1">
@@ -33,7 +33,7 @@ const Scale = ({
             type="button"
             onClick={() => { hapticImpact("light"); onChange(n); }}
             className={cn(
-              "flex-1 h-9 rounded-lg text-[12px] font-black transition-all border",
+              "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 h-9 rounded-lg text-[12px] font-black transition-[background-color,border-color,color] border",
               active
                 ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] border-[hsl(42_78%_48%)] shadow-[0_2px_8px_-2px_hsl(var(--gold)/0.6)]"
                 : "bg-card/40 border-border/40 text-muted-foreground/60 hover:border-border/80",
@@ -138,7 +138,7 @@ const EveningReflectionCard = () => {
               <Scale label="Session RPE" value={rpe} onChange={setRpe} max={10} hints={["easy", "max"]} />
 
               <div className="space-y-1.5">
-                <span className="eyebrow text-muted-foreground">One win</span>
+                <span className="text-[11px] font-bold text-muted-foreground">One win</span>
                 <input
                   value={win}
                   onChange={(e) => setWin(e.target.value.slice(0, 200))}
@@ -147,7 +147,7 @@ const EveningReflectionCard = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <span className="eyebrow text-muted-foreground">One friction</span>
+                <span className="text-[11px] font-bold text-muted-foreground">One friction</span>
                 <input
                   value={friction}
                   onChange={(e) => setFriction(e.target.value.slice(0, 200))}

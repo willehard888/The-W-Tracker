@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
 interface LevelUpCelebrationProps {
   newLevel: number;
@@ -10,6 +11,7 @@ interface LevelUpCelebrationProps {
 
 const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) => {
   const [phase, setPhase] = useState<"enter" | "show" | "exit">("enter");
+  useScrollLock(true);
 
   useEffect(() => {
     // The biggest dopamine beat in the app deserves a felt success buzz.
@@ -22,8 +24,8 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
 
   return (
     <Portal>
-    <div className={cn(
-      "fixed inset-0 z-[var(--z-modal)] flex items-center justify-center transition-all duration-500",
+    <div role="dialog" aria-modal="true" aria-label="Level up" className={cn(
+      "fixed inset-0 z-[var(--z-modal)] flex items-center justify-center transition-[opacity,transform] duration-500",
       phase === "enter" ? "opacity-0" : phase === "exit" ? "opacity-0 scale-110" : "opacity-100"
     )}>
       {/* Backdrop */}
@@ -64,7 +66,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
 
       {/* Main content */}
       <div className={cn(
-        "relative flex flex-col items-center transition-all duration-700",
+        "relative flex flex-col items-center transition-transform duration-700",
         phase === "show" ? "scale-100 translate-y-0" : "scale-75 translate-y-4"
       )}>
         {/* Level number */}
@@ -85,7 +87,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
         </div>
 
         {/* Text */}
-        <p className="eyebrow text-gold/60 mb-1"
+        <p className="text-[11px] font-bold text-gold/60 mb-1"
           style={{ animation: phase === "show" ? "fade-in 0.5s ease-out 0.3s both" : undefined }}
         >
           New Level Reached

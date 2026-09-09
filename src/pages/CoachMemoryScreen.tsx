@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { fmtDate } from "@/lib/format";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +39,7 @@ const CoachMemoryScreen = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Coach memory" onBack={() => navigate(-1)} />
+      <PageBar title="Coach memory" onBack={() => backOr(navigate, "/coach")} />
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">

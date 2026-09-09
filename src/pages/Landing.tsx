@@ -50,7 +50,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(var(--gold) / 0.35)" }} />
             <BrandLogo size={80} priority className="relative rounded-2xl" />
           </div>
-          <span className="font-display font-bold text-lg tracking-tight text-gradient-gold">Whealth Factory</span>
+          <span className="font-display font-bold text-lg tracking-tight text-gold">Whealth Factory</span>
         </div>
       </header>
 
@@ -66,7 +66,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
 
           <h1 className="font-display text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[0.92] mb-6">
             You either{" "}
-            <span className="text-gradient-gold opacity-100">level up</span>
+            <span className="text-gold">level up</span>
             <br />
             or fall behind.
           </h1>

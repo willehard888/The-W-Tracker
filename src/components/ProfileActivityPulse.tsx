@@ -41,10 +41,12 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
 
   return (
     <div className={cn(
-      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border backdrop-blur-sm",
-      isActive && "border-xp-green/40 bg-xp-green/5",
-      !isActive && isWarm && "border-amber-500/30 bg-amber-500/5",
-      !isWarm && "border-border/50 bg-secondary/30",
+      // No backdrop-blur: the pill sits inside the app's one scroller, and the
+      // tint carries the state on its own.
+      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border",
+      isActive && "border-xp-green/40 bg-xp-green/10",
+      !isActive && isWarm && "border-amber-500/30 bg-amber-500/10",
+      !isWarm && "border-border/50 bg-secondary/50",
     )}>
       {isActive ? (
         <span className="relative flex h-1.5 w-1.5">

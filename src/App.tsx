@@ -1,9 +1,10 @@
 import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { MotionConfig } from "framer-motion";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
+import { readLocal, writeLocal } from "@/lib/storage";
 import { supabase } from "@/integrations/supabase/client";
 import { usePushNotifications, PushControlsContext } from "@/hooks/use-push-notifications";
 import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
@@ -14,7 +15,9 @@ import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { cancelLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { pageKey } from "@/lib/nav";
+import { setNavigator } from "@/lib/router-bridge";
+import { BrowserRouter, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
@@ -87,7 +90,7 @@ const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 import RouteFallback from "@/components/RouteFallback";
 import { fetchFeedPosts } from "@/lib/feed-query";
 import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/leaderboard-query";
-import { fetchTribesPage } from "@/lib/tribes-query";
+import { fetchMyTribeMembership, fetchTribesPage } from "@/lib/tribes-query";
 import { afterIdle } from "@/lib/idle";
 
 // Paths reachable WITHOUT an active subscription/trial — the paywall itself,
@@ -124,10 +127,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Membership OR live 14-day trial (hook is isElite-aware) — called before
   // any early return so the hook order stays stable.
   const trial = useTrialAccess();
+  // The router's location, not the window global the component never
+  // subscribed to; a trailing slash used to miss the exemption list.
+  const { pathname } = useLocation();
   if (loading) return <RouteFallback />;
   if (!user) return <Navigate to="/landing" replace />;
 
-  const path = window.location.pathname;
+  const path = pathname.replace(/\/+$/, "") || "/";
 
   // DB-driven username gate: anyone whose handle wasn't their own choice
   // (Apple/OAuth placeholder, collision suffix, legacy auto-generation)
@@ -140,10 +146,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Onboarding gate — the DB flag (profiles.onboarded_at) is the authority so
   // a reinstall / new device / signOut on a shared device never replays the
   // flow; localStorage stays as a sync fast-path cache for the same device.
-  const onboarded = !!profile?.onboarded_at || !!localStorage.getItem("w_onboarding_done");
-  if (profile?.onboarded_at && !localStorage.getItem("w_onboarding_done")) {
-    try { localStorage.setItem("w_onboarding_done", "true"); } catch { /* noop */ }
-  }
+  const onboardedLocally = readLocal("w_onboarding_done") === "true";
+  const onboarded = !!profile?.onboarded_at || onboardedLocally;
+  if (profile?.onboarded_at && !onboardedLocally) writeLocal("w_onboarding_done", "true");
   if (!onboarded && path !== "/onboarding" && path !== "/choose-username") {
     return <Navigate to="/onboarding" replace />;
   }
@@ -198,7 +203,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
  */
 const AppRoutes = () => {
   const { user } = useAuth();
+  // Native listeners (a push tap) navigate through the router, never through
+  // a raw history.pushState — that dropped the router's idx for the session.
+  const navigate = useNavigate();
+  useEffect(() => { setNavigator(navigate); }, [navigate]);
   const { needsPriming, enablePush, dismissPriming, resyncStreakWarning } = usePushNotifications();
+  // One object identity per callback set — a fresh literal re-rendered every
+  // context consumer on each shell render.
+  const pushControls = useMemo(
+    () => ({ enablePush, dismissPriming, resyncStreakWarning }),
+    [enablePush, dismissPriming, resyncStreakWarning],
+  );
   useOfflineCheckinSync();
   useOfflineNutritionSync();
   useActivityHeartbeat();
@@ -213,12 +228,16 @@ const AppRoutes = () => {
   // Every page lands at the top. The main scroll container persists across
   // route changes (it lives outside <Routes>), so without this its scroll
   // position would carry over when navigating between tabs — making a new
-  // page open already scrolled down. Reset it on every pathname change.
+  // page open already scrolled down. Reset it before paint (a post-paint
+  // scrollTo was a second layout on every page change), keyed on the page:
+  // a list↔detail hop inside Exercises/Recipes keeps the page mounted and the
+  // page restores its own list position.
   const location = useLocation();
+  const key = pageKey(location.pathname);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    scrollContainerRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  }, [location.pathname]);
+  useLayoutEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, 0);
+  }, [key]);
 
   // Page-transition wrap was REMOVED — keying a motion.div on
   // location.pathname caused React to unmount + remount the entire
@@ -232,7 +251,7 @@ const AppRoutes = () => {
   // re-mount tax.
 
   return (
-    <PushControlsContext.Provider value={{ enablePush, dismissPriming, resyncStreakWarning }}>
+    <PushControlsContext.Provider value={pushControls}>
     <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
@@ -251,8 +270,9 @@ const AppRoutes = () => {
               UI here so the user can still navigate elsewhere.
               key={pathname}: without it the boundary LATCHED into the error
               state — tapping BottomNav changed the URL but the fallback kept
-              rendering and the user could never navigate out. */}
-          <ErrorBoundary key={location.pathname}>
+              rendering and the user could never navigate out. Keyed on the
+              page, not the path, so a list↔detail hop does not remount. */}
+          <ErrorBoundary key={key}>
           <Routes>
           <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
@@ -290,10 +310,10 @@ const AppRoutes = () => {
           <Route path="/tribes/:id" element={<ProtectedRoute><TribeDetail /></ProtectedRoute>} />
           <Route path="/tribes/:id/battles" element={<ProtectedRoute><TribeBattles /></ProtectedRoute>} />
           <Route path="/vault" element={<ProtectedRoute><Vault /></ProtectedRoute>} />
-          <Route path="/recipes" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           {/* A recipe is a route, not local state — so the coach and the Vault
-              can link to a specific dish, and Back actually goes back. */}
-          <Route path="/recipes/:id" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
+              can link to a specific dish, and Back actually goes back. One
+              route for list + detail: the list stays mounted under the detail. */}
+          <Route path="/recipes/:id?" element={<ProtectedRoute><Recipes /></ProtectedRoute>} />
           <Route path="/nutrition" element={<ProtectedRoute><NutritionDiary /></ProtectedRoute>} />
           <Route path="/nutrition/photo" element={<ProtectedRoute><NutritionPhotoReview /></ProtectedRoute>} />
           <Route path="/nutrition/targets" element={<ProtectedRoute><NutritionTargets /></ProtectedRoute>} />
@@ -302,10 +322,9 @@ const AppRoutes = () => {
           <Route path="/nutrition/recipes" element={<ProtectedRoute><NutritionRecipes /></ProtectedRoute>} />
           <Route path="/nutrition/recipes/new" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
           <Route path="/nutrition/recipes/:id" element={<ProtectedRoute><NutritionRecipeEditor /></ProtectedRoute>} />
-          <Route path="/exercises" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
-          {/* Same reason as /recipes/:id — a movement the coach prescribes
+          {/* Same reason as /recipes/:id? — a movement the coach prescribes
               should be linkable, and Back should close the detail. */}
-          <Route path="/exercises/:slug" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
+          <Route path="/exercises/:slug?" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />
@@ -393,6 +412,11 @@ const TabPrefetcher = () => {
         void import("./pages/Profile");
         void import("./pages/DailyCheckin");
         void import("./pages/TribeDetail");
+        // Reached from the Today card, the diary door and the library door —
+        // each was a Suspense skeleton on first tap.
+        void import("./pages/Coach");
+        void import("./pages/nutrition/NutritionDiary");
+        void import("./pages/Exercises");
 
         // Ranks: season chain + all-time board (keys match Leaderboard.tsx).
         await queryClient.prefetchQuery({
@@ -418,31 +442,22 @@ const TabPrefetcher = () => {
           );
         }
 
-        // Tribes tab: the page mounts on "browse" and flips to "mine"
-        // for members after its own probe — warm BOTH variants so the
-        // flip renders from cache and neither state ever spinners.
+        // Tribes tab: members land on "mine", everyone else on "browse" —
+        // warm the tab it will land on (warming both cost a member ~12 round
+        // trips for a tab they may never open). The membership answer is
+        // cached under the key the page reads, so it decides the tab on its
+        // first render instead of probing again.
         const tribesJob = (async () => {
-          const { data: mem } = await supabase
-            .from("tribe_members")
-            .select("tribe_id")
-            .eq("user_id", userId)
-            .eq("status", "active")
-            .limit(1);
-          const jobs = [
-            queryClient.prefetchQuery({
-              queryKey: ["tribes-page", "browse", null, userId],
-              queryFn: () => fetchTribesPage("browse", null, userId),
-            }),
-          ];
-          if ((mem?.length ?? 0) > 0) {
-            jobs.push(
-              queryClient.prefetchQuery({
-                queryKey: ["tribes-page", "mine", null, userId],
-                queryFn: () => fetchTribesPage("mine", null, userId),
-              }),
-            );
-          }
-          await Promise.all(jobs);
+          const isMember = await queryClient.fetchQuery({
+            queryKey: ["my-tribe-membership", userId],
+            queryFn: () => fetchMyTribeMembership(userId),
+            staleTime: 5 * 60_000,
+          });
+          const tab = isMember ? "mine" : "browse";
+          await queryClient.prefetchQuery({
+            queryKey: ["tribes-page", tab, null, userId],
+            queryFn: () => fetchTribesPage(tab, null, userId),
+          });
         })();
 
         await Promise.all([...seasonJobs, tribesJob]);

@@ -29,7 +29,7 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
   return (
     <div className="space-y-7 pb-6">
       <section>
-        <p className="eyebrow text-gold/85 mb-2">How estimates work</p>
+        <p className="text-[11px] font-bold text-gold/85 mb-2">How estimates work</p>
         <h2 className="font-display text-[22px] font-black tracking-tight leading-tight">Every number here is a measurement of a guess.</h2>
         <ul className="mt-3 space-y-2.5 text-[14px] leading-snug text-foreground/90">
           <li>
@@ -55,13 +55,13 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
       </section>
 
       <section>
-        <p className="eyebrow text-gold/85 mb-2">Data sources</p>
+        <p className="text-[11px] font-bold text-gold/85 mb-2">Data sources</p>
         <div className="divide-y divide-border/35">
           {list.map((s) => (
             <div key={s.code} className="py-3">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-[15px] font-bold">{s.name}</p>
-                <span className="eyebrow text-muted-foreground shrink-0">{s.licence}</span>
+                <span className="text-[11px] font-bold text-muted-foreground shrink-0">{s.licence}</span>
               </div>
               <p className="text-[13px] text-muted-foreground leading-snug mt-1">{s.attribution_text}</p>
               <div className="flex gap-4 mt-1.5">

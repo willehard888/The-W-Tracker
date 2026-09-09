@@ -45,17 +45,28 @@ export const initNativeShell = async (): Promise<void> => {
   // Scroll only when the focused field is actually covered, and instantly —
   // the old focusin + 250 ms smooth scrollIntoView fired on EVERY focus and
   // fought the keyboard's own animation.
+  // Two things learned since: the resize fires many times DURING the keyboard
+  // animation (each tick forced layout and fought the animation), and
+  // scrollIntoView scrolls every scrollable ancestor — including the shell
+  // scroller a BottomSheet has locked, which is why the page moved behind a
+  // sheet whose input took focus. Once per burst, and never for a field
+  // inside a dialog (the sheet's own body scroller handles those).
   const vv = typeof window !== "undefined" ? window.visualViewport : null;
   if (vv) {
+    let settle: ReturnType<typeof setTimeout> | undefined;
     vv.addEventListener("resize", () => {
-      const el = document.activeElement as HTMLElement | null;
-      if (!el) return;
-      const tag = el.tagName;
-      if (tag !== "INPUT" && tag !== "TEXTAREA" && !el.isContentEditable) return;
-      const r = el.getBoundingClientRect();
-      if (r.bottom > vv.offsetTop + vv.height - 8 || r.top < vv.offsetTop) {
-        el.scrollIntoView({ block: "center", behavior: "auto" });
-      }
+      if (settle) clearTimeout(settle);
+      settle = setTimeout(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el) return;
+        const tag = el.tagName;
+        if (tag !== "INPUT" && tag !== "TEXTAREA" && !el.isContentEditable) return;
+        if (el.closest('[role="dialog"]')) return;
+        const r = el.getBoundingClientRect();
+        if (r.bottom > vv.offsetTop + vv.height - 8 || r.top < vv.offsetTop) {
+          el.scrollIntoView({ block: "center", behavior: "auto" });
+        }
+      }, 120);
     });
   }
 

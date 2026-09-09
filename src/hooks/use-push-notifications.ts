@@ -1,3 +1,4 @@
+import { navigateSafely } from "@/lib/router-bridge";
 import { createContext, useContext, useEffect, useCallback, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
@@ -34,12 +35,13 @@ export const isSafeRoute = (r: unknown): r is string => {
   const path = r.split("?")[0];
   return SAFE_ROUTES.has(path) || SAFE_PREFIXES.some((p) => path.startsWith(p));
 };
-// Use history.pushState so React Router picks up the change instead of a
-// full-page reload (window.location.href reboots the WebView).
+// Through the router, never a raw history.pushState: the raw push dropped the
+// router's `idx`, after which every Back in the app fell to its fallback.
 const safeNavigate = (route: string) => {
   if (!isSafeRoute(route)) return;
-  window.history.pushState({}, "", route);
-  window.dispatchEvent(new PopStateEvent("popstate"));
+  // The route already on screen is never pushed again (two Backs to leave).
+  if (window.location.pathname + window.location.search === route) return;
+  navigateSafely(route);
 };
 
 // Re-prime a dismissed user at most once a week (never nag every launch).
@@ -112,32 +114,47 @@ export const usePushNotifications = (): PushNotificationState => {
   // Register for pushes + wire navigation listeners. Idempotent (guarded by
   // activatedRef) so it can run either when permission is already granted on
   // mount, or right after the user grants it via the priming sheet.
-  const activate = useCallback(async () => {
+  const activate = useCallback(async (isCancelled: () => boolean = () => false) => {
     if (activatedRef.current) return;
     activatedRef.current = true;
 
+    // Each await is a chance for the owning effect to have been torn down
+    // (sign-out → sign-in mid-flight); a second activate() then ran alongside
+    // and every listener fired twice — two navigations per tap, two token
+    // upserts. Listeners are collected locally and dropped on cancel.
+    const own: { remove: () => Promise<void> }[] = [];
+    const bail = () => {
+      own.forEach((h) => { void h.remove(); });
+      activatedRef.current = false;
+    };
     await PushNotifications.register();
-    handlesRef.current.push(
-      await PushNotifications.addListener("registration", (token) => registerToken(token.value)),
-      await PushNotifications.addListener("registrationError", (err) => console.error("Push registration error:", err)),
-      await PushNotifications.addListener("pushNotificationReceived", () => {
+    if (isCancelled()) { bail(); return; }
+    const adders = [
+      () => PushNotifications.addListener("registration", (token) => registerToken(token.value)),
+      () => PushNotifications.addListener("registrationError", (err) => console.error("Push registration error:", err)),
+      () => PushNotifications.addListener("pushNotificationReceived", () => {
         // Foreground: the OS shows the banner; we refresh the bell so the
         // in-app inbox + unread count are already current.
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
       }),
-      await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+      () => PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
         const route = action.notification.data?.route;
         safeNavigate(typeof route === "string" ? route : "");
       }),
-      await LocalNotifications.addListener("localNotificationActionPerformed", (event) => {
+      () => LocalNotifications.addListener("localNotificationActionPerformed", (event) => {
         const route = event.notification.extra?.route;
         safeNavigate(typeof route === "string" ? route : "");
       }),
-    );
+    ];
+    for (const add of adders) {
+      own.push(await add());
+      if (isCancelled()) { bail(); return; }
+    }
+    handlesRef.current.push(...own);
 
     // Local streak-warning notifications ride the same opt-in moment.
     const localGranted = await requestStreakNotificationPermission().catch(() => false);
-    if (localGranted) await syncStreakWarning();
+    if (localGranted && !isCancelled()) await syncStreakWarning();
   }, [registerToken, syncStreakWarning]);
 
   // The user opted in via the priming sheet → NOW fire the real OS prompt.
@@ -171,7 +188,7 @@ export const usePushNotifications = (): PushNotificationState => {
 
       if (perm.receive === "granted") {
         // Already granted (returning user) — just wire everything up.
-        await activate();
+        await activate(() => cancelled);
         return;
       }
       if (perm.receive === "denied") return; // can't re-prompt; leave it.

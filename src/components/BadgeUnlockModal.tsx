@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
 interface BadgeUnlockModalProps {
   badge: { name: string; icon: string; rarity: string; description?: string } | null;
@@ -47,6 +48,10 @@ const rarityConfig: Record<string, {
 
 const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
   const [phase, setPhase] = useState<"enter" | "burst" | "reveal" | "details">("enter");
+  // Mounted unconditionally by Profile and the check-in page with a null
+  // badge (it renders nothing then) — the lock must follow the badge, or the
+  // page behind it can never scroll.
+  useScrollLock(!!badge);
 
   useEffect(() => {
     if (!badge) return;
@@ -70,7 +75,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center" onClick={onClose}>
+    <div role="dialog" aria-modal="true" aria-label="Badge unlocked" className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center" onClick={onClose}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/95 backdrop-blur-xl transition-opacity duration-700"
@@ -147,7 +152,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         {/* Badge Icon */}
         <div
           className={cn(
-            "transition-all ease-out",
+            "transition-[transform,opacity] ease-out",
             phase === "enter" && "scale-0 opacity-0 duration-300",
             phase === "burst" && "scale-[2] opacity-80 duration-500",
             phase === "reveal" && "scale-110 opacity-100 duration-600",
@@ -156,7 +161,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         >
           <div
             className={cn(
-              "relative h-32 w-32 rounded-full border-2 flex items-center justify-center text-6xl transition-all duration-700",
+              "relative h-32 w-32 rounded-full border-2 flex items-center justify-center text-6xl transition-[border-color,box-shadow] duration-700",
               style.ring,
               style.glow,
               isLegendary && "badge-shine"
@@ -185,12 +190,12 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         {/* Title */}
         <div
           className={cn(
-            "text-center transition-all duration-600",
+            "text-center transition-[transform,opacity] duration-600",
             phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           )}
         >
           <p className={cn(
-            "eyebrow mb-3",
+            "text-[11px] font-bold text-muted-foreground mb-3",
             isLegendary ? "text-gold" : "text-muted-foreground"
           )}>
             {isLegendary ? "⚡ Legendary Badge Unlocked ⚡" : "Badge Unlocked"}
@@ -201,7 +206,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
             style.ring,
             isLegendary ? "bg-gold/[0.08]" : "bg-card"
           )}>
-            <span className={cn("eyebrow", style.text)}>
+            <span className={cn("text-[11px] font-bold text-muted-foreground", style.text)}>
               {badge.rarity}
             </span>
           </div>
@@ -213,7 +218,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
         {/* Tap to dismiss */}
         <p
           className={cn(
-            "text-xs text-muted-foreground transition-all duration-500 mt-2",
+            "text-xs text-muted-foreground transition-opacity duration-500 mt-2",
             phase === "details" ? "opacity-50" : "opacity-0"
           )}
         >

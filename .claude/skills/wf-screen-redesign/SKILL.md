@@ -93,21 +93,24 @@ prefers a period to an em-dash; do not rewrite existing copy just to strip dashe
 
 One authored entrance per screen, shared across screens so the app settles the same way
 everywhere: `home-rise` on the opening beat, `home-rise home-rise-1..5` on the next
-zones (70ms steps), then list stagger with `animate-fade-in-up` and
-`animationDelay: base + min(i, cap) * 40–45ms` for the first screenful only.
+zones (45ms steps), then list stagger with `animate-fade-in-up` and
+`animationDelay: 120 + i * 30ms` for the first four rows only.
 
 Rules that were learned the hard way:
 
-- **Entrance goes on a wrapper `<div>`, never on the pressable element.** Both
-  keyframes use `fill-mode: both`, so a finished entrance pins `transform` and silently
-  kills the element's own `:active` scale (the tribe rows shipped that way for months).
-- `.animate-reveal` and `home-rise` play on touch; the `<Reveal>` scroll system is
-  disabled on `pointer: coarse`. First-viewport entrance on iOS must not depend on
-  `<Reveal>`.
+- **Entrance goes on a wrapper `<div>`, never on the pressable element.** A finished
+  entrance with a fill mode pins `transform` and silently kills the element's own
+  `:active` scale (the tribe rows shipped that way for months). `home-rise` is
+  `backwards` for exactly this reason; `animate-fade-in-up` is still `both`.
+- `home-rise` plays on touch. The old `<Reveal>` scroll-entrance system is gone (it
+  was disabled on `pointer: coarse`, so it never played on an iPhone); a zone below
+  the fold or inside a disclosure gets no entrance at all.
 - `commit-pop` on the element the user just committed (a reaction, a tick, a join) —
   it is the app's one "your choice landed" spring; reusing it is what makes the screens
   feel like one product.
-- Blur ≤ 5px, entrance ≤ 620ms, transform + opacity + filter only, custom curves from
+- Entrance ≤ 380ms, transform + opacity only — no `filter` on an entrance (300+ `home-rise`
+  blocks made blur the app's top paint cost); a ≤4px blur is allowed only on a one-shot
+  value swap like `price-in`. Custom curves from
   `--ease-spring` / `--ease-soft` / `--ease-ios`, reduced-motion falls back to a fade.
 - A living ambient (`page-aura-live`, breathing 11s) is allowed once, behind everything,
   and never competes with the hero.

@@ -86,7 +86,10 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, kindling = false, pa
     const mem = (navigator as { deviceMemory?: number }).deviceMemory || 4;
     const cores = navigator.hardwareConcurrency || 8;
     const lowEnd = mem <= 2 || cores <= 4;
-    const dpr = Math.min(window.devicePixelRatio || 1, lowEnd ? 1.5 : 2);
+    // Same reasoning as the ambient field: a phone at 3x paints this flame
+    // four times over for no visible gain, and the hero runs two of them.
+    const coarse = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+    const dpr = Math.min(window.devicePixelRatio || 1, lowEnd || coarse ? 1.5 : 2);
     canvas.width = Math.floor(w * dpr);
     canvas.height = Math.floor(h * dpr);
     canvas.style.width = `${w}px`;

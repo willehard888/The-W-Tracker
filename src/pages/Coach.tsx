@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import CoachSkeleton from "@/components/coach/CoachSkeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { memo, useEffect, useRef, useState } from "react";
@@ -94,7 +95,7 @@ const Coach = () => {
     if (typeof console !== "undefined") console.error("AI Coach failed to load:", err);
     return (
       <div className="min-h-full">
-        <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
+        <PageBar title="AI Coach" onBack={() => backOr(navigate, "/")} action={<CoachMenu navigate={navigate} />} />
         <div className="home-rise px-6 pt-16 pb-6 text-center">
           <div className="max-w-sm mx-auto space-y-4">
             <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto" aria-hidden><AlertTriangle size={32} className="text-muted-foreground" /></div>
@@ -118,7 +119,7 @@ const Coach = () => {
   if (!athlete?.onboarded && !onboardSkipped && !hasSeed) {
     return (
       <div className="min-h-full">
-        <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
+        <PageBar title="AI Coach" onBack={() => backOr(navigate, "/")} action={<CoachMenu navigate={navigate} />} />
         <div className="w-full flex justify-end px-6 pt-2">
           <button
             type="button"
@@ -220,7 +221,7 @@ const CoachShell = ({
 
   return (
     <div className="min-h-full">
-      <PageBar title="AI Coach" onBack={() => navigate(-1)} action={<CoachMenu navigate={navigate} />} />
+      <PageBar title="AI Coach" onBack={() => backOr(navigate, "/")} action={<CoachMenu navigate={navigate} />} />
 
       <div className="px-4 pt-3 pb-6">
         <header className="home-rise">
@@ -372,11 +373,21 @@ const ChatSheet = ({
   const showMoodSnapshot =
     !reflLoading && !hasTodayReflection && !moodCardDismissed && messages.length === 0;
 
+  // Persist after the stream settles, not per token: every SSE delta used
+  // to stringify the history and write localStorage twice — synchronous disk
+  // I/O at token rate, which is why replies stuttered in instead of flowing.
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40)));
-      localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
-    } catch {}
+    if (streaming) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40)));
+        localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
+      } catch {}
+    }, 500);
+    return () => clearTimeout(t);
+  }, [messages, streaming]);
+
+  useEffect(() => {
     requestAnimationFrame(() => {
       const el = scrollRef.current;
       if (!el) return;

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
 interface Particle {
   x: number;
@@ -19,7 +20,9 @@ interface Particle {
  * - Caps DPR at 1.25 (huge perf win on retina)
  * - Adapts particle count to viewport area + device memory
  * - Single fill per particle (no costly multi-arc bloom)
- * - Pauses when tab/window hidden
+ * - Pauses when tab/window hidden, and for the length of a page's entrance
+ *   (a full-viewport canvas repaint competing with the incoming screen was
+ *   part of what read as "slight lag" on every page change)
  * - Skips entirely on devices that prefer reduced motion
  */
 const AmbientParticles = () => {
@@ -27,6 +30,16 @@ const AmbientParticles = () => {
   const particles = useRef<Particle[]>([]);
   const raf = useRef<number>(0);
   const running = useRef(true);
+  // Set while a page is settling; the loop reads it every frame.
+  const settling = useRef(false);
+  const { pathname } = useLocation();
+
+  // The entrance ladder owns the first ~400ms of a page change.
+  useEffect(() => {
+    settling.current = true;
+    const t = setTimeout(() => { settling.current = false; }, 420);
+    return () => clearTimeout(t);
+  }, [pathname]);
 
   useEffect(() => {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -89,6 +102,7 @@ const AmbientParticles = () => {
     // Pause when the browser tab is hidden.
     const onVisibility = () => {
       running.current = canvasVisible && !document.hidden;
+      cancelAnimationFrame(raf.current);
       if (running.current) raf.current = requestAnimationFrame(animate);
     };
     document.addEventListener("visibilitychange", onVisibility);
@@ -100,6 +114,9 @@ const AmbientParticles = () => {
       (entries) => {
         canvasVisible = entries[0]?.isIntersecting ?? true;
         running.current = canvasVisible && !document.hidden;
+        // The initial callback fires right after observe(); without the
+        // cancel it started a second chain beside the mount one.
+        cancelAnimationFrame(raf.current);
         if (running.current) raf.current = requestAnimationFrame(animate);
       },
       { threshold: 0 },
@@ -112,7 +129,7 @@ const AmbientParticles = () => {
     const animate = (now: number) => {
       if (!running.current) return;
       raf.current = requestAnimationFrame(animate);
-      if (now - last < FRAME_MS) return;
+      if (settling.current || now - last < FRAME_MS) return;
       last = now;
 
       ctx.clearRect(0, 0, w, h);

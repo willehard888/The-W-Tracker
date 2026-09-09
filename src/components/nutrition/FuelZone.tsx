@@ -112,7 +112,7 @@ const FuelZone = ({ loading, totals, targets, state, unavailable, onOpenDiary, o
         aria-label={state === "no_targets" ? "Set your nutrition targets" : "Open your food diary"}
         className="flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity"
       >
-        <p className="eyebrow text-muted-foreground/75 mb-0.5">Fuel</p>
+        <p className="text-[11px] font-bold text-muted-foreground mb-0.5">Fuel</p>
         {line}
       </button>
       <div className="flex items-center gap-1 pr-2 shrink-0">

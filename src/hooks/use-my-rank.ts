@@ -39,10 +39,10 @@ export const useMyRank = (userId: string | undefined) => {
       };
     },
     enabled: !!userId,
-    // 30s stale window — rank doesn't change that fast, and staleTime: 0 was
-    // triggering an RPC call on every single mount/window-focus event (multiple
-    // components use this hook simultaneously).
-    staleTime: 30_000,
+    // Rank moves when a check-in lands (DailyCheckin invalidates this key) and
+    // on the nightly refresh; a 30 s window meant an RPC on nearly every tab
+    // switch, since the header and the profile both mount this hook.
+    staleTime: 5 * 60_000,
     gcTime: 5 * 60_000,
     refetchOnMount: true,
     refetchOnWindowFocus: false,

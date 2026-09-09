@@ -15,6 +15,7 @@ import {
 import { format } from "date-fns";
 import type { LucideIcon } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,7 @@ import TribeFireLite from "@/components/TribeFireLite";
 import TribeEmberSeed from "@/components/TribeEmberSeed";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon } from "@/lib/tribe-activities";
-import { fetchTribesPage, EMPTY_TRIBES_PAGE, type Tribe, type TribesPageData } from "@/lib/tribes-query";
+import { fetchMyTribeMembership, fetchTribesPage, EMPTY_TRIBES_PAGE, type Tribe, type TribesPageData } from "@/lib/tribes-query";
 import { collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette, withAlpha } from "@/lib/tribe-streak";
 
 interface Invite {
@@ -68,10 +69,13 @@ const GROUP_ICONS: Record<string, LucideIcon> = {
 };
 
 /** Realtime intake surge on a tribe's flame (replayed via `key`). */
+// Two identical keyframes alternate by pulse parity: a changed animation
+// name restarts the intake without the `key` remount that used to rebuild
+// the whole flame subtree (SVG + every blurred layer) on each realtime ping.
 const intakeStyle = (pulses: number): React.CSSProperties | undefined =>
   pulses > 0
     ? {
-        animation: "flame-intake 1100ms cubic-bezier(.2,.8,.2,1)",
+        animation: `${pulses % 2 ? "flame-intake-b" : "flame-intake"} 1100ms cubic-bezier(.2,.8,.2,1)`,
         willChange: "transform, filter",
         transformOrigin: "50% 92%",
       }
@@ -98,29 +102,30 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   const [collectiveStreaks, setCollectiveStreaks] = useState<Map<string, number>>(new Map());
   const [rowPulse, setRowPulse] = useState<Map<string, number>>(new Map());
   const [respondingId, setRespondingId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"mine" | "browse">(initialSub ?? "browse");
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+  // Members land on My Tribes, newcomers on Browse. The shell prefetches the
+  // same key, so a warmed cache decides on the first render (no browse→mine
+  // flip after a round trip); a ?tab=mine/browse link always wins.
+  const memKey = ["my-tribe-membership", profile?.user_id];
+  const [tab, setTab] = useState<"mine" | "browse">(
+    () => initialSub ?? (queryClient.getQueryData<boolean>(memKey) ? "mine" : "browse"),
+  );
   // Two-level activity picker: a group opens its activities; an activity
   // filters server-side (the old flat 26-chip strip filtered client-side over
   // a top-50 slice, hiding every small tribe).
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
-  // Members land on My Tribes, newcomers on Browse — decided once on load,
-  // never fighting a tab the user (or a ?tab=mine/browse link) has picked.
+  // Never fights a tab the user (or a link) has picked.
   const tabTouched = useRef(!!initialSub);
+  const { data: isMember } = useQuery({
+    queryKey: memKey,
+    enabled: !!profile?.user_id,
+    staleTime: 5 * 60_000,
+    queryFn: () => fetchMyTribeMembership(profile!.user_id),
+  });
   useEffect(() => {
-    if (!profile?.user_id || tabTouched.current) return;
-    let alive = true;
-    void supabase
-      .from("tribe_members")
-      .select("tribe_id")
-      .eq("user_id", profile.user_id)
-      .eq("status", "active")
-      .limit(1)
-      .then(({ data }) => {
-        if (alive && !tabTouched.current && (data?.length ?? 0) > 0) setTab("mine");
-      });
-    return () => { alive = false; };
-  }, [profile?.user_id]);
+    if (isMember && !tabTouched.current) setTab("mine");
+  }, [isMember]);
 
   // ── Tribe list (browse / mine) ───────────────────────────────────────────
   const tribesQuery = useQuery<TribesPageData>({
@@ -143,10 +148,15 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
 
   // Seed the live collective-streak map from the rows themselves —
   // tribes.collective_streak is server-owned (nightly refresh_tribe_fire);
-  // the reactor layers live deltas on top.
-  useEffect(() => {
+  // the reactor layers live deltas on top. Re-seeded during render when the
+  // rows change (React re-runs the render before committing), not in an
+  // effect after paint — that was a second render and paint of the whole
+  // list on every load.
+  const [seededFrom, setSeededFrom] = useState<Tribe[] | null>(null);
+  if (seededFrom !== tribes) {
+    setSeededFrom(tribes);
     setCollectiveStreaks(new Map(tribes.map((t) => [t.id, t.collective_streak ?? 0])));
-  }, [tribes]);
+  }
 
   // ── Pending invites ──────────────────────────────────────────────────────
   const invitesQuery = useQuery<Invite[]>({
@@ -208,6 +218,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
   }, [listReactor.events, userToTribes]);
 
   const handleJoin = async (id: string) => {
+    if (joiningId) return;
+    setJoiningId(id);
+    try { await joinTribe(id); } finally { setJoiningId(null); }
+  };
+  const joinTribe = async (id: string) => {
     const { data, error } = await supabase.rpc("join_tribe", {
       p_tribe_id: id,
     });
@@ -278,13 +293,13 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
     }
     if (t.visibility === "private") {
       return (
-        <Button size="sm" variant="ember-glass" className={cls} onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}>
+        <Button size="sm" variant="ember-glass" className={cls} disabled={joiningId === t.id} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
           <Lock aria-hidden size={11} /> {wide ? "Request to join" : "Request"}
         </Button>
       );
     }
     return (
-      <Button size="sm" variant="ember" className={cls} onClick={(e) => { e.stopPropagation(); handleJoin(t.id); }}>
+      <Button size="sm" variant="ember" className={cls} disabled={joiningId === t.id} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
         Join
       </Button>
     );
@@ -332,13 +347,12 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-8 -bottom-12 h-48 w-48 rounded-full blur-2xl"
+          className="pointer-events-none absolute -left-8 -bottom-12 h-48 w-48 rounded-full"
           style={{ background: `radial-gradient(circle, ${withAlpha(edge, 0.2)}, transparent 70%)` }}
         />
 
         <div className="relative flex items-center gap-4">
           <div
-            key={pulses}
             className="relative shrink-0 w-[84px] h-[88px] flex items-end justify-center"
             style={intakeStyle(pulses)}
           >
@@ -439,8 +453,12 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       // used to kill the row's own press scale on the first eight rows.
       <div
         key={t.id}
-        className={cn(idx < 8 && "animate-fade-in-up")}
-        style={idx < 8 ? { animationDelay: `${220 + Math.min(idx, 10) * 40}ms` } : undefined}
+        className={cn(idx < 4 && "animate-fade-in-up")}
+        // Rows past the first screenful skip layout and paint until scrolled
+        // near — the same lever the board uses for its chase list.
+        style={idx < 8
+          ? (idx < 4 ? { animationDelay: `${120 + idx * 30}ms` } : undefined)
+          : { contentVisibility: "auto", containIntrinsicSize: "0 96px" }}
       >
         <div
           role="button"
@@ -463,7 +481,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 />
               )}
               {cTier >= 0 ? (
-                <div key={pulses} className="relative w-full h-full flex items-center justify-center" style={intakeStyle(pulses)}>
+                <div className="relative w-full h-full flex items-center justify-center" style={intakeStyle(pulses)}>
                   <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={36} variant="mini" />
                 </div>
               ) : !t.cover_url ? (
@@ -476,7 +494,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
                 {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
                 {isNew && (
-                  <span className="eyebrow-sm shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
+                  <span className="text-[10px] font-bold shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
                     New
                   </span>
                 )}
@@ -489,7 +507,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               {/* One meta row: activity · members (+spots) · fire · lit today */}
               <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
                 {ActIcon && t.primary_activity && (
-                  <span className="eyebrow inline-flex items-center gap-1 text-muted-foreground">
+                  <span className="text-[11px] font-semibold inline-flex items-center gap-1 text-muted-foreground">
                     <ActIcon aria-hidden size={11} strokeWidth={2.4} /> {t.primary_activity}
                   </span>
                 )}
@@ -536,7 +554,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         <div className="home-rise mb-5">
           <div className="flex items-center gap-2 mb-2">
             <Mail aria-hidden size={12} className="text-[hsl(var(--ember))]" />
-            <h2 className="eyebrow text-[hsl(var(--ember))]">
+            <h2 className="text-[11px] font-bold text-[hsl(var(--ember))]">
               Tribe Invites · {invites.length}
             </h2>
           </div>
@@ -686,6 +704,8 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           <TribeSkeleton />
           <TribeSkeleton />
         </div>
+      ) : tribesQuery.isError && !tribesQuery.data ? (
+        <ErrorState title="Couldn't load tribes" onRetry={tribesQuery.refetch} />
       ) : tribes.length === 0 ? (
         activityFilter ? (
           <EmptyState

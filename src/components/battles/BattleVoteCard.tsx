@@ -1,6 +1,8 @@
-import { Image } from "lucide-react";
+import { Check, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useSignedMediaUrl } from "@/lib/signed-url";
+import { useCommitPop } from "@/hooks/use-commit-pop";
 import type { BattleTypeInfo } from "@/components/battles/types";
 
 interface Props {
@@ -11,7 +13,10 @@ interface Props {
   onVote: (battleId: string, votedFor: string) => void;
 }
 
-/** A tied battle in community voting — proof photos side-by-side + vote bar. */
+/**
+ * A tied battle in community voting: two proof photos side by side, one vote.
+ * A feed-style entry, not a box — the photos are the content.
+ */
 const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => {
   // proof-photos is a private bucket — render via signed URLs.
   const challengerProof = useSignedMediaUrl(battle.challenger_proof_url);
@@ -19,69 +24,49 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
   const challengerVotes = counts[battle.challenger_id] || 0;
   const opponentVotes = counts[battle.opponent_id] || 0;
   const totalVotes = challengerVotes + opponentVotes;
+  // The vote landing is the app's one "your choice landed" spring.
+  const popChallenger = useCommitPop(myVote === battle.challenger_id);
+  const popOpponent = useCommitPop(myVote === battle.opponent_id);
 
-  const voteBtn = (votedFor: string, votes: number, mine: boolean) => (
-    <button
-      onClick={() => onVote(battle.id, votedFor)}
-      disabled={!!myVote}
-      className={cn(
-        "w-full py-2 rounded-lg text-xs font-bold transition-all border",
-        mine
-          ? "bg-gold/20 border-gold/40 text-gold"
-          : myVote
-            ? "bg-secondary/50 border-border text-muted-foreground cursor-not-allowed"
-            : "bg-gold/10 border-gold/30 text-gold hover:bg-gold/20",
-      )}
-    >
-      {mine ? `Voted ✓ (${votes})` : myVote ? `${votes}` : `Vote (${votes})`}
-    </button>
-  );
+  const side = (id: string, name: string | undefined, src: string | null, votes: number, pop: boolean) => {
+    const mine = myVote === id;
+    return (
+      <div className="flex-1 min-w-0">
+        <div className="rounded-xl overflow-hidden aspect-square bg-secondary">
+          {src ? (
+            <img loading="lazy" decoding="async" src={src} alt={`@${name ?? "?"}'s proof`} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><Image size={22} aria-hidden /></div>
+          )}
+        </div>
+        <p className="mt-2 text-[13px] font-bold truncate">@{name || "?"}</p>
+        <p className="text-[11px] text-muted-foreground tabular-nums">{votes} {votes === 1 ? "vote" : "votes"}</p>
+        <Button
+          variant={mine ? "gold-outline" : "outline"}
+          size="sm"
+          className={cn("mt-2 w-full min-h-11", pop && "commit-pop")}
+          disabled={!!myVote}
+          onClick={() => onVote(battle.id, id)}
+        >
+          {mine ? <><Check size={13} aria-hidden /> Voted</> : "Vote"}
+        </Button>
+      </div>
+    );
+  };
 
   return (
-    <div className="rounded-xl border border-gold/20 overflow-hidden glass-3d depth-realistic">
-      <div className="flex items-center justify-between px-4 pt-3 pb-1">
-        <span className="eyebrow text-gold flex items-center gap-1">
-          {typeInfo.emoji} {typeInfo.label} Battle — TIE
-        </span>
-        <span className="text-[11px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
+    <div className="py-4">
+      <p className="text-[12px] font-bold text-muted-foreground">
+        {typeInfo.label} tie · {totalVotes} {totalVotes === 1 ? "vote" : "votes"} so far
+      </p>
+      <div className="mt-3 flex gap-3">
+        {side(battle.challenger_id, battle.challengerProfile?.username, challengerProof, challengerVotes, popChallenger)}
+        {side(battle.opponent_id, battle.opponentProfile?.username, opponentProof, opponentVotes, popOpponent)}
       </div>
-
-      <div className="flex gap-2 px-4 py-3">
-        <div className="flex-1 text-center">
-          <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
-            {challengerProof ? (
-              <img loading="lazy" decoding="async" src={challengerProof} alt="Challenger proof" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><Image size={24} /></div>
-            )}
-          </div>
-          <p className="text-xs font-bold truncate mb-1">@{battle.challengerProfile?.username || "?"}</p>
-          {voteBtn(battle.challenger_id, challengerVotes, myVote === battle.challenger_id)}
-        </div>
-
-        <div className="flex flex-col items-center justify-center px-1">
-          <span className="text-lg font-black text-muted-foreground/30">VS</span>
-        </div>
-
-        <div className="flex-1 text-center">
-          <div className="relative rounded-lg overflow-hidden aspect-square bg-secondary mb-2">
-            {opponentProof ? (
-              <img loading="lazy" decoding="async" src={opponentProof} alt="Opponent proof" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><Image size={24} /></div>
-            )}
-          </div>
-          <p className="text-xs font-bold truncate mb-1">@{battle.opponentProfile?.username || "?"}</p>
-          {voteBtn(battle.opponent_id, opponentVotes, myVote === battle.opponent_id)}
-        </div>
-      </div>
-
       {totalVotes > 0 && (
-        <div className="px-4 pb-3">
-          <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
-            <div className="h-full bg-gold transition-all duration-500" style={{ width: `${(challengerVotes / totalVotes) * 100}%` }} />
-            <div className="h-full bg-gold transition-all duration-500" style={{ width: `${(opponentVotes / totalVotes) * 100}%` }} />
-          </div>
+        <div className="mt-3 h-1 rounded-full bg-secondary overflow-hidden flex">
+          <div className="h-full bg-gold transition-[width] duration-500" style={{ width: `${(challengerVotes / totalVotes) * 100}%` }} />
+          <div className="h-full bg-foreground/25" style={{ width: `${(opponentVotes / totalVotes) * 100}%` }} />
         </div>
       )}
     </div>

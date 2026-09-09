@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { backOr } from "@/lib/nav";
 import { Camera, ImagePlus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -157,7 +158,7 @@ const NutritionPhotoReview = () => {
   };
   const leave = () => {
     cancel();
-    navigate(-1);
+    backOr(navigate, "/nutrition");
   };
   const choosePlate = async (cm: number) => {
     hapticSelection();
@@ -415,7 +416,7 @@ const NutritionPhotoReview = () => {
           {result.scene_notes && <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{result.scene_notes}</p>}
         </div>
         <div className="surface-inset rounded-xl px-3 py-2.5">
-          <p className="eyebrow text-muted-foreground">{basis}</p>
+          <p className="text-[11px] font-bold text-muted-foreground">{basis}</p>
           <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-[13px] tabular-nums">
             {rows.map(([n, v]) => (
               <div key={n} className="flex justify-between gap-2">
@@ -462,7 +463,7 @@ const NutritionPhotoReview = () => {
       <div className="space-y-6">
         <div className="home-rise">
           {photo(
-            <span className="eyebrow absolute left-3 bottom-3 inline-flex items-center rounded-full border border-border/60 bg-background/80 backdrop-blur-sm px-2.5 py-1 tabular-nums">
+            <span className="eyebrow absolute left-3 bottom-3 inline-flex items-center rounded-full border border-border/60 bg-background/90 px-2.5 py-1 tabular-nums">
               Estimated · {pct} % confident
             </span>,
           )}
@@ -506,7 +507,7 @@ const NutritionPhotoReview = () => {
                     hapticSelection();
                     setSlot(s.key);
                   }}
-                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-all ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>
@@ -549,7 +550,7 @@ const NutritionPhotoReview = () => {
                 type="button"
                 aria-pressed={plateCm === cm}
                 onClick={() => void choosePlate(cm)}
-                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-all ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-[color,box-shadow] ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {PLATE_LABEL[cm]} {cm}
               </button>

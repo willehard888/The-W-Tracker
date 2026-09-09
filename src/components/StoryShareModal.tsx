@@ -201,7 +201,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
 
         ctx.fillStyle = "rgba(255,255,255,0.12)";
         ctx.font = "600 8px 'Inter', system-ui, sans-serif";
-        ctx.fillText(`Best: ${profile.longest_streak} days`, card.offsetWidth / 2, cardH - 30);
+        ctx.fillText(`Best: ${profile.longest_streak} day${profile.longest_streak === 1 ? "" : "s"}`, card.offsetWidth / 2, cardH - 30);
 
       } else if (variant === "badge" && badgeData) {
         const centerY = cardH / 2;
@@ -483,7 +483,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
             <p className="font-bold tracking-[0.22em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
             <p className={cn(
-              "eyebrow mb-4",
+              "text-[11px] font-bold text-muted-foreground mb-4",
               tier === 'legend' ? "text-[hsl(280_70%_60%)]" :
               tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
               tier === 'elite' ? "text-gold" : "text-muted-foreground/40"
@@ -555,7 +555,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                 <p className="text-muted-foreground/40 font-bold mt-2 text-xs">
                   {profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" : profile.streak >= 7 ? "DON'T BREAK NOW →" : "BEAT MY STREAK →"}
                 </p>
-                <p className="text-muted-foreground/25 mt-1 text-sm">Best: {profile.longest_streak} days</p>
+                <p className="text-muted-foreground/25 mt-1 text-sm">Best: {profile.longest_streak} day{profile.longest_streak === 1 ? "" : "s"}</p>
               </>
             )}
 

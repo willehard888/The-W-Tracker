@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 
@@ -16,6 +16,11 @@ export function usePullRefresh(queryKeys: string[][]) {
   // reused the previous gesture's stale touchStartY and could snap the
   // indicator open when the list happened to reach the top mid-scroll.
   const pullActive = useRef(false);
+  // Coalesced to one state write per frame: touchmove fires at up to 120 Hz
+  // and each write re-rendered the whole page mid-gesture.
+  const pendingDist = useRef(0);
+  const frame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
@@ -25,11 +30,16 @@ export function usePullRefresh(queryKeys: string[][]) {
 
   const onTouchMove = useCallback((e: React.TouchEvent) => {
     if (isRefreshing || !pullActive.current) return;
-    if (scrollRef.current && scrollRef.current.scrollTop > 0) return;
     const diff = e.touches[0].clientY - touchStartY.current;
     if (diff > 0) {
       const distance = Math.min(diff * 0.5, 120);
-      setPullDistance(distance);
+      pendingDist.current = distance;
+      if (!frame.current) {
+        frame.current = requestAnimationFrame(() => {
+          frame.current = 0;
+          setPullDistance(pendingDist.current);
+        });
+      }
 
       // Haptic feedback when crossing threshold
       if (distance >= PULL_THRESHOLD && !hapticTriggered.current) {
@@ -43,6 +53,8 @@ export function usePullRefresh(queryKeys: string[][]) {
 
   const onTouchEnd = useCallback(async () => {
     pullActive.current = false;
+    cancelAnimationFrame(frame.current);
+    frame.current = 0;
     if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
       setIsRefreshing(true);
       setPullDistance(PULL_THRESHOLD);

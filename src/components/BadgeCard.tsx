@@ -103,7 +103,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
       <div
         ref={ref}
         className={cn(
-          "group relative flex flex-col items-center gap-2 rounded-2xl border overflow-hidden transition-all duration-500",
+          "group relative flex flex-col items-center gap-2 rounded-2xl border overflow-hidden transition-transform duration-500",
           compact ? "p-3" : "p-4",
           style.border,
           style.surface,
@@ -159,7 +159,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
           </p>
           <span
             className={cn(
-              "eyebrow-sm inline-block mt-1 px-1.5 py-[1px] rounded-full border",
+              "text-[10px] font-bold text-muted-foreground inline-block mt-1 px-1.5 py-[1px] rounded-full border",
               style.labelChip,
               style.label
             )}
@@ -176,7 +176,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
 
         {/* Locked overlay */}
         {!earned && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-background/30 backdrop-blur-[1px]">
+          <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-background/30">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background/80 border border-border">
               <Lock size={12} className="text-muted-foreground" />
             </div>

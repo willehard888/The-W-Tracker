@@ -102,7 +102,7 @@ const VaultArticleSheet = ({
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
                   <span
-                    className="eyebrow-sm inline-flex items-center px-2 py-0.5 rounded-full"
+                    className="text-[10px] font-bold text-muted-foreground inline-flex items-center px-2 py-0.5 rounded-full"
                     style={{
                       background: `${accent}22`,
                       color: accent,
@@ -171,7 +171,7 @@ const VaultArticleSheet = ({
                   <div className="flex items-center gap-2 mb-3">
                     <Target size={13} style={{ color: accent }} strokeWidth={2.6} />
                     <p
-                      className="eyebrow"
+                      className="text-[11px] font-bold text-muted-foreground"
                       style={{ color: accent }}
                     >
                       Protocol
@@ -289,7 +289,7 @@ const VaultArticleSheet = ({
 
               {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
-                  <p className="eyebrow text-muted-foreground mb-2">
+                  <p className="text-[11px] font-bold text-muted-foreground mb-2">
                     References
                   </p>
                   <ol className="space-y-1.5 text-[12px] text-muted-foreground/90 list-decimal list-inside">
@@ -319,7 +319,7 @@ const VaultArticleSheet = ({
                 type="button"
                 onClick={handleComplete}
                 disabled={completeLesson.isPending || isCompleted}
-                className="press eyebrow w-full rounded-2xl py-3 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="press text-[11px] font-bold text-muted-foreground w-full rounded-2xl py-3 transition-[color,opacity] disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
                   background: isCompleted ? `${accent}20` : accent,
                   color: isCompleted ? accent : "hsl(var(--background))",
@@ -346,7 +346,7 @@ const VaultArticleSheet = ({
 
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col">
-    <dt className="eyebrow text-muted-foreground/80">
+    <dt className="text-[11px] font-bold text-muted-foreground/80">
       {label}
     </dt>
     <dd className="text-foreground/95 leading-snug">{value}</dd>
@@ -364,7 +364,7 @@ const SectionHeader = ({
 }) => (
   <div className="flex items-center gap-2 mb-2">
     <Icon size={13} style={{ color }} strokeWidth={2.6} />
-    <p className="eyebrow" style={{ color }}>
+    <p className="text-[11px] font-bold text-muted-foreground" style={{ color }}>
       {label}
     </p>
   </div>

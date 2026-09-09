@@ -15,7 +15,9 @@ interface AnimatedNumberProps {
 /**
  * Count-up number — the signature "expensive app" reveal (Apple Fitness /
  * Robinhood / Duolingo all do it). Rolls from the currently-displayed value to
- * the new one with an ease-out curve. Reduced-motion users get the final value
+ * the new one with an ease-out curve. A value already known on mount is shown
+ * as is — the roll is for values that arrive or change afterwards, so coming
+ * back to Home does not replay a 0→N ramp on every number. Reduced-motion users get the final value
  * instantly (honors the OS setting + our global MotionConfig).
  */
 const AnimatedNumber = ({ value, className, duration = 1000, format }: AnimatedNumberProps) => {
@@ -24,11 +26,11 @@ const AnimatedNumber = ({ value, className, duration = 1000, format }: AnimatedN
   // NaN or crash on `.toLocaleString()`; treat non-finite as 0.
   const target = Number.isFinite(value as number) ? (value as number) : 0;
 
-  const [display, setDisplay] = useState(reduce ? target : 0);
+  const [display, setDisplay] = useState(target);
   // The live displayed number, so an animation interrupted mid-flight resumes
   // from where it visually is — not from the last *completed* value (which
   // caused a backward jump on a mid-animation value change).
-  const displayRef = useRef(reduce ? target : 0);
+  const displayRef = useRef(target);
   const rafRef = useRef(0);
 
   useEffect(() => {

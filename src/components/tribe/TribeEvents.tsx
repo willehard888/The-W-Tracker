@@ -1,9 +1,10 @@
 import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
-import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Flame, Video, Layers, ChevronDown } from "lucide-react";
+import { Calendar, MapPin, Users, Plus, X, Trash2, Check, Clock, Video, Layers, ChevronDown } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
+import EmptyState from "@/components/ui/empty-state";
 import { format, isToday, isTomorrow } from "date-fns";
 import { toast } from "sonner";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
@@ -22,6 +23,9 @@ const ERR: Record<string, string> = {
 };
 const errMsg = (e: any) =>
   ERR[e?.message?.match(/not_member|event_full|title_required|unauthorized|forbidden/)?.[0] ?? ""] ?? e?.message ?? "Something went wrong";
+
+const LABEL = "text-[11px] font-bold text-muted-foreground";
+const EMBER = "text-[hsl(var(--ember))]";
 
 interface SeriesItem {
   kind: "series";
@@ -46,7 +50,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
     | null
   >(null);
 
-  // Group a series' sessions under one card; one-off events stand alone. Events
+  // Group a series' sessions under one row; one-off events stand alone. Events
   // arrive sorted by starts_at, so each series' sessions are already in order.
   const items = useMemo<EventListItem[]>(() => {
     const singles: EventListItem[] = [];
@@ -90,12 +94,9 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
   };
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-3 px-0.5">
-        <div className="flex items-center gap-2">
-          <Calendar size={15} className="text-gold" />
-          <h2 className="font-display font-black text-sm tracking-tight">Meetups & events</h2>
-        </div>
+    <div>
+      <div className="flex items-center justify-between mb-1 px-0.5">
+        <h2 className="font-display font-black text-[15px] tracking-tight">Meetups</h2>
         {isMember && (
           <Button
             variant="gold-outline"
@@ -108,20 +109,19 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
       </div>
 
       {isLoading ? (
-        <div className="h-20 surface-card skeleton-block" />
+        <div className="h-16 skeleton-block rounded-xl" />
       ) : (events?.length ?? 0) === 0 ? (
-        <div className="surface-card p-5 text-center">
-          <Calendar size={24} className="text-gold/60 mx-auto mb-2" />
-          <p className="text-[13px] font-bold text-foreground">No meetups yet</p>
-          <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
-            {isMember ? "Host the first one — a run, a lift, a session. Your tribe shows up." : "Join the tribe to host and join meetups."}
-          </p>
-        </div>
+        <EmptyState
+          size="compact"
+          icon={Calendar}
+          title="No meetups yet"
+          description={isMember ? "Host the first one. A run, a lift, a session. Your tribe shows up." : "Join the tribe to host and join meetups."}
+        />
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-border/35 border-t border-border/35">
           {items.map((it, i) =>
             it.kind === "single" ? (
-              <EventCard
+              <EventRow
                 key={it.event.id}
                 ev={it.event}
                 isNext={i === 0}
@@ -132,7 +132,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
                 onDelete={(ev) => setConfirmTarget({ kind: "event", ev })}
               />
             ) : (
-              <SeriesCard
+              <SeriesRow
                 key={it.id}
                 series={it}
                 isNext={i === 0}
@@ -188,8 +188,17 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
   );
 };
 
-/** One stand-alone meetup card. */
-const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete }: {
+/** The date column: weekday, the day number, month. Ember on the next one up. */
+const DateStamp = ({ start, hot }: { start: Date; hot: boolean }) => (
+  <div className="shrink-0 w-11 flex flex-col items-center leading-none">
+    <span className={LABEL}>{format(start, "EEE")}</span>
+    <span className={cn("font-display font-black text-2xl tabular-nums my-0.5", hot ? EMBER : "text-foreground")}>{format(start, "d")}</span>
+    <span className={LABEL}>{format(start, "MMM")}</span>
+  </div>
+);
+
+/** One stand-alone meetup row. */
+const EventRow = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete }: {
   ev: TribeEvent;
   isNext: boolean;
   isMember: boolean;
@@ -201,113 +210,81 @@ const EventCard = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete
   const start = new Date(ev.starts_at);
   const full = ev.capacity != null && ev.going_count >= ev.capacity && ev.my_status !== "going";
   const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
-  const pct = ev.capacity ? Math.min(100, (ev.going_count / ev.capacity) * 100) : 0;
+  const ActIcon = ev.activity ? activityIcon(ev.activity) : null;
   // RSVP used to change variant and nothing else — the choice landed with no
   // movement at all. These pop the button the user actually chose.
   const goingPop = useCommitPop(ev.my_status === "going");
   const maybePop = useCommitPop(ev.my_status === "maybe");
   return (
-    <div className={cn(
-      "surface-card overflow-hidden bg-gradient-to-br from-[hsl(var(--ember))]/[0.05] via-card/70 to-card",
-      isNext ? "border-[hsl(var(--ember))]/40 shadow-[0_10px_34px_-18px_hsl(var(--ember)/0.6)]" : "border-border/60",
-    )}>
-      <div className="p-3.5">
-        {isNext && (
-          <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/35">
-            <Flame size={11} className="text-[hsl(var(--ember))]" fill="currentColor" />
-            <span className="eyebrow-sm text-[hsl(var(--ember))]">Next up</span>
+    <div className="py-4 flex items-start gap-3">
+      <DateStamp start={start} hot={isNext} />
+      <div className="flex-1 min-w-0">
+        {(ActIcon || rel) && (
+          <div className="flex items-center gap-2 text-[11px] font-bold">
+            {ActIcon && <span className="inline-flex items-center gap-1 text-muted-foreground"><ActIcon size={11} strokeWidth={2.6} aria-hidden /> {ev.activity}</span>}
+            {rel && <span className={EMBER}>{rel}</span>}
           </div>
         )}
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 w-14 rounded-xl bg-gradient-to-b from-gold/20 to-gold/[0.04] border border-gold/30 flex flex-col items-center justify-center py-2 shadow-[0_4px_14px_-8px_hsl(var(--gold)/0.6)]">
-            <span className="eyebrow-sm text-gold/70 leading-none">{format(start, "EEE")}</span>
-            <span className="font-display font-black text-2xl leading-none text-gold tabular-nums my-0.5">{format(start, "d")}</span>
-            <span className="eyebrow-sm text-gold/70 leading-none">{format(start, "MMM")}</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {ev.activity && (() => {
-                const ActIcon = activityIcon(ev.activity);
-                return (
-                  <span className="eyebrow-sm inline-flex items-center gap-1 text-gold bg-gold/10 border border-gold/25 rounded px-1.5 py-0.5">
-                    <ActIcon size={11} strokeWidth={2.6} /> {ev.activity}
-                  </span>
-                );
-              })()}
-              {rel && (
-                <span className="eyebrow-sm text-[hsl(var(--ember))] bg-[hsl(var(--ember))]/10 border border-[hsl(var(--ember))]/25 rounded px-1.5 py-0.5">{rel}</span>
-              )}
-            </div>
-            <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1"><Clock size={11} /> {format(start, "EEE HH:mm")} · {ev.duration_min}m</span>
-              {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} /> {ev.place}</span>}
-              {ev.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(var(--ember))] font-bold"><Video size={11} /> Online</span>}
-              <span className="inline-flex items-center gap-1"><Users size={11} /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
-            </div>
-            {ev.capacity != null && (
-              <div className="mt-2 h-1.5 rounded-full bg-secondary/60 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--ember))] to-gold transition-all duration-500" style={{ width: `${pct}%` }} />
-              </div>
-            )}
-            {ev.description && <p className="text-[12px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
-            {isMember && (
-              <div className="mt-2.5 flex items-center gap-1.5">
-                {/* One action, one selected-state, one quiet default. Ember is
-                    reserved for the single thing you'd actually tap next
-                    (opening the meeting); the RSVP pair shares one selected
-                    look, so which one is lit is the only signal that matters.
-                    This row previously carried three different languages —
-                    flat ember, flat gold, tinted gold outline — side by side. */}
-                {safeHttpUrl(ev.meeting_url) && (
-                  <Button asChild variant="ember" size="sm">
-                    <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer">
-                      <Video size={12} /> Join
-                    </a>
-                  </Button>
-                )}
-                <Button
-                  variant={ev.my_status === "going" ? "gold-outline" : "outline"}
-                  size="sm"
-                  className={cn(goingPop && "commit-pop")}
-                  disabled={busy === ev.id || full}
-                  onClick={() => onRsvp(ev, "going")}
-                >
-                  <Check size={12} /> {full ? "Full" : "Going"}
-                </Button>
-                <Button
-                  variant={ev.my_status === "maybe" ? "gold-outline" : "outline"}
-                  size="sm"
-                  className={cn(maybePop && "commit-pop")}
-                  disabled={busy === ev.id}
-                  onClick={() => onRsvp(ev, "maybe")}
-                >
-                  Maybe
-                </Button>
-                {ev.host_id === currentUserId && (
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="ml-auto text-muted-foreground/60 relative before:absolute before:-inset-2 before:content-['']"
-                    disabled={busy === ev.id}
-                    onClick={() => onDelete(ev)}
-                    aria-label="Delete event"
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
+        <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><Clock size={11} aria-hidden /> {format(start, "HH:mm")} · {ev.duration_min}m</span>
+          {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} aria-hidden /> {ev.place}</span>}
+          {ev.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={11} aria-hidden /> Online</span>}
+          <span className="inline-flex items-center gap-1 tabular-nums"><Users size={11} aria-hidden /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
         </div>
+        {ev.description && <p className="text-[12px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
+        {isMember && (
+          <div className="mt-2 flex items-center gap-1.5">
+            {/* Ember is reserved for the one thing you'd actually tap next
+                (opening the meeting); the RSVP pair shares one selected look,
+                so which one is lit is the only signal that matters. */}
+            {safeHttpUrl(ev.meeting_url) && (
+              <Button asChild variant="ember" size="sm" className="min-h-11">
+                <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer">
+                  <Video size={12} /> Join
+                </a>
+              </Button>
+            )}
+            <Button
+              variant={ev.my_status === "going" ? "gold-outline" : "outline"}
+              size="sm"
+              className={cn("min-h-11", goingPop && "commit-pop")}
+              disabled={busy === ev.id || full}
+              onClick={() => onRsvp(ev, "going")}
+            >
+              <Check size={12} /> {full ? "Full" : "Going"}
+            </Button>
+            <Button
+              variant={ev.my_status === "maybe" ? "gold-outline" : "outline"}
+              size="sm"
+              className={cn("min-h-11", maybePop && "commit-pop")}
+              disabled={busy === ev.id}
+              onClick={() => onRsvp(ev, "maybe")}
+            >
+              Maybe
+            </Button>
+            {ev.host_id === currentUserId && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="ml-auto text-muted-foreground/60"
+                disabled={busy === ev.id}
+                onClick={() => onDelete(ev)}
+                aria-label="Delete event"
+              >
+                <Trash2 size={14} />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-/** A multi-session series (course / workshop run / program) — one card, all its
- *  sessions listed inside. Collapsed by default to the next 3 sessions. */
-const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDeleteSeries }: {
+/** A multi-session series (course / workshop run / program): one row, its
+ *  sessions listed under it. Collapsed by default to the next 3 sessions. */
+const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDeleteSeries }: {
   series: SeriesItem;
   isNext: boolean;
   isMember: boolean;
@@ -323,104 +300,87 @@ const SeriesCard = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onD
   const shown = expanded ? series.sessions : series.sessions.slice(0, 3);
   const hidden = series.sessions.length - shown.length;
   return (
-    <div className={cn(
-      "surface-card overflow-hidden bg-gradient-to-br from-gold/[0.06] via-card/70 to-card",
-      isNext ? "border-gold/45 shadow-[0_10px_34px_-18px_hsl(var(--gold)/0.6)]" : "border-border/60",
-    )}>
-      <div className="p-3.5">
-        <div className="flex items-start gap-2.5">
-          <div className="shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br from-gold/25 to-[hsl(var(--ember))]/15 border border-gold/35 flex items-center justify-center">
-            <Layers size={17} className="text-gold" strokeWidth={2.4} />
+    <div className="py-4">
+      <div className="flex items-start gap-3">
+        <DateStamp start={new Date(series.sessions[0].starts_at)} hot={isNext} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
+            <span className="inline-flex items-center gap-1"><Layers size={11} strokeWidth={2.6} aria-hidden /> {series.sessions.length}-part series</span>
+            {series.activity && <span className="inline-flex items-center gap-1"><ActIcon size={11} strokeWidth={2.6} aria-hidden /> {series.activity}</span>}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="eyebrow-sm inline-flex items-center gap-1 text-gold bg-gold/12 border border-gold/30 rounded px-1.5 py-0.5">
-                <ActIcon size={11} strokeWidth={2.6} /> {series.sessions.length}-part series
-              </span>
-              {series.activity && (
-                <span className="eyebrow-sm text-muted-foreground">{series.activity}</span>
+          <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{series.title}</p>
+          <p className="text-[12px] text-muted-foreground mt-0.5 tabular-nums">
+            {series.sessions.length} sessions{isMember ? ` · you're in for ${goingCount}` : ""}
+          </p>
+        </div>
+        {isHost && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 text-muted-foreground/60"
+            disabled={busy === series.id}
+            onClick={onDeleteSeries}
+            aria-label="Delete series"
+          >
+            <Trash2 size={14} />
+          </Button>
+        )}
+      </div>
+
+      <div className="mt-2 ml-14 divide-y divide-border/25">
+        {shown.map((s, idx) => {
+          const start = new Date(s.starts_at);
+          const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
+          return (
+            <div key={s.id} className="flex items-center gap-2.5 py-2">
+              <span className="shrink-0 w-5 text-[11px] font-bold text-muted-foreground tabular-nums">{s.session_index ?? idx + 1}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-bold truncate tabular-nums">{format(start, "EEE d MMM · HH:mm")}</p>
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1"><Clock size={11} aria-hidden /> {s.duration_min}m</span>
+                  {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} aria-hidden /> {s.place}</span>}
+                  {s.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={11} aria-hidden /> Online</span>}
+                  {rel && <span className={cn("font-bold", EMBER)}>{rel}</span>}
+                </div>
+              </div>
+              {isMember && (
+                <div className="flex items-center gap-1 shrink-0">
+                  {s.meeting_url && (
+                    <Button asChild variant="ember" size="icon-sm" className="min-h-11 min-w-11">
+                      <a href={safeHttpUrl(s.meeting_url)} target="_blank" rel="noopener noreferrer" aria-label="Join">
+                        <Video size={12} />
+                      </a>
+                    </Button>
+                  )}
+                  <SessionRsvp s={s} busy={busy === s.id} onRsvp={onRsvp} />
+                </div>
               )}
             </div>
-            <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{series.title}</p>
-            <p className="text-[12px] text-muted-foreground mt-0.5">
-              {series.sessions.length} sessions{isMember ? ` · you're in for ${goingCount}` : ""}
-            </p>
-          </div>
-          {isHost && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0 text-muted-foreground/60 relative before:absolute before:-inset-2 before:content-['']"
-              disabled={busy === series.id}
-              onClick={onDeleteSeries}
-              aria-label="Delete series"
-            >
-              <Trash2 size={14} />
-            </Button>
-          )}
-        </div>
-
-        <div className="mt-3 space-y-1.5">
-          {shown.map((s, idx) => {
-            const start = new Date(s.starts_at);
-            const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
-            return (
-              <div key={s.id} className="flex items-center gap-2.5 surface-panel rounded-xl px-2.5 py-2">
-                <div className="shrink-0 h-7 w-7 rounded-lg bg-gold/15 border border-gold/25 flex items-center justify-center">
-                  <span className="text-[11px] font-black text-gold tabular-nums">{s.session_index ?? idx + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold truncate">{format(start, "EEE d MMM · HH:mm")}</p>
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><Clock size={11} /> {s.duration_min}m</span>
-                    {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} /> {s.place}</span>}
-                    {s.meeting_url && <span className="inline-flex items-center gap-1 text-[hsl(var(--ember))] font-bold"><Video size={11} /> Online</span>}
-                    {rel && <span className="font-black uppercase tracking-wider text-[hsl(var(--ember))]">{rel}</span>}
-                  </div>
-                </div>
-                {isMember && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    {/* Same language as the single-event row above: ember for
-                        the one action, gold-outline for the selected state.
-                        min-h/min-w (not the before:-inset trick) clears the
-                        44pt floor here: PRIMARY_EMBER owns ::before for its
-                        crown sheen and clips with overflow-hidden, so an
-                        expanded pseudo-element would catch nothing and skew
-                        the sheen geometry instead. */}
-                    {s.meeting_url && (
-                      <Button
-                        asChild
-                        variant="ember"
-                        size="icon-sm"
-                        className="min-h-11 min-w-11"
-                      >
-                        <a href={safeHttpUrl(s.meeting_url)} target="_blank" rel="noopener noreferrer" aria-label="Join">
-                          <Video size={12} />
-                        </a>
-                      </Button>
-                    )}
-                    <Button
-                      variant={s.my_status === "going" ? "gold-outline" : "outline"}
-                      size="sm"
-                      className="relative px-2.5 before:absolute before:-inset-2 before:content-['']"
-                      disabled={busy === s.id}
-                      onClick={() => onRsvp(s, "going")}
-                    >
-                      {s.my_status === "going" ? <Check size={12} /> : "Going"}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          {hidden > 0 && (
-            <Button variant="outline" size="sm" className="w-full" onClick={() => setExpanded(true)}>
-              <ChevronDown size={13} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
-            </Button>
-          )}
-        </div>
+          );
+        })}
+        {hidden > 0 && (
+          <Button variant="ghost" size="sm" className="w-full min-h-11 text-muted-foreground" onClick={() => setExpanded(true)}>
+            <ChevronDown size={13} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
+          </Button>
+        )}
       </div>
     </div>
+  );
+};
+
+/** One session's Going toggle, with the same pop as the single-event row. */
+const SessionRsvp = ({ s, busy, onRsvp }: { s: TribeEvent; busy: boolean; onRsvp: (ev: TribeEvent, status: RsvpStatus) => void }) => {
+  const pop = useCommitPop(s.my_status === "going");
+  return (
+    <Button
+      variant={s.my_status === "going" ? "gold-outline" : "outline"}
+      size="sm"
+      className={cn("min-h-11 px-2.5", pop && "commit-pop")}
+      disabled={busy}
+      onClick={() => onRsvp(s, "going")}
+    >
+      {s.my_status === "going" ? <Check size={12} /> : "Going"}
+    </Button>
   );
 };
 
@@ -522,6 +482,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
               key={k}
               type="button"
               variant={kind === k ? "gold-outline" : "outline"}
+              className="min-h-11"
               onClick={() => setKind(k)}
             >
               <Icon size={14} /> {label}
@@ -539,7 +500,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           <div className="space-y-2">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="eyebrow-sm text-muted-foreground/55 mb-1">{group.label}</p>
+                <p className={cn(LABEL, "mb-1")}>{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <Button
@@ -560,10 +521,10 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
             <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={input} />
           ) : (
             <div className="space-y-1.5">
-              <label className="eyebrow text-muted-foreground block">Sessions</label>
+              <label className={cn(LABEL, "block")}>Sessions</label>
               {sessions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="shrink-0 h-7 w-7 rounded-lg bg-secondary border border-border flex items-center justify-center text-[11px] font-black text-muted-foreground tabular-nums">{i + 1}</span>
+                  <span className="shrink-0 w-5 text-[11px] font-bold text-muted-foreground tabular-nums text-center">{i + 1}</span>
                   <Input type="datetime-local" value={s}
                     onChange={(e) => setSessions((prev) => prev.map((x, idx) => idx === i ? e.target.value : x))}
                     className={cn(input, "flex-1")} />
@@ -571,8 +532,8 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                     <Button
                       type="button"
                       variant="ghost"
-                      size="icon-sm"
-                      className="shrink-0 text-muted-foreground/60 relative before:absolute before:-inset-2 before:content-['']"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground/60"
                       onClick={() => setSessions((prev) => prev.filter((_, idx) => idx !== i))}
                       aria-label="Remove session"
                     >
@@ -586,7 +547,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="w-full min-h-11"
                   onClick={() => setSessions((prev) => [...prev, ""])}
                 >
                   <Plus size={13} /> Add session
@@ -602,6 +563,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                 key={m}
                 type="button"
                 variant={mode === m ? "gold-outline" : "outline"}
+                className="min-h-11"
                 onClick={() => { setMode(m); setModeTouched(true); }}
               >
                 <Icon size={14} /> {label}
@@ -615,13 +577,13 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           )}
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="eyebrow text-muted-foreground mb-1 block">Duration (min)</label>
+              <label className={cn(LABEL, "mb-1 block")}>Duration (min)</label>
               <Input type="number" value={duration} min={10} step={5} onChange={(e) => { setDuration(parseInt(e.target.value || "60", 10)); setDurationTouched(true); }} className={input} />
             </div>
             {kind === "single" && (
               <div className="flex-1">
-                <label className="eyebrow text-muted-foreground mb-1 block">Capacity (opt.)</label>
-                <Input type="number" value={capacity} min={1} placeholder="∞" onChange={(e) => setCapacity(e.target.value)} className={input} />
+                <label className={cn(LABEL, "mb-1 block")}>Capacity (optional)</label>
+                <Input type="number" value={capacity} min={1} placeholder="No limit" onChange={(e) => setCapacity(e.target.value)} className={input} />
               </div>
             )}
           </div>

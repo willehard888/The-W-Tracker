@@ -195,7 +195,10 @@ Deno.serve(async (req) => {
     // ── Gates: access → paid detection → priors → daily cap ─────────────
     const [accessRes, profileRes, athleteRes, priorsRes] = await Promise.all([
       userClient.rpc("has_active_access", { _user_id: uid }),
-      userClient.from("profiles").select("is_elite, membership_credits_until, nutrition_prefs").eq("id", uid).maybeSingle(),
+      // profiles.id is the row's own uuid; user_id is the auth id. The old .eq("id", uid)
+      // matched nothing, so every paying member was capped at the free 15 scans and
+      // their plate calibration never applied.
+      userClient.from("profiles").select("is_elite, membership_credits_until, nutrition_prefs").eq("user_id", uid).maybeSingle(),
       localeIn
         ? Promise.resolve(null)
         : userClient.from("coach_athlete_profile").select("language_pref").eq("user_id", uid).maybeSingle(),

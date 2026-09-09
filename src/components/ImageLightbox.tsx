@@ -89,7 +89,7 @@ const ImageLightbox = ({
         <button
           onClick={onClose}
           aria-label="Close image"
-          className="press h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
+          className="press relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
         >
           <X size={18} />
         </button>
@@ -148,7 +148,7 @@ const ImageLightbox = ({
               </span>
             )}
             {!showMetric(likes) && !showMetric(comments) && !showMetric(kudos) && (
-              <span className="eyebrow text-muted-foreground/60">
+              <span className="text-[11px] font-bold text-muted-foreground/60">
                 Be the first to react
               </span>
             )}

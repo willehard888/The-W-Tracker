@@ -1,19 +1,18 @@
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
+import { readSession, writeSession } from "@/lib/storage";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
-import {
-  Crown, ArrowLeft, Loader2, ShieldCheck, Sparkles,
-} from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
-import BrandLogo from "@/components/BrandLogo";
+import { backOr } from "@/lib/nav";
 import PremiumHero from "@/components/paywall/PremiumHero";
 import PilotCodeRedeem from "@/components/paywall/PilotCodeRedeem";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
@@ -21,12 +20,15 @@ import { track, FUNNEL } from "@/lib/analytics";
 
 // ONE subscription covering all content, billed monthly or yearly — not two
 // tiers. The live store label wins on native; these are the web fallbacks and
-// must match App Store Connect / Stripe exactly, because showing one number
-// and charging another is what eroded trust the last time they drifted apart.
+// must match App Store Connect exactly, because showing one number and
+// charging another is what eroded trust the last time they drifted apart.
 const PREMIUM_YEARLY_FALLBACK = "89,99 €";
 const PREMIUM_MONTHLY_FALLBACK = "8,99 €";
 
 type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
+
+/** The quiet 44 pt text button the footer is made of. */
+const quiet = "press min-h-11 px-3 text-[12px] text-muted-foreground";
 
 const Paywall = () => {
   const { isElite, isPremium, checkSubscription, profile, subscriptionLoading } = useAuth();
@@ -47,8 +49,8 @@ const Paywall = () => {
   // Live prices from the store (native); web uses the configured fallbacks.
   const monthlyLabel = (isNative && monthlyPriceLabel) || PREMIUM_MONTHLY_FALLBACK;
   const yearlyLabel = (isNative && yearlyPriceLabel) || PREMIUM_YEARLY_FALLBACK;
-  // On native, only offer the yearly toggle if the store actually has an
-  // annual package — otherwise we'd advertise a plan we can't fulfill.
+  // On native, only offer yearly if the store actually has an annual
+  // package — otherwise we'd advertise a plan we can't fulfill.
   const showYearly = !isNative || yearlyAvailable;
 
   // Top of the monetization funnel — record paywall exposure once per mount.
@@ -57,11 +59,14 @@ const Paywall = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const aliveRef = useRef(true);
+  useEffect(() => () => { aliveRef.current = false; }, []);
+
   // Welcome toast on transition into membership (once per session)
   useEffect(() => {
     if (isElite && !wasMemberRef.current) {
-      if (!sessionStorage.getItem("w_welcome_toast_shown")) {
-        sessionStorage.setItem("w_welcome_toast_shown", "1");
+      if (readSession("w_welcome_toast_shown") !== "1") {
+        writeSession("w_welcome_toast_shown", "1");
         toast.success("Welcome to Premium. Full access unlocked.");
       }
     }
@@ -74,9 +79,6 @@ const Paywall = () => {
     navigate("/", { replace: true });
   }, [isPremium, navigate]);
 
-  // (The old web focus/visibility re-check existed to catch a returning
-  // Stripe-checkout tab; purchases are App Store-only now, so it's gone.)
-
   // ─── Verify membership by polling checkSubscription ──────────
   // NOTE: this useCallback MUST sit above the `if (isElite) return ...`
   // early-return below. Previously it lived after the early return, which
@@ -84,7 +86,9 @@ const Paywall = () => {
   // user's membership flipped on (the hook count differed across renders).
   const pollVerification = useCallback(async (timeoutMs = 8000): Promise<boolean> => {
     const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
+    // The effect above navigates away the moment membership flips; the loop
+    // must stop with the screen instead of polling an unmounted paywall.
+    while (aliveRef.current && Date.now() - start < timeoutMs) {
       try {
         await checkSubscription();
         // checkSubscription updates AuthContext; we read isElite via closure.
@@ -109,34 +113,23 @@ const Paywall = () => {
   // ─── Already a member ────────────────────────────────────────
   if (isElite) {
     return (
-      <div className="min-h-full flex flex-col">
-        <PageBar onBack={() => navigate(-1)} />
-        <div className="flex-1 px-4 pt-4 pb-6 flex flex-col items-center justify-center text-center">
-        <div className="h-20 w-20 rounded-full flex items-center justify-center mb-4 gradient-gold glow-gold">
-          <Sparkles size={36} className="text-primary-foreground" strokeWidth={2.4} />
-        </div>
-        <h1 className="font-display text-2xl font-black mb-2">You're Premium.</h1>
-        <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-          Full access unlocked. New content every week — your price stays locked.
-        </p>
-        <div className="flex gap-2 mt-2 flex-wrap justify-center">
-          <Button variant="gold-outline" onClick={() => navigate("/profile")}>
-            <ArrowLeft size={14} /> Profile
-          </Button>
+      <div className="min-h-full">
+        <PageBar onBack={() => backOr(navigate, "/")} />
+        <div className="home-rise px-4 pt-3 pb-6">
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">You're in.</h1>
+          <p className="mt-1.5 text-[13px] text-muted-foreground">
+            Full access, new content every week. Your price stays locked.
+          </p>
+          {/* Subscriptions are App Store-only — same management page on
+              every platform. The bar's back is the other way out. */}
           <Button
-            variant="secondary"
-            onClick={() => {
-              // Subscriptions are App Store-only — same management page on
-              // every platform.
-              window.open("https://apps.apple.com/account/subscriptions", "_blank");
-            }}
+            variant="outline"
+            size="lg"
+            className="mt-5 w-full"
+            onClick={() => window.open("https://apps.apple.com/account/subscriptions", "_blank")}
           >
-            <ShieldCheck size={14} /> Manage subscription
+            Manage in App Store
           </Button>
-          <Button variant="ember" onClick={() => navigate("/")}>
-            <Crown size={14} /> Enter app
-          </Button>
-        </div>
         </div>
       </div>
     );
@@ -144,9 +137,7 @@ const Paywall = () => {
 
   const creditsUntilRaw: string | null = profile?.membership_credits_until ?? null;
   const creditsActive = creditsUntilRaw && new Date(creditsUntilRaw).getTime() > Date.now();
-  const creditsUntilLabel = creditsActive
-    ? fmtDate(creditsUntilRaw as string)
-    : null;
+  const creditsUntilLabel = creditsActive ? fmtDate(creditsUntilRaw as string) : null;
 
   // ─── Native purchase handler ─────────────────────────────────
   const handleNativePurchase = async (plan: "monthly" | "yearly") => {
@@ -217,101 +208,60 @@ const Paywall = () => {
     <div className="min-h-full">
       {/* The bar's back is the escape hatch — the bottom nav and brand header
           are hidden on /paywall, so without it the page is a hard dead end. */}
-      <PageBar onBack={() => navigate(-1)} />
+      <PageBar onBack={() => backOr(navigate, "/")} />
 
-      <div className="px-4 pt-4 pb-6">
-
-      {subscriptionLoading && !isElite && (
-        <div className="mb-4 flex items-center justify-center gap-2 rounded-xl border border-border/70 bg-card/80 px-4 py-3 text-sm text-muted-foreground">
-          <Loader2 size={16} className="animate-spin" />
-          Verifying membership…
-        </div>
-      )}
-
-      {creditsActive && (
-        <div className="home-rise mb-4 rounded-xl border border-gold/40 bg-gold/10 p-4 text-center">
-          <p className="text-xs font-bold text-gold tracking-wide">
-            Free membership until {creditsUntilLabel}
+      <div className="px-4 pt-3 pb-6">
+        {/* BEAT: what this buys, or how long it is already free. */}
+        <header className="home-rise">
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            {creditsActive ? `Free until ${creditsUntilLabel}.` : "Everything the ritual unlocks."}
+          </h1>
+          <p className="mt-1.5 text-[13px] text-muted-foreground">
+            {creditsActive
+              ? "The app stays fully unlocked until then. Premium keeps it that way."
+              : "Fuel, training, recovery, the coach and the climb. One membership."}
           </p>
-          <p className="text-[12px] text-muted-foreground mt-1">
-            The app stays fully unlocked until then.
-          </p>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="text-center mb-4 mt-2 home-rise">
-        <BrandLogo size={isNative ? 56 : 64} priority className="mx-auto rounded-2xl glow-gold" />
-      </div>
-
-      {isNative && rcLoading ? (
-        <div className="home-rise home-rise-1">
-          <Block height={440} className="!rounded-3xl" />
-        </div>
-      ) : (
-        <div className="home-rise home-rise-1">
-          <PremiumHero
-            monthlyPriceLabel={monthlyLabel}
-            yearlyPriceLabel={yearlyLabel}
-            yearlyAvailable={showYearly}
-            status={status}
-            errorMessage={errorMessage}
-            onDismissError={() => {
-              setStatus("idle");
-              setErrorMessage(null);
-            }}
-            onCta={isNative ? handleNativePurchase : handleWebPurchase}
-          />
-
-          {/* Earned-Apex disclaimer */}
-          <div className="mt-3 rounded-xl border border-gold/15 bg-gold/[0.03] p-3.5 text-center">
-            <p className="text-[12px] text-muted-foreground leading-relaxed">
-              <span className="text-gold font-semibold">Apex status</span> (top
-              10% by rank, activity & streak) can't be bought — only earned.{" "}
-              Premium unlocks <span className="text-foreground font-semibold">the full app</span>.
+          {subscriptionLoading && (
+            <p className="mt-2 flex items-center gap-2 text-[12px] text-muted-foreground">
+              <Loader2 size={14} className="animate-spin" aria-hidden />
+              Verifying membership…
             </p>
-          </div>
+          )}
+        </header>
+
+        {/* HERO: the plan card, then what it unlocks. */}
+        <div className="home-rise home-rise-1 mt-4">
+          {isNative && rcLoading ? (
+            <Block height={236} className="!rounded-2xl" />
+          ) : (
+            <PremiumHero
+              monthlyPriceLabel={monthlyLabel}
+              yearlyPriceLabel={yearlyLabel}
+              yearlyAvailable={showYearly}
+              native={isNative}
+              status={status}
+              errorMessage={errorMessage}
+              onDismissError={() => {
+                setStatus("idle");
+                setErrorMessage(null);
+              }}
+              onCta={isNative ? handleNativePurchase : handleWebPurchase}
+            />
+          )}
         </div>
-      )}
 
-      {/* Restore */}
-      <div className="text-center mt-6 home-rise home-rise-3">
-        <button
-          onClick={handleRestore}
-          className="text-xs text-muted-foreground hover:text-gold transition-colors underline underline-offset-2"
-        >
-          Restore purchases
-        </button>
-      </div>
-
-      {/* Pilot testers redeem free access here instead of purchasing, so the
-          paywall and the real store flow stay live during the pilot. */}
-      <div className="home-rise home-rise-3">
-        <PilotCodeRedeem />
-      </div>
-
-      <div className="text-center mt-4">
-        <p className="eyebrow text-muted-foreground">
-          {/* "Cancel anytime" said once, in the CTA footnote — not four times. */}
-          {isNative ? "Secure Apple in-app purchase" : "Subscribe in the iOS app"}
-        </p>
-      </div>
-
-      <div className="flex items-center justify-center gap-4 mt-4 mb-6">
-        <button
-          onClick={() => navigate("/privacy")}
-          className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
-        >
-          Privacy Policy
-        </button>
-        <span className="text-[11px] text-muted-foreground">•</span>
-        <button
-          onClick={() => navigate("/terms")}
-          className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
-        >
-          Terms of Use
-        </button>
-      </div>
+        {/* FOOTER: restore, the pilot door, and the two links App Review
+            requires (Terms of Use / EULA and Privacy Policy). All 44 pt. */}
+        <div className="home-rise home-rise-2 mt-5">
+          <div className="flex items-center justify-center">
+            <button type="button" onClick={handleRestore} className={quiet}>Restore purchases</button>
+            <button type="button" onClick={() => navigate("/terms")} className={quiet}>Terms of Use</button>
+            <button type="button" onClick={() => navigate("/privacy")} className={quiet}>Privacy Policy</button>
+          </div>
+          {/* Pilot testers redeem free access here instead of purchasing, so the
+              paywall and the real store flow stay live during the pilot. */}
+          <PilotCodeRedeem />
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 import { Trophy, Swords, ShieldCheck, MoreHorizontal, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { fmtRelative } from "@/lib/format";
 import type { BattleTypeInfo } from "@/components/battles/types";
 
 interface Props {
@@ -14,48 +16,40 @@ interface Props {
   onAdminDelete: (battleId: string) => void;
 }
 
-/** A completed battle result, with a HealthKit-verified tag on verified wins. */
+/** One line of the record. Weight carries the result; gold stays with the hero. */
 const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAdmin, onAdminDelete }: Props) => {
   const won = battle.winner_id === currentUserId;
+  const Icon = won ? Trophy : Swords;
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-      <div className={cn(
-        "h-10 w-10 rounded-lg flex items-center justify-center",
-        won ? "bg-gold/15 text-gold" : "bg-destructive/15 text-destructive",
-      )}>
-        {won ? <Trophy size={18} /> : <Swords size={18} />}
-      </div>
+    <div className="flex items-center gap-3 py-3 min-h-11">
+      <Icon size={15} className={cn("shrink-0", won ? "text-foreground" : "text-muted-foreground/50")} aria-hidden />
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm flex items-center gap-1.5">
-          vs @{opponentName}
-          {won && battle.winner_verified === true && (
-            <span title="HealthKit-verified win" className="eyebrow-sm inline-flex items-center gap-0.5 text-[hsl(var(--xp-green))]">
-              <ShieldCheck size={11} /> Verified
-            </span>
-          )}
+        <p className="text-[14px] font-semibold leading-tight truncate">@{opponentName}</p>
+        <p className="text-[12px] text-muted-foreground mt-0.5">
+          {battle.duration_days}-day {typeInfo.label}{battle.ended_at ? ` · ended ${fmtRelative(battle.ended_at)}` : ""}
         </p>
-        <p className="text-xs text-muted-foreground">{typeInfo.emoji} {battle.duration_days}d {typeInfo.label}</p>
       </div>
-      <div className="flex items-center gap-2">
-        <div className={cn("text-sm font-bold font-display", won ? "text-gold" : "text-destructive")}>
-          {won ? "Victory 🏆" : "Defeat"}
-        </div>
-        {isAdmin && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button aria-label="Battle options" className="relative p-1 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/40 hover:text-muted-foreground before:absolute before:-inset-3 before:content-['']">
-                <MoreHorizontal size={14} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onAdminDelete(battle.id)} className="text-destructive focus:text-destructive">
-                <Trash2 size={14} className="mr-2" />
-                Delete battle
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <span className={cn("inline-flex items-center gap-1 text-[12px] shrink-0", won ? "font-black" : "font-bold text-muted-foreground")}>
+        {won && battle.winner_verified === true && (
+          <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" aria-label="HealthKit-verified win" />
         )}
-      </div>
+        {won ? "Won" : battle.winner_id ? "Lost" : "No result"}
+      </span>
+      {isAdmin && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon-sm" aria-label="Battle options" className="text-muted-foreground/50 -mr-2">
+              <MoreHorizontal size={14} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onAdminDelete(battle.id)} className="text-destructive focus:text-destructive">
+              <Trash2 size={14} className="mr-2" />
+              Delete battle
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 };

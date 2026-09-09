@@ -40,7 +40,7 @@ const DailyInsightCard = () => {
       <p className="relative font-display text-[18px] leading-[1.35] tracking-tight text-foreground/90">
         {insight.text}
       </p>
-      <p className="flex items-center gap-1 eyebrow text-muted-foreground/80 mt-3">
+      <p className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground mt-3">
         From the Vault
         <ChevronRight aria-hidden size={12} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
       </p>

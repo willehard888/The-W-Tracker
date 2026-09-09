@@ -84,7 +84,7 @@ const FoodSearchPanel = ({
         />
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
           {query && (
-            <button type="button" onClick={() => onQueryChange("")} aria-label="Clear search" className="h-11 w-9 flex items-center justify-center text-muted-foreground">
+            <button type="button" onClick={() => onQueryChange("")} aria-label="Clear search" className="h-11 min-w-11 flex items-center justify-center text-muted-foreground">
               <X size={15} />
             </button>
           )}
@@ -127,7 +127,7 @@ const FoodSearchPanel = ({
 
       {localResults.length > 0 && (
         <section aria-label={searching ? "From your foods" : "Recent and favorites"}>
-          {!searching && <p className="eyebrow text-muted-foreground/80 mb-1">Recent · favorites</p>}
+          {!searching && <p className="text-[11px] font-bold text-muted-foreground/80 mb-1">Recent · favorites</p>}
           <div className="divide-y divide-border/35">
             {localResults.map((f) => (
               <FoodResultRow key={f.id} food={f} onPick={onPick} onToggleFavorite={onToggleFavorite} />
@@ -140,7 +140,7 @@ const FoodSearchPanel = ({
         <section aria-label="Search results" aria-busy={loading}>
           <div className="flex items-center gap-2 mt-1 mb-1">
             <span className="h-px flex-1 bg-border/50" aria-hidden />
-            <span className="eyebrow-sm text-muted-foreground/70">
+            <span className="text-[10px] font-bold text-muted-foreground/70">
               {loading ? "Searching" : `${serverOnly.length} result${serverOnly.length === 1 ? "" : "s"}`}
             </span>
             {loading && <Loader2 size={12} className="animate-spin text-muted-foreground" aria-hidden />}

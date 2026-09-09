@@ -135,7 +135,7 @@ const FeedPostCard = memo(function FeedPostCard({
         // Skip layout/paint for off-screen posts (cheap virtualization
         // without restructuring the scroll container). First few stay
         // eager so the initial paint isn't blank.
-        contentVisibility: index < 4 ? undefined : "auto",
+        contentVisibility: index < 2 ? undefined : "auto",
         containIntrinsicSize: index < 4 ? undefined : "auto 480px",
       }}
     >
@@ -144,7 +144,7 @@ const FeedPostCard = memo(function FeedPostCard({
         <div className="flex items-center justify-between mb-3 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20">
           <div className="flex items-center gap-1.5">
             <AlertTriangle aria-hidden size={12} className="text-destructive" />
-            <span className="eyebrow text-destructive">Reported</span>
+            <span className="text-[11px] font-bold text-destructive">Reported</span>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -199,7 +199,7 @@ const FeedPostCard = memo(function FeedPostCard({
             {post.profile?.streak > 0 && (
               <>
                 <span>•</span>
-                <StreakFlameInline streak={post.profile.streak} suffix="d" className="text-[11px]" />
+                <StreakFlameInline still streak={post.profile.streak} suffix="d" className="text-[11px]" />
               </>
             )}
           </div>
@@ -274,7 +274,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleReaction(post.id)}
           aria-label={liked ? "Remove fire" : "Give fire"}
           className={cn(
-            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
             liked
               ? "bg-streak-orange/15 text-streak-orange commit-pop"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -287,7 +287,7 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleComments(post.id)}
           aria-label="Toggle comments"
           className={cn(
-            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
             isCommentsOpen
               ? "bg-gold/10 text-gold"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -311,7 +311,7 @@ const FeedPostCard = memo(function FeedPostCard({
             disabled={giveKudosPending}
             aria-label={hasGivenKudos ? "Remove kudos" : "Give kudos"}
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-all ",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
               hasGivenKudos
                 ? "bg-purple/15 text-purple ring-1 ring-purple/30 commit-pop"
                 : kudosRemaining > 0
@@ -338,7 +338,7 @@ const FeedPostCard = memo(function FeedPostCard({
       {isCommentsOpen && (
         <div className="mt-2 rounded-2xl bg-secondary/25 px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="eyebrow text-muted-foreground">
+            <p className="text-[11px] font-bold text-muted-foreground">
               Discussion
             </p>
             <p className="text-[11px] text-muted-foreground/75 tabular-nums">
@@ -375,7 +375,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] p-2 animate-fade-in">
                   <div className="w-0.5 rounded-full bg-gold shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="eyebrow flex items-center gap-1 text-gold">
+                    <div className="text-[11px] font-bold flex items-center gap-1 text-gold">
                       <Reply aria-hidden size={12} />
                       Replying to @{replyTo.username}
                     </div>
@@ -407,7 +407,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                     maxLength={300}
                     className={cn(
-                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-all",
+                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
                       replyTo
                         ? "border-gold/40 focus:ring-gold/50 focus:border-gold/60"
                         : "border-border focus:ring-gold/40 focus:border-gold/40",
@@ -436,7 +436,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   disabled={!commentText.trim() || addCommentPending}
                   aria-label={replyTo ? "Send reply" : "Send comment"}
                   className={cn(
-                    "h-9 w-9 rounded-full flex items-center justify-center transition-all shrink-0",
+                    "relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full flex items-center justify-center transition-[background-color,color,box-shadow] shrink-0",
                     commentText.trim()
                       ? "gradient-gold text-primary-foreground glow-gold"
                       : "bg-secondary text-muted-foreground/75 cursor-not-allowed"

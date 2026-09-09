@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { Input } from "@/components/ui/input";
 import { fmtRelative } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
@@ -48,14 +49,17 @@ const Chat = () => {
     queryKey: ["chat-messages", partnerId],
     queryFn: async () => {
       if (!user || !partnerId) return [];
+      // The newest screenful, not the whole thread — a long conversation
+      // used to download and re-render in full on every incoming message.
       const { data } = await supabase
         .from("direct_messages")
         .select("*")
         .or(
           `and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`
         )
-        .order("created_at", { ascending: true });
-      return data || [];
+        .order("created_at", { ascending: false })
+        .limit(60);
+      return (data || []).reverse();
     },
     enabled: !!user && !!partnerId,
   });
@@ -89,12 +93,16 @@ const Chat = () => {
         // covers messages TO me; my own sends invalidate in handleSend.
         { event: "INSERT", schema: "public", table: "direct_messages", filter: `receiver_id=eq.${user.id}` },
         (payload) => {
-          const msg = payload.new as { sender_id: string; receiver_id: string };
+          const msg = payload.new as { id: string; sender_id: string; receiver_id: string };
           if (
             (msg.sender_id === user.id && msg.receiver_id === partnerId) ||
             (msg.sender_id === partnerId && msg.receiver_id === user.id)
           ) {
-            queryClient.invalidateQueries({ queryKey: ["chat-messages", partnerId] });
+            // The row arrives with the event — append it instead of
+            // refetching the thread.
+            queryClient.setQueryData<typeof messages>(["chat-messages", partnerId], (old) =>
+              !old ? old : old.some((m) => m.id === msg.id) ? old : [...old, msg as NonNullable<typeof messages>[number]],
+            );
           }
         }
       )
@@ -102,9 +110,17 @@ const Chat = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, partnerId, queryClient]);
 
-  // Scroll to bottom on new messages
+  // Follow new messages only when the reader is already near the bottom;
+  // the first paint always lands on the newest.
+  const followRef = useRef(true);
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const el = bottomRef.current?.parentElement;
+    if (el && messages?.length) {
+      const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
+      if (!followRef.current && !nearBottom) return;
+      followRef.current = false;
+    }
+    bottomRef.current?.scrollIntoView({ behavior: followRef.current ? "auto" : "smooth", block: "end" });
   }, [messages?.length]);
 
   const handleSend = async () => {
@@ -160,7 +176,7 @@ const Chat = () => {
     <div className="flex flex-col h-full bg-background">
       <PageBar
         sticky={false}
-        onBack={() => navigate("/messages")}
+        onBack={() => backOr(navigate, "/messages")}
         title={
           <button
             onClick={() => navigate(`/user/${partnerId}`)}
@@ -176,7 +192,7 @@ const Chat = () => {
               <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
                 @{partner?.username || "…"}
                 {partnerIsElite && (
-                  <span className="eyebrow-sm text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
+                  <span className="text-[10px] font-bold text-gold bg-gold/10 border border-gold/30 rounded-full px-1.5 py-[1px] leading-none">
                     Elite
                   </span>
                 )}
@@ -275,7 +291,7 @@ const Chat = () => {
       </div>
 
       {/* Input */}
-      <div className="shrink-0 border-t border-border/60 bg-card/90 backdrop-blur-xl px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <div className="shrink-0 border-t border-border/60 bg-card px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="flex gap-2 items-center">
           <div className="flex-1 relative">
             <Input

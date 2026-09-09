@@ -81,7 +81,7 @@ const OnboardingQuestion = (props: Props) => {
             type="button"
             onClick={() => (props.mode === "single" ? pickSingle(o.v) : toggleMulti(o.v))}
             className={cn(
-              "press text-left transition-all ",
+              "press text-left transition-[border-color,background-color,box-shadow] ",
               dense
                 ? "rounded-full px-3.5 py-2 text-[13px] font-bold border inline-flex items-center gap-1.5"
                 : "w-full rounded-2xl border p-4 flex items-start gap-3",

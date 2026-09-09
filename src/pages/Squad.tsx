@@ -23,6 +23,11 @@ const SUB = [
   { key: "tribes", label: "Tribes", icon: Users },
 ] as const;
 
+// Module-level, not state: leaving the Squad tab unmounts the page, and a
+// per-mount set meant Feed and Tribes were rebuilt from scratch on every
+// return (their queries are cached; their trees were not).
+const visited = new Set<string>();
+
 const Squad = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const raw = searchParams.get("tab");
@@ -32,6 +37,7 @@ const Squad = () => {
   const initialSub = raw === "mine" || raw === "browse" ? raw : undefined;
   const setTab = (next: "feed" | "tribes") =>
     setSearchParams(next === "feed" ? {} : { tab: next }, { replace: true });
+  visited.add(tab);
   // Contextual onboarding: first /squad visit → explain the Feed/Tribes split.
   const squadTargetRef = useSpotlightTarget("SQUAD_INTRO");
   useOnboardingTrigger("SQUAD_INTRO", true);
@@ -45,7 +51,7 @@ const Squad = () => {
               key={s.key}
               onClick={() => { hapticSelection(); setTab(s.key); }}
               className={cn(
-                "flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-black transition-all",
+                "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-black transition-colors",
                 tab === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
               )}
             >
@@ -55,7 +61,10 @@ const Squad = () => {
         </div>
       </div>
 
-      {tab === "feed" ? <EliteFeed /> : <Tribes initialSub={initialSub} />}
+      {/* A visited tab stays mounted and parks under display:none — the
+          segment used to destroy and rebuild a 1 000-line tree on every tap. */}
+      {visited.has("feed") && <div hidden={tab !== "feed"}><EliteFeed /></div>}
+      {visited.has("tribes") && <div hidden={tab !== "tribes"}><Tribes initialSub={initialSub} /></div>}
     </div>
   );
 };

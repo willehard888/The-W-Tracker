@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
 
@@ -13,6 +16,8 @@ const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
  * name they didn't type themselves: Apple/OAuth placeholder, a collision
  * suffix, or a legacy auto-generated name). Every user picks their own
  * @handle exactly once; the DB guard trigger locks it afterwards.
+ *
+ * Same body as Auth's signup field: a beat, the one field, an ember CTA.
  */
 const ChooseUsername = () => {
   const navigate = useNavigate();
@@ -116,42 +121,43 @@ const ChooseUsername = () => {
 
   return (
     <div className="min-h-full gradient-dark flex items-center justify-center px-6">
-      <div className="w-full max-w-sm rounded-3xl border border-border bg-card/90 p-6 shadow-2xl">
-        <div className="mb-6 space-y-2 text-center">
-          <p className="eyebrow text-gold">Whealth Factory</p>
-          <h1 className="font-display text-3xl font-black tracking-tight">Claim your name</h1>
-          <p className="text-sm text-muted-foreground">
-            This is your permanent @handle — on the leaderboard, in your tribe,
-            under every W you post. Pick it once, own it forever.
+      <div className="w-full max-w-sm">
+        <header className="home-rise text-center mb-8">
+          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Claim your name.</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your permanent @handle. On the leaderboard, in your tribe, under every W you post.
           </p>
-        </div>
+        </header>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="choose-username" className="eyebrow text-muted-foreground">
-              Username
-            </label>
-            <div className="flex h-12 items-center rounded-xl border border-border bg-background px-4 focus-within:border-gold/50 focus-within:ring-2 focus-within:ring-gold/20">
-              <span className="mr-2 text-sm text-gold">@</span>
-              <input
+        <form onSubmit={handleSubmit} className="home-rise home-rise-1 space-y-4">
+          <div>
+            <Label htmlFor="choose-username" className="mb-1.5 block text-muted-foreground">Username</Label>
+            <div className="relative">
+              <span aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+              <Input
                 id="choose-username"
+                type="text"
+                autoCapitalize="none"
+                autoCorrect="off"
                 value={username}
                 onChange={(event) => setUsername(event.target.value.trim().toLowerCase())}
                 placeholder="your_name"
-                autoCapitalize="none"
-                autoCorrect="off"
                 maxLength={20}
-                className="h-full w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                className={cn(
+                  "h-12 pl-8 rounded-xl text-sm",
+                  availability === "taken" && "border-destructive/60",
+                  availability === "available" && "border-xp-green/60",
+                )}
               />
             </div>
             {validationMessage ? (
-              <p className="text-xs text-destructive">{validationMessage}</p>
+              <p className="text-[11px] text-destructive mt-1.5 font-bold">{validationMessage}</p>
             ) : availability === "checking" ? (
-              <p className="text-xs text-muted-foreground">Checking availability…</p>
+              <p className="text-[11px] text-muted-foreground mt-1.5">Checking availability…</p>
             ) : availability === "available" ? (
-              <p className="text-xs text-xp-green">@{username} is yours ✓</p>
+              <p className="commit-pop origin-left text-[11px] text-xp-green mt-1.5 font-bold">@{username} is yours ✓</p>
             ) : (
-              <p className="text-xs text-muted-foreground">3–20 characters: a-z, 0-9 and _</p>
+              <p className="text-[11px] text-muted-foreground mt-1.5">3–20 characters: a-z, 0-9 and _</p>
             )}
           </div>
 
@@ -160,12 +166,13 @@ const ChooseUsername = () => {
             variant="ember"
             size="xl"
             className="w-full"
-            disabled={saving || !!validationMessage || username.length < 3 || availability === "checking" || availability === "taken"}
+            loading={saving}
+            disabled={!!validationMessage || username.length < 3 || availability === "checking" || availability === "taken"}
           >
-            {saving ? "Claiming…" : "Claim it"}
+            Claim it
           </Button>
           <p className="text-center text-[12px] text-muted-foreground">
-            Locked permanently once set — choose one that feels like you.
+            Locked permanently once set. Choose one that feels like you.
           </p>
         </form>
       </div>

@@ -77,9 +77,9 @@ const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, dayStats, onOpenImage, 
         className="w-full h-auto max-h-[68vh] object-cover"
       />
       {ribbon && (
-        <div className={cn("pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm border", ribbon.border)}>
+        <div className={cn("pointer-events-none absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 border", ribbon.border)}>
           <ribbon.icon size={12} className={ribbon.color} {...(ribbon.label === "Apex" ? { fill: "currentColor" } : {})} />
-          <span className={cn("eyebrow-sm", ribbon.color)}>{ribbon.label}</span>
+          <span className={cn("text-[10px] font-bold text-muted-foreground", ribbon.color)}>{ribbon.label}</span>
         </div>
       )}
       {dayStats && <DayStatsSticker stats={dayStats} />}

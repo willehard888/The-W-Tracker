@@ -1,13 +1,14 @@
 import { fmtInt } from "@/lib/format";
 import { useEffect, useMemo, useState } from "react";
-import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Crown, Users, Lock, Zap, Flame } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
+import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { backOr } from "@/lib/nav";
 import {
   collectiveAccent,
   collectiveStreakTier,
@@ -27,12 +28,15 @@ interface Row {
   rank: number;
 }
 
-// Podium accents — gold / silver / bronze. Everything else is neutral.
-const podiumColor = (rank: number): string | null =>
-  rank === 1 ? "hsl(var(--gold))"
-  : rank === 2 ? "hsl(220 9% 74%)"
-  : rank === 3 ? "hsl(28 58% 52%)"
-  : null;
+// Podium colours: gold, silver, bronze. Everything else stays neutral, so
+// the top three are the only colour the list carries.
+const PODIUM: Record<number, string> = {
+  1: "text-gold",
+  2: "text-[hsl(220_9%_74%)]",
+  3: "text-[hsl(28_58%_52%)]",
+};
+
+const LABEL = "text-[11px] font-bold text-muted-foreground";
 
 const TribeLeaderboard = () => {
   const { profile } = useAuth();
@@ -81,49 +85,18 @@ const TribeLeaderboard = () => {
     [rows, myTribeIds],
   );
 
-  const formatScore = (n: number) =>
-    n >= 1000 ? `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1)}k` : `${n}`;
-
-  const RankTile = ({ rank }: { rank: number }) => {
-    const c = podiumColor(rank);
-    return (
-      <div
-        className="relative h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border tabular-nums"
-        style={{
-          borderColor: c ? c.replace(")", " / 0.5)") : "hsl(var(--border))",
-          background: c ? c.replace(")", " / 0.08)") : "hsl(var(--secondary) / 0.4)",
-        }}
-      >
-        {rank === 1 && (
-          <Crown
-            size={12}
-            className="absolute -top-1.5 left-1/2 -translate-x-1/2"
-            style={{ color: "hsl(var(--gold))" }}
-            strokeWidth={2.6}
-            fill="currentColor"
-          />
-        )}
-        <span
-          className="font-display font-black text-sm"
-          style={{ color: c ?? "hsl(var(--muted-foreground))" }}
-        >
-          {rank}
-        </span>
-      </div>
-    );
-  };
+  const span = period === "weekly" ? "this week" : "all-time";
 
   const fireChip = (tribeId: string) => {
     const streak = streaksMap.get(tribeId) ?? 0;
     const tier = collectiveStreakTier(streak);
     if (tier < 0) return null; // cold tribes carry no flame — honest
-    const accent = collectiveAccent(streak);
     return (
       <span
         className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums"
-        style={{ color: accent }}
+        style={{ color: collectiveAccent(streak) }}
       >
-        <Flame size={12} fill="currentColor" strokeWidth={0} />
+        <Flame size={12} fill="currentColor" strokeWidth={0} aria-hidden />
         {fmtInt(streak)}d · {collectiveTierName(streak)}
       </span>
     );
@@ -131,97 +104,112 @@ const TribeLeaderboard = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Tribe leaderboard" onBack={() => navigate("/squad?tab=tribes")} />
+      <PageBar title="Tribe leaderboard" onBack={() => backOr(navigate, "/squad?tab=tribes")} />
       {/* pb-32 clears this page's fixed "your tribe" footer. */}
-      <div className="home-rise px-4 pt-4 pb-32">
-      <p className="text-[13px] text-muted-foreground mb-4">
-        {period === "weekly" ? "Ranked by XP earned this week" : "Ranked by all-time XP"}
-      </p>
+      <div className="px-4 pt-3 pb-32">
+      <header className="home-rise">
+        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          {myBest ? <>Your tribe is <span className="text-gold glow-gold-text tabular-nums">#{myBest.rank}</span> {span}.</> : "Every tribe, ranked."}
+        </h1>
+        <p className="mt-1.5 text-[13px] text-muted-foreground">
+          {period === "weekly" ? "By XP earned this week" : "By all-time XP"}
+        </p>
+      </header>
 
       {/* Period segment */}
-      <div className={cn(SEGMENT_TRACK, "mb-4")}>
+      <div className={cn("home-rise home-rise-1", SEGMENT_TRACK, "mt-4 mb-4")}>
         {(["weekly", "all_time"] as const).map((p) => (
           <button
             key={p}
+            type="button"
             onClick={() => setPeriod(p)}
             className={cn(
-              "eyebrow flex-1 py-2 rounded-lg transition-all",
+              "flex-1 min-h-11 rounded-lg text-[12px] font-bold transition-colors",
               period === p ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
-            {p === "weekly" ? "Weekly XP" : "All-Time XP"}
+            {p === "weekly" ? "Weekly XP" : "All-time XP"}
           </button>
         ))}
       </div>
 
+      <div className="home-rise home-rise-2">
       {loading ? (
-        <DetailSkeleton />
+        <div className="divide-y divide-border/35 border-t border-border/35">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="py-3"><div className="h-9 rounded-lg skeleton-block bg-secondary/30" /></div>
+          ))}
+        </div>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Users}
           title="No tribes yet"
-          description="Be the first founder — start one and rally your circle."
+          description="Be the first founder. Start one and rally your circle."
+          action={
+            <Button variant="ember" className="min-h-11" onClick={() => navigate("/tribes/new")}>
+              Start a tribe
+            </Button>
+          }
         />
       ) : (
-        <div className="space-y-2">
+        <div className="divide-y divide-border/35 border-t border-border/35">
           {rows.map((r) => {
             const mine = myTribeIds.has(r.tribe_id);
-            const c = podiumColor(r.rank);
             return (
               <button
                 key={r.tribe_id}
+                type="button"
                 onClick={() => navigate(`/tribes/${r.tribe_id}`)}
-                className={cn(
-                  "w-full text-left surface-card p-3 flex items-center gap-3 apex-tribe-card-hover",
-                  mine && "border-gold/40 bg-gold/[0.05]",
-                )}
-                style={c ? { borderColor: c.replace(")", " / 0.35)") } : undefined}
+                className="press w-full min-h-11 text-left py-3 flex items-center gap-3"
               >
-                <RankTile rank={r.rank} />
+                <span className={cn("relative w-8 shrink-0 text-right font-display font-black text-base tabular-nums", PODIUM[r.rank] ?? "text-muted-foreground")}>
+                  {r.rank === 1 && (
+                    <Crown size={11} className="absolute -top-2.5 right-0.5 text-gold" strokeWidth={2.6} fill="currentColor" aria-hidden />
+                  )}
+                  {r.rank}
+                </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="font-bold text-[15px] truncate leading-tight">{r.name}</p>
                     {r.visibility === "private" && (
-                      <Lock size={12} className="text-muted-foreground shrink-0" />
+                      <Lock size={12} className="text-muted-foreground shrink-0" aria-label="Private tribe" />
                     )}
-                    {mine && (
-                      <span className="eyebrow-sm px-1 py-0.5 rounded bg-gold/20 text-gold shrink-0">
-                        Mine
-                      </span>
-                    )}
+                    {mine && <span className="text-[10px] font-bold text-muted-foreground shrink-0">Mine</span>}
                   </div>
-                  <div className="flex items-center gap-2.5 mt-1 flex-wrap">
+                  <div className="flex items-center gap-2.5 mt-0.5 flex-wrap">
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-muted-foreground">
-                      <Users size={11} /> {r.member_count}
+                      <Users size={11} aria-hidden /> {r.member_count}
                     </span>
                     {fireChip(r.tribe_id)}
                   </div>
                 </div>
-                <span className="inline-flex items-center gap-1 text-[13px] font-black tabular-nums text-gold shrink-0">
-                  <Zap size={11} fill="currentColor" strokeWidth={0} />
-                  {formatScore(r.score)}
+                <span className="inline-flex items-center gap-1 text-[13px] font-black tabular-nums shrink-0 text-foreground/85">
+                  <Zap size={11} fill="currentColor" strokeWidth={0} aria-hidden />
+                  {fmtInt(r.score)}
                 </span>
               </button>
             );
           })}
         </div>
       )}
+      </div>
 
-      {/* Sticky my-tribe footer */}
+      {/* Sticky my-tribe footer: solid tint, no blur over a scrolling list. */}
       {myBest && (
         <div className="fixed bottom-20 left-0 right-0 px-4 z-30 pointer-events-none">
-          <div className="max-w-md mx-auto pointer-events-auto">
+          <div className="home-rise home-rise-3 max-w-md mx-auto pointer-events-auto">
             <button
+              type="button"
               onClick={() => navigate(`/tribes/${myBest.tribe_id}`)}
-              className="w-full rounded-xl p-3 border border-gold/40 bg-background/85 backdrop-blur-md flex items-center gap-3 shadow-[0_0_18px_hsl(var(--gold)/0.3)]"
+              className="w-full min-h-11 rounded-xl px-3 py-2.5 border border-gold/40 bg-[hsl(var(--background)/0.96)] shadow-[var(--shadow-3)] flex items-center gap-3"
             >
-              <span className="eyebrow text-gold shrink-0">Your tribe</span>
-              <span className="font-bold text-sm truncate flex-1 text-left">
+              <span className={cn(LABEL, "shrink-0")}>Your tribe</span>
+              <span className="font-bold text-sm truncate flex-1 text-left tabular-nums">
                 #{myBest.rank} · {myBest.name}
               </span>
-              <span className="inline-flex items-center gap-1 text-[13px] font-black tabular-nums text-gold shrink-0">
-                <Zap size={11} fill="currentColor" strokeWidth={0} />
-                {formatScore(myBest.score)}
+              <span className="inline-flex items-center gap-1 text-[13px] font-black tabular-nums text-foreground/85 shrink-0">
+                <Zap size={11} fill="currentColor" strokeWidth={0} aria-hidden />
+                {fmtInt(myBest.score)}
               </span>
             </button>
           </div>

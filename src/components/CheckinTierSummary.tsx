@@ -128,7 +128,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         >
           <span
             className={cn(
-              "eyebrow-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-full ring-1",
+              "text-[10px] font-bold text-muted-foreground inline-flex items-center gap-1 px-2.5 py-1 rounded-full ring-1",
               accent.ring,
               cfg.rank >= 5
                 ? "bg-background/60 text-foreground"
@@ -196,7 +196,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           {/* No idle shimmer here: the XP count-up IS this screen's spectacle,
               and an infinite background-position loop kept painting minutes
               after the celebration ended. */}
-          <p className="relative eyebrow text-gold/80 mb-1">
+          <p className="relative text-[11px] font-bold text-gold/80 mb-1">
             Experience earned
           </p>
           <div ref={xpTargetRef} className="relative flex items-baseline justify-center gap-1">
@@ -218,7 +218,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           {/* Level */}
           <div
             className={cn(
-              "rounded-xl border-2 p-3 text-left transition-all relative overflow-hidden",
+              "rounded-xl border-2 p-3 text-left transition-[border-color,background-color,box-shadow] relative overflow-hidden",
               leveledUp
                 ? "border-gold/60 bg-gold/12 shadow-[0_0_18px_hsl(var(--gold)/0.4)]"
                 : "border-border bg-card",
@@ -226,7 +226,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Trophy aria-hidden size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
-              <p className="eyebrow-sm text-muted-foreground">Level</p>
+              <p className="text-[10px] font-bold text-muted-foreground">Level</p>
               {leveledUp && (
                 <motion.span
                   animate={{ y: [0, -2, 0] }}
@@ -262,7 +262,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           {/* Streak */}
           <div
             className={cn(
-              "rounded-xl border-2 p-3 text-left transition-all relative overflow-hidden",
+              "rounded-xl border-2 p-3 text-left transition-[border-color,background-color,box-shadow] relative overflow-hidden",
               summary.streakBroken
                 ? "border-destructive/50 bg-destructive/12"
                 : summary.newStreak >= 30
@@ -286,7 +286,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                     : "text-streak-orange"
                 }
               />
-              <p className="eyebrow-sm text-muted-foreground">Streak</p>
+              <p className="text-[10px] font-bold text-muted-foreground">Streak</p>
             </div>
             <p
               className={cn(
@@ -328,7 +328,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             cfg.rank >= 5 ? "border-gold/30" : "border-border",
           )}
         >
-          <span className="eyebrow flex items-center gap-1.5 text-muted-foreground">
+          <span className="text-[11px] font-bold flex items-center gap-1.5 text-muted-foreground">
             <Target aria-hidden size={11} strokeWidth={3} />
             Total XP
           </span>
@@ -373,7 +373,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.54 }}
-            className="eyebrow mt-4 flex items-center justify-center gap-1.5 text-gold"
+            className="text-[11px] font-bold mt-4 flex items-center justify-center gap-1.5 text-gold"
           >
             <Crown aria-hidden size={11} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle standard" : "Apex doesn't skip days"}

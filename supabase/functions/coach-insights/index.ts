@@ -10,6 +10,7 @@
 //
 // Cron-only (service role guard, same pattern as weekly-briefing-generate).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { fetchAll } from "../_shared/fetch-all.ts";
 import {
   computeWhealthIndexDetailed,
   type WhealthInputs,
@@ -75,11 +76,13 @@ Deno.serve(async (req) => {
 
     // Active = checked in within 14 days.
     const activeSince = new Date(Date.now() - 14 * 86400_000).toISOString();
-    const { data: activeRows } = await sb
-      .from("daily_checkins")
-      .select("user_id")
-      .gte("checked_in_at", activeSince);
-    const userIds = [...new Set((activeRows ?? []).map((r: { user_id: string }) => r.user_id))];
+    // Paged: the un-ranged select capped at 1000 rows and silently dropped
+    // everyone past it from the insight run.
+    const activeRows = await fetchAll<{ user_id: string }>((from, to) =>
+      sb.from("daily_checkins").select("user_id").gte("checked_in_at", activeSince)
+        .order("checked_in_at", { ascending: false }).range(from, to),
+    );
+    const userIds = [...new Set(activeRows.map((r) => r.user_id))];
 
     const { count: lessonsTotal } = await sb
       .from("vault_articles")

@@ -3,6 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { track, FUNNEL } from "@/lib/analytics";
+import { FOOD_CACHE_PREFIX } from "@/lib/nutrition/food-cache";
 import { identifyUser, resetIdentity, captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
 import { sameProfile } from "@/lib/profile-diff";
@@ -169,6 +170,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let active = true;
+    // What was last applied. Supabase emits INITIAL_SESSION then SIGNED_IN
+    // with the same token, and TOKEN_REFRESHED hourly with the same user;
+    // each used to mint new user/session identities and re-render every
+    // useAuth() consumer (five call sites worked around it by keying on
+    // user?.id). A repeated token is a no-op; a refreshed token for the same
+    // user updates the session only.
+    let lastApplied: { token: string | null; userId: string | null } = { token: null, userId: null };
 
     // Apply a session and settle `loading` ONLY after the profile fetch has
     // resolved. Otherwise consumers briefly see loading=false with a null
@@ -176,7 +184,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // and flickers premium UI as locked on every cold start.
     const applySession = async (session: Session | null) => {
       if (!active) return;
+      const token = session?.access_token ?? null;
+      const userId = session?.user?.id ?? null;
+      if (token && token === lastApplied.token) return;
+      const sameUser = !!userId && userId === lastApplied.userId;
+      lastApplied = { token, userId };
       setSession(session);
+      if (sameUser) { setLoading(false); return; }
       setUser(session?.user ?? null);
       // Tie analytics + error reports to the user (no-op until observability configured).
       if (session?.user) identifyUser(session.user.id);
@@ -359,6 +373,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ].forEach(
         (k) => localStorage.removeItem(k),
       );
+      // Per-user keys carry the uid in their name; sweep them by prefix so a
+      // re-signed-in user never hydrates a stale entitlement or onboarding
+      // mirror from a previous account on the same device.
+      const PER_USER_PREFIXES = [
+        "rc_elite_v1_", "w_onboarding_state_", "w_checkin_onboarded_", "signup_tracked_",
+        "trial_started_tracked_", "trial_expiry_seen_", "streak_milestone_seen_", "w_last_rung_seen_",
+        "push_priming_dismissed_at", "w_welcome_toast_shown", FOOD_CACHE_PREFIX,
+      ];
+      Object.keys(localStorage)
+        .filter((k) => PER_USER_PREFIXES.some((p) => k.startsWith(p)))
+        .forEach((k) => localStorage.removeItem(k));
       sessionStorage.removeItem("w_apple_name_suggestion");
     } catch { /* storage unavailable */ }
     queryClient.clear(); // drop cached profile/feed/tribe queries

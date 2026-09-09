@@ -1,51 +1,51 @@
-
-import { useState, useRef, useEffect, useMemo } from "react";
-import { Swords, Trophy, Zap, UserPlus, Clock, CheckCircle, XCircle, Flame, Crown, Lock, Camera, Snowflake, Dumbbell, Brain, Droplets, Image, Vote, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import { useState, useRef, useEffect, useMemo, type ReactNode } from "react";
+import { Swords } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import PageBar from "@/components/ui/page-bar";
-import { cn } from "@/lib/utils";
+import { DoorRow } from "@/components/coach/rows";
+import { Block } from "@/components/skeletons/PageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downscaleImage } from "@/lib/downscale-image";
 import { uniqueChannelName } from "@/lib/realtime";
+import { backOr } from "@/lib/nav";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { BoardRowsSkeleton } from "@/components/skeletons/PageSkeleton";
 import FriendPickerSheet from "@/components/social/FriendPickerSheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import MyTribeBattles from "@/components/MyTribeBattles";
-import BattleChallengeModal from "@/components/battles/BattleChallengeModal";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
-import { hapticSelection } from "@/lib/haptics";
+import BattleChallengeModal, { BATTLE_TYPES } from "@/components/battles/BattleChallengeModal";
 import BattleIncomingCard from "@/components/battles/BattleIncomingCard";
-import BattleActiveCard from "@/components/battles/BattleActiveCard";
+import BattleActiveCard, { BattleActiveRow } from "@/components/battles/BattleActiveCard";
 import BattlePendingCard from "@/components/battles/BattlePendingCard";
 import BattleVoteCard from "@/components/battles/BattleVoteCard";
 import BattleHistoryCard from "@/components/battles/BattleHistoryCard";
+import { daysLeft, daysLeftLine } from "@/components/battles/battle-time";
 
-const BATTLE_TYPES = [
-  { id: "xp", label: "Total XP", emoji: "⚡", icon: Zap, description: "Most XP earned wins", color: "text-gold" },
-  { id: "cold_shower", label: "Cold Showers", emoji: "🧊", icon: Snowflake, description: "Most cold showers taken", color: "text-blue-400" },
-  { id: "workout", label: "Workouts", emoji: "💪", icon: Dumbbell, description: "Most workouts completed", color: "text-[hsl(var(--streak-orange))]" },
-  { id: "meditation", label: "Meditation", emoji: "🧘", icon: Brain, description: "Most meditation sessions", color: "text-ember-light" },
-  { id: "hydration", label: "Hydration", emoji: "💧", icon: Droplets, description: "Most liters of water", color: "text-cyan-400" },
-  { id: "streak", label: "Streak", emoji: "🔥", icon: Flame, description: "Longest streak during battle", color: "text-[hsl(var(--streak-orange))]" },
-] as const;
+/** A quiet zone of the ledger: an 11 px label over hairline rows. */
+const Ledger = ({ label, children }: { label: string; children: ReactNode }) => (
+  <section className="mt-6">
+    <h3 className="text-[11px] font-bold text-muted-foreground">{label}</h3>
+    <div className="mt-1 divide-y divide-border/35">{children}</div>
+  </section>
+);
+
+/** The screen's silhouette while battles resolve: the beat, the hero, three rows. */
+const BattlesSkeleton = () => (
+  <div className="animate-fade-in">
+    <Block height={30} className="w-4/5 !rounded-lg" />
+    <Block height={236} delay={60} className="mt-5 !rounded-2xl" />
+    {[0, 1, 2].map((i) => <Block key={i} height={52} delay={120 + i * 40} className="mt-3" />)}
+  </div>
+);
 
 const Battles = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
-  const [scope, setScope] = useState<"1v1" | "tribes">("1v1");
   const [opponent, setOpponent] = useState<{ user_id: string; username: string } | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [duration, setDuration] = useState(7);
@@ -61,15 +61,16 @@ const Battles = () => {
   // Check if current user is admin (shared cache across the app)
   const isAdmin = useIsAdmin(profile?.user_id);
 
-  const { data: battles, isLoading } = useQuery({
+  const { data: battles, isLoading, isError, refetch } = useQuery({
     queryKey: ["battles", profile?.user_id],
     queryFn: async () => {
       if (!profile) return [];
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("battles")
         .select("*")
         .or(`challenger_id.eq.${profile.user_id},opponent_id.eq.${profile.user_id}`)
         .order("created_at", { ascending: false });
+      if (error) throw error;
       return data || [];
     },
     enabled: !!profile,
@@ -186,6 +187,9 @@ const Battles = () => {
       .channel(uniqueChannelName("battles-realtime"))
       .on(
         "postgres_changes",
+        // No `filter:` — the user sits in either challenger_id or opponent_id
+        // (realtime takes one column), and the community list needs battles
+        // the user is not part of at all.
         { event: "*", schema: "public", table: "battles" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["battles"] });
@@ -195,6 +199,7 @@ const Battles = () => {
       )
       .on(
         "postgres_changes",
+        // No `filter:` — vote counts need every vote on a visible battle, not only mine.
         { event: "*", schema: "public", table: "battle_votes" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
@@ -244,7 +249,7 @@ const Battles = () => {
       toast.error(error.code === "23505" ? "You already voted in this battle" : "Failed to vote");
       return;
     }
-    toast.success("Vote cast! 🗳️");
+    toast.success("Vote cast.");
     queryClient.invalidateQueries({ queryKey: ["my-battle-votes"] });
     queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
   };
@@ -261,7 +266,7 @@ const Battles = () => {
       if (error) throw error;
 
       const typeLabel = BATTLE_TYPES.find(t => t.id === battleType)?.label || battleType;
-      toast.success("Battle challenge sent!", { description: `${typeLabel} battle vs @${opponent.username}` });
+      toast.success("Challenge sent.", { description: `${typeLabel} battle vs @${opponent.username}` });
       setShowCreate(false);
       setOpponent(null);
       setBattleType("xp");
@@ -288,7 +293,7 @@ const Battles = () => {
         accept,
       });
       if (error) throw error;
-      toast.success(accept ? "Battle accepted! ⚔️" : "Battle declined");
+      toast.success(accept ? "Battle on." : "Battle declined");
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err) {
       console.error(err);
@@ -325,7 +330,7 @@ const Battles = () => {
       });
       if (rpcErr) throw rpcErr;
 
-      toast.success("Proof uploaded! 📸");
+      toast.success("Proof is in.");
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err) {
       console.error(err);
@@ -353,266 +358,257 @@ const Battles = () => {
     return battle.challenger_id === profile.user_id ? battle.opponent_proof_url : battle.challenger_proof_url;
   };
 
+  // XP battles score live off the participants' current XP minus the start
+  // snapshot; every other type carries its score on the battle row.
+  const scoresOf = (battle: any) => {
+    const isXp = battle.battle_type === "xp";
+    const challenger = isXp
+      ? Math.max(0, (participants?.[battle.challenger_id]?.xp ?? 0) - (battle.challenger_start_xp ?? 0))
+      : battle.challenger_score;
+    const opponent = isXp
+      ? Math.max(0, (participants?.[battle.opponent_id]?.xp ?? 0) - (battle.opponent_start_xp ?? 0))
+      : battle.opponent_score;
+    const mine = battle.challenger_id === profile?.user_id;
+    return { myScore: mine ? challenger : opponent, oppScore: mine ? opponent : challenger };
+  };
+
+  // The hero is the live battle ending soonest; the rest are rows.
+  const liveSorted = [...activeBattles].sort(
+    (a: any, b: any) => daysLeft(a.started_at, a.duration_days) - daysLeft(b.started_at, b.duration_days),
+  );
+  const hero = liveSorted[0];
+  const otherLive = liveSorted.slice(1);
+  const communityVotes = communityVotingBattles ?? [];
+  const ledgerCount = otherLive.length + myPending.length + myVotingBattles.length + communityVotes.length + completedBattles.length;
+
   if (!profile) return null;
+
+  // Participants resolve a beat after battles; the line must never read "@Loading…".
+  const nameOf = (battle: any) => (participants ? `@${getOpponent(battle).username}` : null);
+  const beat = hero
+    ? daysLeftLine(daysLeft(hero.started_at, hero.duration_days), nameOf(hero) ?? "your opponent")
+    : pendingBattles.length === 1
+      ? `${nameOf(pendingBattles[0]) ?? "Someone"} is coming for you.`
+      : pendingBattles.length > 1
+        ? `${pendingBattles.length} challengers want an answer.`
+        : myVotingBattles.length > 0
+          ? "Tied. The community decides."
+          : myPending.length > 0
+            ? "Your challenge is out."
+            : "Nobody's coming for you yet.";
 
   return (
     <div className="min-h-full">
-      <PageBar title="Battles" onBack={() => navigate(-1)} />
+      <PageBar title="Battles" onBack={() => backOr(navigate, "/leaderboard")} />
 
       <div className="px-4 pt-4 pb-6">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file && activeProofBattleId) {
-            handleProofUpload(activeProofBattleId, file);
-          }
-          e.target.value = "";
-        }}
-      />
-
-      <p className="home-rise mb-4 text-sm text-muted-foreground">Challenge others. Prove your discipline.</p>
-
-      {/* One battles home: 1v1 | Tribes (tribe battles used to hide in a
-          "More" drawer on the 1v1 page AND live on a separate tribe page). */}
-      <div className={cn(SEGMENT_TRACK, "mb-4")}>
-        {(["1v1", "tribes"] as const).map((k) => (
-          <button
-            key={k}
-            onClick={() => { hapticSelection(); setScope(k); }}
-            className={cn("flex-1 rounded-full py-2 text-sm font-bold transition-all", scope === k ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
-          >
-            {k === "1v1" ? "1v1" : "Tribes"}
-          </button>
-        ))}
-      </div>
-
-      {scope === "tribes" ? (
-        <MyTribeBattles />
-      ) : (
-        <>
-      {/* Create Battle CTA — one flow: pick a friend → the shared challenge modal */}
-      <div className="home-rise home-rise-1 rounded-xl border border-gold/20 p-6 text-center mb-6 glass-3d depth-realistic">
-        <div className="h-16 w-16 rounded-full gradient-gold flex items-center justify-center glow-gold mx-auto mb-4">
-          <Swords size={30} className="text-primary-foreground" />
-        </div>
-        <h2 className="font-display font-bold text-lg mb-1">1v1 Discipline Battle</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Challenge a friend to XP, cold showers, workouts & more.
-        </p>
-        <Button variant="ember" size="lg" className="w-full max-w-xs" onClick={() => setPickerOpen(true)}>
-          <Swords size={18} />
-          Challenge a friend
-        </Button>
-      </div>
-
-      {showCreate && opponent && (
-        <BattleChallengeModal
-          username={opponent.username}
-          battleType={battleType}
-          setBattleType={setBattleType}
-          duration={duration}
-          setDuration={setDuration}
-          creating={creating}
-          onClose={() => { setShowCreate(false); setOpponent(null); }}
-          onChallenge={handleCreate}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && activeProofBattleId) {
+              handleProofUpload(activeProofBattleId, file);
+            }
+            e.target.value = "";
+          }}
         />
-      )}
 
+        {isLoading ? (
+          <BattlesSkeleton />
+        ) : isError && !battles ? (
+          <ErrorState title="Couldn't load your battles" onRetry={refetch} />
+        ) : (
+          <>
+            {/* Opening beat — who's coming for you, stated once. */}
+            <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h2>
 
-      {/* Incoming Challenges */}
-      {pendingBattles.length > 0 && (
-        <div className="home-rise home-rise-1 mb-6">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
-            <UserPlus size={14} className="text-gold" />
-            Incoming Challenges
-          </h2>
-          <div className="space-y-2">
-            {pendingBattles.map((battle: any) => (
-              <BattleIncomingCard
-                key={battle.id}
-                battle={battle}
-                opp={getOpponent(battle)}
-                typeInfo={getBattleTypeInfo(battle.battle_type)}
-                onRespond={handleRespond}
-                responding={respondingId === battle.id}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Active Battles */}
-      {activeBattles.length > 0 && (
-        <div className="home-rise home-rise-2 mb-6">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
-            <Flame size={14} className="text-[hsl(var(--streak-orange))]" />
-            Active Battles
-          </h2>
-          <div className="space-y-3">
-            {activeBattles.map((battle: any) => {
-              const opp = getOpponent(battle);
-              const typeInfo = getBattleTypeInfo(battle.battle_type);
-              const isXpBattle = battle.battle_type === "xp";
-              const challengerScore = isXpBattle
-                ? Math.max(0, (participants?.[battle.challenger_id]?.xp ?? 0) - (battle.challenger_start_xp ?? 0))
-                : battle.challenger_score;
-              const opponentScore = isXpBattle
-                ? Math.max(0, (participants?.[battle.opponent_id]?.xp ?? 0) - (battle.opponent_start_xp ?? 0))
-                : battle.opponent_score;
-              const myScore = battle.challenger_id === profile.user_id ? challengerScore : opponentScore;
-              const oppScore = battle.challenger_id === profile.user_id ? opponentScore : challengerScore;
-              const amWinning = myScore >= oppScore;
-              const startDate = battle.started_at ? new Date(battle.started_at) : new Date();
-              const endDate = new Date(startDate.getTime() + battle.duration_days * 24 * 60 * 60 * 1000);
-              const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+            {/* The hero — the one live battle that matters most. */}
+            {hero && (() => {
+              const { myScore, oppScore } = scoresOf(hero);
               return (
-                <BattleActiveCard
-                  key={battle.id}
-                  battle={battle}
-                  opp={opp}
-                  typeInfo={typeInfo}
-                  profileUsername={profile.username}
-                  myScore={myScore}
-                  oppScore={oppScore}
-                  amWinning={amWinning}
-                  daysLeft={daysLeft}
-                  myProof={getMyProof(battle)}
-                  oppProof={getOppProof(battle)}
-                  isAdmin={!!isAdmin}
-                  isUploading={uploadingProof === battle.id}
-                  onRequestUpload={(id) => { setActiveProofBattleId(id); fileInputRef.current?.click(); }}
-                  onAdminCancel={adminCancelBattle}
-                  onAdminDelete={adminDeleteBattle}
-                />
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Pending (sent by me) */}
-      {myPending.length > 0 && (
-        <div className="home-rise home-rise-2 mb-6">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
-            <Clock size={14} className="text-muted-foreground" />
-            Awaiting Response
-          </h2>
-          <div className="space-y-2">
-            {myPending.map((battle: any) => (
-              <BattlePendingCard
-                key={battle.id}
-                battle={battle}
-                opponentName={getOpponent(battle).username}
-                typeInfo={getBattleTypeInfo(battle.battle_type)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Your own tied battles — the community is deciding. Without this the
-          battle vanished from the page entirely for its participants (not
-          active, not completed, and excluded from the community list). */}
-      {myVotingBattles.length > 0 && (
-        <div className="home-rise home-rise-2 mb-6">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
-            <Vote size={14} className="text-gold" />
-            Tie — Community Is Voting
-          </h2>
-          <p className="text-[11px] text-muted-foreground mb-3">Your battle ended in a tie. Other athletes are casting the deciding votes.</p>
-          <div className="space-y-2">
-            {myVotingBattles.map((battle: any) => {
-              const counts = voteCounts?.[battle.id] || {};
-              const oppId = battle.challenger_id === profile?.user_id ? battle.opponent_id : battle.challenger_id;
-              const mine = counts[profile?.user_id ?? ""] ?? 0;
-              const theirs = counts[oppId] ?? 0;
-              return (
-                <div key={battle.id} className="surface-card p-3.5 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold truncate">vs @{getOpponent(battle).username}</p>
-                    <p className="text-[11px] text-muted-foreground">{getBattleTypeInfo(battle.battle_type).label}</p>
-                  </div>
-                  <p className="text-sm font-black tabular-nums shrink-0">{mine} – {theirs}</p>
+                <div className="home-rise home-rise-1 mt-5">
+                  <BattleActiveCard
+                    battle={hero}
+                    opp={getOpponent(hero)}
+                    typeInfo={getBattleTypeInfo(hero.battle_type)}
+                    profileUsername={profile.username}
+                    myScore={myScore}
+                    oppScore={oppScore}
+                    amWinning={myScore >= oppScore}
+                    daysLeft={daysLeft(hero.started_at, hero.duration_days)}
+                    myProof={getMyProof(hero)}
+                    oppProof={getOppProof(hero)}
+                    isAdmin={!!isAdmin}
+                    isUploading={uploadingProof === hero.id}
+                    onRequestUpload={(id) => { setActiveProofBattleId(id); fileInputRef.current?.click(); }}
+                    onAdminCancel={adminCancelBattle}
+                    onAdminDelete={adminDeleteBattle}
+                  />
                 </div>
               );
-            })}
-          </div>
-        </div>
-      )}
+            })()}
 
-      {/* Community Voting — Tied Battles */}
-      {(communityVotingBattles && communityVotingBattles.length > 0) && (
-        <div className="home-rise home-rise-2 mb-6">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight flex items-center gap-2">
-            <Vote size={14} className="text-gold" />
-            Community Vote — Tied Battles
-          </h2>
-          <p className="text-[11px] text-muted-foreground mb-3">These battles ended in a tie. Cast your vote to decide the winner!</p>
-          <div className="space-y-3">
-            {communityVotingBattles.map((battle: any) => (
-              <BattleVoteCard
-                key={battle.id}
-                battle={battle}
-                typeInfo={getBattleTypeInfo(battle.battle_type)}
-                myVote={myVotes?.[battle.id]}
-                counts={voteCounts?.[battle.id] || {}}
-                onVote={handleVote}
+            {/* Incoming — needs an answer, so it sits above the door. */}
+            {pendingBattles.length > 0 && (
+              <section className="home-rise home-rise-2 mt-6">
+                <h3 className="text-[11px] font-bold text-[hsl(var(--ember))]">Incoming</h3>
+                <div className="mt-1 -mx-3 divide-y divide-border/35">
+                  {pendingBattles.map((battle: any) => (
+                    <BattleIncomingCard
+                      key={battle.id}
+                      battle={battle}
+                      opp={getOpponent(battle)}
+                      typeInfo={getBattleTypeInfo(battle.battle_type)}
+                      onRespond={handleRespond}
+                      responding={respondingId === battle.id}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* The door — one flow: pick a friend, then the shared challenge sheet. */}
+            <div className="home-rise home-rise-3 mt-6 border-y border-border/35">
+              <DoorRow
+                icon={Swords}
+                label="Challenge a friend"
+                sub="Pick a discipline. The days decide."
+                onClick={() => setPickerOpen(true)}
               />
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
 
-      {/* Completed Battles */}
-      {completedBattles.length > 0 && (
-        <div className="home-rise home-rise-3">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">Battle History</h2>
-          <div className="space-y-2">
-            {completedBattles.map((battle: any) => (
-              <BattleHistoryCard
-                key={battle.id}
-                battle={battle}
-                opponentName={getOpponent(battle).username}
-                typeInfo={getBattleTypeInfo(battle.battle_type)}
-                currentUserId={profile.user_id}
-                isAdmin={!!isAdmin}
-                onAdminDelete={adminDeleteBattle}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+            {ledgerCount > 0 ? (
+              <div className="home-rise home-rise-4">
+                {otherLive.length > 0 && (
+                  <Ledger label="Also live">
+                    {otherLive.map((battle: any) => {
+                      const { myScore, oppScore } = scoresOf(battle);
+                      return (
+                        <BattleActiveRow
+                          key={battle.id}
+                          battle={battle}
+                          opp={getOpponent(battle)}
+                          typeInfo={getBattleTypeInfo(battle.battle_type)}
+                          myScore={myScore}
+                          oppScore={oppScore}
+                          daysLeft={daysLeft(battle.started_at, battle.duration_days)}
+                          myProof={getMyProof(battle)}
+                          isUploading={uploadingProof === battle.id}
+                          onRequestUpload={(id) => { setActiveProofBattleId(id); fileInputRef.current?.click(); }}
+                        />
+                      );
+                    })}
+                  </Ledger>
+                )}
 
-      {/* Data-phase skeleton — previously nothing rendered until battles
-          resolved, then cards popped in. */}
-      {isLoading && !showCreate && <BoardRowsSkeleton />}
+                {myPending.length > 0 && (
+                  <Ledger label="Sent">
+                    {myPending.map((battle: any) => (
+                      <BattlePendingCard
+                        key={battle.id}
+                        battle={battle}
+                        opponentName={getOpponent(battle).username}
+                        typeInfo={getBattleTypeInfo(battle.battle_type)}
+                      />
+                    ))}
+                  </Ledger>
+                )}
 
-      {/* Empty state */}
-      {!isLoading && (!battles || battles.length === 0) && !showCreate && (
-        <div className="home-rise home-rise-2">
-          <EmptyState
-            icon={Swords}
-            title="No battles yet"
-            description="Challenge a friend — winner takes the score."
+                {/* Your own tied battles — the community is deciding. Without
+                    this the battle vanished from the page for its participants
+                    (not active, not completed, excluded from the community list). */}
+                {myVotingBattles.length > 0 && (
+                  <Ledger label="Tied">
+                    {myVotingBattles.map((battle: any) => {
+                      const counts = voteCounts?.[battle.id] || {};
+                      const oppId = battle.challenger_id === profile.user_id ? battle.opponent_id : battle.challenger_id;
+                      const mine = counts[profile.user_id] ?? 0;
+                      const theirs = counts[oppId] ?? 0;
+                      return (
+                        <div key={battle.id} className="flex items-center gap-3 py-3 min-h-11">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[14px] font-semibold leading-tight truncate">@{getOpponent(battle).username}</p>
+                            <p className="text-[12px] text-muted-foreground mt-0.5">{getBattleTypeInfo(battle.battle_type).label} · the community is voting</p>
+                          </div>
+                          <p className="text-[13px] font-black tabular-nums shrink-0">{mine}<span className="text-muted-foreground/60">–</span>{theirs}</p>
+                        </div>
+                      );
+                    })}
+                  </Ledger>
+                )}
+
+                {communityVotes.length > 0 && (
+                  <Ledger label="Decide a tie">
+                    {communityVotes.map((battle: any) => (
+                      <BattleVoteCard
+                        key={battle.id}
+                        battle={battle}
+                        typeInfo={getBattleTypeInfo(battle.battle_type)}
+                        myVote={myVotes?.[battle.id]}
+                        counts={voteCounts?.[battle.id] || {}}
+                        onVote={handleVote}
+                      />
+                    ))}
+                  </Ledger>
+                )}
+
+                {completedBattles.length > 0 && (
+                  <Ledger label="Record">
+                    {completedBattles.map((battle: any) => (
+                      <BattleHistoryCard
+                        key={battle.id}
+                        battle={battle}
+                        opponentName={getOpponent(battle).username}
+                        typeInfo={getBattleTypeInfo(battle.battle_type)}
+                        currentUserId={profile.user_id}
+                        isAdmin={!!isAdmin}
+                        onAdminDelete={adminDeleteBattle}
+                      />
+                    ))}
+                  </Ledger>
+                )}
+              </div>
+            ) : (!battles || battles.length === 0) && (
+              <div className="home-rise home-rise-4 mt-6">
+                <EmptyState
+                  icon={Swords}
+                  title="No battles yet"
+                  description="Your record starts with the first challenge."
+                />
+              </div>
+            )}
+
+            {/* Tribe wars — the same row grammar, one level down. */}
+            <div className="home-rise home-rise-5 mt-8">
+              <MyTribeBattles />
+            </div>
+          </>
+        )}
+
+        {showCreate && opponent && (
+          <BattleChallengeModal
+            username={opponent.username}
+            battleType={battleType}
+            setBattleType={setBattleType}
+            duration={duration}
+            setDuration={setDuration}
+            creating={creating}
+            onClose={() => { setShowCreate(false); setOpponent(null); }}
+            onChallenge={handleCreate}
           />
-        </div>
-      )}
+        )}
 
-        </>
-      )}
-
-      <FriendPickerSheet
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        title="Choose your opponent"
-        subtitle="Battle one of your friends."
-        onPick={(f) => { setOpponent({ user_id: f.user_id, username: f.username }); setPickerOpen(false); setShowCreate(true); }}
-      />
+        <FriendPickerSheet
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          title="Choose your opponent"
+          subtitle="Battle one of your friends."
+          onPick={(f) => { setOpponent({ user_id: f.user_id, username: f.username }); setPickerOpen(false); setShowCreate(true); }}
+        />
       </div>
     </div>
   );

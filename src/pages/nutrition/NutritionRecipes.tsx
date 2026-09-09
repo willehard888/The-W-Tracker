@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import { useQueries } from "@tanstack/react-query";
 import { ChefHat, ChevronRight, Plus } from "lucide-react";
@@ -37,7 +38,7 @@ const NutritionRecipes = () => {
   if (isLoading) {
     return (
       <div className="min-h-full">
-        <PageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
+        <PageBar title="Recipes" onBack={() => backOr(navigate, "/nutrition")} action={action} />
         <div className="px-4 pt-4 pb-8">
           <Block height={28} className="w-2/3 !rounded-lg" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -50,7 +51,7 @@ const NutritionRecipes = () => {
 
   return (
     <div className="min-h-full">
-      <PageBar title="Recipes" onBack={() => navigate(-1)} action={action} />
+      <PageBar title="Recipes" onBack={() => backOr(navigate, "/nutrition")} action={action} />
       <div className="px-4 pt-4 pb-6">
         {recipes.length === 0 ? (
           <div className="home-rise pt-6">

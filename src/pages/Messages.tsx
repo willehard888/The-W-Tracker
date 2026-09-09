@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { ActionRow } from "@/components/ActionRow";
 import { Input } from "@/components/ui/input";
 import { fmtInt, fmtRelative } from "@/lib/format";
@@ -8,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { MessageCircle, Search, X, SearchX } from "lucide-react";
 import StatusAvatar from "@/components/StatusAvatar";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -90,7 +92,7 @@ const Messages = () => {
     enabled: !!user && searchQuery.trim().length >= 2,
   });
 
-  const { data: conversations, isLoading } = useQuery({
+  const { data: conversations, isLoading, isError, refetch } = useQuery({
     queryKey: ["conversations", user?.id],
     staleTime: 30_000,       // conversations should be reasonably real-time
     gcTime:    5 * 60_000,
@@ -149,13 +151,13 @@ const Messages = () => {
   const rows: { key: string; node: ReactNode }[] = [
     ...friendConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} isFriend /> })),
     ...friendsWithoutConvo.map((f) => ({ key: f.user_id, node: <PersonRow profile={f} subtitle="Start a conversation" onClick={() => navigate(`/chat/${f.user_id}`)} /> })),
-    ...(friendIds.size > 0 && otherConvos.length > 0 ? [{ key: "others", node: <p className="eyebrow pt-4 pb-1">Others</p> }] : []),
+    ...(friendIds.size > 0 && otherConvos.length > 0 ? [{ key: "others", node: <p className="text-[11px] font-bold text-muted-foreground pt-4 pb-1">Others</p> }] : []),
     ...otherConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} /> })),
   ];
 
   return (
     <div ref={scrollRef} className="min-h-full" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-      <PageBar title="Messages" onBack={() => navigate("/squad")} />
+      <PageBar title="Messages" onBack={() => backOr(navigate, "/squad")} />
 
       <div className="px-4 pt-4 pb-6">
       <PullRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={PULL_THRESHOLD} />
@@ -242,7 +244,12 @@ const Messages = () => {
             </div>
           )}
 
-          {!isLoading && rows.length === 0 && (
+          {!isLoading && isError && rows.length === 0 && (
+            <div className="home-rise home-rise-2">
+              <ErrorState title="Couldn't load messages" onRetry={refetch} />
+            </div>
+          )}
+          {!isLoading && !isError && rows.length === 0 && (
             <div className="home-rise home-rise-2">
               <EmptyState icon={MessageCircle} title="No messages yet" description="Open someone's profile and tap Message to start a conversation." />
             </div>

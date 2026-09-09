@@ -68,8 +68,19 @@ const walk = (dir, out = []) => {
   }
   return out;
 };
-let raf = 0;
-for (const p of walk("src")) raf += (readFileSync(p, "utf8").match(/requestAnimationFrame\(/g) ?? []).length;
+// Paint-cost vocabulary in TSX: each is a regression the bundle size never
+// shows (a backdrop-filter in a scroller, a still-vs-animated flame, a
+// transition-all that watches every property).
+const tsxCounters = { raf: 0, backdropBlur: 0, mixBlend: 0, transitionAll: 0, filterBlur: 0 };
+for (const p of walk("src")) {
+  const src = readFileSync(p, "utf8");
+  tsxCounters.raf += (src.match(/requestAnimationFrame\(/g) ?? []).length;
+  tsxCounters.backdropBlur += (src.match(/backdrop-blur/g) ?? []).length;
+  tsxCounters.mixBlend += (src.match(/mix-blend-|mixBlendMode/g) ?? []).length;
+  tsxCounters.transitionAll += (src.match(/\btransition-all\b/g) ?? []).length;
+  tsxCounters.filterBlur += (src.match(/\bblur-(?:sm|md|lg|xl|2xl|3xl|\[)/g) ?? []).length;
+}
+const raf = tsxCounters.raf;
 
 const snapshot = {
   boot: { js: bootJs, css: bootCss },
@@ -82,6 +93,7 @@ const snapshot = {
     infinite: (indexCss.match(/\binfinite\b/g) ?? []).length,
   },
   raf,
+  tsx: tsxCounters,
 };
 
 if (asJson) {
@@ -132,4 +144,8 @@ num("src/index.css bytes", snapshot.indexCss.bytes, base?.indexCss.bytes);
 num("@keyframes", snapshot.indexCss.keyframes, base?.indexCss.keyframes);
 num("'infinite' occurrences", snapshot.indexCss.infinite, base?.indexCss.infinite);
 num("requestAnimationFrame( in src/**", snapshot.raf, base?.raf);
+num("backdrop-blur in src/**", snapshot.tsx.backdropBlur, base?.tsx?.backdropBlur);
+num("mix-blend in src/**", snapshot.tsx.mixBlend, base?.tsx?.mixBlend);
+num("transition-all in src/**", snapshot.tsx.transitionAll, base?.tsx?.transitionAll);
+num("blur-* classes in src/**", snapshot.tsx.filterBlur, base?.tsx?.filterBlur);
 console.log();

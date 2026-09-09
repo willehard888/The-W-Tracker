@@ -15,7 +15,7 @@ const rarityConfig = {
       "bg-[radial-gradient(140%_120%_at_30%_-10%,hsl(42_70%_22%/0.55),transparent_60%)] bg-card",
     text: "text-gold",
     glow: "shadow-[0_0_28px_hsl(var(--gold)/0.4),0_0_72px_hsl(var(--gold)/0.1)]",
-    label: "MYTHIC TITLE",
+    label: "Mythic title",
     rim: "badge-conic-rim-legendary",
     icon: Sparkles,
   },
@@ -25,7 +25,7 @@ const rarityConfig = {
       "bg-[radial-gradient(140%_120%_at_30%_-10%,hsl(275_45%_18%/0.55),transparent_60%)] bg-card",
     text: "text-[hsl(var(--badge-epic))]",
     glow: "shadow-[0_0_24px_hsl(var(--badge-epic)/0.3)]",
-    label: "EPIC TITLE",
+    label: "Epic title",
     rim: "badge-conic-rim-epic",
     icon: Crown,
   },
@@ -35,7 +35,7 @@ const rarityConfig = {
       "bg-[radial-gradient(140%_120%_at_30%_-10%,hsl(210_50%_18%/0.5),transparent_60%)] bg-card",
     text: "text-[hsl(var(--badge-rare))]",
     glow: "shadow-[0_0_18px_hsl(var(--badge-rare)/0.25)]",
-    label: "RARE TITLE",
+    label: "Rare title",
     rim: "",
     icon: Crown,
   },
@@ -44,7 +44,7 @@ const rarityConfig = {
     surface: "bg-card/80",
     text: "text-foreground",
     glow: "",
-    label: "TITLE",
+    label: "Title",
     rim: "",
     icon: Crown,
   },
@@ -80,7 +80,7 @@ const FeaturedBadgeHero = ({ name, icon, rarity }: FeaturedBadgeHeroProps) => {
       <div className="flex flex-col items-start leading-none">
         <span
           className={cn(
-            "eyebrow-sm flex items-center gap-1",
+            "text-[10px] font-bold text-muted-foreground flex items-center gap-1",
             cfg.text
           )}
         >

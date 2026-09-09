@@ -1,16 +1,15 @@
-import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
 import { useSignedMediaUrl } from "@/lib/signed-url";
 import { downscaleImage } from "@/lib/downscale-image";
 import { toast } from "sonner";
-import { Crown, Loader2, Settings, Shield, ShieldOff, UserMinus, Lock, Globe, Image as ImageIcon, Trash2, Upload } from "lucide-react";
+import { Crown, Shield, ShieldOff, UserMinus, Lock, Globe, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { friendlyError } from "@/lib/error-copy";
@@ -43,6 +42,8 @@ interface Props {
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const MAX_COVER_SIZE_MB = 8;
 
+const LABEL = "text-[11px] font-bold text-muted-foreground";
+
 const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, currentUserId, onChanged }: Props) => {
   const { user } = useAuth();
   const moderation = useModeration();
@@ -69,7 +70,9 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
   const displayCover = coverPreview?.startsWith("data:") ? coverPreview : storedCoverSrc;
   const [savingMeta, setSavingMeta] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [pendingRemove, setPendingRemove] = useState<{ userId: string; username: string } | null>(null);
+  // The member pending a remove confirm. AlertDialog renders at --z-confirm
+  // (140), above this sheet (120), so the real dialog can be used.
+  const [confirmKick, setConfirmKick] = useState<Member | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -80,6 +83,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       setCoverUrl(tribe.cover_url ?? "");
       setCoverPreview(tribe.cover_url ?? null);
       setCoverFile(null);
+      setConfirmKick(null);
     }
   }, [open, tribe]);
 
@@ -221,219 +225,201 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
   const busy = savingMeta || uploading;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings size={16} className="text-gold" /> Manage tribe
-          </DialogTitle>
-          <DialogDescription>Edit tribe details, cover photo, and member roles.</DialogDescription>
-        </DialogHeader>
-
-        {/* Cover photo uploader */}
-        <div>
-          <Label className="text-xs mb-2 block">Cover photo</Label>
-          <div className="relative rounded-xl overflow-hidden border border-border bg-card/40 aspect-[16/9]">
-            {coverPreview ? (
-              <>
-                {displayCover && <img loading="lazy" decoding="async" src={displayCover} alt="Cover preview" className="absolute inset-0 h-full w-full object-cover" />}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-                <div className="absolute bottom-2 right-2 flex gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    disabled={busy}
-                    className="relative h-8 px-2.5 rounded-md bg-background/85 backdrop-blur border border-border text-[12px] font-bold inline-flex items-center gap-1 hover:bg-background transition-colors disabled:opacity-40 before:absolute before:-inset-2 before:content-['']"
-                  >
-                    <Upload size={11} /> Change
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRemoveCover}
-                    disabled={busy}
-                    className="relative h-8 w-8 rounded-md bg-background/85 backdrop-blur border border-border text-destructive inline-flex items-center justify-center hover:bg-destructive/10 transition-colors disabled:opacity-40 before:absolute before:-inset-2 before:content-['']"
-                    aria-label="Remove cover"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={busy}
-                className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-gold hover:bg-gold/5 transition-colors disabled:opacity-40"
-              >
-                <ImageIcon size={22} />
-                <span className="eyebrow text-inherit">Add cover photo</span>
-                <span className="text-[11px] text-muted-foreground/70">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
-              </button>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              hidden
-              onChange={handleCoverSelect}
-            />
-          </div>
-        </div>
-
-        {/* Metadata edit */}
-        <div className="space-y-3">
-          <div>
-            <Label className="text-xs">Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} className="mt-1" />
-          </div>
-          <div>
-            <Label className="text-xs">Description</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={280}
-              rows={3}
-              className="mt-1 resize-none"
-            />
-          </div>
-          <div>
-            <Label className="text-xs mb-1 block">Activity</Label>
-            <select
-              value={activity}
-              onChange={(e) => setActivity(e.target.value)}
-              className="mt-1 w-full h-9 rounded-md border border-border bg-card/60 px-3 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-gold/50"
-            >
-              <option value="">No activity set</option>
-              {TRIBE_ACTIVITY_GROUPS.map((g) => (
-                <optgroup key={g.label} label={g.label}>
-                  {g.items.map((a) => (
-                    <option key={a.name} value={a.name}>{a.name}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Shown on the browse list — how new members find you.
-            </p>
-          </div>
-          <div>
-            <Label className="text-xs mb-1 block">Privacy</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {([
-                { v: "public" as const, icon: Globe, title: "Public", sub: "Anyone can preview & join" },
-                { v: "private" as const, icon: Lock, title: "Private", sub: "Request to join · content hidden" },
-              ]).map((opt) => {
-                const active = visibility === opt.v;
-                const OIcon = opt.icon;
-                return (
-                  <button
-                    key={opt.v}
-                    type="button"
-                    onClick={() => setVisibility(opt.v)}
-                    className={cn(
-                      "rounded-lg border p-2.5 text-left transition-colors",
-                      active
-                        ? "border-gold/50 bg-gold/8"
-                        : "border-border bg-card/40 hover:border-border/80",
-                    )}
-                  >
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <OIcon size={12} className={active ? "text-gold" : "text-muted-foreground"} />
-                      <p className={cn("text-xs font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">{opt.sub}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <Button onClick={handleSaveMeta} disabled={busy} className="w-full" variant="ember">
-            {busy ? <Loader2 size={14} className="animate-spin" /> : null}
-            {uploading ? "Uploading…" : savingMeta ? "Saving…" : "Save changes"}
-          </Button>
-        </div>
-
-        <div className="apex-divider my-2" />
-
-        {/* Roles */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="eyebrow text-muted-foreground">Members & roles</h3>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{adminCount}/2 admins</span>
-          </div>
-
-          {otherMembers.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-3 text-center">No other members yet.</p>
+    <BottomSheet
+      open={open}
+      onClose={() => onOpenChange(false)}
+      label="Manage tribe"
+      title="Manage tribe"
+      subtitle="Details, cover photo, member roles."
+      height="tall"
+      bodyClassName="space-y-5 pt-2"
+      footer={
+        <Button onClick={handleSaveMeta} loading={busy} className="w-full" variant="ember" size="lg">
+          {uploading ? "Uploading…" : "Save changes"}
+        </Button>
+      }
+    >
+      {/* Cover photo uploader */}
+      <div>
+        <p className={cn(LABEL, "mb-1.5")}>Cover photo</p>
+        <div className="relative rounded-xl overflow-hidden border border-border bg-card/40 aspect-[16/9]">
+          {coverPreview ? (
+            <>
+              {displayCover && <img loading="lazy" decoding="async" src={displayCover} alt="Cover preview" className="absolute inset-0 h-full w-full object-cover" />}
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+              <div className="absolute bottom-2 right-2 flex gap-1.5">
+                <Button type="button" variant="secondary" size="sm" className="min-h-11 bg-[hsl(var(--background)/0.9)]" disabled={busy} onClick={() => fileRef.current?.click()}>
+                  <Upload size={12} /> Change
+                </Button>
+                <Button type="button" variant="secondary" size="icon" className="bg-[hsl(var(--background)/0.9)] text-destructive" disabled={busy} onClick={handleRemoveCover} aria-label="Remove cover">
+                  <Trash2 size={14} />
+                </Button>
+              </div>
+            </>
           ) : (
-            <div className="space-y-1.5">
-              {otherMembers.map((m) => {
-                const isAdmin = m.role === "admin";
-                const promoteDisabled = !isAdmin && adminCount >= 2;
-                return (
-                  <div key={m.user_id} className="flex items-center gap-2 rounded-lg border border-border bg-card/40 p-2">
-                    <div className="h-8 w-8 rounded-full bg-secondary overflow-hidden shrink-0">
-                      {m.avatar_url ? (
-                        <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt={m.username} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
-                          {m.username.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold truncate">{m.username}</p>
-                      {isAdmin && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-gold">
-                          <Crown size={10} /> ADMIN
-                        </span>
-                      )}
-                    </div>
-                    {busyId === m.user_id ? (
-                      <Loader2 size={14} className="animate-spin text-muted-foreground" />
-                    ) : isAdmin ? (
-                      <>
-                        <Button size="xs" variant="ghost"
-                          onClick={() => handleRoleChange(m.user_id, "member")}>
-                          <ShieldOff size={12} /> Demote
-                        </Button>
-                        <Button size="xs" variant="ghost" className="text-destructive hover:text-destructive" aria-label="Remove member"
-                          onClick={() => setPendingRemove({ userId: m.user_id, username: m.username })}>
-                          <UserMinus size={12} />
-                        </Button>
-                      </>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={busy}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-gold hover:bg-gold/5 transition-colors disabled:opacity-40"
+            >
+              <ImageIcon size={22} aria-hidden />
+              <span className="text-[12px] font-bold">Add cover photo</span>
+              <span className="text-[11px] text-muted-foreground/70">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
+            </button>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+            onChange={handleCoverSelect}
+          />
+        </div>
+      </div>
+
+      {/* Details */}
+      <div className="space-y-3">
+        <div>
+          <label className={cn(LABEL, "mb-1.5 block")}>Name</label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} className="h-11" />
+        </div>
+        <div>
+          <label className={cn(LABEL, "mb-1.5 block")}>Description</label>
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={280}
+            rows={3}
+            className="resize-none"
+          />
+        </div>
+        <div>
+          <label className={cn(LABEL, "mb-1.5 block")}>Activity</label>
+          <select
+            value={activity}
+            onChange={(e) => setActivity(e.target.value)}
+            className="surface-inset w-full h-11 rounded-md px-3 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-gold/50"
+          >
+            <option value="">No activity set</option>
+            {TRIBE_ACTIVITY_GROUPS.map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.items.map((a) => (
+                  <option key={a.name} value={a.name}>{a.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Shown on the browse list — how new members find you.
+          </p>
+        </div>
+        <div>
+          <p className={cn(LABEL, "mb-1.5")}>Privacy</p>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { v: "public" as const, icon: Globe, title: "Public", sub: "Anyone can preview & join" },
+              { v: "private" as const, icon: Lock, title: "Private", sub: "Request to join · content hidden" },
+            ]).map((opt) => {
+              const active = visibility === opt.v;
+              const OIcon = opt.icon;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => setVisibility(opt.v)}
+                  aria-pressed={active}
+                  className={cn(
+                    "press min-h-11 rounded-xl border p-3 text-left transition-colors",
+                    active ? "border-gold/50 bg-gold/[0.07]" : "border-border/60 bg-card/40",
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <OIcon size={12} className={active ? "text-gold" : "text-muted-foreground"} aria-hidden />
+                    <p className={cn("text-xs font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-snug">{opt.sub}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Roles */}
+      <div className="border-t border-border/35 pt-4">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className={LABEL}>Members & roles</h3>
+          <span className="text-[11px] text-muted-foreground tabular-nums">{adminCount}/2 admins</span>
+        </div>
+
+        {otherMembers.length === 0 ? (
+          <p className="text-xs text-muted-foreground py-3 text-center">No other members yet.</p>
+        ) : (
+          <div className="divide-y divide-border/35">
+            {otherMembers.map((m) => {
+              const isAdmin = m.role === "admin";
+              const promoteDisabled = !isAdmin && adminCount >= 2;
+              const rowBusy = busyId === m.user_id;
+              return (
+                <div key={m.user_id} className="flex items-center gap-2.5 py-2 min-h-[52px]">
+                  <div className="h-8 w-8 rounded-full bg-secondary overflow-hidden shrink-0">
+                    {m.avatar_url ? (
+                      <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <>
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          className="text-gold hover:text-gold disabled:opacity-40"
-                          disabled={promoteDisabled}
-                          onClick={() => handleRoleChange(m.user_id, "admin")}
-                          title={promoteDisabled ? "Max 2 admins reached" : "Promote to admin"}
-                        >
-                          <Shield size={12} /> Promote
-                        </Button>
-                        <Button size="xs" variant="ghost" className="text-destructive hover:text-destructive" aria-label="Remove member"
-                          onClick={() => setPendingRemove({ userId: m.user_id, username: m.username })}>
-                          <UserMinus size={12} />
-                        </Button>
-                      </>
+                      <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
+                        {m.username.slice(0, 2).toUpperCase()}
+                      </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </DialogContent>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold truncate">{m.username}</p>
+                    {isAdmin && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-gold">
+                        <Crown size={10} aria-hidden /> Admin
+                      </span>
+                    )}
+                  </div>
+                  {isAdmin ? (
+                    <Button size="sm" variant="ghost" loading={rowBusy} onClick={() => handleRoleChange(m.user_id, "member")}>
+                      <ShieldOff size={12} /> Demote
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-gold hover:text-gold disabled:opacity-40"
+                      disabled={promoteDisabled}
+                      loading={rowBusy}
+                      onClick={() => handleRoleChange(m.user_id, "admin")}
+                      title={promoteDisabled ? "Max 2 admins reached" : "Promote to admin"}
+                    >
+                      <Shield size={12} /> Promote
+                    </Button>
+                  )}
+                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" aria-label={`Remove ${m.username}`} disabled={rowBusy} onClick={() => setConfirmKick(m)}>
+                    <UserMinus size={12} />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <ConfirmDialog
-        open={!!pendingRemove}
-        onOpenChange={(o) => { if (!o) setPendingRemove(null); }}
-        title={`Remove ${pendingRemove?.username ?? "this member"} from the tribe?`}
+        open={confirmKick !== null}
+        onOpenChange={(o) => { if (!o) setConfirmKick(null); }}
+        title={confirmKick ? `Remove ${confirmKick.username}?` : "Remove member?"}
+        description="They lose access to the tribe. They can be invited back later."
         actionLabel="Remove"
-        onConfirm={() => { const r = pendingRemove; setPendingRemove(null); if (r) void handleRemove(r.userId, r.username); }}
+        onConfirm={() => {
+          const m = confirmKick;
+          setConfirmKick(null);
+          if (m) void handleRemove(m.user_id, m.username);
+        }}
       />
-    </Dialog>
+    </BottomSheet>
   );
 };
 

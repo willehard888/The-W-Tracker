@@ -217,3 +217,14 @@ export const fetchTribesPage = async (
 
       return { tribes: list, ownedIds, joinedIds, pendingIds, featuredPreviews, featuredId, userToTribes, pulse, nextEvents };
 };
+
+/** Whether the user is an active member of any tribe — decides the Tribes landing tab. */
+export const fetchMyTribeMembership = async (userId: string): Promise<boolean> => {
+  const { data } = await supabase
+    .from("tribe_members")
+    .select("tribe_id")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .limit(1);
+  return (data?.length ?? 0) > 0;
+};

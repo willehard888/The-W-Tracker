@@ -147,8 +147,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center px-6">
         <div className="relative mb-6">
-          <div aria-hidden className="absolute inset-0 rounded-full blur-2xl"
-            style={{ background: "radial-gradient(circle, hsl(var(--gold)/0.55) 0%, transparent 70%)" }} />
+          <div aria-hidden className="absolute -inset-6 rounded-full"
+            style={{ background: "radial-gradient(circle, hsl(var(--gold)/0.28) 0%, transparent 70%)" }} />
           <div className="relative h-20 w-20 rounded-3xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_8px_28px_hsl(var(--gold)/0.5)]">
             <Sparkles size={32} className="text-background animate-pulse" strokeWidth={2.6} />
           </div>
@@ -171,16 +171,16 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
       <div className="rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-gradient-to-b from-[hsl(var(--gold)/0.06)] to-card/40 p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="eyebrow text-gold">From your athlete profile</p>
+          <p className="text-[11px] font-bold text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
-            className="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition">
+            className="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition-colors">
             <Settings2 size={11} /> Edit
           </button>
         </div>
         <dl className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
           <Row k="Goal"      v={goalLabel} />
-          <Row k="Horizon"   v={`${horizon} weeks`} />
-          <Row k="Schedule"  v={`${days.length} days/wk`} extra={<DayDots active={days} />} />
+          <Row k="Horizon"   v={`${horizon} week${horizon === 1 ? "" : "s"}`} />
+          <Row k="Schedule"  v={`${days.length} day${days.length === 1 ? "" : "s"}/wk`} extra={<DayDots active={days} />} />
           <Row k="Session"   v={`${sessionMin} min`} />
           <Row k="Equipment" v={equipment} wide />
           {injuries.length > 0 && <Row k="Injuries" v={injuries.join(", ")} wide />}
@@ -261,7 +261,7 @@ const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => voi
   ({ active, onClick, children }, ref) => (
     <button ref={ref} type="button" onClick={onClick}
       className={cn(
-        "rounded-full border transition-all px-3 py-1.5 text-xs",
+        "rounded-full border transition-colors px-3 py-1.5 text-xs",
         active
           ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
           : "border-border/40 bg-card/40 text-muted-foreground"

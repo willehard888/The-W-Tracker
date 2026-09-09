@@ -727,7 +727,8 @@ Deno.serve(async (req) => {
                   kind: m.kind,
                   title: String(m.title ?? proto.title).slice(0, 100),
                   detail: m.detail ? String(m.detail).slice(0, 160) : undefined,
-                  xp: Math.max(10, Math.min(80, parseInt(m.xp ?? 20))),
+                  // Model output: "" or "abc" parsed to NaN and NaN reached the DB.
+                  xp: Math.max(10, Math.min(80, Number.parseInt(String(m.xp ?? 20), 10) || 20)),
                   priority: m.priority ?? "medium",
                   protocol_id: proto.id,
                   evidence: proto.evidence,

@@ -1,3 +1,4 @@
+import { backOr } from "@/lib/nav";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus, Star, Trash2, X } from "lucide-react";
@@ -168,7 +169,7 @@ const UserFoodEditor = () => {
   if (id && existing.isLoading && !existing.food) {
     return (
       <div className="min-h-full">
-        <PageBar title={title} onBack={() => navigate(-1)} />
+        <PageBar title={title} onBack={() => backOr(navigate, "/nutrition")} />
         <div className="px-4 pt-4 pb-8">
           <Block height={52} className="!rounded-xl" />
           <Block height={88} delay={40} className="mt-4 !rounded-2xl" />
@@ -180,7 +181,7 @@ const UserFoodEditor = () => {
   if (id && !existing.isLoading && !existing.food) {
     return (
       <div className="min-h-full">
-        <PageBar title={title} onBack={() => navigate(-1)} />
+        <PageBar title={title} onBack={() => backOr(navigate, "/nutrition")} />
         <div className="px-4 pt-6">
           <EmptyState title="Food not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition")}>Back to the diary</Button>} />
         </div>
@@ -192,7 +193,7 @@ const UserFoodEditor = () => {
     <div className="min-h-full">
       <PageBar
         title={title}
-        onBack={() => navigate(-1)}
+        onBack={() => backOr(navigate, "/nutrition")}
         action={
           id ? (
             <Button variant="ghost" size="icon" aria-label="Delete food" className="text-muted-foreground" onClick={() => setConfirmDelete(true)}>

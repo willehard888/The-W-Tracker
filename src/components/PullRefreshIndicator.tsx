@@ -11,7 +11,7 @@ const PullRefreshIndicator = ({ pullDistance, isRefreshing, threshold }: Props) 
 
   return (
     <div
-      className="flex items-center justify-center overflow-hidden transition-all duration-300"
+      className="flex items-center justify-center overflow-hidden transition-[height] duration-300"
       style={{ height: pullDistance > 0 ? pullDistance : 0 }}
     >
       <div

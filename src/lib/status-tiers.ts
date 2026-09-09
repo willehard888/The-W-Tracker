@@ -178,7 +178,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     color: "legend",
     borderClass: "border-[hsl(280_70%_60%)]/50",
     bgClass: "bg-gradient-to-br from-[hsl(280_70%_55%)]/10 via-gold/5 to-[hsl(350_80%_55%)]/5",
-    textClass: "text-transparent bg-clip-text bg-gradient-to-r from-[hsl(280_70%_65%)] via-gold to-[hsl(350_80%_60%)]",
+    textClass: "text-[hsl(280_70%_70%)]",
     glowClass: "shadow-[0_0_32px_hsl(280_70%_60%/0.4)]",
     auraSize: 'huge',
     badgeVariant: "legend",
@@ -370,15 +370,15 @@ export const getTierHeroSurface = (tier: string): TierHeroSurface => {
 export const getTierUsernameClass = (tier: string): string => {
   switch (tier as StatusTier) {
     case "legend":
-      // Brighter, more saturated rainbow with stronger glow + animated shimmer — unmistakably Legend
-      return "text-transparent bg-clip-text bg-[linear-gradient(100deg,hsl(280_95%_78%)_0%,hsl(320_90%_72%)_25%,hsl(42_100%_65%)_50%,hsl(350_95%_70%)_75%,hsl(280_95%_78%)_100%)] [background-size:200%_100%] [animation:shimmer-slide_5s_linear_infinite] drop-shadow-[0_2px_24px_hsl(280_85%_65%/0.65)]";
+      // Solid violet with a halo. Gradient text is banned (it blurs on iOS),
+      // so the tiers separate by hue and glow strength instead.
+      return "text-[hsl(280_70%_70%)] [text-shadow:0_0_18px_hsl(280_70%_60%/0.35)]";
     case "apex":
-      // Glowing molten gold — animated shimmer sweep + strong halo. Distinct
-      // from Elite's static gold: Apex visibly *glows*.
-      return "text-transparent bg-clip-text bg-[linear-gradient(100deg,hsl(42_100%_72%)_0%,hsl(36_100%_58%)_35%,hsl(48_100%_74%)_50%,hsl(36_100%_58%)_65%,hsl(42_100%_72%)_100%)] [background-size:200%_100%] [animation:shimmer-slide_4s_linear_infinite] drop-shadow-[0_2px_22px_hsl(42_100%_60%/0.7)]";
+      // Gold that visibly glows — distinct from Elite's static gold.
+      return "text-gold [text-shadow:0_0_16px_hsl(var(--gold)/0.35)]";
     case "elite":
-      // Solid gold gradient — the golden username earned at Elite.
-      return "text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark drop-shadow-[0_2px_16px_hsl(var(--gold)/0.5)]";
+      // The golden username earned at Elite.
+      return "text-gold";
     case "high_performer":
       return "text-[hsl(280_85%_72%)] drop-shadow-[0_2px_14px_hsl(var(--purple)/0.5)]";
     case "performer":

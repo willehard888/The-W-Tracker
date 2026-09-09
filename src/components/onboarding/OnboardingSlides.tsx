@@ -121,7 +121,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
           >
             <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden><span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" /></span>
             <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
-            <span className="eyebrow ml-auto text-muted-foreground/70">
+            <span className="text-[11px] font-bold ml-auto text-muted-foreground/70">
               {cfg.percentile}
             </span>
           </div>
@@ -147,7 +147,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
 /* ── 7. Commitment: free trial ── */
 export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-    <p className="eyebrow mb-2">Your free trial</p>
+    <p className="text-[11px] font-bold text-muted-foreground mb-2">Your free trial</p>
     <h1 className="font-display text-[28px] leading-tight font-black tracking-tight text-center mb-1.5">
       Everything unlocked.
     </h1>

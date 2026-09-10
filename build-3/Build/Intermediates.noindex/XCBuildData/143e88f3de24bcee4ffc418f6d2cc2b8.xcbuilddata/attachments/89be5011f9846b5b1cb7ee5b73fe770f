@@ -1,4 +1,0 @@
-
-module CapacitorLocalNotifications.__Swift {
-  exclude header "CapacitorLocalNotifications-Swift.h"
-}

@@ -1,4 +1,0 @@
-
-module PurchasesHybridCommon.__Swift {
-  exclude header "PurchasesHybridCommon-Swift.h"
-}

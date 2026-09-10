@@ -1,4 +1,0 @@
-
-module CapacitorAppLauncher.Swift {
-  header "CapacitorAppLauncher-Swift.h"
-}

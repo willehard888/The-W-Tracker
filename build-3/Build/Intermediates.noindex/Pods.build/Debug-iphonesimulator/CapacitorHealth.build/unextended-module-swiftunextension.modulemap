@@ -1,4 +1,0 @@
-
-module CapacitorHealth.__Swift {
-  exclude header "CapacitorHealth-Swift.h"
-}

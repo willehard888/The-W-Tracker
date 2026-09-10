@@ -1,4 +1,0 @@
-
-module RevenueCat.__Swift {
-  exclude header "RevenueCat-Swift.h"
-}

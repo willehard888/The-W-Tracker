@@ -1,4 +1,0 @@
-
-module RevenueCat.Swift {
-  header "RevenueCat-Swift.h"
-}

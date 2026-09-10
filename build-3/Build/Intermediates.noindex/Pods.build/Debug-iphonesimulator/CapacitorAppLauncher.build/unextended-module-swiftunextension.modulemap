@@ -1,4 +1,0 @@
-
-module CapacitorAppLauncher.__Swift {
-  exclude header "CapacitorAppLauncher-Swift.h"
-}

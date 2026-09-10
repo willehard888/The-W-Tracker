@@ -1,4 +1,0 @@
-
-module PurchasesHybridCommon.Swift {
-  header "PurchasesHybridCommon-Swift.h"
-}

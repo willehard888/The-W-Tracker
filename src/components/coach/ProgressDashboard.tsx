@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import { Loader2, RefreshCw, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip,
-} from "recharts";
+import Sparkline from "@/components/coach/Sparkline";
+import { localDateKey } from "@/lib/date";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 
@@ -23,7 +23,6 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
   const [read, setRead] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [xpSeries, setXpSeries] = useState<{ d: string; xp: number }[]>([]);
 
   const targets = program.plan_json.weekly_check_targets;
 
@@ -33,32 +32,32 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
   const activeTargetDays = weekDays.filter((d) => d.focus.toLowerCase() !== "rest").length || 1;
   const compliance = Math.round((weekLogs / activeTargetDays) * 100);
 
-  useEffect(() => {
-    const load = async () => {
-      if (!user) return;
-      const ago = new Date(Date.now() - 28 * 86400_000).toISOString();
-      const { data } = await supabase
+  // 28 days of XP, one number per local calendar day. react-query owns the
+  // cache: the raw effect refetched on every mount of the dashboard.
+  const { data: xpSeries = [] } = useQuery({
+    queryKey: ["coach-progress-xp-28d", user?.id],
+    enabled: !!user?.id,
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 28 * 86400_000).toISOString();
+      const { data, error } = await supabase
         .from("daily_checkins")
         .select("xp_earned, checked_in_at")
-        .eq("user_id", user.id)
-        .gte("checked_in_at", ago)
-        .order("checked_in_at", { ascending: true });
-      const map = new Map<string, number>();
-      (data ?? []).forEach((r: any) => {
-        const d = new Date(r.checked_in_at).toISOString().slice(5, 10);
-        map.set(d, (map.get(d) ?? 0) + (r.xp_earned ?? 0));
-      });
-      // Build last 28-day series
-      const out: { d: string; xp: number }[] = [];
-      for (let i = 27; i >= 0; i--) {
-        const dt = new Date(Date.now() - i * 86400_000);
-        const key = dt.toISOString().slice(5, 10);
-        out.push({ d: key, xp: map.get(key) ?? 0 });
+        .eq("user_id", user!.id)
+        .gte("checked_in_at", since);
+      if (error) throw error;
+      // Local day, not the UTC slice the old effect used — an evening check-in
+      // landed on tomorrow's bar west of Greenwich.
+      const byDay = new Map<string, number>();
+      for (const r of data ?? []) {
+        const key = localDateKey(new Date(r.checked_in_at));
+        byDay.set(key, (byDay.get(key) ?? 0) + (r.xp_earned ?? 0));
       }
-      setXpSeries(out);
-    };
-    load();
-  }, [user]);
+      return Array.from({ length: 28 }, (_, i) =>
+        byDay.get(localDateKey(new Date(Date.now() - (27 - i) * 86400_000))) ?? 0,
+      );
+    },
+  });
 
   const fetchRead = useCallback(async () => {
     setLoading(true);
@@ -120,35 +119,9 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
             XP last 28 days
           </p>
         </div>
-        <div className="h-32 -mx-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={xpSeries}>
-              <defs>
-                <linearGradient id="xpGold" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--gold))" stopOpacity={0.55} />
-                  <stop offset="100%" stopColor="hsl(var(--gold))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="d" hide />
-              <YAxis hide />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 12,
-                  fontSize: 11,
-                }}
-                labelStyle={{ color: "hsl(var(--muted-foreground))" }}
-              />
-              <Area
-                type="monotone"
-                dataKey="xp"
-                stroke="hsl(var(--gold))"
-                strokeWidth={2}
-                fill="url(#xpGold)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        {/* Fixed slot: the sparkline draws nothing until the series lands. */}
+        <div className="h-32">
+          <Sparkline values={xpSeries} className="w-full h-full" />
         </div>
       </div>
 

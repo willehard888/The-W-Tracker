@@ -3,6 +3,12 @@ import { useId } from "react";
 interface Props {
   /** Values in chronological order (oldest → newest). */
   values: number[];
+  /**
+   * Fixed y-range. Without it the line auto-scales to the data, which is what
+   * you want for weights or RHR but not for a bounded score — a 0–100 score
+   * sitting at 70–75 must read flat, not dramatic.
+   */
+  domain?: [number, number];
   className?: string;
 }
 
@@ -11,7 +17,7 @@ interface Props {
  * fixed viewBox and scales to its container width, so it stays crisp without
  * pulling a charting library into the lazy exercise chunk.
  */
-const Sparkline = ({ values, className }: Props) => {
+const Sparkline = ({ values, domain, className }: Props) => {
   // Unique gradient id per instance — a hardcoded id collides when several
   // sparklines render on one page (url(#…) resolves to the FIRST match, so a
   // future variant color would silently render as the other chart's gradient).
@@ -20,8 +26,8 @@ const Sparkline = ({ values, className }: Props) => {
   const W = 100;
   const H = 32;
   const pad = 3;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const min = domain ? Math.min(domain[0], ...values) : Math.min(...values);
+  const max = domain ? Math.max(domain[1], ...values) : Math.max(...values);
   const range = max - min || 1;
   const stepX = W / (values.length - 1);
   const y = (v: number) => H - pad - ((v - min) / range) * (H - pad * 2);

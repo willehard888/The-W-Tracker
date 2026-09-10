@@ -9,33 +9,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/error-copy";
-
-const Sparkline = ({ values }: { values: number[] }) => {
-  if (values.length < 2) return <div className="h-12 flex items-center text-[11px] text-muted-foreground">Not enough data yet.</div>;
-  const w = 280;
-  const h = 48;
-  const max = Math.max(...values, 100);
-  const min = Math.min(...values, 0);
-  const range = Math.max(1, max - min);
-  const step = w / (values.length - 1);
-  const pts = values.map((v, i) => `${i * step},${h - ((v - min) / range) * h}`).join(" ");
-  const last = values[values.length - 1];
-  const lastX = (values.length - 1) * step;
-  const lastY = h - ((last - min) / range) * h;
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="w-full h-12">
-      <defs>
-        <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(42 88% 62%)" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="hsl(42 88% 62%)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={`0,${h} ${pts} ${w},${h}`} fill="url(#sparkFill)" />
-      <polyline points={pts} fill="none" stroke="hsl(42 88% 62%)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={lastX} cy={lastY} r="3" fill="hsl(42 88% 62%)" stroke="hsl(255 18% 5%)" strokeWidth="2" />
-    </svg>
-  );
-};
+import Sparkline from "@/components/coach/Sparkline";
 
 const PerformanceOSDashboard = () => {
   const { data: snaps, isLoading } = usePerformanceSnapshots(28);
@@ -109,7 +83,11 @@ const PerformanceOSDashboard = () => {
           </div>
           <Sparkles size={16} className="text-gold/60" />
         </div>
-        <Sparkline values={values} />
+        {values.length < 2 ? (
+          <div className="h-12 flex items-center text-[11px] text-muted-foreground">Not enough data yet.</div>
+        ) : (
+          <Sparkline values={values} domain={[0, 100]} className="w-full h-12" />
+        )}
       </motion.div>
 
       {/* Component breakdown */}

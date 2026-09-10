@@ -35,21 +35,16 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           // FUNCTION form on purpose. The object form co-located shared
-          // transitive deps (react-is, lodash pieces) INSIDE the charts
-          // chunk, so every page chunk statically imported the whole 375KB
-          // recharts bundle — Home paid the chart tax on first load. The
-          // function assigns only the named packages; shared deps fall into
-          // rollup's own common chunks.
+          // transitive deps inside whichever chunk claimed them first, so a
+          // page chunk could statically import a big lazy one for a helper.
+          // The function assigns only the named packages; everything else
+          // falls into rollup's own common chunks.
           manualChunks(id: string) {
             if (!id.includes("node_modules")) return undefined;
-            // Shared glue used by both app code and chart internals — MUST
-            // live in vendor. When rollup auto-placed clsx inside charts,
-            // every cn() call site statically imported the 375KB recharts
-            // chunk and Home paid for charts it never renders.
+            // Shared glue every cn() call site touches — pinned to vendor so
+            // rollup can't bury it in a lazy chunk and make Home import that
+            // chunk for a class name.
             if (/node_modules\/(clsx|tailwind-merge|react-is|prop-types)\//.test(id)) return "vendor";
-            // recharts + its private deps (lodash et al are recharts-only
-            // here per npm ls) stay quarantined together.
-            if (/node_modules\/(recharts|victory-vendor|d3-[a-z-]+|react-smooth|recharts-scale|eventemitter3|lodash)[/@-]/.test(id) || id.includes("/d3-")) return "charts";
             if (id.includes("react-router")) return "vendor";
             if (id.includes("react-dom") || /node_modules\/react\//.test(id) || id.includes("scheduler")) return "vendor";
             if (id.includes("@supabase")) return "supabase";

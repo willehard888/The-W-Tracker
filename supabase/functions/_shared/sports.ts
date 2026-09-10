@@ -1,7 +1,12 @@
 // Sport id → display label for edge functions. MIRRORS src/lib/sports.ts
 // (Deno can't import the client lib). Only labels — XP/groups stay client-side.
 // When adding a sport, add it in BOTH files.
-const SPORT_LABELS: Record<string, string> = {
+// Exported so src/lib/__tests__/sports-parity.test.ts can hold it against the
+// client catalog — sportName() falls back to `?? id`, so a missing key never
+// throws, it just leaks a raw slug into an AI prompt.
+export const SPORT_LABELS: Record<string, string> = {
+  // The "no workout" sentinel — SPORT_CATALOG's first entry, client-side.
+  none: "No workout",
   walk: "Walking", run: "Running", gym: "Gym", swim: "Swimming",
   yoga: "Yoga", combat: "Thai Boxing/MMA", hiit: "HIIT", team: "Team Sports",
   cycling: "Cycling", other: "Other Sport",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import { backOr } from "@/lib/nav";
 import { Crown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,6 @@ import { DoorRow } from "@/components/coach/rows";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import type { ProgramWeekState } from "@/lib/training/program-week";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
-import { useAuth } from "@/contexts/AuthContext";
 import { loadExerciseLibrary } from "@/lib/exercise-library";
 import { fmtInt } from "@/lib/format";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
@@ -53,7 +53,10 @@ const standingLine = (s: ProgramWeekState, weeks: number): string => {
  */
 const CoachProgramDetail = () => {
   const navigate = useNavigate();
-  const { isElite } = useAuth();
+  // hasAccess, not isElite: the trial is sold as full access, Home's Training
+  // row shows its Build button to any trialist, and this screen used to answer
+  // that tap with a paywall. The server gate now agrees (has_active_access).
+  const { hasAccess } = useTrialAccess();
   const [showRegen, setShowRegen] = useState(false);
   // Set the moment generation returns; cleared when the athlete starts. Local
   // state on purpose — the durable "has seen the reveal" version arrives with
@@ -101,22 +104,22 @@ const CoachProgramDetail = () => {
             <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">
               {program
                 ? standingLine(weekState, program.weeks)
-                : isElite
+                : hasAccess
                   ? "Four progressive weeks from your athlete profile. Two-minute setup; the plan adapts each week."
                   : "Periodised by an AI coach against your goal, equipment and time. Adapts each week from your logs."}
             </p>
           </header>
         )}
 
-        {/* Free user, no program — the paywall door */}
-        {!isLoading && !program && !isElite && (
+        {/* No trial, no membership, no program — the paywall door */}
+        {!isLoading && !program && !hasAccess && (
           <div className="home-rise home-rise-1 mt-4 border-t border-border/35">
             <DoorRow icon={Crown} label="Build your 4-week training program" sub="Premium" onClick={() => navigate("/paywall")} />
           </div>
         )}
 
-        {/* Elite user, no program — generation flow */}
-        {!isLoading && !program && isElite && (
+        {/* Trial or member, no program — generation flow */}
+        {!isLoading && !program && hasAccess && (
           <div className="home-rise home-rise-1 mt-2">
             <ProgramOnboarding
               onGenerated={() => {
@@ -147,7 +150,7 @@ const CoachProgramDetail = () => {
             {!justGenerated && (<>
             {/* The block is over: the next one is the screen's action, so it
                 sits up here as the ember and the quiet door below stays away. */}
-            {weekState.readyForNext && isElite && !showRegen && (
+            {weekState.readyForNext && hasAccess && !showRegen && (
               <Button variant="ember" size="lg" className="w-full" onClick={() => setShowRegen(true)}>
                 Build my next block
               </Button>
@@ -177,12 +180,12 @@ const CoachProgramDetail = () => {
             />
 
             {/* Regenerate — build a fresh 4-week block (supersedes the current). */}
-            {isElite && !showRegen && !weekState.readyForNext && (
+            {hasAccess && !showRegen && !weekState.readyForNext && (
               <div className="border-t border-border/35">
                 <DoorRow icon={RefreshCw} label="Generate a new block" onClick={() => setShowRegen(true)} />
               </div>
             )}
-            {isElite && showRegen && (
+            {hasAccess && showRegen && (
               // A new block earns the same reveal — it is a different plan, and
               // "what changed and why" is the whole question there too.
               <ProgramOnboarding onGenerated={onRegenerated} />

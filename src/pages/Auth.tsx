@@ -172,7 +172,7 @@ const Auth = () => {
             {mode === "login" ? "Welcome back." : "Earn your status."}
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
-            {mode === "login" ? "Your streak is waiting." : "Free to start. Yours forever."}
+            {mode === "login" ? "Your streak is waiting." : "Free for 14 days. No card."}
           </p>
         </header>
 

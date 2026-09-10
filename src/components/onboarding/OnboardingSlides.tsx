@@ -149,7 +149,7 @@ export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
     <p className="text-[11px] font-bold text-muted-foreground mb-2">Your free trial</p>
     <h1 className="font-display text-[28px] leading-tight font-black tracking-tight text-center mb-1.5">
-      Everything unlocked.
+      Fourteen days, all in.
     </h1>
     <p className="text-sm text-muted-foreground text-center mb-7">
       No payment. No card. Just show up.
@@ -170,7 +170,8 @@ export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
         </div>
       ))}
       <p className="text-xs text-muted-foreground pt-1 border-t border-border/40">
-        The deal: one check-in a day. That's the whole game.
+        The deal: one check-in a day. That's the whole game. Posting to the feed
+        comes with membership.
       </p>
     </div>
 

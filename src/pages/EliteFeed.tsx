@@ -15,7 +15,7 @@ import ModerationGate from "@/components/ModerationGate";
 import { usePullRefresh } from "@/hooks/use-pull-refresh";
 import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { Button } from "@/components/ui/button";
-import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award, Reply, X } from "lucide-react";
+import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award, Reply, X, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -693,7 +693,13 @@ const EliteFeed = () => {
   // on each post, so status is visible without locking people out of the loop.
   const userTier = profile?.status_tier || 'recruit';
   const tierRank = getTierConfig(userTier).rank;
-  const canPost = !!user;
+  // Two different questions, and they had one answer. Kudos is open to every
+  // signed-in member (its policy is `auth.uid() = giver_id`); POSTING is not —
+  // feed_posts INSERT requires has_premium (20260707120000_earned_status_phase1
+  // .sql:218). The composer used to open for everyone, take a caption, upload
+  // the image and run moderation, and only then hand back an RLS error.
+  const canGiveKudos = !!user;
+  const canPost = !!user && isElite;
   const unresolvedReportsCount = reports?.length || 0;
   const canView = true; // any member that passes AccessGate can read the feed
 
@@ -972,6 +978,30 @@ const EliteFeed = () => {
         </div>
       )}
 
+      {/* Not a member yet: say so here rather than after a caption, an upload
+          and a moderation pass. The row keeps the composer's silhouette so the
+          feed does not jump when membership starts. */}
+      {!canPost && !!user && (
+        <div className="home-rise home-rise-1 mb-6">
+          <button
+            type="button"
+            onClick={() => { hapticSelection(); navigate("/paywall"); }}
+            className="press w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
+          >
+            <span className="h-8 w-8 rounded-full bg-secondary/60 flex items-center justify-center shrink-0">
+              <Lock aria-hidden size={14} className="text-muted-foreground" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-[14px] font-bold leading-tight">Posting is for members</span>
+              <span className="block text-[12px] text-muted-foreground/80 leading-snug mt-0.5">
+                Read, react and give kudos while you are on trial.
+              </span>
+            </span>
+            <ChevronRight aria-hidden size={16} className="text-muted-foreground/60 shrink-0" />
+          </button>
+        </div>
+      )}
+
       {/* PROOF — the content leads. Entries sit on the ground, hairline-
           separated, no card boxes: the photo frames itself. */}
       <div className="divide-y divide-border/35">
@@ -999,7 +1029,9 @@ const EliteFeed = () => {
           <EmptyState
             icon={Flame}
             title="No posts yet"
-            description="Be the first to share your W — the elite feed only counts proof."
+            description={canPost
+              ? "Be the first to share your W — the elite feed only counts proof."
+              : "The feed only counts proof. Members post it; everyone reads it."}
           />
         )}
 
@@ -1012,7 +1044,7 @@ const EliteFeed = () => {
               index={index}
               currentUserId={user?.id}
               isAdmin={!!isAdmin}
-              canPost={canPost}
+              canPost={canGiveKudos}
               liked={!!reactions?.has(post.id)}
               hasGivenKudos={!!userKudosPosts?.has(post.id)}
               verified={!!verifiedSet?.has(post.user_id)}

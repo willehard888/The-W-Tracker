@@ -199,9 +199,13 @@ Deno.serve(async (req) => {
     }
     const userId = userData.user.id;
 
-    const { data: isPremium } = await supabase.rpc("has_premium", { _user_id: userId });
-    if (!isPremium) {
-      return new Response(JSON.stringify({ error: "Premium membership required" }), {
+    // has_active_access, not has_premium: the trial is sold as full access and
+    // the app lets a trialist walk the whole product, but has_premium is
+    // paid-only — so a day-1 trialist tapping the most advertised feature hit a
+    // 403 they were never warned about. coach-daily-plan already gates this way.
+    const { data: hasAccess } = await supabase.rpc("has_active_access", { _user_id: userId });
+    if (!hasAccess) {
+      return new Response(JSON.stringify({ error: "Active membership required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { captureException } from "@/lib/observability";
 import { useAuth } from "@/contexts/AuthContext";
 import { track, FUNNEL } from "@/lib/analytics";
 
@@ -38,7 +39,14 @@ export function useActivityHeartbeat() {
       supabase
         .rpc("touch_activity", { p_timezone: tz ?? undefined, p_utc_offset_minutes: offset })
         .then(({ error }) => {
-          if (error) console.warn("touch_activity failed:", error.message);
+          // This RPC is the only sanctioned writer of profiles.timezone, and
+          // the timezone is what schedules every push the app sends. A
+          // persistently failing heartbeat is a quiet cross-feature failure,
+          // so it leaves a trace rather than only a console line.
+          if (error) {
+            console.warn("touch_activity failed:", error.message);
+            captureException(error, { where: "activity.touch" });
+          }
         });
     };
 

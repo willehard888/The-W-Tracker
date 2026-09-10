@@ -57,7 +57,11 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
   useOnboardingTrigger("XP_INTRO", settled && summary.xpEarned > 0 && !celebrating);
   const cfg = getTierConfig(tier);
   const leveledUp = summary.newLevel > summary.oldLevel;
-  const perfPct = Math.round((summary.completedCount / summary.maxCount) * 100);
+  // maxCount is the chosen habit set's length; an empty set would divide by
+  // zero and render "NaN% output" on the screen that celebrates the check-in.
+  const perfPct = summary.maxCount > 0
+    ? Math.round((summary.completedCount / summary.maxCount) * 100)
+    : 0;
   const isPerfect = perfPct >= 80;
 
   // Tier-specific styling

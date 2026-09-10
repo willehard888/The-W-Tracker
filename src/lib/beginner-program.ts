@@ -177,11 +177,17 @@ export const createBeginnerProgram = async (opts: {
 }) => {
   const { userId, block } = opts;
 
-  await supabase
+  // Checked, because a silent failure here plus a successful insert below
+  // leaves the athlete with two `status = 'active'` programs and every
+  // downstream lookup then picks one at random. Half-applied is worse than
+  // not applied — the caller's catch gets it either way.
+  const { error: supersedeError } = await supabase
     .from("coach_programs")
     .update({ status: "superseded" })
     .eq("user_id", userId)
     .eq("status", "active");
+
+  if (supersedeError) throw supersedeError;
 
   const { data, error } = await supabase
     .from("coach_programs")

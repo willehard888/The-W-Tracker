@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, ShieldAlert, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import AppImage from "@/components/ui/app-image";
 
@@ -76,6 +77,45 @@ export default function AdminModeration() {
     decision: "approved" | "rejected",
   ) => {
     if (!user) return;
+
+    // The content dies BEFORE the queue row is marked. The queue row is the
+    // only handle left on a reported post — mark it first and a failed delete
+    // leaves the content public with nothing pointing at it. Ordered this way
+    // a failure just leaves the item pending, and Reject can be pressed again.
+    //
+    // Maps each reportable content_type (feed post, tribe post, feed/tribe
+    // comment) to its table; direct_message and profile reports are marked
+    // reviewed for out-of-band action (a DM can't be unsent for both parties,
+    // and ejecting a user is a heavier manual step).
+    let orphanedImage = false;
+    let removedContent = false;
+    if (decision === "rejected") {
+      const table: Record<string, "feed_posts" | "tribe_posts" | "feed_comments" | "tribe_post_comments"> = {
+        feed_post: "feed_posts",
+        tribe_post: "tribe_posts",
+        comment: "feed_comments",
+        tribe_comment: "tribe_post_comments",
+      };
+      const target = item.content_id ? table[item.content_type] : undefined;
+      if (target) {
+        const { error: delErr } = await supabase.from(target).delete().eq("id", item.content_id);
+        if (delErr) {
+          toast.error(friendlyError(delErr, "Couldn't remove the content — it stays in the queue."));
+          return;
+        }
+        removedContent = true;
+      }
+      if (item.content_type === "feed_post" && item.image_url) {
+        const path = item.image_url.split("/feed-images/")[1];
+        if (path) {
+          // The post itself is already gone, so a stuck file must not wedge
+          // the queue — reported to the admin instead of blocking the review.
+          const { error: rmErr } = await supabase.storage.from("feed-images").remove([path]);
+          orphanedImage = !!rmErr;
+        }
+      }
+    }
+
     const { error } = await supabase
       .from("moderation_queue")
       .update({
@@ -85,30 +125,26 @@ export default function AdminModeration() {
       })
       .eq("id", item.id);
     if (error) {
-      toast.error("Could not update review");
+      // The content is already gone by now, so "Could not update review" alone
+      // would leave the admin staring at a pending row for a post that no
+      // longer exists. Pressing Reject again is safe — the delete is a no-op.
+      toast.error(friendlyError(error, "Could not update review"), {
+        description: removedContent
+          ? "The content is already deleted. Press Reject again to clear this entry."
+          : undefined,
+        duration: removedContent ? 8000 : undefined,
+      });
       return;
     }
 
-    // On reject, remove the reported content. Maps each reportable content_type
-    // (feed post, tribe post, feed/tribe comment) to its table; direct_message
-    // and profile reports are marked reviewed for out-of-band action (a DM can't
-    // be unsent for both parties, and ejecting a user is a heavier manual step).
-    if (decision === "rejected" && item.content_id) {
-      const table: Record<string, string> = {
-        feed_post: "feed_posts",
-        tribe_post: "tribe_posts",
-        comment: "feed_comments",
-        tribe_comment: "tribe_post_comments",
-      };
-      const target = table[item.content_type];
-      if (target) await supabase.from(target as never).delete().eq("id", item.content_id);
+    if (orphanedImage) {
+      toast("Rejected. The image file is still in storage.", {
+        description: "The post is gone. Delete the file in the feed-images bucket.",
+        duration: 8000,
+      });
+    } else {
+      toast.success(decision === "approved" ? "Approved" : "Rejected");
     }
-    if (decision === "rejected" && item.content_type === "feed_post" && item.image_url) {
-      const path = item.image_url.split("/feed-images/")[1];
-      if (path) await supabase.storage.from("feed-images").remove([path]);
-    }
-
-    toast.success(decision === "approved" ? "Approved" : "Rejected");
     queryClient.invalidateQueries({ queryKey: ["moderation-queue"] });
   };
 

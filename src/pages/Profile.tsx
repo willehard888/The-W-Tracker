@@ -9,6 +9,7 @@ import ProfileHero from "@/components/profile/ProfileHero";
 import AppImage from "@/components/ui/app-image";
 import { downscaleImage } from "@/lib/downscale-image";
 import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
+import { friendlyError } from "@/lib/error-copy";
 import { hapticSelection } from "@/lib/haptics";
 import BadgeVault from "@/components/BadgeVault";
 import RankPressureCard from "@/components/RankPressureCard";
@@ -370,10 +371,24 @@ const Profile = () => {
   const handleSetFeatured = async (badgeId: string) => {
     if (!profile) return;
     const newId = profile.featured_badge_id === badgeId ? null : badgeId;
-    if (newId) {
-      await supabase.rpc("update_own_profile", { new_featured_badge_id: newId });
-    } else {
-      await supabase.rpc("update_own_profile", { clear_featured_badge: true });
+    // rpc() resolves with { error } — it never rejects, so an unchecked call
+    // toasted "Title badge set" and the invalidate on the next line refetched
+    // the old badge straight back. Same shape as the avatar write above.
+    try {
+      await withNetworkRetry(async () => {
+        const { error: rpcErr } = await supabase.rpc(
+          "update_own_profile",
+          newId ? { new_featured_badge_id: newId } : { clear_featured_badge: true },
+        );
+        if (rpcErr) throw new Error(rpcErr.message);
+      });
+    } catch (err) {
+      toast.error(
+        isTransientNetworkError(err)
+          ? "Connection dropped — check your signal and try again."
+          : friendlyError(err, newId ? "Couldn't set your title badge." : "Couldn't clear your title badge."),
+      );
+      return;
     }
     toast.success(newId ? "Title badge set" : "Title badge removed");
     await queryClient.invalidateQueries({ queryKey: ["profile"] });

@@ -28,6 +28,7 @@ import {
   type OnboardingAnswers,
 } from "@/lib/onboarding";
 import { SPORTS } from "@/lib/sports";
+import { readLocal, writeLocal, removeLocal } from "@/lib/storage";
 import type { GoalId } from "@/hooks/use-athlete-profile";
 
 /**
@@ -48,11 +49,35 @@ const QUESTION_STEPS: StepKey[] = ["goal", "sports", "frequency", "struggle"];
 
 const SPORT_OPTIONS = SPORTS.map((s) => ({ v: s.id, label: s.label, emoji: s.emoji }));
 
+/**
+ * A force-quit at question three used to cost every answer given so far —
+ * `w_onboarding_done` is only written at the end, so the next launch restarted
+ * the flow from step 0 with nothing kept. Same fix the Coach wizard already
+ * runs (AthleteProfileOnboarding): answers under one key, the step index under
+ * another, both cleared the moment the flow finishes or is skipped.
+ */
+const DRAFT_KEY = "w_onboarding_draft_v1";
+const STEP_KEY = "w_onboarding_step_v1";
+
+const loadAnswers = (): OnboardingAnswers => {
+  const raw = readLocal(DRAFT_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as OnboardingAnswers;
+  } catch { /* corrupt draft — start clean rather than crash the first run */ }
+  return {};
+};
+
+// Floored as well as truncated: a junk or negative value would index the step
+// list out of bounds and render a blank flow with no way forward but Skip.
+const loadStep = (): number => Math.max(0, Math.trunc(Number(readLocal(STEP_KEY))) || 0);
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const pushControls = usePushControls();
 
-  const [answers, setAnswers] = useState<OnboardingAnswers>({});
+  const [answers, setAnswers] = useState<OnboardingAnswers>(loadAnswers);
   const [confetti, setConfetti] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   // Native + permission still 'prompt' → the flow owns the push ask.
@@ -73,8 +98,14 @@ const Onboarding = () => {
     return base;
   }, [includePush]);
 
-  const [stepIdx, setStepIdx] = useState(0);
+  // Restored so an interrupted run resumes on the question it stopped at, not
+  // at the start with the answers silently prefilled. The index is clamped
+  // below, so a draft written when the push step was in the list is safe.
+  const [stepIdx, setStepIdx] = useState(loadStep);
   const step = steps[Math.min(stepIdx, steps.length - 1)];
+
+  useEffect(() => { writeLocal(DRAFT_KEY, JSON.stringify(answers)); }, [answers]);
+  useEffect(() => { writeLocal(STEP_KEY, String(stepIdx)); }, [stepIdx]);
 
   const finishedRef = useRef(false);
   const finish = (skipped = false) => {
@@ -93,7 +124,11 @@ const Onboarding = () => {
     void supabase.rpc("mark_onboarded").then(
       ({ error }) => { if (error) console.warn("mark_onboarded failed", error.message); },
     );
-    try { localStorage.setItem("w_onboarding_done", "true"); } catch { /* noop */ }
+    // The flow is over (finished or skipped) — the resume draft has done its
+    // job and must not survive into the next run on this device.
+    removeLocal(DRAFT_KEY);
+    removeLocal(STEP_KEY);
+    writeLocal("w_onboarding_done", "true");
     void track(skipped ? FUNNEL.onboardingSkipped : FUNNEL.onboardingDone, {
       step: stepIdx,
       key: step,

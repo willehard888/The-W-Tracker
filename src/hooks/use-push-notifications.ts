@@ -13,6 +13,8 @@ import {
 import { getNotificationPrefs } from "@/lib/notification-prefs";
 import type { ToneId } from "@/hooks/use-athlete-profile";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
+import { captureException } from "@/lib/observability";
 
 // Whitelisted in-app routes that notifications may navigate to. Anything
 // outside this list is silently ignored — defends against a payload trying to
@@ -47,6 +49,17 @@ const safeNavigate = (route: string) => {
 // Re-prime a dismissed user at most once a week (never nag every launch).
 const PRIMING_DISMISS_KEY = "push_priming_dismissed_at";
 const REPRIME_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Registration health. Module-level, not hook state: the screen that surfaces a
+// failure (NotificationSettings) does not own the hook — AppContent mounts it
+// exactly once, far above.
+let tokenState: "unknown" | "ok" | "failed" = "unknown";
+/** True when the OS granted push but this device's token never reached the DB. */
+export const pushTokenFailed = () => tokenState === "failed";
+/** Ask iOS for the token again — the "registration" listener re-runs the upsert. */
+export const retryPushRegistration = async () => {
+  await PushNotifications.register();
+};
 
 export interface PushNotificationState {
   /** True when we should show the in-app priming sheet BEFORE the OS prompt. */
@@ -105,10 +118,26 @@ export const usePushNotifications = (): PushNotificationState => {
   const registerToken = useCallback(async (token: string) => {
     if (!user) return;
     const platform = Capacitor.getPlatform();
-    await supabase.from("push_tokens").upsert(
-      { user_id: user.id, token, platform },
-      { onConflict: "user_id,token" },
-    );
+    // This upsert used to be fire-and-forget: one flaky moment right after the
+    // OS grant left the device unreachable by push for good — no retry, no log,
+    // nothing in the UI. Transient network errors retry; real ones (RLS, no
+    // session) rethrow and get reported.
+    try {
+      await withNetworkRetry(async () => {
+        const { error } = await supabase.from("push_tokens").upsert(
+          { user_id: user.id, token, platform },
+          { onConflict: "user_id,token" },
+        );
+        if (error) {
+          if (isTransientNetworkError(error.message)) throw new Error(error.message);
+          throw error;
+        }
+      });
+      tokenState = "ok";
+    } catch (e) {
+      tokenState = "failed";
+      captureException(e, { where: "push.registerToken", platform });
+    }
   }, [user?.id]);
 
   // Register for pushes + wire navigation listeners. Idempotent (guarded by
@@ -181,6 +210,27 @@ export const usePushNotifications = (): PushNotificationState => {
 
     let cancelled = false;
     let primeTimer: ReturnType<typeof setTimeout> | undefined;
+    let removeResume: (() => void) | undefined;
+
+    // activatedRef makes activate() once-per-session, which also meant a failed
+    // token upsert never got a second chance. Re-ask iOS for the token on every
+    // resume until one lands: register() re-fires the "registration" event, so
+    // ONLY the upsert re-runs — the listeners are still the ones activate() added.
+    const onResume = () => {
+      if (!activatedRef.current || tokenState === "ok") return;
+      void PushNotifications.register().catch(() => undefined);
+    };
+    import("@capacitor/app")
+      .then(({ App: CapApp }) => {
+        if (cancelled) return;
+        void CapApp.addListener("resume", onResume).then((h) => {
+          // The handle resolves async — a fast unmount can beat it here.
+          if (cancelled) { void h.remove(); return; }
+          removeResume = () => { void h.remove(); };
+        });
+      })
+      .catch(() => undefined);
+
     (async () => {
       // Check — never cold-request. A cold OS prompt that's denied is permanent.
       const perm = await PushNotifications.checkPermissions().catch(() => null);
@@ -210,6 +260,7 @@ export const usePushNotifications = (): PushNotificationState => {
     return () => {
       cancelled = true;
       if (primeTimer) clearTimeout(primeTimer);
+      removeResume?.();
       // Remove ONLY the listeners we added (not a global wipe), and reset so a
       // remount can re-activate cleanly.
       handlesRef.current.forEach((h) => { void h.remove(); });

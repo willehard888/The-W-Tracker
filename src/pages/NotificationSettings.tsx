@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import { usePushControls } from "@/hooks/use-push-notifications";
+import { usePushControls, pushTokenFailed, retryPushRegistration } from "@/hooks/use-push-notifications";
 import {
   getNotificationPrefs,
   clampReminderHour,
@@ -87,11 +87,23 @@ const NotificationSettings = () => {
 
   // ── OS permission state (re-checked when returning from iOS Settings) ──
   const [perm, setPerm] = useState<PermState>(Capacitor.isNativePlatform() ? "prompt" : "web");
+  // Permission granted but the token never reached the DB — the device looks
+  // opted in and receives nothing. Silent until this pass; now it says so.
+  const [tokenFailed, setTokenFailed] = useState(false);
   const checkPerm = useCallback(async () => {
     if (!Capacitor.isNativePlatform()) return;
     const p = await PushNotifications.checkPermissions().catch(() => null);
     if (!p) return;
     setPerm(p.receive === "granted" ? "granted" : p.receive === "denied" ? "denied" : "prompt");
+    setTokenFailed(pushTokenFailed());
+  }, []);
+  const retryRegistration = useCallback(async () => {
+    setTokenFailed(false);
+    await retryPushRegistration().catch(() => undefined);
+    // The token arrives on a native callback, not from this promise — re-read
+    // the flag once the round trip has had time to land, so the line comes
+    // back if it failed again rather than quietly claiming success.
+    setTimeout(() => setTokenFailed(pushTokenFailed()), 2500);
   }, []);
   useEffect(() => {
     void checkPerm();
@@ -205,6 +217,16 @@ const NotificationSettings = () => {
               onClick={() => { void pushControls?.enablePush().then(checkPerm); }}
             >
               Turn on notifications
+            </Button>
+          </div>
+        )}
+        {perm === "granted" && tokenFailed && (
+          <div className="home-rise home-rise-2 mt-4 flex items-center gap-3">
+            <p className="flex-1 text-[13px] text-muted-foreground leading-snug">
+              This device never finished registering, so nothing can reach it yet.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => { void retryRegistration(); }}>
+              Try again
             </Button>
           </div>
         )}

@@ -9,11 +9,7 @@
 import { Capacitor } from "@capacitor/core";
 import { captureException } from "@/lib/observability";
 import { HealthNight } from "./night-metrics";
-import {
-  clearWorkoutWriteConsent,
-  hasWorkoutWriteConsent,
-  markWorkoutWriteEnabled,
-} from "./health-consent";
+import { hasWorkoutWriteConsent, markWorkoutWriteEnabled } from "./health-consent";
 
 export { hasWorkoutWriteConsent };
 
@@ -45,11 +41,6 @@ export async function enableWorkoutWrite(): Promise<boolean> {
     report("enableWorkoutWrite", e);
     return false;
   }
-}
-
-/** Local toggle only — iOS permission stays as the user set it in Health. */
-export function disableWorkoutWrite(): void {
-  clearWorkoutWriteConsent();
 }
 
 export function markWorkoutWriteDeclined(): void {

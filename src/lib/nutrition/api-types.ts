@@ -125,7 +125,7 @@ export function vectorFromJson(v: unknown): NutrientVector {
   return out;
 }
 
-export function parseSearchFoodRow(v: unknown): SearchFoodRow | null {
+function parseSearchFoodRow(v: unknown): SearchFoodRow | null {
   if (!isRecord(v) || typeof v.id !== "string" || typeof v.name !== "string") return null;
   return {
     id: v.id,

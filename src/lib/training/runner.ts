@@ -179,7 +179,7 @@ export const suggestedLoad = (
 };
 
 /** The prescribed rep count — the low end of "8-12"; null for "AMRAP". */
-export const repTarget = (reps: string | number | null | undefined): number | null => {
+const repTarget = (reps: string | number | null | undefined): number | null => {
   const m = String(reps ?? "").match(/\d+/);
   return m ? parseInt(m[0], 10) : null;
 };

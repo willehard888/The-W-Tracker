@@ -16,14 +16,6 @@
 
 /** Paid conversions needed per free month. */
 export const CREDIT_EVERY = 3;
-/** Days of membership credit granted per CREDIT_EVERY paid friends. */
-export const CREDIT_DAYS = 30;
-/** Friend check-ins that count as "activated". */
-export const ACTIVATION_CHECKINS = 3;
-/** Referrer XP when a recruit activates. */
-export const ACTIVATION_XP = 250;
-/** Referrer XP the moment a recruit joins with the code. */
-export const JOIN_XP = 50;
 
 /** Whole free months already earned from paid conversions. */
 export const freeMonthsEarned = (paidCount: number): number =>

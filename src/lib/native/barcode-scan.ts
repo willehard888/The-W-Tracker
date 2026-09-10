@@ -26,7 +26,7 @@ interface BarcodeScanPlugin {
 }
 
 // No web impl → calls reject on web, which we catch (fail-open).
-export const BarcodeScan = registerPlugin<BarcodeScanPlugin>("BarcodeScan");
+const BarcodeScan = registerPlugin<BarcodeScanPlugin>("BarcodeScan");
 
 const isNative = () => Capacitor.isNativePlatform();
 
@@ -45,16 +45,6 @@ export async function checkCameraPermission(): Promise<PermissionState> {
   if (!isNative()) return "denied";
   try {
     return (await BarcodeScan.checkPermissions()).camera ?? "denied";
-  } catch {
-    return "denied";
-  }
-}
-
-/** Prompts for camera access (no-op if already decided) and returns the resulting state. */
-export async function requestCameraPermission(): Promise<PermissionState> {
-  if (!isNative()) return "denied";
-  try {
-    return (await BarcodeScan.requestPermissions()).camera ?? "denied";
   } catch {
     return "denied";
   }

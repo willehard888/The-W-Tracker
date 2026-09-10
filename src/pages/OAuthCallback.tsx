@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
-import { clearPublishedAppleAttempt } from "@/lib/native-auth";
 import { toast } from "sonner";
 
 // SECURITY: this page previously had a "native handoff" branch that forwarded
@@ -58,7 +57,6 @@ const OAuthCallback = () => {
 
         // Web flow → apply session directly.
         const sessionApplied = await applySessionFromUrl(window.location.href);
-        clearPublishedAppleAttempt();
         updateOauthDebug({ sessionApplied });
         pushIosDebugLog("OAuthCallback", "Session apply result", { sessionApplied });
 
@@ -68,13 +66,11 @@ const OAuthCallback = () => {
         }
 
         if (!sessionApplied && !oauthError) {
-          clearPublishedAppleAttempt();
           toast.error("Connection error. Try again.");
         }
       } catch (e) {
         console.error("[OAuthCB] Unexpected:", e);
         toast.error("Connection error. Try again.");
-        clearPublishedAppleAttempt();
         updateOauthDebug({ error: "Connection error. Try again." });
       }
       setProcessing(false);

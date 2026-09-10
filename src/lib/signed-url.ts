@@ -70,11 +70,8 @@ export const isPrivateStorageUrl = (url: string | null | undefined): boolean => 
  * - public buckets (avatars) / external URLs → passed through untouched
  * Returns null while a needed signature is still resolving.
  */
-/**
- * Imperative form of the media signing below — shared by the hook and the
- * app-shell prefetcher so warmed cache entries hit the exact same logic.
- */
-export const signMediaUrl = async (
+/** Imperative form of the media signing the hook below wraps. */
+const signMediaUrl = async (
   parsed: { bucket: string; key: string },
   transform?: { width?: number; quality?: number },
 ): Promise<string | null> => {
@@ -95,11 +92,11 @@ export const signMediaUrl = async (
   return signed.signedUrl;
 };
 
-/** Query key for a signed media URL — MUST stay in sync with useSignedMediaUrl. */
-export const signedMediaKey = (url: string, transform?: { width?: number; quality?: number }) =>
+/** Query key for a signed media URL. */
+const signedMediaKey = (url: string, transform?: { width?: number; quality?: number }) =>
   ["signed-media", url, transform?.width ?? 0, transform?.quality ?? 0] as const;
 
-export const SIGNED_MEDIA_STALE_MS = (TTL_SECONDS - 300) * 1000;
+const SIGNED_MEDIA_STALE_MS = (TTL_SECONDS - 300) * 1000;
 
 export const useSignedMediaUrl = (
   url: string | null | undefined,

@@ -51,7 +51,6 @@ const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const IosDebug = lazy(() => import("./pages/IosDebug"));
-const AppleAuthLaunch = lazy(() => import("./pages/AppleAuthLaunch"));
 const ChooseUsername = lazy(() => import("./pages/ChooseUsername"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const Coach = lazy(() => import("./pages/Coach"));
@@ -351,7 +350,6 @@ const AppRoutes = () => {
           {(import.meta.env.DEV || Capacitor.isNativePlatform()) && (
             <Route path="/ios-debug" element={<ProtectedRoute><IosDebug /></ProtectedRoute>} />
           )}
-          <Route path="/apple-auth-launch" element={<AppleAuthLaunch />} />
           <Route path="/~oauth" element={<OAuthCallback />} />
           <Route path="/~oauth/callback" element={<OAuthCallback />} />
           <Route path="/oauth" element={<OAuthCallback />} />

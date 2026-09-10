@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 // (migration 20260901120000 — the old 7-organic/14-referred split collapsed
 // when the app-wide paywall launched). Drift between this constant and the
 // SQL interval is exactly the "silently dark on day 8" bug class.
-export const TRIAL_DURATION_DAYS = 14;
+const TRIAL_DURATION_DAYS = 14;
 const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
 interface TrialAccess {

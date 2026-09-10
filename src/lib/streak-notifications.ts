@@ -65,7 +65,7 @@ export async function requestStreakNotificationPermission() {
   }
 }
 
-export async function clearStreakWarningNotification() {
+async function clearStreakWarningNotification() {
   if (!Capacitor.isNativePlatform()) return;
 
   await LocalNotifications.cancel({

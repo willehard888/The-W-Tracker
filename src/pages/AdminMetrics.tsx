@@ -257,12 +257,13 @@ export default function AdminMetrics() {
         <p className="text-sm text-muted-foreground">
           The numbers the machine is steered by. Activity, retention, funnel, virality.
         </p>
-        <a
-          href="/admin/moderation"
+        <button
+          type="button"
+          onClick={() => navigate("/admin/moderation")}
           className="text-[11px] font-bold mt-3 inline-flex items-center gap-1.5 text-gold hover:underline"
         >
           → Moderation queue
-        </a>
+        </button>
       </div>
 
       {/* 1 — Headline KPIs */}

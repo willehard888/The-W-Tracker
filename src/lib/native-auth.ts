@@ -294,30 +294,11 @@ async function performAppleSignIn(options?: {
 
 // ────────────────────────────────────────────────────────────────────
 // Public API — preserves signatures used by existing callers
-// (AppleSignInButton, Auth.tsx, AppleAuthLaunch, OAuthCallback).
+// (AppleSignInButton, Auth.tsx).
 // ────────────────────────────────────────────────────────────────────
 
 export async function nativeAppleSignIn(options?: {
   hideEmail?: boolean;
 }): Promise<{ error?: Error }> {
   return performAppleSignIn(options);
-}
-
-/**
- * Legacy: was used by /apple-auth-launch route to bounce iOS off a published
- * web page (to satisfy Apple's "redirect_uri must be an https domain" rule
- * for managed OAuth). With the native ASAuthorizationController flow, no
- * redirect is needed — call straight through.
- */
-export async function startPublishedAppleSignIn(): Promise<{ error?: Error }> {
-  return performAppleSignIn();
-}
-
-/**
- * Legacy no-op kept for OAuthCallback.tsx compatibility. The native flow
- * doesn't need a persisted attempt id because Apple's JWT contains the
- * nonce — no separate state machine to clean up.
- */
-export function clearPublishedAppleAttempt() {
-  /* intentionally empty */
 }

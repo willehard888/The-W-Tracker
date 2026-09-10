@@ -69,17 +69,6 @@ const isIos = () => Capacitor.getPlatform() === "ios";
 const round1 = (v: number | null | undefined) => (v == null ? undefined : Math.round(v * 10) / 10);
 const localDate = (d = new Date()) => d.toLocaleDateString("en-CA"); // YYYY-MM-DD
 
-/** Request HealthKit read authorization for the night/recovery types. */
-export async function requestNightAuth(): Promise<boolean> {
-  if (!isIos()) return false;
-  try {
-    const r = await HealthNight.requestAuthorization();
-    return !!r?.granted;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Last night's total sleep in hours, for the daily HealthKit snapshot.
  * capacitor-health can't read sleep, so `health_sync_snapshots.sleep_hours`

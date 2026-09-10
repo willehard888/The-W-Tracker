@@ -28,6 +28,9 @@ const SAFE_ROUTES = new Set<string>([
   "/coach/program",
   "/coach/memory", "/coach/goal", "/coach/reflect",
   "/coach/progress", "/coach/profile",
+  // The daily founder digest sends route "/admin/metrics" — without this entry
+  // isSafeRoute rejected it and the tap was a no-op.
+  "/admin/metrics",
 ]);
 const SAFE_PREFIXES = ["/briefing/", "/chat/", "/tribes/", "/user/", "/coach/session/"];
 export const isSafeRoute = (r: unknown): r is string => {

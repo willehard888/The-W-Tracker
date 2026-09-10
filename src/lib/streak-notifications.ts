@@ -2,6 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { pushIosDebugLog } from "@/lib/ios-debug";
 import { clampReminderHour } from "@/lib/notification-prefs";
+import { localDateKey } from "@/lib/date";
 import type { ToneId } from "@/hooks/use-athlete-profile";
 
 const STREAK_WARNING_NOTIFICATION_ID = 48003;
@@ -40,11 +41,6 @@ interface SyncStreakWarningArgs {
   hour?: number | null;
   /** streak_guard pref — false clears any pending warning. */
   enabled?: boolean;
-}
-
-/** Local Y-M-D string for a given instant (device timezone). */
-function localDateKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 /** A Date at local `hour:00` offset by `dayOffset` calendar days from today. */

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useAthleteProfile, type ToneId } from "@/hooks/use-athlete-profile";
 import { useDailyPlan } from "@/hooks/use-daily-plan";
+import { localDateKey } from "@/lib/date";
 
 /**
  * useCoachObservation — returns one short Coach-voiced sentence derived
@@ -169,7 +170,8 @@ export const useCoachObservation = ({ context }: UseCoachObservationOptions): Co
     const bank = TEMPLATES[tone]?.[context] ?? TEMPLATES.calm_mentor[context];
     if (!bank?.length) return "";
 
-    const seed = new Date().toISOString().slice(0, 10);
+    // Local day, not UTC: the coach's line used to rotate at 03:00 Helsinki.
+    const seed = localDateKey();
     const tmpl = bank[pickIndex(`${seed}-${context}`, bank.length)];
 
     // {focus} resolves from the daily plan headline (the LifeOS brief source

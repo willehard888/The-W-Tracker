@@ -2,9 +2,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import StreakFlameInline from "@/components/StreakFlameInline";
 import TierUsername from "@/components/TierUsername";
 import { memo, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getEffectiveStreak } from "@/lib/streak";
 import { pickDaily } from "@/lib/daily-rotation";
@@ -60,25 +59,12 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
   const dailyQuote = useMemo(() => pickDaily(PRESSURE_QUOTES), [quoteDay]);
 
   // Last check-in drives the EFFECTIVE streak so the header resets the moment
-  // a calendar day is missed — not only after a late check-in. Same query key
-  // as Index so React Query dedupes it (no extra request).
-  const { data: lastCheckin } = useQuery({
-    queryKey: ["last-checkin", profile?.user_id],
-    staleTime: 5 * 60_000,
-    gcTime: 30 * 60_000,
-    queryFn: async () => {
-      if (!profile) return null;
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("checked_in_at")
-        .eq("user_id", profile.user_id)
-        .order("checked_in_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!profile?.user_id,
-  });
+  // a calendar day is missed — not only after a late check-in. Through the
+  // shared hook: this used to re-declare ["last-checkin"] with its own
+  // staleTime, and since the header is always mounted its five minutes won for
+  // the whole app — the exact duplication that hook's docstring says was
+  // already killed once.
+  const { data: lastCheckin } = useLastCheckin(profile?.user_id);
 
   if (!user || !profile) return null;
 

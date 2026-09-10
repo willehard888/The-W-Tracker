@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { localDateKey } from "@/lib/date";
 
 export const usePerformanceSnapshots = (days = 28) => {
   const { user } = useAuth();
@@ -10,7 +11,9 @@ export const usePerformanceSnapshots = (days = 28) => {
     staleTime: 10 * 60_000,  // snapshots are computed once daily
     gcTime:    30 * 60_000,
     queryFn: async () => {
-      const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
+      // snapshot_date is a local calendar day — a UTC cut dropped or added a
+      // whole day off the window's edge every evening.
+      const since = localDateKey(new Date(Date.now() - days * 86400_000));
       const { data, error } = await supabase
         .from("coach_performance_snapshots")
         .select("snapshot_date, performance_score, components")

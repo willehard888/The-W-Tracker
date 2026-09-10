@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLastCheckin } from "@/hooks/use-last-checkin";
+import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { Flame, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,29 +23,14 @@ interface FeedTheFireCTAProps {
 const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) => {
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const [checkedToday, setCheckedToday] = useState<boolean | null>(null);
+  // The shared cache + the shared day rule. This used to answer "checked in
+  // today?" with its own uncached one-shot query, so after a check-in
+  // elsewhere the CTA kept saying "feed the fire" until remount (nothing
+  // invalidated it), and its startOfDay went stale across midnight.
+  const { data: lastCheckin, isPending } = useLastCheckin(profile?.user_id);
+  const { canCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
 
-  useEffect(() => {
-    let alive = true;
-    const run = async () => {
-      if (!profile?.user_id) return;
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("id")
-        .eq("user_id", profile.user_id)
-        .gte("checked_in_at", startOfDay.toISOString())
-        .limit(1);
-      if (alive) setCheckedToday((data ?? []).length > 0);
-    };
-    run();
-    return () => {
-      alive = false;
-    };
-  }, [profile?.user_id]);
-
-  if (checkedToday === null || checkedToday === true) return null;
+  if (isPending || !canCheckin) return null;
 
   const c = accent ?? "hsl(var(--ember))";
 

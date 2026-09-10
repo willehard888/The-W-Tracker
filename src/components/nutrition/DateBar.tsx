@@ -2,9 +2,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, format, isToday, isYesterday, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { localDateKey } from "@/lib/date";
 
-/** YYYY-MM-DD in the device's local calendar — the diary's day key. */
-export const localDateKey = (d: Date = new Date()) => format(d, "yyyy-MM-dd");
+// The diary's day key now lives in @/lib/date — it is the whole app's, not
+// this component's. Re-exported so the four existing importers keep working.
+export { localDateKey };
 
 const labelFor = (d: Date) => (isToday(d) ? "Today" : isYesterday(d) ? "Yesterday" : format(d, "EEE, MMM d"));
 

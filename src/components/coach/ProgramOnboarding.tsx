@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Sparkles, Zap, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -31,9 +32,14 @@ const loadDraft = (): any | null => {
   try { const raw = localStorage.getItem(DRAFT_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
 };
 
+// The one generation failure the athlete can fix themselves: coach-generate-
+// program returns 400 "Complete athlete profile first" when the profile row
+// isn't onboarded. That answer deserves a door, not a stack trace.
+const isProfileGate = (msg: string) => /athlete profile/i.test(msg);
+
 const ProgramOnboarding = ({ onGenerated }: Props) => {
   const navigate = useNavigate();
-  const { profile } = useAthleteProfile();
+  const { profile, isLoading } = useAthleteProfile();
   const [generating, setGenerating] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>(() => loadDraft() ?? { bodyFocus: [] as string[], notes: "" });
@@ -133,6 +139,13 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         toast.error("Personal program building is a Premium feature.", {
           action: { label: "Unlock", onClick: () => navigate("/paywall") },
         });
+      } else if (isProfileGate(msg)) {
+        // Same treatment as Premium: the failure names a screen, so send them
+        // to it instead of printing the coach's 400 at them.
+        setLastError(msg);
+        toast.error("Coach needs your athlete profile first.", {
+          action: { label: "Set up", onClick: () => navigate("/coach/profile") },
+        });
       } else {
         // Keep the exact reason on-screen (toasts vanish) so it's easy to read.
         setLastError(msg || "Couldn't generate program. Try again.");
@@ -142,6 +155,36 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       setGenerating(false);
     }
   };
+
+  // The profile decides which of the two states below is true, so wait for it
+  // rather than flashing a summary of defaults on the way to the setup door.
+  if (isLoading) {
+    return (
+      <div className="px-1 pt-2 pb-8 space-y-4">
+        <Block height={56} />
+        <Block height={148} delay={80} />
+      </div>
+    );
+  }
+
+  // Nothing to confirm yet. The summary below is built from the profile, and
+  // with no profile every value in it is a default the coach never agreed to —
+  // "Coach already knows you" over invented answers, ending in the 400 above.
+  // Say what's missing and open the setup instead.
+  if (!profile?.onboarded) {
+    return (
+      <div className="px-1 pt-2 pb-8">
+        <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Coach needs to meet you first</h2>
+        <p className="text-sm text-muted-foreground mt-1 mb-6 leading-relaxed">
+          Your goal, the days you train, what you lift with, anything that hurts. Two minutes, once. Every block after
+          that is built from it.
+        </p>
+        <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticImpact("light"); navigate("/coach/profile"); }}>
+          Set up my athlete profile
+        </Button>
+      </div>
+    );
+  }
 
   if (generating) {
     return (
@@ -208,16 +251,31 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         </Field>
       </div>
 
-      {lastError && (
-        <div className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5">
-          <p className="text-[11px] font-bold text-destructive mb-1">
-            Generation failed — exact reason
+      {lastError && (isProfileGate(lastError) ? (
+        // The coach's own gate, in the app's voice, with the screen that lifts it.
+        <div className="mt-5 rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-[hsl(var(--gold)/0.06)] p-4">
+          <p className="text-sm font-bold">Coach needs your athlete profile first</p>
+          <p className="text-[13px] text-muted-foreground leading-snug mt-1">
+            Goal, days, equipment. Two minutes, then this block builds.
           </p>
-          <p className="text-[12px] text-foreground/90 leading-snug break-words font-mono">
+          <Button variant="outline" size="sm" className="mt-3 min-h-11" onClick={() => navigate("/coach/profile")}>
+            Set up my athlete profile
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5">
+          <p className="text-sm font-bold text-destructive mb-1">
+            Coach couldn't build this block
+          </p>
+          <p className="text-[13px] text-foreground/90 leading-snug mb-1.5">
+            Try again. It's usually the model, not you.
+          </p>
+          {/* The raw reason still ships, just no longer as the headline. */}
+          <p className="text-[11px] text-muted-foreground leading-snug break-words font-mono">
             {lastError}
           </p>
         </div>
-      )}
+      ))}
 
       <Button variant="ember" size="lg" className="w-full mt-6" onClick={generate}>
         <Zap size={16} /> Design my block

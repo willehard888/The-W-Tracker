@@ -391,6 +391,19 @@ Rules:
 
       results.generated++;
 
+      // The bell gets a row whether or not the push lands. /briefing/:id has no
+      // door anywhere in the app, so a missed or denied push used to mean a
+      // briefing the member could never open again — it existed only as a
+      // notification payload. The inbox is that door.
+      const { error: notifErr } = await supabase.from("notifications").insert({
+        user_id: profile.user_id,
+        kind: "weekly_briefing",
+        title: "Your weekly briefing is ready",
+        body: parsed.headline ?? "Your week, read back to you.",
+        route: `/briefing/${inserted.id}`,
+      });
+      if (notifErr) console.error(`Notification insert failed for ${profile.user_id}:`, notifErr);
+
       // Briefing pref off = the briefing still generates and waits in-app.
       const { data: tokens } = prefAllows((profile as any).notification_prefs, "briefing")
         ? await supabase

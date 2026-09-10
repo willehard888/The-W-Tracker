@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserSearch } from "@/hooks/use-user-search";
 import EmptyState from "@/components/ui/empty-state";
 import ErrorState from "@/components/ui/error-state";
 import { DoorRow } from "@/components/coach/rows";
@@ -57,20 +58,7 @@ const BadgeCompare = () => {
     enabled: !!profile,
   });
 
-  const { data: users } = useQuery({
-    queryKey: ["search-users", searchQuery],
-    queryFn: async () => {
-      if (!searchQuery || searchQuery.length < 2) return [];
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username")
-        .neq("user_id", profile?.user_id || "")
-        .ilike("username", `%${searchQuery}%`)
-        .limit(10);
-      return data || [];
-    },
-    enabled: searchQuery.length >= 2,
-  });
+  const { results: users } = useUserSearch(searchQuery, 10);
   useEffect(() => {
     if (selectedUser || !preset || !users) return;
     const hit = users.find((u) => u.username.toLowerCase() === preset.toLowerCase());

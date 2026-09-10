@@ -290,7 +290,10 @@ Deno.serve(async (req) => {
           {
             user_id: uid,
             snapshot_date: today,
-            performance_score: result.overall ?? 0,
+            // NOT `?? 0`: a day with nothing to score has no score, and a
+            // stored zero renders as a real gold zero everywhere the snapshot
+            // is read. The column is nullable for exactly this.
+            performance_score: result.overall,
             components: {
               engine: "whealth-os",
               pillars: result.pillars,

@@ -199,7 +199,11 @@ export const usePushNotifications = (): PushNotificationState => {
       void track(FUNNEL.pushPermission, { granted: perm.receive === "granted" });
       if (perm.receive === "granted") await activate();
     } catch (e) {
+      // The permission prompt is the single biggest lever on every retention
+      // loop in the app; a failure here used to leave no trace anywhere.
       console.warn("push permission request failed", e);
+      captureException(e, { where: "push.requestPermissions" });
+      void track(FUNNEL.pushPermission, { granted: false, failed: true });
     }
   }, [activate]);
 

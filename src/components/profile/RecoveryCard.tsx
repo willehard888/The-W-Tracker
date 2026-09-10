@@ -75,8 +75,11 @@ const RecoveryCard = () => {
   const awake = last!.awake_min ?? 0;
   const span = deep + rem + core + awake || 1;
 
+  // A night with no stage data at all is not a good night — it is no night.
+  // The card used to read "Recovered" over "0h 0m asleep" and call it solid.
+  const hasSleep = deep + rem + core > 0;
   const underRecovered = (rhrDelta != null && rhrDelta >= 5) || awake > 60;
-  const status = underRecovered ? "Under-recovered" : "Recovered";
+  const status = !hasSleep ? "No sleep data" : underRecovered ? "Under-recovered" : "Recovered";
   const active = new Set(last!.factors ?? []);
 
   // Deterministic causal one-liner (mirrors the coach's edge reasoning) so the
@@ -91,6 +94,7 @@ const RecoveryCard = () => {
     : rhrUp && (deepLow || awake >= 45) ? "Elevated resting HR + disrupted deep sleep — often alcohol, a late heavy meal, or high stress. Tag it below or ask the coach."
     : rhrUp ? "Resting HR up vs your baseline — under-recovery or a hard day."
     : deepLow ? "Less deep sleep than usual — protect tonight's wind-down."
+    : !hasSleep ? "Nothing came through from Health last night — connect it, or wear the watch to bed."
     : "Recovery looks solid. Keep the routine.";
 
   const toggleFactor = (f: string) => {

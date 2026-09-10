@@ -4,10 +4,9 @@ import { useNavigate } from "react-router-dom";
 import {
   Search, UserPlus, UserCheck, Clock, Check, X, MessageCircle, Users, UserMinus,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { friendlyError } from "@/lib/error-copy";
+import { useUserSearch } from "@/hooks/use-user-search";
 import {
   useFriends, useFriendRequests, useSentFriendRequests, useFriendActions,
 } from "@/hooks/use-friends";
@@ -21,14 +20,6 @@ import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
 import { backOr } from "@/lib/nav";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
-
-interface SearchRow {
-  user_id: string;
-  username: string;
-  avatar_url: string | null;
-  status_tier: string | null;
-  level: number | null;
-}
 
 /** One person, one hairline row: avatar · name + line · trailing slot. */
 const PersonRow = ({
@@ -57,7 +48,6 @@ const PersonRow = ({
  */
 const Friends = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { data: friends, isLoading: friendsLoading, isError: friendsFailed, refetch } = useFriends();
   const { data: requests } = useFriendRequests();
   const { data: sent } = useSentFriendRequests();
@@ -74,19 +64,7 @@ const Friends = () => {
     [requests],
   );
 
-  const { data: results, isFetching: searching } = useQuery<SearchRow[]>({
-    queryKey: ["friend-search", q.trim()],
-    enabled: q.trim().length >= 2,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url, status_tier, level")
-        .neq("user_id", user?.id ?? "")
-        .ilike("username", `%${q.trim()}%`)
-        .limit(12);
-      return (data as SearchRow[]) ?? [];
-    },
-  });
+  const { results, searching } = useUserSearch(q, 12);
 
   const guard = async (key: string, fn: () => Promise<void>, ok?: string) => {
     setBusy(key);
@@ -94,9 +72,9 @@ const Friends = () => {
     try {
       await fn();
       if (ok) { hapticNotification("success"); toast.success(ok); }
-    } catch (e: any) {
-      const msg = e?.message?.includes("duplicate") ? "Request already exists" : (e?.message ?? "Something went wrong");
-      toast.error(msg);
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e ?? "");
+      toast.error(raw.includes("duplicate") ? "Request already exists" : friendlyError(e, "Something went wrong"));
     } finally {
       setBusy(null);
     }

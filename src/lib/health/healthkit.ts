@@ -20,6 +20,7 @@
 
 import { Capacitor } from "@capacitor/core";
 import { sportFromHealthKit } from "@/lib/sports";
+import { localDateKey } from "@/lib/date";
 
 export interface DaySnapshot {
   /** YYYY-MM-DD in the user's local timezone. */
@@ -101,7 +102,7 @@ export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
   const end = new Date(today);
   end.setHours(23, 59, 59, 999);
 
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const dateStr = localDateKey(today);
   const startISO = start.toISOString();
   const endISO = end.toISOString();
 

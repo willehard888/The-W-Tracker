@@ -5,6 +5,7 @@ import { SubPageSkeleton } from "@/components/skeletons/PageSkeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFriendActions } from "@/hooks/use-friends";
 import { Award, Swords, MessageCircle, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Ban, Flag, MoreVertical, UserRound } from "lucide-react";
 import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
@@ -25,6 +26,7 @@ import { getTierConfig, getTierHeroSurface, formatTier, type StatusTier } from "
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 
 /**
  * /user/:userId — another athlete, proven. Same thesis as /u/: the beat
@@ -149,34 +151,37 @@ const UserProfile = () => {
     enabled: !!myProfile && !!userId && myProfile.user_id !== userId,
   });
 
+  // The graph's writes live in useFriendActions, and this screen used to hold
+  // a second copy of them that disagreed: declining here set status='declined'
+  // (a dead end the requester could never get past) while every other surface
+  // deletes the row so they can ask again. One implementation now.
+  const { sendRequest, acceptRequest, declineRequest, removeFriend, invalidate } = useFriendActions();
+
   const handleFriendAction = async (action: "send" | "accept" | "decline" | "cancel" | "remove") => {
     if (!myProfile || !userId) return;
     try {
-      // supabase-js returns { error }, it does NOT throw — without these
-      // checks an RLS denial showed "Friend request sent!" on a no-op.
       if (action === "send") {
-        const { error } = await supabase.from("friendships").insert({ requester_id: myProfile.user_id, addressee_id: userId });
-        if (error) throw error;
+        await sendRequest(userId);
         toast.success("Friend request sent! 🤝");
       } else if (action === "accept" && friendship) {
-        const { error } = await supabase.from("friendships").update({ status: "accepted", updated_at: new Date().toISOString() }).eq("id", friendship.id);
-        if (error) throw error;
+        await acceptRequest(friendship.id);
         toast.success("Friend request accepted! 🎉");
       } else if (action === "decline" && friendship) {
-        const { error } = await supabase.from("friendships").update({ status: "declined", updated_at: new Date().toISOString() }).eq("id", friendship.id);
-        if (error) throw error;
+        await declineRequest(friendship.id);
         toast("Request declined");
-      } else if ((action === "cancel" || action === "remove") && friendship) {
-        const { error } = await supabase.from("friendships").delete().eq("id", friendship.id);
-        if (error) throw error;
-        toast(action === "cancel" ? "Request cancelled" : "Friend removed");
+      } else if (action === "cancel" && friendship) {
+        // Cancelling your own outgoing request is the same delete.
+        await declineRequest(friendship.id);
+        toast("Request cancelled");
+      } else if (action === "remove") {
+        await removeFriend(userId);
+        toast("Friend removed");
       }
       setLanded(true);
-      ["friendship", "friends", "friends-list", "friend-requests",
-       "sent-friend-requests", "friend-request-count"].forEach((k) =>
-        queryClient.invalidateQueries({ queryKey: [k] }));
-    } catch {
-      toast.error("Something went wrong");
+      queryClient.invalidateQueries({ queryKey: ["friendship"] });
+      invalidate();
+    } catch (e) {
+      toast.error(friendlyError(e, "Something went wrong"));
     }
   };
 

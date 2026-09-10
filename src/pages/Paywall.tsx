@@ -173,7 +173,18 @@ const Paywall = () => {
         setStatus("idle");
         return;
       }
-      track(FUNNEL.purchaseFailed, { plan, platform: "native", reason: e?.message?.toString().slice(0, 120) });
+      // The reason alone was not diagnosable: every failure in production so
+      // far recorded a message with a null code, so nobody could tell a
+      // StoreKit refusal from a backend 500. RevenueCat puts the useful part
+      // in `code` / `underlyingErrorMessage`.
+      track(FUNNEL.purchaseFailed, {
+        plan,
+        platform: "native",
+        reason: e?.message?.toString().slice(0, 120),
+        code: e?.code != null ? String(e.code) : null,
+        underlying: e?.underlyingErrorMessage?.toString().slice(0, 120) ?? null,
+        readable: e?.readableErrorCode?.toString() ?? null,
+      });
       hapticNotification("error");
       setStatus("error");
       setErrorMessage(friendlyError(e, "Purchase failed. Please try again."));

@@ -1,5 +1,6 @@
 import { backOr } from "@/lib/nav";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { fmtInt, fmtRelative } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +14,7 @@ import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { useFriends, usePendingFriendCount } from "@/hooks/use-friends";
+import { useUserSearch } from "@/hooks/use-user-search";
 import { useUnreadMessageCount } from "@/hooks/use-messages";
 import { useState, type ReactNode } from "react";
 import type { NavigateFunction } from "react-router-dom";
@@ -44,21 +46,7 @@ const Messages = () => {
   // person — so a friend you had never written to never appeared here.
   const { data: friends } = useFriends();
 
-  // Search users
-  const { data: searchResults } = useQuery({
-    queryKey: ["search-users", searchQuery],
-    queryFn: async () => {
-      if (!user || !searchQuery.trim()) return [];
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url, status_tier, level")
-        .neq("user_id", user.id)
-        .ilike("username", `%${searchQuery.trim()}%`)
-        .limit(10);
-      return data || [];
-    },
-    enabled: !!user && searchQuery.trim().length >= 2,
-  });
+  const { results: searchResults } = useUserSearch(searchQuery, 12);
 
   const { data: conversations, isLoading, isError, refetch } = useQuery({
     queryKey: ["conversations", user?.id],
@@ -219,7 +207,12 @@ const Messages = () => {
           )}
           {!isLoading && !isError && rows.length === 0 && (
             <div className="home-rise home-rise-2">
-              <EmptyState icon={MessageCircle} title="No messages yet" description="Open someone's profile and tap Message to start a conversation." />
+              <EmptyState
+                icon={MessageCircle}
+                title="No messages yet"
+                description="Search a handle above, or start with someone already in your circle."
+                action={<Button variant="outline" size="sm" onClick={() => navigate("/friends")}>Open your circle</Button>}
+              />
             </div>
           )}
         </>

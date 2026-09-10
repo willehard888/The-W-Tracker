@@ -9,6 +9,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 
@@ -27,15 +28,11 @@ export interface CoachBrief {
   day_index?: number;
 }
 
-const todayISO = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
 
 export const useCoachBrief = () => {
   const { user } = useAuth();
   const { hasAccess, loading: accessLoading } = useTrialAccess();
-  const date = todayISO();
+  const date = localDateKey();
 
   const query = useQuery<CoachBrief | null>({
     queryKey: ["coach-brief", user?.id, date],

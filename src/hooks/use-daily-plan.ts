@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { uniqueChannelName } from "@/lib/realtime";
 
@@ -36,16 +37,11 @@ export interface MissionLog {
   completed_at: string;
 }
 
-const todayISO = () => {
-  const d = new Date();
-  // local YYYY-MM-DD (avoids UTC slip)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
 
 export const useDailyPlan = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const date = todayISO();
+  const date = localDateKey();
 
   const planQuery = useQuery({
     queryKey: ["coach-daily-plan", user?.id, date],

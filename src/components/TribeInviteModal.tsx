@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserSearch } from "@/hooks/use-user-search";
 import { avatarUrl } from "@/lib/img";
-import { useAuth } from "@/contexts/AuthContext";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,7 @@ interface Hit {
 }
 
 const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
-  const { profile } = useAuth();
   const [query, setQuery] = useState("");
-  const [hits, setHits] = useState<Hit[]>([]);
-  const [searching, setSearching] = useState(false);
   const [memberIds, setMemberIds] = useState<Set<string>>(new Set());
   const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
@@ -52,30 +49,10 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
     })();
   }, [open, tribeId]);
 
-  useEffect(() => {
-    if (!open) return;
-    const q = query.trim();
-    if (q.length < 2) {
-      setHits([]);
-      return;
-    }
-    // active-guard: clearTimeout can't recall an in-flight request, and a
-    // slow stale response must not overwrite a newer query's results.
-    let active = true;
-    const t = setTimeout(async () => {
-      setSearching(true);
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, avatar_url, status_tier")
-        .ilike("username", `%${q}%`)
-        .neq("user_id", profile?.user_id ?? "")
-        .limit(20);
-      if (!active) return;
-      setHits(data ?? []);
-      setSearching(false);
-    }, 300);
-    return () => { active = false; clearTimeout(t); };
-  }, [query, open, profile?.user_id]);
+  // One search for the whole app (react-query owns the caching and the
+  // stale-response guard this used to hand-roll, and it drops people you have
+  // blocked — inviting someone you blocked was still possible from here).
+  const { results: hits, searching } = useUserSearch(open ? query : "", 20);
 
   const handleInvite = async (u: Hit) => {
     setSendingId(u.user_id);

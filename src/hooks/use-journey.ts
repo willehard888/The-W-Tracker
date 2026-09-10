@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
@@ -75,7 +76,7 @@ export const useJourney = (windowDays = 56) => {
         // timestamptz took the UTC date, which pushed late-evening/early-
         // morning check-ins into the wrong day and even the wrong ISO week.
         const d = new Date(r.checked_in_at);
-        const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const date = localDateKey(d);
         return {
           date,
           xp: Number(r.xp_earned) || 0,

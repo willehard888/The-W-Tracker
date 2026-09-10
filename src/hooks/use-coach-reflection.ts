@@ -1,18 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 
-const todayISO = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
 
 export const useTodayReflection = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const date = todayISO();
+  const date = localDateKey();
 
   const query = useQuery({
     queryKey: ["coach-reflection", user?.id, date],

@@ -14,6 +14,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { FactRow } from "@/components/coach/rows";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
+import { shareImage } from "@/lib/share-image";
 import BriefingShareCard from "@/components/BriefingShareCard";
 
 /**
@@ -124,25 +125,17 @@ const WeeklyBriefing = () => {
       );
       if (!blob) throw new Error("Failed to render");
 
-      const file = new File([blob], `weekly-briefing-${briefing.week_start}.png`, {
-        type: "image/png",
+      // shareImage, not navigator.share + <a download>: this screen kept the
+      // path share-image.ts was written to replace. In the WKWebView the
+      // download link is a no-op and navigator.share cannot carry a file, so
+      // the briefing was the one share in the app that could not reach
+      // Instagram or the camera roll.
+      const outcome = await shareImage(blob, {
+        filename: `weekly-briefing-${briefing.week_start}.png`,
+        title: "My W Weekly Briefing",
+        text: briefing.headline,
       });
-
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "My W Weekly Briefing",
-          text: briefing.headline,
-        });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `weekly-briefing-${briefing.week_start}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-        toast.success("Image downloaded");
-      }
+      if (outcome === "downloaded") toast.success("Sharing isn't available here — image downloaded instead");
     } catch (e) {
       console.error(e);
       toast.error("Share failed");

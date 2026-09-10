@@ -1,13 +1,8 @@
 import { Crown, TrendingUp, CalendarCheck, Flame, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useRoadToElite, ELITE_REQUIREMENTS } from "@/hooks/use-road-to-elite";
-
-interface RoadToEliteProps {
-  /** Compact variant — shows a single overall progress bar instead of three */
-  compact?: boolean;
-  className?: string;
-}
+import { useNextTierProgress } from "@/hooks/use-next-tier-progress";
+import { tierBandLabel, tierRequirementLines } from "@/lib/status-tiers";
 
 interface RequirementRowProps {
   icon: React.ElementType;
@@ -77,50 +72,18 @@ const RequirementRow = ({
 };
 
 /**
- * "Road to Elite" — a live progress card that shows the 3 requirements
- * needed to *earn* the Elite status tier (the in-app status, not subscription).
+ * Live progress towards the next earned status tier (the in-app status, not
+ * the subscription). Every number and every sentence here is derived from the
+ * rung's own requirements in status-tiers — the card used to carry its own
+ * copy of them and promised Elite at a 21-day streak while the ladder beside
+ * it, and the server, both said 30.
  */
-const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
-  const r = useRoadToElite();
+const NextTierProgress = ({ className }: { className?: string }) => {
+  const r = useNextTierProgress();
 
-  if (r.loading || !r.hasData) return null;
-  if (r.isElite) return null; // already Elite — no need to show
+  if (r.loading || !r.hasData || !r.next) return null;
 
-  if (compact) {
-    return (
-      <div
-        className={cn(
-          "rounded-xl border border-gold/25 bg-gold/5 p-3 flex items-center gap-3",
-          className,
-        )}
-      >
-        <div className="h-8 w-8 rounded-lg gradient-gold flex items-center justify-center shrink-0">
-          <Crown size={14} className="text-primary-foreground" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[11px] font-bold text-gold">
-              Road to Elite
-            </p>
-            <span className="text-[12px] font-bold text-gold tabular-nums">
-              {r.overallPercent}%
-            </span>
-          </div>
-          <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.max(2, r.overallPercent)}%` }}
-              transition={{ duration: 0.9, ease: "easeOut" }}
-              className="h-full rounded-full gradient-gold"
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            {r.metCount}/2 paths met • Elite is earned, not bought
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const req = r.next.requirements;
 
   return (
     <div
@@ -147,10 +110,10 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
             </div>
             <div>
               <h3 className="font-display font-black text-base tracking-tight leading-none">
-                Road to Elite
+                Road to {r.next.label}
               </h3>
               <p className="text-[11px] text-muted-foreground mt-1">
-                Top 20% or 20 days + 21 streak
+                {r.pathCount === 2 ? "Either path earns it" : "Every line has to land"}
               </p>
             </div>
           </div>
@@ -160,43 +123,47 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
               <span className="text-sm text-muted-foreground">%</span>
             </p>
             <p className="text-[10px] font-bold text-muted-foreground mt-1">
-              {r.metCount}/2 paths met
+              {r.metCount}/{r.pathCount} {r.pathCount === 1 ? "path" : "paths"} met
             </p>
           </div>
         </div>
 
-        {/* Requirements */}
+        {/* Requirements — only the ones this rung actually asks for. */}
         <div className="space-y-3">
           <RequirementRow
             icon={TrendingUp}
-            label="Top 20% rank"
+            label={`${tierBandLabel(r.next.key)} rank`}
             current={Math.round(r.percentile)}
-            target={ELITE_REQUIREMENTS.PERCENTILE}
+            target={req.percentile}
             unit="%ile"
             progress={r.percentileProgress}
           />
-          <RequirementRow
-            icon={CalendarCheck}
-            label="Active 20 of last 30 days"
-            current={r.activityDays}
-            target={ELITE_REQUIREMENTS.ACTIVITY_DAYS}
-            unit="days"
-            progress={r.activityProgress}
-          />
-          <RequirementRow
-            icon={Flame}
-            label="21-day streak"
-            current={r.streak}
-            target={ELITE_REQUIREMENTS.STREAK}
-            unit="days"
-            progress={r.streakProgress}
-          />
+          {req.activeDays > 0 && (
+            <RequirementRow
+              icon={CalendarCheck}
+              label={`Active ${req.activeDays} of last 30 days`}
+              current={r.activityDays}
+              target={req.activeDays}
+              unit="days"
+              progress={r.activityProgress}
+            />
+          )}
+          {req.streak > 0 && (
+            <RequirementRow
+              icon={Flame}
+              label={`${req.streak}-day streak`}
+              current={r.streak}
+              target={req.streak}
+              unit="days"
+              progress={r.streakProgress}
+            />
+          )}
         </div>
 
-        {/* Footer message */}
+        {/* Footer — the rule in the ladder's own words. */}
         <div className="mt-4 pt-3 border-t border-gold/15">
           <p className="text-[12px] text-center text-muted-foreground italic font-medium">
-            Reach <span className="text-gold/90 font-semibold">top 20%</span> or prove consistency with <span className="text-gold/90 font-semibold">20 active days + 21 streak</span>.
+            {tierRequirementLines(r.next.key).join(" ")}.
           </p>
         </div>
       </div>
@@ -204,4 +171,4 @@ const RoadToElite = ({ compact = false, className }: RoadToEliteProps) => {
   );
 };
 
-export default RoadToElite;
+export default NextTierProgress;

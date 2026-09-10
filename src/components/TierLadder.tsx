@@ -4,7 +4,7 @@ import { Check, ChevronDown, ChevronRight, Crown, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
-import { TIER_CONFIG, TIER_ORDER, getTierConfig, type StatusTier, type TierConfig } from "@/lib/status-tiers";
+import { TIER_CONFIG, TIER_ORDER, getTierConfig, tierRequirementLines, type StatusTier } from "@/lib/status-tiers";
 import { RedeemLegendInviteDialog } from "@/components/RedeemLegendInviteDialog";
 
 interface TierLadderProps {
@@ -28,19 +28,6 @@ const TierMark = ({ rank, className, children }: { rank: number; className?: str
     {children}
   </span>
 );
-
-/** The rank rule and the grind path, as sentences. */
-const requirementLines = (cfg: TierConfig): string[] => {
-  const r = cfg.requirements;
-  if (r.percentile === 0) return ["Where everyone starts."];
-  const lines = [`${cfg.percentile} in rank score`];
-  const grind = [
-    r.activeDays > 0 && `${r.activeDays} active days in the last 30`,
-    r.streak > 0 && `${r.streak}-day current streak`,
-  ].filter(Boolean) as string[];
-  if (grind.length) lines.push(r.orPath ? `or ${grind.join(" and ")}` : grind.join(" and "));
-  return lines;
-};
 
 /**
  * Where you stand on the ladder, and the next rung. On the page it is one
@@ -117,7 +104,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
             {next ? (
               <>
                 <span className="font-bold text-foreground">Next rung: {next.label}.</span>{" "}
-                {nextKey === "legend" ? "Invite only." : `${requirementLines(next).join(", ")}.`}
+                {nextKey === "legend" ? "Invite only." : `${tierRequirementLines(nextKey).join(", ")}.`}
               </>
             ) : (
               <span className="font-bold text-foreground">The top of the ladder.</span>
@@ -164,7 +151,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                         <span className="font-bold text-foreground">Invite only.</span> The Founders Circle is not earned through XP or streaks.
                       </p>
                     ) : (
-                      requirementLines(cfg).map((line) => (
+                      tierRequirementLines(key).map((line) => (
                         <p key={line} className="text-muted-foreground">{line}</p>
                       ))
                     )}

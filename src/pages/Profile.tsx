@@ -28,7 +28,7 @@ import { subDays, format } from "date-fns";
 import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
 import { onIdle } from "@/lib/idle";
 import { getTierConfig } from "@/lib/status-tiers";
-import RoadToElite from "@/components/RoadToElite";
+import NextTierProgress from "@/components/NextTierProgress";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import TierLadder from "@/components/TierLadder";
 import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
@@ -554,7 +554,7 @@ const Profile = () => {
       <TierLadder currentTier={profile.status_tier || "recruit"} />
 
       {/* Road to Elite — earned-status progress */}
-      <RoadToElite />
+      <NextTierProgress />
 
       {/* Verified Performer — connect HealthKit to earn unfakeable status.
           Self-hides on non-iOS / when probing (component handles it). */}

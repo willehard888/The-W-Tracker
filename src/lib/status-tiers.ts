@@ -278,6 +278,23 @@ export interface NextTierInfo {
   requirements: TierRequirements;
 }
 
+/** A rung's rank rule and its grind path, as sentences. One source: the
+ *  ladder sheet and the progress card have to read the same numbers, and a
+ *  second hand-written copy of them is exactly how the card came to promise
+ *  Elite at a 21-day streak the server would not promote. */
+export const tierRequirementLines = (tier: string): string[] => {
+  const cfg = getTierConfig(tier);
+  const r = cfg.requirements;
+  if (r.percentile === 0) return ["Where everyone starts."];
+  const lines = [`${cfg.percentile} in rank score`];
+  const grind = [
+    r.activeDays > 0 && `${r.activeDays} active days in the last 30`,
+    r.streak > 0 && `${r.streak}-day current streak`,
+  ].filter(Boolean) as string[];
+  if (grind.length) lines.push(r.orPath ? `or ${grind.join(" and ")}` : grind.join(" and "));
+  return lines;
+};
+
 /** The next rung and what it takes (null at the top). */
 export const nextTierRequirements = (current: string): NextTierInfo | null => {
   const idx = TIER_ORDER.indexOf(canonicalTier(current));

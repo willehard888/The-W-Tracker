@@ -38,7 +38,15 @@ const Sparkline = ({ values, domain, className }: Props) => {
   const area = `0,${H} ${pts} ${lastX.toFixed(2)},${H}`;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className={className} aria-hidden>
+    // `overflow: visible` so the endpoint dot is not sliced in half by the
+    // right edge it sits on.
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="none"
+      overflow="visible"
+      className={className}
+      aria-hidden
+    >
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="hsl(var(--gold))" stopOpacity="0.22" />
@@ -55,7 +63,24 @@ const Sparkline = ({ values, domain, className }: Props) => {
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />
-      <circle cx={lastX} cy={lastY} r={2.6} fill="hsl(var(--gold))" vectorEffect="non-scaling-stroke" />
+      {/*
+        The endpoint marker is a zero-length line, not a <circle>:
+        preserveAspectRatio="none" stretches the 100x32 viewBox to the
+        container, so a circle renders as an ellipse — barely visible in a 28 px
+        row, a lopsided blob in the 128 px XP chart. A round line cap with
+        non-scaling-stroke is measured in device pixels, so it stays a dot at
+        every height.
+      */}
+      <line
+        x1={lastX}
+        y1={lastY}
+        x2={lastX}
+        y2={lastY}
+        stroke="hsl(var(--gold))"
+        strokeWidth={5}
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   );
 };

@@ -165,7 +165,10 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       });
       if (error) throw error;
       // Activity is a separate RPC (free-text column, own validation) —
-      // best-effort so a hiccup here never rolls back the main save.
+      // best-effort so a hiccup here never rolls back the main save. It is
+      // still a field the owner just typed, so a failure is named rather than
+      // buried under "Tribe updated" with the old activity still on the card.
+      let activityErr: unknown = null;
       if ((activity || null) !== (tribe.primary_activity ?? null)) {
         const { error: actErr } = await supabase.rpc("set_tribe_activity", {
           p_tribe: tribeId,
@@ -173,9 +176,19 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
           // (plain `string`) is stricter than the SQL signature actually is.
           p_activity: (activity || null) as string,
         });
-        if (actErr) console.warn("[tribe] set_tribe_activity failed", actErr);
+        if (actErr) {
+          console.warn("[tribe] set_tribe_activity failed", actErr);
+          activityErr = actErr;
+        }
       }
-      toast.success("Tribe updated");
+      if (activityErr) {
+        toast("Tribe updated — except the activity.", {
+          description: friendlyError(activityErr, "The activity kept its old value. Try that field again."),
+          duration: 6000,
+        });
+      } else {
+        toast.success("Tribe updated");
+      }
       setCoverFile(null);
       onChanged();
       onOpenChange(false);

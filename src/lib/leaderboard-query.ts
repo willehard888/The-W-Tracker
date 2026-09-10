@@ -30,7 +30,10 @@ export const fetchAllTimeLeaders = async (): Promise<LeaderRow[]> => {
 };
 
 export const fetchActiveSeason = async () => {
-  await supabase.rpc("finalize_expired_leaderboard_seasons");
+  // Best-effort housekeeping — a stale season still reads fine below. rpc()
+  // resolves with { error } rather than rejecting, so this was never checked.
+  const { error: finalizeErr } = await supabase.rpc("finalize_expired_leaderboard_seasons");
+  if (finalizeErr) console.warn("[ranks] finalize seasons failed", finalizeErr);
 
   const nowIso = new Date().toISOString();
   const { data: existing } = await supabase
@@ -44,7 +47,11 @@ export const fetchActiveSeason = async () => {
 
   if (existing?.length) return existing[0];
 
-  const { data: ensured } = await supabase.rpc("ensure_active_leaderboard_season");
+  // Not best-effort: there is no season without this. Returning undefined on a
+  // failure gave the Ranks tab an empty season header instead of an error
+  // state, so throw and let react-query show the retry.
+  const { data: ensured, error: ensureErr } = await supabase.rpc("ensure_active_leaderboard_season");
+  if (ensureErr) throw ensureErr;
   if (Array.isArray(ensured)) return ensured[0];
   return ensured;
 };

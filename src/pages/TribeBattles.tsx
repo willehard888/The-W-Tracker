@@ -77,12 +77,11 @@ const TribeBattles = () => {
       setIsMember(!!mem);
     }
 
-    // Auto-resolve any expired battles first (best-effort)
-    try {
-      await supabase.rpc("auto_resolve_expired_tribe_battles");
-    } catch {
-      // ignore — best-effort auto-resolve
-    }
+    // Auto-resolve any expired battles first. Genuinely best-effort — the
+    // board still renders without it — but rpc() resolves with { error }
+    // rather than rejecting, so the old catch never saw a failure.
+    const { error: resolveErr } = await supabase.rpc("auto_resolve_expired_tribe_battles");
+    if (resolveErr) console.warn("[battles] auto-resolve failed", resolveErr);
 
     const [tRes, bRes] = await Promise.all([
       supabase.from("tribes").select("id, name, owner_id").eq("id", id).maybeSingle(),

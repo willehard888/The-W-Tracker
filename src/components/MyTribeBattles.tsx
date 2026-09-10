@@ -34,12 +34,10 @@ const MyTribeBattles = () => {
     if (!profile?.user_id) return;
     setLoading(true);
 
-    // Best-effort auto-resolve expired battles
-    try {
-      await supabase.rpc("auto_resolve_expired_tribe_battles");
-    } catch {
-      // ignore
-    }
+    // Best-effort auto-resolve expired battles. rpc() resolves with { error }
+    // rather than rejecting, so the old catch never saw a failure.
+    const { error: resolveErr } = await supabase.rpc("auto_resolve_expired_tribe_battles");
+    if (resolveErr) console.warn("[battles] auto-resolve failed", resolveErr);
 
     // Find tribes the user belongs to
     const { data: mems } = await supabase

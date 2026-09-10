@@ -12,6 +12,7 @@ import {
   scoreMovement,
   scoreNutrition,
   nutritionParts,
+  innerParts,
   scoreMind,
   scoreInner,
   detectPatterns,
@@ -74,12 +75,27 @@ describe("zero-data honesty", () => {
     expect(r.pillars.movement).toBeNull();
     expect(r.pillars.nutrition).toBeNull();
     expect(r.pillars.mind).toBeNull();
-    // inner has a computable connection sub-signal even at zero → 0-ish, not null
+    expect(r.pillars.inner).toBeNull();
     expect(r.patterns).toEqual([]);
     for (const v of Object.values(r.pillars)) {
       if (v != null) expect(Number.isFinite(v)).toBe(true);
     }
-    if (r.overall != null) expect(Number.isFinite(r.overall)).toBe(true);
+    // Every pillar null ⇒ no index at all. Home and Journey gate on this: a
+    // number here is a gold "W-Index 0" on a brand-new user's first screen.
+    expect(r.overall).toBeNull();
+  });
+
+  it("one friend is enough to start scoring — the index appears the moment there IS data", () => {
+    const r = computeWhealthIndex({ ...EMPTY, friendCount: 1 });
+    expect(r.pillars.inner).not.toBeNull();
+    expect(r.overall).not.toBeNull();
+    expect(Number.isFinite(r.overall!)).toBe(true);
+  });
+
+  it("setting \"I am\" alone also starts the index", () => {
+    const r = computeWhealthIndex({ ...EMPTY, iAmSet: true });
+    expect(r.pillars.inner).toBe(100); // identity is the only present sub-signal
+    expect(r.overall).toBe(100);
   });
 });
 
@@ -237,14 +253,26 @@ describe("scoreInner", () => {
     expect(s).toBeGreaterThanOrEqual(85);
   });
 
-  it("no signals at all still yields a number from connection (0) — never NaN", () => {
+  it("no signals at all is null — an unjoined, unset user is unscored, not scored 0", () => {
     const s = scoreInner({
       lessonsCompleted: 0, lessonsTotal: 0, avgQuizScore: null,
       reflections: [], habitStreaks: [], tribeCount: 0, friendCount: 0, iAmSet: false,
     });
-    expect(s).not.toBeNull();
-    expect(Number.isFinite(s!)).toBe(true);
-    expect(s).toBeLessThanOrEqual(10);
+    expect(s).toBeNull();
+  });
+
+  it("one friend scores connection without inventing an identity score", () => {
+    const parts = innerParts({
+      lessonsCompleted: 0, lessonsTotal: 0, avgQuizScore: null,
+      reflections: [], habitStreaks: [], tribeCount: 0, friendCount: 1, iAmSet: false,
+    });
+    expect(parts.find((p) => p.key === "connection")!.score).toBe(20);
+    expect(parts.find((p) => p.key === "identity")!.score).toBeNull();
+    // Connection is the only present signal, so it carries the whole pillar.
+    expect(scoreInner({
+      lessonsCompleted: 0, lessonsTotal: 0, avgQuizScore: null,
+      reflections: [], habitStreaks: [], tribeCount: 0, friendCount: 1, iAmSet: false,
+    })).toBe(20);
   });
 });
 

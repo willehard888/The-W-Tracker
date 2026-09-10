@@ -374,11 +374,15 @@ export function innerParts(inputs: {
     ? round(ramp(Math.max(...habitStreaks), 0, 21) * 100)
     : null;
 
-  const connectionScore = round(
-    (clamp01(tribeCount / 1) * 0.4 + clamp01(friendCount / 3) * 0.6) * 100,
-  );
+  // Connection and identity are DATA, not a starting balance. Scoring them
+  // unconditionally made them the only two sub-signals a brand-new user could
+  // not be missing, so `inner` — and with it `overall` — came out 0 instead of
+  // null, and Home/Journey advertised a gold zero on day one.
+  const connectionScore = tribeCount > 0 || friendCount > 0
+    ? round((clamp01(tribeCount / 1) * 0.4 + clamp01(friendCount / 3) * 0.6) * 100)
+    : null;
 
-  const identityScore = iAmSet ? 100 : 0;
+  const identityScore = iAmSet ? 100 : null;
   const quizBonus = avgQuizScore != null ? round(avgQuizScore) : null;
 
   return [
@@ -443,9 +447,12 @@ export function detectPatterns(
     checkins
       .filter((c) => c.sleepHours != null && pick(c))
       .map((c) => {
+        // `day + "T12:00:00"` parses as LOCAL noon, so reading the key back
+        // through toISOString() shifted the lookup a day east of UTC+12 and
+        // west of UTC-12 and silently found nothing. Read local parts back out.
         const next = new Date(c.day + "T12:00:00");
         next.setDate(next.getDate() + 1);
-        const key = next.toISOString().slice(0, 10);
+        const key = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
         return reflByDay.get(key)?.energy ?? null;
       })
       .filter((v): v is number => v != null);

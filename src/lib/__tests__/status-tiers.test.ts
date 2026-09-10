@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getTierConfig,
+  tierRequirementSentence,
   formatTier,
   ladderRankValue,
   tierFromLadder,
@@ -65,5 +66,23 @@ describe("getNextTier / getPreviousTier", () => {
     expect(getPreviousTier("operator")?.label).toBe(getTierConfig("recruit").label);
     expect(getNextTier("legend")).toBeNull();
     expect(getPreviousTier("recruit")).toBeNull();
+  });
+});
+
+describe("tierRequirementSentence", () => {
+  it("joins an AND rung's two clauses so they do not run together", () => {
+    // Operator: percentile AND active days. Rendered with a bare space this
+    // read "Top 75% in rank score 5 active days in the last 30."
+    expect(tierRequirementSentence("operator")).toBe("Top 75% in rank score, and 5 active days in the last 30");
+  });
+
+  it("keeps an OR rung's own connector", () => {
+    const s = tierRequirementSentence("elite");
+    expect(s).toContain(", or ");
+    expect(s).toContain("30-day current streak");
+  });
+
+  it("says something for the bottom rung", () => {
+    expect(tierRequirementSentence("recruit")).toBe("Where everyone starts.");
   });
 });

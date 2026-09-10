@@ -2,7 +2,7 @@ import { Crown, TrendingUp, CalendarCheck, Flame, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useNextTierProgress } from "@/hooks/use-next-tier-progress";
-import { tierBandLabel, tierRequirementLines } from "@/lib/status-tiers";
+import { tierBandLabel, tierRequirementSentence } from "@/lib/status-tiers";
 
 interface RequirementRowProps {
   icon: React.ElementType;
@@ -163,7 +163,7 @@ const NextTierProgress = ({ className }: { className?: string }) => {
         {/* Footer — the rule in the ladder's own words. */}
         <div className="mt-4 pt-3 border-t border-gold/15">
           <p className="text-[12px] text-center text-muted-foreground italic font-medium">
-            {tierRequirementLines(r.next.key).join(" ")}.
+            {tierRequirementSentence(r.next.key)}.
           </p>
         </div>
       </div>

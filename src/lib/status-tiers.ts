@@ -295,6 +295,19 @@ export const tierRequirementLines = (tier: string): string[] => {
   return lines;
 };
 
+/**
+ * The same lines as one sentence. The two clauses are joined by the word that
+ * makes them true: an OR rung already carries its "or", an AND rung needs the
+ * comma-and, and without it the card read "Top 75% in rank score 5 active days
+ * in the last 30." — two requirements run together as if they were one.
+ */
+export const tierRequirementSentence = (tier: string): string => {
+  const lines = tierRequirementLines(tier);
+  if (lines.length < 2) return `${lines[0] ?? ""}`;
+  const joined = lines[1].startsWith("or ") ? lines.join(", ") : lines.join(", and ");
+  return joined;
+};
+
 /** The next rung and what it takes (null at the top). */
 export const nextTierRequirements = (current: string): NextTierInfo | null => {
   const idx = TIER_ORDER.indexOf(canonicalTier(current));

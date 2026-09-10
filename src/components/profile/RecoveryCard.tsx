@@ -80,6 +80,13 @@ const RecoveryCard = () => {
   const hasSleep = deep + rem + core > 0;
   const underRecovered = (rhrDelta != null && rhrDelta >= 5) || awake > 60;
   const status = !hasSleep ? "No sleep data" : underRecovered ? "Under-recovered" : "Recovered";
+  // Three statuses, and the colour has to say which: green is a verdict, and
+  // "no data" is not a good night — it is no night at all.
+  const statusColor = !hasSleep
+    ? "text-muted-foreground/75"
+    : underRecovered
+      ? "text-[hsl(var(--ember))]"
+      : "text-xp-green";
   const active = new Set(last!.factors ?? []);
 
   // Deterministic causal one-liner (mirrors the coach's edge reasoning) so the
@@ -107,9 +114,9 @@ const RecoveryCard = () => {
   return (
     <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-center gap-2 mb-2.5">
-        <HeartPulse size={13} className={underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green"} />
+        <HeartPulse size={13} className={statusColor} />
         <p className="text-[11px] font-bold text-muted-foreground/80">Recovery · last night</p>
-        <span className={cn("text-[11px] font-bold text-muted-foreground ml-auto", underRecovered ? "text-[hsl(var(--ember))]" : "text-xp-green")}>{status}</span>
+        <span className={cn("text-[11px] font-bold ml-auto", statusColor)}>{status}</span>
       </div>
 
       {last!.sleep_total_min != null && (

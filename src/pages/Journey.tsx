@@ -81,7 +81,11 @@ const Journey = () => {
   const heroOverall = liveIndex?.overall ?? latestSnap?.overall ?? null;
   const heroPillars = liveIndex?.overall != null ? liveIndex.pillars : latestSnap?.pillars;
   const overallHistory = useMemo(
-    () => [...(snapshots ?? [])].reverse().map((s) => s.overall),
+    () =>
+      [...(snapshots ?? [])]
+        .reverse()
+        .map((s) => s.overall)
+        .filter((v): v is number => v != null),
     [snapshots],
   );
   const [openPillar, setOpenPillar] = useState<keyof PillarScores | null>(null);
@@ -143,7 +147,7 @@ const Journey = () => {
           <div className="home-rise home-rise-1 mt-6">
             <WhealthIndexCard
               overall={heroOverall}
-              priorOverall={priorSnap?.overall}
+              priorOverall={priorSnap?.overall ?? undefined}
               priorDate={priorDate}
               live={liveIndex?.overall != null}
               history={overallHistory}

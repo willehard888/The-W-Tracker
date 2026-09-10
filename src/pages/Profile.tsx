@@ -286,6 +286,16 @@ const Profile = () => {
   // Whealth Index from the nightly snapshot (cheap single query — NOT the
   // 11-query live hook). Latest score + a small trend line.
   const { data: whealthSnapshots } = useWhealthSnapshots(14);
+  // A snapshot exists from the first night; its score does not, until there is
+  // something to score. Only scored days can carry the gold number or a trend
+  // point — the rest fall through to the quiet row.
+  const scoredSnapshots = useMemo(
+    () =>
+      (whealthSnapshots ?? []).filter(
+        (s): s is typeof s & { overall: number } => s.overall != null,
+      ),
+    [whealthSnapshots],
+  );
 
   const { data: championHistory } = useQuery({
     queryKey: ["champion-history", profile?.user_id],
@@ -490,9 +500,9 @@ const Profile = () => {
 
       {/* ── W-INDEX — the one felt number; the door to /journey. Without a
              snapshot yet, the same door is a quiet row. ── */}
-      {whealthSnapshots && whealthSnapshots.length > 0 ? (() => {
-        const latest = whealthSnapshots[0];
-        const series = [...whealthSnapshots].reverse();
+      {scoredSnapshots.length > 0 ? (() => {
+        const latest = scoredSnapshots[0];
+        const series = [...scoredSnapshots].reverse();
         const points = series
           .map((s, i) => `${(i / Math.max(1, series.length - 1)) * 100},${34 - (s.overall / 100) * 30}`)
           .join(" ");

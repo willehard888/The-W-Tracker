@@ -5,7 +5,13 @@ import type { PillarScores, WhealthPattern } from "@/lib/whealth-index";
 
 export interface WhealthSnapshot {
   snapshotDate: string;
-  overall: number;
+  /**
+   * null until there is something to score. `coach-insights` persists
+   * `result.overall` verbatim now, so coercing a null back to 0 here would put
+   * the day-0 gold zero back on Journey and Profile — the exact thing
+   * whealth-index.ts stopped returning.
+   */
+  overall: number | null;
   pillars: PillarScores;
   patterns: WhealthPattern[];
   observations: string[];
@@ -34,7 +40,7 @@ export const useWhealthSnapshots = (days = 28) => {
           const c = r.components as Record<string, unknown>;
           return {
             snapshotDate: r.snapshot_date,
-            overall: r.performance_score ?? 0,
+            overall: r.performance_score,
             pillars: (c.pillars ?? {}) as PillarScores,
             patterns: (Array.isArray(c.patterns) ? c.patterns : []) as WhealthPattern[],
             observations: (Array.isArray(c.observations) ? c.observations : []) as string[],

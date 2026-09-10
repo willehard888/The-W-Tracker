@@ -7,6 +7,13 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // 5s is vitest's default and it is not enough here: several component
+    // tests render a real multi-step tree, and under `--coverage` (v8
+    // instrumentation) or a machine running builds in parallel they cross it
+    // while passing in under a second alone. Three of them failed that way in
+    // one run today and passed in isolation immediately after. A generous
+    // ceiling costs nothing on a green run and removes a class of false red.
+    testTimeout: 20_000,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
@@ -37,6 +44,13 @@ export default defineConfig({
         "src/lib/ios-debug.ts",
         "src/lib/apple-username.ts",
         "src/lib/xp-constants.ts",
+        // Pure data literals with no branches: instrumenting 800 KB of arrays
+        // buys no coverage signal and made the exercise-library test take 20 s
+        // under --coverage (it renders 269 rows twice) where it takes one
+        // second without. The logic that reads them is covered.
+        "src/data/exercises.ts",
+        "src/data/exercises-illustrated.ts",
+        "src/data/recipes.ts",
       ],
       thresholds: {
         // RATCHET FLOOR — current achieved: lines 95.8 / branches 90.8 /

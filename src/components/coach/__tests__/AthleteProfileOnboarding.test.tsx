@@ -19,10 +19,7 @@ vi.mock("framer-motion", () => ({
   motion: { div: ({ children }: { children: React.ReactNode }) => <div>{children}</div> },
 }));
 
-// The wizard renders six steps' worth of tree; under a loaded machine (three
-// builds in parallel) that walks past vitest's 5 s default, and it has failed
-// twice for that reason while passing in ~1 s alone.
-describe("AthleteProfileOnboarding", { timeout: 30_000 }, () => {
+describe("AthleteProfileOnboarding", () => {
   beforeEach(() => localStorage.clear());
 
   it("holds Next on the experience step until an answer is chosen", () => {

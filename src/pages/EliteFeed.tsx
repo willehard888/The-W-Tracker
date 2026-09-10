@@ -482,14 +482,16 @@ const EliteFeed = () => {
   const reportPost = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) return;
+      // The report row is the whole write. `feed_posts.reported` is derived by
+      // a trigger (20260910100000_feed_post_moderation.sql) — the client used
+      // to set it here and matched zero rows every time, because RLS lets only
+      // the author or an admin update a post, and you never report your own.
       const { error: reportErr } = await supabase.from("reports").insert({
         reporter_id: user.id,
         post_id: postId,
         reason: "Reported by user",
       });
       if (reportErr) throw reportErr;
-      const { error: flagErr } = await supabase.from("feed_posts").update({ reported: true }).eq("id", postId);
-      if (flagErr) throw flagErr;
     },
     onSuccess: () => {
       toast.success("Post reported", { description: "We'll review this content." });

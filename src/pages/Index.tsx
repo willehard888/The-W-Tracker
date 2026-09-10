@@ -16,6 +16,7 @@ import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import EmptyState from "@/components/ui/empty-state";
+import ErrorState from "@/components/ui/error-state";
 import MoreSection from "@/components/ui/more-section";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,7 +57,7 @@ const Index = () => {
     import("@/pages/EliteFeed");
     import("@/pages/DailyCheckin");
   }, 2500), []);
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const { hasAccess } = useTrialAccess();
   // Contextual onboarding (Blueprint triggers): Today intro on first visit;
   // streak card once a streak exists; progression once XP exists (also
@@ -192,8 +193,33 @@ const Index = () => {
     return () => clearTimeout(t);
   }, [profile?.streak]);
 
+  // A skeleton is a promise that something is coming. AuthContext races
+  // fetchProfile against 8s and falls through, so a hung fetch left Home on an
+  // infinite skeleton with no error branch and no retry — give the wait a
+  // deadline of its own.
+  const [profileStalled, setProfileStalled] = useState(false);
+  useEffect(() => {
+    if (profile || profileStalled) return;
+    const t = setTimeout(() => setProfileStalled(true), 8000);
+    return () => clearTimeout(t);
+  }, [profile, profileStalled]);
+
   // Same geometry as the auth-loading fallback — no blank frame between them.
-  if (!profile) return <HomeSkeleton />;
+  if (!profile) {
+    if (!profileStalled) return <HomeSkeleton />;
+    return (
+      <div className="min-h-full px-4 pt-16">
+        <ErrorState
+          title="Couldn't load your day"
+          description="Your profile didn't come back. Check your connection and try again."
+          onRetry={() => {
+            setProfileStalled(false); // back to the skeleton, deadline re-armed
+            void refreshProfile();
+          }}
+        />
+      </div>
+    );
+  }
 
   const xpToNext = profile.level * 500;
   const tier = profile.status_tier || "recruit";

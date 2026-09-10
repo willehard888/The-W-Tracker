@@ -147,7 +147,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     badgeVariant: "gold",
     rank: 4,
     requirements: { percentile: 80, activeDays: 20, streak: 30, orPath: true },
-    unlocks: ["Elite Feed posting", "Crown aura", "Elite badge"],
+    unlocks: ["Golden username", "Crown aura", "Elite badge"],
   },
   apex: {
     label: "Apex",
@@ -166,7 +166,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     badgeVariant: "apex",
     rank: 5,
     requirements: { percentile: 90, activeDays: 30, streak: 30 },
-    unlocks: ["Apex flame aura", "Top 10% status", "Tribes — create communities", "Priority visibility"],
+    unlocks: ["Apex flame aura", "Top 10% status", "Apex tag on your posts", "Priority visibility"],
   },
   legend: {
     label: "Legend",
@@ -184,7 +184,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     badgeVariant: "legend",
     rank: 6,
     requirements: { percentile: 99, activeDays: 30, streak: 45 },
-    unlocks: ["Legend rainbow aura", "Hall of Fame", "Tribes — create communities", "Mythic status"],
+    unlocks: ["Legend rainbow aura", "Hall of Fame", "Mythic status"],
   },
 };
 

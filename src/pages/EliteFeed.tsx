@@ -17,7 +17,6 @@ import PullRefreshIndicator from "@/components/PullRefreshIndicator";
 import { Button } from "@/components/ui/button";
 import { Flame, Heart, MessageCircle, Send, Image, Flag, Lock, Crown, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Eye, EyeOff, CheckCircle, Video, Award, Reply, X, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getTierConfig } from "@/lib/status-tiers";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
@@ -693,8 +692,6 @@ const EliteFeed = () => {
   // can post. (We used to gate posting to *earned* Elite, which silenced almost
   // everyone and left the community feed dead.) The author's tier still renders
   // on each post, so status is visible without locking people out of the loop.
-  const userTier = profile?.status_tier || 'recruit';
-  const tierRank = getTierConfig(userTier).rank;
   // Two different questions, and they had one answer. Kudos is open to every
   // signed-in member (its policy is `auth.uid() = giver_id`); POSTING is not —
   // feed_posts INSERT requires has_premium (20260707120000_earned_status_phase1

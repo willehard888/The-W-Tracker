@@ -26,6 +26,8 @@ import {
 } from "@/lib/tribe-streak";
 import TribeFireLite from "@/components/TribeFireLite";
 import { daysLeft, daysLeftLine } from "@/components/battles/battle-time";
+import { captureException } from "@/lib/observability";
+import { ErrorState } from "@/components/ui/error-state";
 
 type Tab = "active" | "pending" | "history";
 const TABS: { id: Tab; label: string }[] = [
@@ -52,6 +54,10 @@ const TribeBattles = () => {
   const [collectiveStreak, setCollectiveStreak] = useState(0);
   const [battles, setBattles] = useState<TribeBattle[]>([]);
   const [loading, setLoading] = useState(true);
+  // A failed read left `tribe` null, which rendered "Tribe not found — it may
+  // have been disbanded, or the link is old." A network blip told a member
+  // their tribe was gone.
+  const [failed, setFailed] = useState(false);
   // null until the first tap: the default segment is the first one with rows.
   const [tab, setTab] = useState<Tab | null>(null);
   const [challengeOpen, setChallengeOpen] = useState(false);
@@ -63,6 +69,7 @@ const TribeBattles = () => {
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
+    setFailed(false);
 
     // Any active member can raise a challenge (founder decision) — the old
     // owner-only gate left everyone else with three empty tabs.
@@ -92,6 +99,13 @@ const TribeBattles = () => {
         .order("created_at", { ascending: false })
         .limit(50),
     ]);
+
+    if (tRes.error || bRes.error) {
+      captureException(tRes.error ?? bRes.error, { where: "tribeBattles.load", tribeId: id });
+      setFailed(true);
+      setLoading(false);
+      return;
+    }
 
     setTribe(tRes.data ?? null);
     const rawBattles: TribeBattle[] = (bRes.data ?? []) as TribeBattle[];
@@ -152,6 +166,17 @@ const TribeBattles = () => {
       <div className="min-h-full">
         <PageBar onBack={() => backOr(navigate, `/tribes/${id}`)} />
         <div className="px-4 pt-4 pb-6"><TribeBattlesSkeleton /></div>
+      </div>
+    );
+  }
+
+  if (failed) {
+    return (
+      <div className="min-h-full">
+        <PageBar title="Tribe battles" onBack={() => backOr(navigate, "/squad?tab=tribes")} />
+        <div className="px-4 pt-4 pb-6 home-rise">
+          <ErrorState onRetry={load} />
+        </div>
       </div>
     );
   }

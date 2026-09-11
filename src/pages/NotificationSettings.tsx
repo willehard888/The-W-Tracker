@@ -172,10 +172,21 @@ const NotificationSettings = () => {
       <PageBar title="Notification settings" onBack={() => backOr(navigate, "/profile")} />
 
       <div className="px-4 pt-4 pb-6">
-        <header className="home-rise">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h2>
-          <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">{standing}</p>
-        </header>
+        {/* `prefs` seeds from the profile row, which is absent on a cold open of
+            this route — so the beat stated a position it did not have yet and
+            every Switch below rendered at its default and visibly snapped. */}
+        {profilePrefs === undefined ? (
+          <header className="home-rise space-y-2" aria-hidden>
+            <div className="h-7 w-3/5 rounded skeleton-block bg-secondary/30" />
+            <div className="h-4 w-full rounded skeleton-block bg-secondary/30" />
+            <div className="h-4 w-2/3 rounded skeleton-block bg-secondary/30" />
+          </header>
+        ) : (
+          <header className="home-rise">
+            <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h2>
+            <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">{standing}</p>
+          </header>
+        )}
 
         {/* ── The one spectacle: live lock-screen preview ── */}
         <div className="home-rise home-rise-1 mt-5">
@@ -193,10 +204,10 @@ const NotificationSettings = () => {
               <div className="h-[22px] w-[22px] rounded-[6px] gradient-gold flex items-center justify-center shrink-0">
                 <span className="font-display text-[12px] font-black text-primary-foreground leading-none">W</span>
               </div>
-              <span className="flex-1 text-[11px] font-semibold text-foreground/55">
+              <span className="flex-1 text-[11px] font-semibold text-foreground/75">
                 The W Tracker
               </span>
-              <span className="text-[11px] tabular-nums text-foreground/45">
+              <span className="text-[11px] tabular-nums text-foreground/75">
                 {prefs.streak_guard ? previewTime : "muted"}
               </span>
             </div>

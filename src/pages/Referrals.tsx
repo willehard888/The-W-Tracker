@@ -28,12 +28,12 @@ const Referrals = () => {
   const [copied, setCopied] = useState(false);
   const copiedPop = useCommitPop(copied);
   const [shareCardOpen, setShareCardOpen] = useState(false);
-  const { data: stats } = useReferralStats(profile?.user_id);
+  const { data: stats, isLoading: statsLoading } = useReferralStats(profile?.user_id);
 
   // MUST run before the early return — a hook after `return null` crashes with
   // "Rendered more hooks than during the previous render" the moment profile
   // resolves (same class of bug already fixed in Paywall.tsx).
-  const { data: recruits } = useMyReferrals();
+  const { data: recruits, isLoading: recruitsLoading } = useMyReferrals();
 
   if (!profile) return null;
 
@@ -86,11 +86,21 @@ const Referrals = () => {
 
       <div className="px-4 pt-4 pb-6">
         {/* Opening beat — the deal, in the user's own numbers. */}
-        <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">
-          {paidCount > 0
-            ? `${paidCount % CREDIT_EVERY} of ${CREDIT_EVERY}. ${toNextMonth} ${toNextMonth === 1 ? "friend" : "friends"} to a free month.`
-            : "Three paid friends. One month free."}
-        </h2>
+        {/* The beat waits for its numbers. It used to render the zero-state
+            sentence first and rewrite itself when the stats landed — a jump on
+            the first line of the screen. */}
+        {statsLoading ? (
+          <div className="home-rise space-y-2" aria-hidden>
+            <div className="h-7 w-4/5 rounded skeleton-block bg-secondary/30" />
+            <div className="h-7 w-2/5 rounded skeleton-block bg-secondary/30" />
+          </div>
+        ) : (
+          <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            {paidCount > 0
+              ? `${paidCount % CREDIT_EVERY} of ${CREDIT_EVERY}. ${toNextMonth} ${toNextMonth === 1 ? "friend" : "friends"} to a free month.`
+              : "Three paid friends. One month free."}
+          </h2>
+        )}
 
         {/* Hero — the code and its Share pair. The code is the screen's gold. */}
         <div className="home-rise home-rise-1 surface-card p-5 mt-5">
@@ -98,7 +108,7 @@ const Referrals = () => {
           <p className="font-display text-[30px] font-black text-gold glow-gold-text tracking-wide truncate leading-none mt-1.5">
             {referralCode}
           </p>
-          <p className="text-[11px] text-muted-foreground/60 truncate mt-2">{referralLink}</p>
+          <p className="text-[11px] text-muted-foreground/75 truncate mt-2">{referralLink}</p>
           <div className="grid grid-cols-2 gap-2 mt-4">
             <Button variant="gold-soft" size="lg" onClick={handleCopy}>
               <span className={cn("inline-flex items-center gap-2", copiedPop && "commit-pop")}>
@@ -134,7 +144,20 @@ const Referrals = () => {
         </div>
 
         {/* Recruits — who came, and how far they got. */}
-        {(recruits?.length ?? 0) > 0 && (
+        {recruitsLoading && (
+          <section className="home-rise home-rise-3 mt-7" aria-hidden>
+            <div className="h-4 w-28 rounded skeleton-block bg-secondary/30" />
+            <div className="divide-y divide-border/35 mt-1">
+              {[0, 1].map((i) => (
+                <div key={i} className="flex items-center gap-3 py-2.5">
+                  <div className="h-9 w-9 rounded-full skeleton-block bg-secondary/30 shrink-0" />
+                  <div className="h-3.5 flex-1 rounded skeleton-block bg-secondary/30" />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+        {!recruitsLoading && (recruits?.length ?? 0) > 0 && (
           <section className="home-rise home-rise-3 mt-7">
             <h3 className="font-display font-bold text-sm tracking-tight">Your recruits</h3>
             <div className="divide-y divide-border/35 mt-1">

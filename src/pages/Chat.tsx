@@ -18,6 +18,7 @@ import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
 import EmptyState from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
+import { ErrorState } from "@/components/ui/error-state";
 
 const Chat = () => {
   const { partnerId } = useParams<{ partnerId: string }>();
@@ -36,23 +37,34 @@ const Chat = () => {
   const { data: partner } = useQuery({
     queryKey: ["chat-partner", partnerId],
     queryFn: async () => {
-      const { data } = await supabase
+      // Same reason as the thread read: an unchecked failure here put
+      // "@undefined" in the empty state's own copy.
+      const { data, error } = await supabase
         .from("profiles")
         .select("user_id, username, avatar_url, status_tier, level, is_elite")
         .eq("user_id", partnerId!)
         .single();
+      if (error) throw error;
       return data;
     },
     enabled: !!partnerId,
   });
 
-  const { data: messages } = useQuery({
+  const {
+    data: messages,
+    isLoading: messagesLoading,
+    isError: messagesFailed,
+    refetch: refetchMessages,
+  } = useQuery({
     queryKey: ["chat-messages", partnerId],
     queryFn: async () => {
       if (!user || !partnerId) return [];
       // The newest screenful, not the whole thread — a long conversation
       // used to download and re-render in full on every incoming message.
-      const { data } = await supabase
+      // Throw, do not swallow: returning `data || []` on a failed read made the
+      // query resolve successfully with nothing, so `isError` could never fire
+      // and the screen fell through to "Start the conversation".
+      const { data, error } = await supabase
         .from("direct_messages")
         .select("*")
         .or(
@@ -60,7 +72,8 @@ const Chat = () => {
         )
         .order("created_at", { ascending: false })
         .limit(60);
-      return (data || []).reverse();
+      if (error) throw error;
+      return (data ?? []).reverse();
     },
     enabled: !!user && !!partnerId,
   });
@@ -246,7 +259,28 @@ const Chat = () => {
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 space-y-1.5"
       >
-        {(!messages || messages.length === 0) && (
+        {/* Three states, not one. The empty state used to be true while the
+            thread was still in flight, so "Start the conversation" flashed
+            before EVERY conversation painted — and a failed load looked
+            identical to a thread with nothing in it. */}
+        {messagesLoading && (
+          <div className="space-y-2" aria-hidden>
+            {[72, 56, 84, 48].map((w, i) => (
+              <div key={i} className={cn("flex", i % 2 ? "justify-end" : "justify-start")}>
+                <div
+                  className="h-9 rounded-2xl skeleton-block bg-secondary/30"
+                  style={{ width: `${w}%` }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+        {!messagesLoading && messagesFailed && (
+          <div className="flex flex-col justify-center h-full">
+            <ErrorState size="compact" onRetry={refetchMessages} />
+          </div>
+        )}
+        {!messagesLoading && !messagesFailed && (!messages || messages.length === 0) && (
           <div className="flex flex-col justify-center h-full">
             <EmptyState size="compact" icon={Send} title="Start the conversation" description={`Say something to @${partner?.username || "them"}. Messages are private.`} />
           </div>

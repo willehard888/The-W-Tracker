@@ -65,7 +65,16 @@ const CoachMemoryScreen = () => {
 
         <div className="home-rise home-rise-2 mt-4">
           {isLoading ? (
-            <p className="text-[12px] text-muted-foreground">Loading…</p>
+            // The last literal "Loading…" in the app. Three hairline rows in the
+            // shape the memories land in, so the list does not jump.
+            <div className="divide-y divide-border/35 border-t border-border/35" aria-hidden>
+              {[3, 2, 4].map((w, i) => (
+                <div key={i} className="py-3 space-y-1.5">
+                  <div className="h-3.5 rounded skeleton-block bg-secondary/30" style={{ width: `${45 + w * 10}%` }} />
+                  <div className="h-3 w-1/3 rounded skeleton-block bg-secondary/30" />
+                </div>
+              ))}
+            </div>
           ) : memories.length === 0 ? (
             <EmptyState
               icon={Brain}

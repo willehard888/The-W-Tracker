@@ -16,6 +16,8 @@ import {
   fetchTribeCollectiveStreaks,
 } from "@/lib/tribe-streak";
 import { cn } from "@/lib/utils";
+import { captureException } from "@/lib/observability";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface Row {
   tribe_id: string;
@@ -36,8 +38,6 @@ const PODIUM: Record<number, string> = {
   3: "text-[hsl(28_58%_52%)]",
 };
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
-
 const TribeLeaderboard = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
@@ -46,14 +46,25 @@ const TribeLeaderboard = () => {
   const [myTribeIds, setMyTribeIds] = useState<Set<string>>(new Set());
   const [streaksMap, setStreaksMap] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
+  // A failed RPC used to leave `rows` empty and `loading` false, which rendered
+  // "No tribes yet — be the first founder." A network blip told the user the
+  // product was empty. The error is kept so the two can be told apart.
+  const [failed, setFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      setFailed(false);
       const { data, error } = await supabase.rpc("get_tribe_leaderboard", {
         p_period: period,
         p_limit: 50,
       });
+      if (error) {
+        captureException(error, { where: "tribeLeaderboard.load", period });
+        setRows([]);
+        setFailed(true);
+      }
       if (!error && data) {
         const normalized = data.map((r) => ({
           ...r,
@@ -78,7 +89,7 @@ const TribeLeaderboard = () => {
       setLoading(false);
     };
     if (profile?.user_id) load();
-  }, [period, profile?.user_id]);
+  }, [period, profile?.user_id, reloadKey]);
 
   const myBest = useMemo(
     () => rows.find((r) => myTribeIds.has(r.tribe_id)) ?? null,
@@ -135,11 +146,23 @@ const TribeLeaderboard = () => {
 
       <div className="home-rise home-rise-2">
       {loading ? (
+        // The silhouette, not six grey bars: rank + avatar + two lines + score,
+        // so the page does not shift when the rows land.
         <div className="divide-y divide-border/35 border-t border-border/35">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="py-3"><div className="h-9 rounded-lg skeleton-block bg-secondary/30" /></div>
+            <div key={i} className="py-3 flex items-center gap-3">
+              <div className="h-4 w-4 rounded skeleton-block bg-secondary/30 shrink-0" />
+              <div className="h-9 w-9 rounded-full skeleton-block bg-secondary/30 shrink-0" />
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="h-3.5 w-2/5 rounded skeleton-block bg-secondary/30" />
+                <div className="h-3 w-1/4 rounded skeleton-block bg-secondary/30" />
+              </div>
+              <div className="h-4 w-12 rounded skeleton-block bg-secondary/30 shrink-0" />
+            </div>
           ))}
         </div>
+      ) : failed ? (
+        <ErrorState onRetry={() => setReloadKey((k) => k + 1)} />
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Users}
@@ -203,7 +226,7 @@ const TribeLeaderboard = () => {
               onClick={() => navigate(`/tribes/${myBest.tribe_id}`)}
               className="w-full min-h-11 rounded-xl px-3 py-2.5 border border-gold/40 bg-[hsl(var(--background)/0.96)] shadow-[var(--shadow-3)] flex items-center gap-3"
             >
-              <span className={cn(LABEL, "shrink-0")}>Your tribe</span>
+              <span className={"text-[11px] font-bold text-muted-foreground/75 shrink-0"}>Your tribe</span>
               <span className="font-bold text-sm truncate flex-1 text-left tabular-nums">
                 #{myBest.rank} · {myBest.name}
               </span>

@@ -1,5 +1,6 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { fmtInt, fmtRelative } from "@/lib/format";
+import { fmtDate, fmtInt, fmtRelative } from "@/lib/format";
+import { localDateKey } from "@/lib/date";
 import { Flame, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils, Compass } from "lucide-react";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsList";
 import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
@@ -46,6 +47,20 @@ import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/seg
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps (e.g., logout button, share, badges). Will
 // re-add once the touch-area is properly isolated.
+
+/**
+ * Which night a snapshot is from, in the fewest words that stay true.
+ * `coach-insights` runs nightly, so the newest scored snapshot is normally
+ * yesterday's — but a gap (no data to score, a failed run) makes it older, and
+ * the label has to say so rather than claim a freshness it does not have.
+ */
+const snapshotWhen = (snapshotDate: string): string => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (snapshotDate === localDateKey(yesterday)) return "last night";
+  if (snapshotDate === localDateKey()) return "today";
+  return fmtDate(`${snapshotDate}T00:00:00`);
+};
 
 const Profile = () => {
   const { profile, signOut, isElite, isApexSubscriber } = useAuth();
@@ -516,6 +531,14 @@ const Profile = () => {
               <div className="shrink-0">
                 <p className="font-display font-black text-3xl leading-none text-gold glow-gold-text tabular-nums">{latest.overall}</p>
                 <p className="text-[11px] font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
+                {/*
+                  Home prints the LIVE index; this one is the nightly snapshot,
+                  on purpose (the live hook is 11 queries). Unlabelled, the two
+                  screens printed 64 and 66 minutes apart and read as a bug.
+                  Say which day this number is and the difference becomes
+                  information instead of a contradiction.
+                */}
+                <p className="text-[11px] text-muted-foreground/75 mt-0.5">{snapshotWhen(latest.snapshotDate)}</p>
               </div>
               <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
                 <polyline

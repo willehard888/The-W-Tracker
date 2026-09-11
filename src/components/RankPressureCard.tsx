@@ -132,9 +132,15 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
                   <Trophy size={11} className={cn("shrink-0", config.textClass)} />
                   {/* Sentence case, not a second tracked micro-label: the
                       profile screen already spends its one eyebrow on
-                      "Member since". */}
+                      "Member since".
+
+                      The board is named because the app has two. This one is
+                      `get_user_rank` — rank score, the ladder that decides your
+                      tier — while /ranks opens on this month's XP. Same user,
+                      #3 of 6 here and #5 of 5 there; unlabelled that reads as a
+                      broken app rather than as two different questions. */}
                   <p className="font-display font-black text-sm">
-                    Your position
+                    Your tier ranking
                   </p>
                 </div>
                 {hasRank ? (

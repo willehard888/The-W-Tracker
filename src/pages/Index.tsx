@@ -233,10 +233,16 @@ const Index = () => {
   const now = new Date();
   const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
   const monthDay = fmtDate(now);
+  // Three states, not two. `streak > 0` alone told a user with three check-ins
+  // and a lapsed streak that their FIRST W was one tap away — the screen they
+  // open every day, calling them a beginner. `longest_streak` is what answers
+  // "have you ever", and it only ever climbs (GREATEST on every check-in).
   const ritualLine = !canCheckin
     ? "Today is locked in."
     : profile.streak > 0
     ? "Keep the chain alive."
+    : (profile.longest_streak ?? 0) > 0
+    ? "The chain broke. Start it again."
     : "Your first W is one tap away.";
 
   // Standing readout — rank is shown only when EARNED and sane (an unranked
@@ -346,7 +352,11 @@ const Index = () => {
                 <span className="font-display font-black text-[17px] tabular-nums leading-none">
                   #<AnimatedNumber value={rankData!.rank} duration={700} />
                 </span>
-                <span className="text-[11px] text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)}</span>
+                {/* "by score" because the app has two boards: this is
+                    `get_user_rank` (rank score, the ladder that decides your
+                    tier) and the Ranks tab opens on this month's XP. The same
+                    account read "#3 of 6" here and "#5 of 5" one tap away. */}
+                <span className="text-[11px] text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)} by score</span>
               </span>
             )}
             <span className="inline-flex items-baseline gap-1">

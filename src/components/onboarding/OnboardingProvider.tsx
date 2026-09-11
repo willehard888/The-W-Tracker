@@ -26,6 +26,7 @@ const seenThisLaunch = new Set<string>();
 import type { OnboardingEventId, OnboardingState } from "@/lib/onboarding/types";
 import { OnboardingContext, type OnboardingApi } from "./onboarding-context";
 import OnboardingHost from "./OnboardingHost";
+import { captureException } from "@/lib/observability";
 
 const mirrorKey = (uid: string) => `w_onboarding_state_${uid}`;
 
@@ -121,10 +122,19 @@ export default function OnboardingProvider({ children }: { children: ReactNode }
     stateRef.current = next;
     setState(next);
     // Fire-and-forget, never awaited into the UI path; server guard makes
-    // duplicates harmless.
+    // duplicates harmless. But fire-and-forget is about the UI, not about us:
+    // the fulfilled arm was `undefined`, and `supabase.rpc` resolves with
+    // `{ error }` rather than rejecting — so a failed mark left local state and
+    // the localStorage mirror saying "done" while the server row never landed,
+    // and the spotlight came back on the next device, forever, silently.
     void supabase
       .rpc(RPC_BY_KIND[kind], { _event_id: id })
-      .then(undefined, () => {});
+      .then(
+        ({ error }) => {
+          if (error) captureException(error, { where: "onboarding.mark", kind, id });
+        },
+        (e) => captureException(e, { where: "onboarding.mark", kind, id }),
+      );
     void track(TRACK_BY_KIND[kind], { event: id });
   }, []);
 

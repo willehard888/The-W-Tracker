@@ -50,6 +50,7 @@ import { roundTo, scale } from "@/lib/nutrition/scale";
 import { defaultSlotForHour, MEAL_SLOTS } from "@/lib/nutrition/slots";
 import { dayState, macroSummary, sumVectors, type DayState } from "@/lib/nutrition/totals";
 import { NUTRIENT_KEYS, type Food, type MealSlot, type NutrientKey, type NutrientVector, type Targets } from "@/lib/nutrition/types";
+import { captureException } from "@/lib/observability";
 
 /**
  * The diary: what you ate today against what you need. One display line
@@ -430,7 +431,19 @@ const NutritionDiary = () => {
     } catch {
       return;
     }
-    toast("Removed", meal && input ? { action: { label: "Undo", onClick: () => void logMeal({ date, slot: meal.meal_slot, items: [input] }).catch(() => {}) } } : undefined);
+    // Undo is the one action whose failure must be spoken: swallowing it left
+    // the food deleted and the user believing they had put it back. Its siblings
+    // (removeItem, duplicateItem) both surface their errors already.
+    toast("Removed", meal && input ? {
+      action: {
+        label: "Undo",
+        onClick: () => void logMeal({ date, slot: meal.meal_slot, items: [input] })
+          .catch((e) => {
+            captureException(e, { where: "diary.undoRemove" });
+            toast.error("Could not put that back — log it again.");
+          }),
+      },
+    } : undefined);
   };
   const duplicateItem = async (item: MealLogItemRow, slot: MealSlot) => {
     const input = rowToInput(item);

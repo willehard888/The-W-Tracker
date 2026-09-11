@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { captureException } from "@/lib/observability";
 
 interface BadgeCheckResult {
   badge: any;
@@ -152,7 +153,15 @@ export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckRes
         p_badge_id: badge.id,
       });
 
-      if (!error && awarded && !firstNewBadge) {
+      // `error` used to be read purely as a gate and then dropped. `supabase.rpc`
+      // resolves with `{ error }` instead of rejecting, so the `try/catch` around
+      // this function at its call sites never fired either — a failing RPC meant
+      // the user silently earned no badges, ever, with nothing logged anywhere.
+      if (error) {
+        captureException(error, { where: "badges.awardIfEarned", badgeId: badge.id });
+        continue;
+      }
+      if (awarded && !firstNewBadge) {
         firstNewBadge = { badge, isNew: true };
       }
     }

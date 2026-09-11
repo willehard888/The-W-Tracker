@@ -4,6 +4,7 @@ import { fmtRelative } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { captureException } from "@/lib/observability";
 import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
@@ -142,7 +143,12 @@ const Chat = () => {
         return; // keep the text in the input so nothing is lost
       }
 
-      // Trigger push notification for receiver (best-effort)
+      // Push for the receiver. Best-effort for the SENDER — the message is
+      // already saved, so nothing is retried and nothing is shown — but not
+      // best-effort for us: `functions.invoke` RESOLVES with `{ error }` on a
+      // non-2xx, it does not throw, so the catch below could never fire and the
+      // error was never read. A DM nobody is ever told about looked identical to
+      // a delivered one.
       try {
         const { data: senderProfile } = await supabase
           .from("profiles")
@@ -150,15 +156,17 @@ const Chat = () => {
           .eq("user_id", user.id)
           .single();
 
-        await supabase.functions.invoke("notify-message", {
+        const { error: pushError } = await supabase.functions.invoke("notify-message", {
           body: {
             receiver_id: partnerId,
             sender_username: senderProfile?.username || "Someone",
             message_preview: messageContent,
           },
         });
-      } catch {
-        /* push is non-critical — the message itself is already saved */
+        if (pushError) captureException(pushError, { where: "chat.notifyMessage" });
+      } catch (e) {
+        // Only a transport throw reaches here.
+        captureException(e, { where: "chat.notifyMessage" });
       }
 
       setText("");

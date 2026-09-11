@@ -16,6 +16,7 @@ import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 import { shareImage } from "@/lib/share-image";
 import BriefingShareCard from "@/components/BriefingShareCard";
+import { captureException } from "@/lib/observability";
 
 /**
  * /briefing/:id — a letter from the coach. The briefing's own headline opens
@@ -96,10 +97,13 @@ const WeeklyBriefing = () => {
       setStatus("ready");
 
       if (!data.viewed_at) {
-        await supabase
+        // Unchecked, a failure here left the briefing permanently "unread" and
+        // re-nagging from the notification list with nothing to explain it.
+        const { error: seenError } = await supabase
           .from("weekly_briefings")
           .update({ viewed_at: new Date().toISOString() })
           .eq("id", id);
+        if (seenError) captureException(seenError, { where: "briefing.markViewed" });
       }
     })();
     return () => {

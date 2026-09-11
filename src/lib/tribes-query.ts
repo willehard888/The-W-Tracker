@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { captureException } from "@/lib/observability";
 
 /**
  * The Squad → Tribes tab data set, extracted from Tribes.tsx so the
@@ -135,6 +136,10 @@ export const fetchTribesPage = async (
           if (m.status === "pending") pendingIds.add(m.tribe_id);
           if (m.role === "owner") ownedIds.add(m.tribe_id);
         });
+        // A failed pulse must not fail the list — the rows still open without
+        // it — but unreported it rendered "0 checked in today" as if that were
+        // the answer rather than the absence of one.
+        if (pulseRes.error) captureException(pulseRes.error, { where: "tribes.todayPulse" });
         (pulseRes.data ?? []).forEach((r) => {
           pulse.set(r.tribe_id, { checked: r.checked, total: r.total });
         });

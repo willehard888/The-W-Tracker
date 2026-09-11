@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { captureException } from "@/lib/observability";
 
 export interface DailyPulse {
   rankDelta: number; // positive = moved up (rank number went down)
@@ -85,8 +86,10 @@ export const useDailyPulse = (
 
       // Refresh snapshot once per day
       if (snapKey !== todayKey && wroteForRef.current !== todayKey) {
-        wroteForRef.current = todayKey;
-        await supabase
+        // The day is claimed AFTER the write lands, not before. Claiming it
+        // first meant one failed write froze Home's rank delta on yesterday's
+        // numbers for the rest of the day with no retry and no signal.
+        const { error } = await supabase
           .from("profiles")
           .update({
             last_rank_snapshot: {
@@ -96,9 +99,14 @@ export const useDailyPulse = (
             },
           })
           .eq("user_id", userId);
+        if (error) {
+          captureException(error, { where: "pulse.snapshot" });
+          return;
+        }
+        wroteForRef.current = todayKey;
       }
     };
-    void run().catch(() => { /* snapshot is best-effort */ });
+    void run().catch((e) => captureException(e, { where: "pulse.run" }));
     return () => {
       cancelled = true;
     };

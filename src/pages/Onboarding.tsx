@@ -30,6 +30,7 @@ import {
 import { SPORTS } from "@/lib/sports";
 import { readLocal, writeLocal, removeLocal } from "@/lib/storage";
 import type { GoalId } from "@/hooks/use-athlete-profile";
+import { captureException } from "@/lib/observability";
 
 /**
  * "Initiation" — the new-user onboarding.
@@ -117,12 +118,16 @@ const Onboarding = () => {
     mergeIntoCoachDraft(answers);
     const patch = athletePatchFromAnswers(answers);
     if (Object.keys(patch).length > 0) {
+      // console.warn is invisible in prod, and these two are not cosmetic: a
+      // dropped patch loses the goal/equipment answers the Coach was going to
+      // open pre-filled with, and a failed `mark_onboarded` can re-run the whole
+      // flow on the next install.
       void supabase.rpc("upsert_athlete_profile", { _patch: patch as Json }).then(
-        ({ error }) => { if (error) console.warn("onboarding athlete patch failed", error.message); },
+        ({ error }) => { if (error) captureException(error, { where: "onboarding.athletePatch" }); },
       );
     }
     void supabase.rpc("mark_onboarded").then(
-      ({ error }) => { if (error) console.warn("mark_onboarded failed", error.message); },
+      ({ error }) => { if (error) captureException(error, { where: "onboarding.markOnboarded" }); },
     );
     // The flow is over (finished or skipped) — the resume draft has done its
     // job and must not survive into the next run on this device.

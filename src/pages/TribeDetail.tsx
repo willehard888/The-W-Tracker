@@ -47,6 +47,7 @@ import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
 import { backOr } from "@/lib/nav";
 import { collectivePalette, collectiveStreakTier, collectiveTierName, tierName, withAlpha } from "@/lib/tribe-streak";
+import { captureException } from "@/lib/observability";
 
 interface Member {
   user_id: string;
@@ -274,17 +275,26 @@ const TribeDetail = () => {
 
       // Weekly challenge — ensure this week's exists (idempotent), then read it.
       let challenge: { week_start: string; target: number; progress: number; status: string } | null = null;
+      // The challenge is optional furniture — a tribe without one still opens,
+      // so nothing here is allowed to fail the page. But it used to fail
+      // INVISIBLY twice over: `supabase.rpc` resolves with `{ error }` rather
+      // than rejecting, so the catch could never see a failed ensure, and the
+      // read below dropped its error too. Both are reported now; the page still
+      // renders without the card.
       try {
-        await supabase.rpc("ensure_tribe_challenge", { p_tribe_id: id! });
-        const { data: ch } = await supabase
+        const { error: ensureError } = await supabase.rpc("ensure_tribe_challenge", { p_tribe_id: id! });
+        if (ensureError) captureException(ensureError, { where: "tribe.ensureChallenge", tribeId: id });
+        const { data: ch, error: readError } = await supabase
           .from("tribe_challenges")
           .select("week_start, target, progress, status")
           .eq("tribe_id", id!)
           .order("week_start", { ascending: false })
           .limit(1)
           .maybeSingle();
+        if (readError) captureException(readError, { where: "tribe.readChallenge", tribeId: id });
         challenge = ch ?? null;
-      } catch {
+      } catch (e) {
+        captureException(e, { where: "tribe.challenge", tribeId: id });
         challenge = null;
       }
 

@@ -99,7 +99,10 @@ const HabitToggle = ({
           </span>
         )}
       </div>
-      <p className="text-[12px] text-muted-foreground leading-snug line-clamp-1 mt-0.5">
+      {/* Two lines: the notes are full sentences ("Anchors your circadian
+          rhythm within 30 minutes of waking") and a one-line clamp cut four of
+          them mid-word. Only rows whose note needs it grow. */}
+      <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2 mt-0.5">
         {active ? `+${fmtUnit(habit.xp, "XP")}` : (habit.note || `+${fmtUnit(habit.xp, "XP")}`)}
       </p>
     </div>
@@ -119,6 +122,18 @@ const HabitToggle = ({
 // The habits that render as their own widget (sliders + sport picker), not
 // as grouped rows. Module scope: a Set built inside the component was a new
 // identity every render and defeated the memo below it.
+/**
+ * How much of a range track is filled, as a percentage.
+ *
+ * WebKit exposes no pseudo-element for the filled portion of a range track, so
+ * `.range-gold` paints it with a background gradient sized by `--range-fill`.
+ * (The thumb's centre travels between half-a-thumb and width-minus-half, so a
+ * raw percentage is a hair off at both ends — correcting it needs the element's
+ * measured width, which is not worth a ResizeObserver for a 22px thumb.)
+ */
+const rangeFill = (value: number, min: number, max: number): number =>
+  Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+
 const CUSTOM = new Set(["sleep", "workout", "hydration"]);
 
 const DailyCheckin = () => {
@@ -938,7 +953,7 @@ const DailyCheckin = () => {
                 <span className="block text-[11px] font-semibold text-muted-foreground mt-1">{sleepWord}</span>
               </span>
             </div>
-            <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
+            <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="range-gold w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x", ["--range-fill" as string]: `${rangeFill(sleep, 4, 12)}%` }} />
             {sleepPenaltyLabel && <p className="text-[11px] text-destructive mt-1 font-semibold">{sleepPenaltyLabel}</p>}
             {isChronicOversleep && sleep >= 10 && (
               <p className="text-[11px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
@@ -1136,7 +1151,7 @@ const DailyCheckin = () => {
                 <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
                 <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
               </div>
-              <input type="range" aria-label="Litres of water" aria-valuetext={`${hydration} litres`} min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x" }} />
+              <input type="range" aria-label="Litres of water" aria-valuetext={`${hydration} litres`} min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="range-gold w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x", ["--range-fill" as string]: `${rangeFill(hydration, 0, 5)}%` }} />
             </div>
           </div>
         )}

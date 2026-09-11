@@ -68,7 +68,10 @@ export const CHECKIN_HABITS: CheckinHabit[] = [
   // ── Nutrition ─────────────────────────────────────────────────────────────
   { key: "healthy_food", label: "Whole-food meals", emoji: "🥗", pillar: "nutrition", xp: 20, column: "healthy_food" },
   { key: "protein", label: "Protein target", emoji: "🥩", pillar: "nutrition", xp: 15, column: "protein_intake", verify: "nutrition", note: "Auto-confirmed when your food diary hits ≥90 % of your protein target." },
-  { key: "no_alcohol", label: "No alcohol", emoji: "🚫🍺", pillar: "nutrition", xp: 20, note: "Wrecks deep sleep + recovery — Health confirms it in your heart rate." },
+  // One glyph: the emoji renders in a fixed h-11 w-11 / 22px tile, and "🚫🍺"
+  // put 44px of glyph in it — the 🚫 spilled outside the tile on device. The
+  // label already carries the "no".
+  { key: "no_alcohol", label: "No alcohol", emoji: "🍺", pillar: "nutrition", xp: 20, note: "Wrecks deep sleep + recovery — Health confirms it in your heart rate." },
   { key: "no_sugar", label: "No added sugar", emoji: "🍭", pillar: "nutrition", xp: 15 },
   { key: "caffeine_cutoff", label: "Caffeine before 2pm", emoji: "☕", pillar: "nutrition", xp: 10, note: "Protects tonight's deep sleep." },
   { key: "creatine", label: "Creatine", emoji: "💊", pillar: "nutrition", xp: 5 },

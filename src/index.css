@@ -682,6 +682,79 @@
       inset 0 -1px 0 hsl(0 0% 100% / 0.025);
   }
 
+  /*
+   * Branded range slider — the check-in's sleep and hydration controls.
+   *
+   * They shipped as bare `<input type="range" class="accent-gold">`. On iOS
+   * WebKit `accent-color` paints ONLY the filled part of the track: the rest of
+   * the track and the whole thumb stay the UA's white, which made them the only
+   * pure-white surfaces in a dark plum/gold product — on the app's core ritual.
+   *
+   * The fill is painted by a background gradient the element sizes itself with
+   * `--range-fill` (set inline from the value), because WebKit gives no
+   * pseudo-element for the filled portion. `accent-color` stays as the fallback
+   * for anything that ignores these pseudo-elements.
+   */
+  .range-gold {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+  }
+
+  .range-gold::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--border) / 0.7);
+    background:
+      linear-gradient(hsl(var(--gold)), hsl(var(--gold))) 0 / var(--range-fill, 0%) 100% no-repeat,
+      linear-gradient(180deg, hsl(258 18% 4%) 0%, hsl(258 16% 5.5%) 100%);
+    box-shadow: inset 0 1px 2px hsl(0 0% 0% / 0.45);
+  }
+
+  .range-gold::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 22px;
+    width: 22px;
+    /* Centre the 22px thumb on the 6px track: (6 - 22) / 2, plus the border. */
+    margin-top: -9px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, hsl(var(--gold-light)) 0%, hsl(var(--gold)) 100%);
+    border: 1px solid hsl(var(--gold-dark));
+    box-shadow:
+      0 1px 3px hsl(0 0% 0% / 0.5),
+      0 0 10px -2px hsl(var(--gold) / 0.55);
+  }
+
+  .range-gold:active::-webkit-slider-thumb {
+    box-shadow:
+      0 1px 3px hsl(0 0% 0% / 0.5),
+      0 0 16px -2px hsl(var(--gold) / 0.8);
+  }
+
+  /* Firefox twins so the dev-server preview matches the device. */
+  .range-gold::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--border) / 0.7);
+    background: linear-gradient(180deg, hsl(258 18% 4%) 0%, hsl(258 16% 5.5%) 100%);
+  }
+
+  .range-gold::-moz-range-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: hsl(var(--gold));
+  }
+
+  .range-gold::-moz-range-thumb {
+    height: 22px;
+    width: 22px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, hsl(var(--gold-light)) 0%, hsl(var(--gold)) 100%);
+    border: 1px solid hsl(var(--gold-dark));
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.5);
+  }
+
   .badge-shine {
     background: linear-gradient(
       135deg,

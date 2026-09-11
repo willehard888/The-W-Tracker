@@ -64,7 +64,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               <p className="text-[11px] font-bold text-muted-foreground">Ahead of you</p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
-              <ArrowUp size={12} className="text-xp-green" />
+              <ArrowUp aria-hidden size={12} className="text-xp-green" />
               {data.above.delta.toFixed(1)} pts
             </div>
           </button>
@@ -103,7 +103,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               >
                 {heatBelow ? (
                   <>
-                    <Flame size={12} /> Catching up
+                    <Flame aria-hidden size={12} /> Catching up
                   </>
                 ) : (
                   "Behind you"
@@ -111,7 +111,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               </p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
-              <ArrowDown size={12} className={heatBelow ? "text-destructive" : "text-muted-foreground"} />
+              <ArrowDown aria-hidden size={12} className={heatBelow ? "text-destructive" : "text-muted-foreground"} />
               {data.below.delta.toFixed(1)} pts
             </div>
           </button>

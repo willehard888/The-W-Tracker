@@ -95,7 +95,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-gold/15 flex items-center justify-center">
-            <Target size={16} className="text-gold" />
+            <Target aria-hidden size={16} className="text-gold" />
           </div>
           <div>
             <p className="font-display font-bold text-sm tracking-tight">Daily Quests</p>
@@ -103,7 +103,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
           </div>
         </div>
         <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold/10 border border-gold/20">
-          <Flame size={12} className="text-gold" />
+          <Flame aria-hidden size={12} className="text-gold" />
           <span className="text-[11px] font-bold text-gold">{completedCount}/3</span>
         </div>
       </div>
@@ -132,12 +132,12 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
             {quest.completed ? (
               <div className="flex items-center gap-1">
                 <span className="text-[11px] font-bold text-gold">+{quest.xpReward}</span>
-                <CheckCircle2 size={14} className="text-gold" />
+                <CheckCircle2 aria-hidden size={14} className="text-gold" />
               </div>
             ) : (
               <div className="flex items-center gap-1">
                 <span className="text-[11px] font-bold text-muted-foreground">+{quest.xpReward}</span>
-                <Clock size={14} className="text-muted-foreground/40" />
+                <Clock aria-hidden size={14} className="text-muted-foreground/75" />
               </div>
             )}
           </div>
@@ -146,7 +146,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
 
       {totalBonus > 0 && (
         <div className="mt-3 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-gold/10 border border-gold/20">
-          <Zap size={12} className="text-gold" />
+          <Zap aria-hidden size={12} className="text-gold" />
           <span className="text-xs font-bold text-gold">Quest Bonus: +{totalBonus} XP</span>
         </div>
       )}

@@ -208,7 +208,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             <XpCounter value={summary.xpEarned} className="text-gold font-display text-5xl font-black glow-gold-text" />
           </div>
           <p className="relative text-[12px] text-muted-foreground mt-2">
-            <span className="font-bold text-foreground/80 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/70")}>{perfPct}%</span> output
+            <span className="font-bold text-foreground/80 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/75")}>{perfPct}%</span> output
           </p>
         </motion.div>
 
@@ -277,7 +277,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             )}
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <Flame
+              <Flame aria-hidden
                 size={12}
                 fill="currentColor"
                 className={

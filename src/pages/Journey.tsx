@@ -321,7 +321,7 @@ const ReflectionRow = ({ r, lazy }: { r: JourneyReflection; lazy: boolean }) => 
         {relDate(r.reflection_date)}{mood && ` · ${mood}`}
       </p>
       {!win && !friction ? (
-        <p className="text-[12px] text-muted-foreground/70 mt-0.5">Checked in.</p>
+        <p className="text-[12px] text-muted-foreground/75 mt-0.5">Checked in.</p>
       ) : (
         <div className="mt-1 space-y-1">
           {win && (

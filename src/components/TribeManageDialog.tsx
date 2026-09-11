@@ -262,10 +262,10 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
               <div className="absolute bottom-2 right-2 flex gap-1.5">
                 <Button type="button" variant="secondary" size="sm" className="min-h-11 bg-[hsl(var(--background)/0.9)]" disabled={busy} onClick={() => fileRef.current?.click()}>
-                  <Upload size={12} /> Change
+                  <Upload aria-hidden size={12} /> Change
                 </Button>
                 <Button type="button" variant="secondary" size="icon" className="bg-[hsl(var(--background)/0.9)] text-destructive" disabled={busy} onClick={handleRemoveCover} aria-label="Remove cover">
-                  <Trash2 size={14} />
+                  <Trash2 aria-hidden size={14} />
                 </Button>
               </div>
             </>
@@ -278,7 +278,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
             >
               <ImageIcon size={22} aria-hidden />
               <span className="text-[12px] font-bold">Add cover photo</span>
-              <span className="text-[11px] text-muted-foreground/70">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
+              <span className="text-[11px] text-muted-foreground/75">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
             </button>
           )}
           <input
@@ -395,7 +395,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                   </div>
                   {isAdmin ? (
                     <Button size="sm" variant="ghost" loading={rowBusy} onClick={() => handleRoleChange(m.user_id, "member")}>
-                      <ShieldOff size={12} /> Demote
+                      <ShieldOff aria-hidden size={12} /> Demote
                     </Button>
                   ) : (
                     <Button
@@ -407,11 +407,11 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       onClick={() => handleRoleChange(m.user_id, "admin")}
                       title={promoteDisabled ? "Max 2 admins reached" : "Promote to admin"}
                     >
-                      <Shield size={12} /> Promote
+                      <Shield aria-hidden size={12} /> Promote
                     </Button>
                   )}
                   <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" aria-label={`Remove ${m.username}`} disabled={rowBusy} onClick={() => setConfirmKick(m)}>
-                    <UserMinus size={12} />
+                    <UserMinus aria-hidden size={12} />
                   </Button>
                 </div>
               );

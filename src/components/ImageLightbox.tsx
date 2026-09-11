@@ -134,21 +134,21 @@ const ImageLightbox = ({
           <div className="flex items-center gap-3 text-[12px] font-semibold">
             {showMetric(likes) && (
               <span className="flex items-center gap-1 text-gold">
-                <Heart size={12} fill="currentColor" /> {likes}
+                <Heart aria-hidden size={12} fill="currentColor" /> {likes}
               </span>
             )}
             {showMetric(comments) && (
               <span className="flex items-center gap-1 text-muted-foreground">
-                <MessageCircle size={12} /> {comments}
+                <MessageCircle aria-hidden size={12} /> {comments}
               </span>
             )}
             {showMetric(kudos) && (
               <span className="flex items-center gap-1 text-purple">
-                <Award size={12} fill="currentColor" /> {kudos}
+                <Award aria-hidden size={12} fill="currentColor" /> {kudos}
               </span>
             )}
             {!showMetric(likes) && !showMetric(comments) && !showMetric(kudos) && (
-              <span className="text-[11px] font-bold text-muted-foreground/60">
+              <span className="text-[11px] font-bold text-muted-foreground/75">
                 Be the first to react
               </span>
             )}

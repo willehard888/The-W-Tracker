@@ -32,7 +32,7 @@ const RecipePhoto = ({ id, className, variant = "hero" }: { id: string; classNam
   if (!src || failed) {
     return (
       <div className={cn("flex items-center justify-center bg-secondary/50", className)}>
-        <Utensils size={22} className="text-muted-foreground" />
+        <Utensils aria-hidden size={22} className="text-muted-foreground" />
       </div>
     );
   }
@@ -118,7 +118,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                     </span>
                     <span className="min-w-0 text-foreground/90">
                       {it.item}
-                      {it.note && <span className="text-muted-foreground/70"> ({it.note})</span>}
+                      {it.note && <span className="text-muted-foreground/75"> ({it.note})</span>}
                     </span>
                   </li>
                 ))}
@@ -199,7 +199,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
             question people actually arrive with. */}
         <div className="home-rise home-rise-1 mt-4">
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}

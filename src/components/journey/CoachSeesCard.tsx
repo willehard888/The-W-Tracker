@@ -35,7 +35,7 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
             <p key={p.key} className="text-[12px] text-muted-foreground leading-snug">
               <span className="text-foreground/85 font-semibold">Your pattern:</span>{" "}
               {p.metric} {p.avgA}{p.unit} {p.aLabel} vs {p.avgB}{p.unit} {p.bLabel}
-              <span className="text-muted-foreground/60"> (n={p.nA}/{p.nB})</span>
+              <span className="text-muted-foreground/75"> (n={p.nA}/{p.nB})</span>
             </p>
           ))}
         </div>

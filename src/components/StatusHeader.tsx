@@ -274,7 +274,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
                 >
                   {formatTier(tier, division)}
                 </span>
-                <span className="hidden min-[430px]:inline truncate shrink text-[11px] text-muted-foreground/70 leading-none">
+                <span className="hidden min-[430px]:inline truncate shrink text-[11px] text-muted-foreground/75 leading-none">
                   · {topShareLabel(tier, rankData)}
                 </span>
               </div>

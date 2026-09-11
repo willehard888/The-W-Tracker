@@ -21,7 +21,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
     <div className="absolute inset-0 z-50 bg-background flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="shrink-0 px-2 pt-2 pb-1 flex items-center gap-1 border-b border-border/30">
         <Button variant="ghost" size="icon" aria-label="Back" onClick={() => { hapticImpact("light"); onClose(); }}>
-          <ChevronLeft size={18} />
+          <ChevronLeft aria-hidden size={18} />
         </Button>
         <p className="font-display text-[15px] font-black tracking-tight">Coach Playbook</p>
       </div>

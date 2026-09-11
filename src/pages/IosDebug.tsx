@@ -49,10 +49,10 @@ const IosDebug = () => {
             variant="outline"
             onClick={() => setState(getIosDebugState())}
           >
-            <RefreshCw size={14} /> Refresh
+            <RefreshCw aria-hidden size={14} /> Refresh
           </Button>
           <Button type="button" size="sm" variant="outline" onClick={clearIosDebug}>
-            <Trash2 size={14} /> Clear
+            <Trash2 aria-hidden size={14} /> Clear
           </Button>
         </div>
       </div>

@@ -68,7 +68,7 @@ const PlanRow = ({
         )}
         aria-hidden
       >
-        {selected && <Check size={12} strokeWidth={3} />}
+        {selected && <Check aria-hidden size={12} strokeWidth={3} />}
       </span>
       <span className="flex-1 min-w-0">
         <span className="block text-[14px] font-semibold leading-tight">{label}</span>
@@ -167,7 +167,7 @@ const PremiumHero = ({
           disabled={busy}
           onClick={() => onCta(plan)}
         >
-          {busy && <Loader2 size={20} className="animate-spin" />}
+          {busy && <Loader2 aria-hidden size={20} className="animate-spin" />}
           {ctaLabel}
         </Button>
         <p className="mt-2.5 text-center text-[11px] text-muted-foreground">{footnote}</p>

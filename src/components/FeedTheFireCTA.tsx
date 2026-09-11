@@ -56,7 +56,7 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
           borderColor: c.replace(")", " / 0.4)"),
         }}
       >
-        <Flame size={18} style={{ color: c }} strokeWidth={2.4} />
+        <Flame aria-hidden size={18} style={{ color: c }} strokeWidth={2.4} />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -68,7 +68,7 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
         </p>
       </div>
 
-      <ChevronRight size={16} className="shrink-0" style={{ color: c }} strokeWidth={2.6} />
+      <ChevronRight aria-hidden size={16} className="shrink-0" style={{ color: c }} strokeWidth={2.6} />
     </button>
   );
 };

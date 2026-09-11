@@ -40,7 +40,7 @@ const WeekStrip = ({ program, currentWeek, todayDayIndex, logs, onSelect }: Prop
           <>
             <p className={cn(
               "text-[11px] font-bold leading-none",
-              isToday ? "text-foreground" : "text-muted-foreground/70",
+              isToday ? "text-foreground" : "text-muted-foreground/75",
             )}>
               {SHORT[i]}
             </p>

@@ -25,7 +25,7 @@ const accent = (m: number) =>
 const WeeklySleepCard = ({ data }: { data: WeeklySleepData }) => (
   <div className="rounded-2xl border border-border/60 bg-card p-5">
     <div className="flex items-center gap-2 mb-3">
-      <Moon size={20} className={accent(data.multiplier)} />
+      <Moon aria-hidden size={20} className={accent(data.multiplier)} />
       <h2 className="font-display font-black text-lg tracking-tight">Weekly Sleep</h2>
       <span className="ml-auto text-base font-bold tabular-nums">
         {data.avg}h avg ({data.days} days)

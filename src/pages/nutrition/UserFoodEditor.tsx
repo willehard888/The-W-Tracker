@@ -197,7 +197,7 @@ const UserFoodEditor = () => {
         action={
           id ? (
             <Button variant="ghost" size="icon" aria-label="Delete food" className="text-muted-foreground" onClick={() => setConfirmDelete(true)}>
-              <Trash2 size={18} />
+              <Trash2 aria-hidden size={18} />
             </Button>
           ) : undefined
         }
@@ -228,7 +228,7 @@ const UserFoodEditor = () => {
                 if (errors.name) setErrors((er) => ({ ...er, name: undefined }));
               }}
               className={cn(
-                "w-full bg-transparent border-b border-border/60 py-2 font-display text-[24px] font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/40",
+                "w-full bg-transparent border-b border-border/60 py-2 font-display text-[24px] font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
                 errors.name && "border-destructive/60",
               )}
             />
@@ -313,9 +313,9 @@ const UserFoodEditor = () => {
                         hapticSelection();
                         updateServing(s.key, { is_default: !s.is_default });
                       }}
-                      className={cn("press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-transform", s.is_default ? "text-gold" : "text-muted-foreground/50")}
+                      className={cn("press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-transform", s.is_default ? "text-gold" : "text-muted-foreground/75")}
                     >
-                      <Star size={16} fill={s.is_default ? "currentColor" : "none"} />
+                      <Star aria-hidden size={16} fill={s.is_default ? "currentColor" : "none"} />
                     </button>
                     <button
                       type="button"

@@ -70,7 +70,7 @@ const FoodSearchPanel = ({
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <input
           ref={inputRef}
           type="search"
@@ -90,7 +90,7 @@ const FoodSearchPanel = ({
           )}
           {barcodeSupported && onScanBarcode && (
             <button type="button" onClick={onScanBarcode} aria-label="Scan a barcode" className="h-11 w-11 flex items-center justify-center text-gold transition-transform">
-              <ScanBarcode size={18} />
+              <ScanBarcode aria-hidden size={18} />
             </button>
           )}
         </div>
@@ -140,7 +140,7 @@ const FoodSearchPanel = ({
         <section aria-label="Search results" aria-busy={loading}>
           <div className="flex items-center gap-2 mt-1 mb-1">
             <span className="h-px flex-1 bg-border/50" aria-hidden />
-            <span className="text-[10px] font-bold text-muted-foreground/70">
+            <span className="text-[10px] font-bold text-muted-foreground/75">
               {loading ? "Searching" : `${serverOnly.length} result${serverOnly.length === 1 ? "" : "s"}`}
             </span>
             {loading && <Loader2 size={12} className="animate-spin text-muted-foreground" aria-hidden />}

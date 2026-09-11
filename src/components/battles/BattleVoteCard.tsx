@@ -36,7 +36,7 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
           {src ? (
             <img loading="lazy" decoding="async" src={src} alt={`@${name ?? "?"}'s proof`} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><Image size={22} aria-hidden /></div>
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground/75"><Image size={22} aria-hidden /></div>
           )}
         </div>
         <p className="mt-2 text-[13px] font-bold truncate">@{name || "?"}</p>

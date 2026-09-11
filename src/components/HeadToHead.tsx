@@ -42,7 +42,7 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
         <p className={cn("flex-1 min-w-0 font-display font-black text-[15px] truncate", lead === "me" ? "text-gold" : "text-foreground/85")}>
           @{me.username}
         </p>
-        <span className="font-display font-black text-[11px] text-muted-foreground/70 shrink-0">VS</span>
+        <span className="font-display font-black text-[11px] text-muted-foreground/75 shrink-0">VS</span>
         <p className={cn("flex-1 min-w-0 font-display font-black text-[15px] truncate text-right", lead === "them" ? "text-gold" : "text-foreground/85")}>
           @{them.username}
         </p>
@@ -55,11 +55,11 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
           const d = deltas[i];
           return (
             <div key={r.key} className="py-2.5 flex items-center gap-3">
-              <span className={cn("flex-1 text-right font-display font-black text-[15px] tabular-nums tracking-tight", d > 0 ? "text-gold" : d < 0 ? "text-muted-foreground/60" : "text-foreground/80")}>
+              <span className={cn("flex-1 text-right font-display font-black text-[15px] tabular-nums tracking-tight", d > 0 ? "text-gold" : d < 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
                 {r.format(me[r.key])}
               </span>
               <span className="w-[5.5rem] shrink-0 text-center text-[11px] font-bold text-muted-foreground">{r.label}</span>
-              <span className={cn("flex-1 text-left font-display font-black text-[15px] tabular-nums tracking-tight", d < 0 ? "text-gold" : d > 0 ? "text-muted-foreground/60" : "text-foreground/80")}>
+              <span className={cn("flex-1 text-left font-display font-black text-[15px] tabular-nums tracking-tight", d < 0 ? "text-gold" : d > 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
                 {r.format(them[r.key])}
               </span>
             </div>

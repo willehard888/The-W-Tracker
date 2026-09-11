@@ -366,7 +366,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
               <h2 className="font-display font-black text-[22px] leading-[1.05] tracking-tight truncate">{t.name}</h2>
-              {t.visibility === "private" && <Lock size={13} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
+              {t.visibility === "private" && <Lock size={13} className="text-muted-foreground/75 shrink-0" aria-label="Private" />}
               {ownedIds.has(t.id) && <Crown size={12} className="text-gold shrink-0" aria-label="Owner" />}
             </div>
             {t.description && (
@@ -491,7 +491,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="font-bold text-[15px] truncate leading-tight">{t.name}</p>
-                {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/70 shrink-0" aria-label="Private" />}
+                {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/75 shrink-0" aria-label="Private" />}
                 {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
                 {isNew && (
                   <span className="text-[10px] font-bold shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
@@ -581,7 +581,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     variant="ember"
                     onClick={() => handleInviteResponse(inv, true)}
                     disabled={respondingId === inv.id}
-                    className="flex-1 h-8"
+                    className="flex-1 h-8 before:absolute before:-inset-2 before:content-['']"
                   >
                     <Check aria-hidden size={12} /> Accept
                   </Button>
@@ -590,7 +590,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     variant="outline"
                     onClick={() => handleInviteResponse(inv, false)}
                     disabled={respondingId === inv.id}
-                    className="flex-1 h-8"
+                    className="flex-1 h-8 before:absolute before:-inset-2 before:content-['']"
                   >
                     <X aria-hidden size={12} /> Decline
                   </Button>

@@ -171,13 +171,13 @@ const TierPromotionCelebration = () => {
                     hapticImpact("light");
                   }}
                 >
-                  <Share2 size={16} />
+                  <Share2 aria-hidden size={16} />
                   Share to Stories
-                  <Sparkles size={14} className="opacity-70" />
+                  <Sparkles aria-hidden size={14} className="opacity-70" />
                 </Button>
                 <button
                   onClick={() => setShowCelebration(false)}
-                  className="text-[11px] font-bold text-muted-foreground/60 hover:text-foreground transition-colors py-2 w-full"
+                  className="text-[11px] font-bold text-muted-foreground/75 hover:text-foreground transition-colors py-2 w-full"
                 >
                   Continue
                 </button>

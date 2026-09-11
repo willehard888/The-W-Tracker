@@ -118,7 +118,7 @@ const TribeNew = () => {
             <TribeFireLite tier={3} palette={tierPalette(3)} variant="standard" size={75} className="mb-1" />
             <p className={cn(
               "font-display text-xl font-black tracking-tight leading-tight",
-              name.trim() ? "text-foreground" : "text-muted-foreground/50",
+              name.trim() ? "text-foreground" : "text-muted-foreground/75",
             )}>
               {name.trim() || "Your tribe"}
             </p>
@@ -150,10 +150,10 @@ const TribeNew = () => {
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               {nameStatus === "checking" && (
-                <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                <Loader2 aria-hidden size={14} className="animate-spin text-muted-foreground" />
               )}
               {nameStatus === "available" && (
-                <Check size={14} className="text-xp-green" />
+                <Check aria-hidden size={14} className="text-xp-green" />
               )}
               {nameStatus === "taken" && (
                 <X size={14} className="text-destructive" />
@@ -179,7 +179,7 @@ const TribeNew = () => {
           <div className="space-y-3">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[11px] text-muted-foreground/70 mb-1.5">{group.label}</p>
+                <p className="text-[11px] text-muted-foreground/75 mb-1.5">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <Button
@@ -261,7 +261,7 @@ const TribeNew = () => {
           className="w-full"
           size="lg"
         >
-          <Users size={16} />
+          <Users aria-hidden size={16} />
           Create tribe
         </Button>
       </div>

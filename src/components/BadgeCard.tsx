@@ -178,7 +178,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
         {!earned && (
           <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-background/30">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background/80 border border-border">
-              <Lock size={12} className="text-muted-foreground" />
+              <Lock aria-hidden size={12} className="text-muted-foreground" />
             </div>
           </div>
         )}

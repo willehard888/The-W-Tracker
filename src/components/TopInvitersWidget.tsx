@@ -36,7 +36,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
     <section className={cn("rounded-xl border border-border bg-card p-4", className)}>
       <header className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
-          <Trophy size={16} className="text-gold shrink-0" />
+          <Trophy aria-hidden size={16} className="text-gold shrink-0" />
           <h2 className="font-display font-bold text-sm tracking-tight truncate">Top Inviters This Month</h2>
         </div>
         <span className="text-[11px] font-bold shrink-0 whitespace-nowrap text-muted-foreground">
@@ -62,7 +62,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
       {!isLoading && (!inviters || inviters.length === 0) && (
         <div className="py-6 text-center">
           <div className="h-10 w-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-2">
-            <Rocket size={18} className="text-gold" />
+            <Rocket aria-hidden size={18} className="text-gold" />
           </div>
           <p className="text-sm font-semibold mb-1">Be the first inviter this month 🚀</p>
           <p className="text-xs text-muted-foreground mb-3">

@@ -168,7 +168,7 @@ const SetRow = ({
             </Button>
           </>
         ) : (
-          <span className="text-[15px] font-bold text-muted-foreground/50">—</span>
+          <span className="text-[15px] font-bold text-muted-foreground/75">—</span>
         )}
       </div>
     );
@@ -213,7 +213,7 @@ const SetRow = ({
           disabled={saving}
           onClick={async () => { await onLog(w, r); setEditing(false); }}
         >
-          {saving ? <Loader2 size={13} className="animate-spin" /> : done ? "Save" : "Log"}
+          {saving ? <Loader2 aria-hidden size={13} className="animate-spin" /> : done ? "Save" : "Log"}
         </Button>
       </div>
     </div>
@@ -447,7 +447,7 @@ const CoachSession = () => {
                 navigate("/checkin");
               }}
             >
-              {isFinishing ? <Loader2 size={16} className="animate-spin" /> : "Finish and check in"}
+              {isFinishing ? <Loader2 aria-hidden size={16} className="animate-spin" /> : "Finish and check in"}
             </Button>
             <Button
               variant="ghost"

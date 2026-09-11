@@ -67,7 +67,7 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
           "Verified Performer" badge.
         </p>
         <Button variant="secondary" loading={syncing} onClick={handleConnect} className="w-full mt-3">
-          <Heart size={14} /> Connect Apple Health
+          <Heart aria-hidden size={14} /> Connect Apple Health
         </Button>
       </div>
     );
@@ -87,7 +87,7 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
         </p>
       </div>
       <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-[12px]" loading={syncing} onClick={() => { void syncToday(); }}>
-        <Check size={11} /> Sync
+        <Check aria-hidden size={11} /> Sync
       </Button>
     </div>
   );

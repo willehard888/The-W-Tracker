@@ -267,7 +267,7 @@ const TribeHero = ({
                 reactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/50",
               )}
             />
-            <span className="text-[10px] font-bold text-muted-foreground/70">
+            <span className="text-[10px] font-bold text-muted-foreground/75">
               {reactor.connected ? "Live" : "…"}
             </span>
           </span>
@@ -390,7 +390,7 @@ const TribeHero = ({
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className={LABEL}>Ignition</span>
-            <span className="text-[11px] font-bold tabular-nums text-foreground/70">
+            <span className="text-[11px] font-bold tabular-nums text-foreground/75">
               {total} / 30 days
             </span>
           </div>
@@ -403,7 +403,7 @@ const TribeHero = ({
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className={LABEL}>Next: {collectiveTierName(next)}</span>
-            <span className="text-[11px] font-bold tabular-nums text-foreground/70">
+            <span className="text-[11px] font-bold tabular-nums text-foreground/75">
               {fmtInt(Math.max(0, next - total))} to go
             </span>
           </div>
@@ -423,39 +423,39 @@ const TribeHero = ({
           // owns joining (incl. private-tribe "Request to join") — two join
           // CTAs on one screen read as a mistake, not emphasis.
           <Button onClick={onShare} size="sm" variant="ember-outline" className="min-h-11 px-3 ml-auto" aria-label="Share tribe">
-            <Share2 size={14} />
+            <Share2 aria-hidden size={14} />
           </Button>
         ) : isOwner ? (
           <>
             <Button onClick={onManage} size="sm" variant="gold-outline" className="min-h-11 flex-1">
-              <Settings size={14} /> Manage
+              <Settings aria-hidden size={14} /> Manage
             </Button>
             <Button onClick={onInvite} size="sm" variant="ember-outline" className="min-h-11 flex-1">
-              <UserPlus size={14} /> Invite
+              <UserPlus aria-hidden size={14} /> Invite
             </Button>
             <Button onClick={onNavigateBattles} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Tribe battles">
-              <Swords size={14} />
+              <Swords aria-hidden size={14} />
             </Button>
             <Button onClick={onShare} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Share tribe">
-              <Share2 size={14} />
+              <Share2 aria-hidden size={14} />
             </Button>
             <Button onClick={onDelete} variant="destructive" size="sm" className="min-h-11 px-3" aria-label="Delete tribe">
-              <Trash2 size={14} />
+              <Trash2 aria-hidden size={14} />
             </Button>
           </>
         ) : (
           <>
             <Button onClick={onInvite} size="sm" variant="ember-outline" className="min-h-11 flex-1">
-              <UserPlus size={14} /> Invite
+              <UserPlus aria-hidden size={14} /> Invite
             </Button>
             <Button onClick={onNavigateBattles} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Tribe battles">
-              <Swords size={14} />
+              <Swords aria-hidden size={14} />
             </Button>
             <Button onClick={onShare} size="sm" variant="ember-outline" className="min-h-11 px-3" aria-label="Share tribe">
-              <Share2 size={14} />
+              <Share2 aria-hidden size={14} />
             </Button>
             <Button onClick={onLeave} variant="ember-outline" size="sm" className="min-h-11 flex-1 opacity-80 hover:opacity-100">
-              <LogOut size={14} /> Leave
+              <LogOut aria-hidden size={14} /> Leave
             </Button>
           </>
         )}

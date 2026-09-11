@@ -161,11 +161,11 @@ const BadgeVault = ({
         <div>
           <h2 className="font-display font-black text-base tracking-tight flex items-center gap-1.5">
             Badge Vault
-            <Sparkles size={12} className="text-gold" />
+            <Sparkles aria-hidden size={12} className="text-gold" />
           </h2>
           <p className="text-[12px] text-muted-foreground tabular-nums">
             <span className="font-bold text-foreground">{totalEarned}</span>
-            <span className="text-muted-foreground/60"> / {totalBadges}</span>
+            <span className="text-muted-foreground/75"> / {totalBadges}</span>
             <span className="ml-1.5 text-muted-foreground">collected · {overallPct}%</span>
           </p>
         </div>
@@ -237,13 +237,13 @@ const BadgeVault = ({
                 />
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-background border border-gold/40 flex items-center justify-center">
-                <Lock size={10} className="text-gold" />
+                <Lock aria-hidden size={10} className="text-gold" />
               </div>
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <Target size={12} className="text-gold" />
+                <Target aria-hidden size={12} className="text-gold" />
                 <span className="text-[10px] font-bold text-gold">
                   Next Drop
                 </span>
@@ -294,7 +294,7 @@ const BadgeVault = ({
             <div key={badge.id} className="relative">
               {isFeatured && earned && (
                 <div className="absolute -top-1.5 -right-1.5 z-10 h-5 w-5 rounded-full bg-gold flex items-center justify-center shadow-[0_0_10px_hsl(var(--gold)/0.6)]">
-                  <Crown size={12} className="text-primary-foreground" />
+                  <Crown aria-hidden size={12} className="text-primary-foreground" />
                 </div>
               )}
 

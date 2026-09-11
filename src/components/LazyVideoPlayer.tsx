@@ -70,7 +70,7 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
 
       {/* Sound indicator (purely visual — the whole surface is the tap target) */}
       <div className="absolute bottom-2 right-2 h-9 w-9 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center text-white pointer-events-none">
-        {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        {muted ? <VolumeX aria-hidden size={16} /> : <Volume2 aria-hidden size={16} />}
       </div>
 
       {muted && showHint && (

@@ -80,7 +80,7 @@ const IdentityCore = ({
       {isApexSubscriber && (
         <div className="mt-2 mb-1 flex justify-center">
           <span className="text-[11px] font-bold inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm bg-gold/15 text-gold border border-gold/40">
-            <Crown size={11} strokeWidth={3} />
+            <Crown aria-hidden size={11} strokeWidth={3} />
             Premium · Day-One
           </span>
         </div>
@@ -96,7 +96,7 @@ const IdentityCore = ({
           {nameSuffix}
         </h1>
         {showLock && (
-          <Lock size={13} className="text-muted-foreground/50 shrink-0" aria-label="Permanent username" />
+          <Lock size={13} className="text-muted-foreground/75 shrink-0" aria-label="Permanent username" />
         )}
       </div>
 
@@ -120,13 +120,13 @@ const IdentityCore = ({
           <ApexBadge tier="legend" size="md" />
         ) : tier === "elite" ? (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-            <Crown size={12} className="text-gold" />
+            <Crown aria-hidden size={12} className="text-gold" />
             <span className="text-[11px] font-bold text-gold">{formatTier("elite", division)}</span>
           </span>
         ) : null}
         {championWins > 0 && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/45 bg-gold/5">
-            <Trophy size={12} className="text-gold" />
+            <Trophy aria-hidden size={12} className="text-gold" />
             <span className="text-[11px] font-bold text-gold">
               {championWins > 1 ? `${championWins}× ` : ""}Season Champion
             </span>
@@ -134,13 +134,13 @@ const IdentityCore = ({
         )}
         {verified && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(var(--xp-green))]/45 bg-[hsl(var(--xp-green))]/10">
-            <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" />
+            <ShieldCheck aria-hidden size={12} className="text-[hsl(var(--xp-green))]" />
             <span className="text-[11px] font-bold text-[hsl(var(--xp-green))]">Verified</span>
           </span>
         )}
         {isLegendPinned && tier !== "legend" && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[hsl(280_70%_60%)]/45 bg-[hsl(280_70%_55%)]/10">
-            <Crown size={12} className="text-[hsl(280_70%_70%)]" />
+            <Crown aria-hidden size={12} className="text-[hsl(280_70%_70%)]" />
             <span className="text-[11px] font-bold text-[hsl(280_70%_70%)]">
               Founders Circle
             </span>
@@ -166,7 +166,7 @@ const IdentityCore = ({
             Streak
             {shields > 0 && (
               <span className="inline-flex items-center gap-0.5 text-gold">
-                <Shield size={10} fill="currentColor" />{shields}
+                <Shield aria-hidden size={10} fill="currentColor" />{shields}
               </span>
             )}
           </span>
@@ -187,7 +187,7 @@ const IdentityCore = ({
 
       {/* Tier message — italic, subtle */}
       {tierMessage && (
-        <p className="text-sm text-muted-foreground/70 font-medium italic mt-5 max-w-[280px]">
+        <p className="text-sm text-muted-foreground/75 font-medium italic mt-5 max-w-[280px]">
           {tierMessage}
         </p>
       )}

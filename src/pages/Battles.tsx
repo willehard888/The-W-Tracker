@@ -534,7 +534,7 @@ const Battles = () => {
                             <p className="text-[14px] font-semibold leading-tight truncate">@{getOpponent(battle).username}</p>
                             <p className="text-[12px] text-muted-foreground mt-0.5">{getBattleTypeInfo(battle.battle_type).label} · the community is voting</p>
                           </div>
-                          <p className="text-[13px] font-black tabular-nums shrink-0">{mine}<span className="text-muted-foreground/60">–</span>{theirs}</p>
+                          <p className="text-[13px] font-black tabular-nums shrink-0">{mine}<span className="text-muted-foreground/75">–</span>{theirs}</p>
                         </div>
                       );
                     })}

@@ -31,7 +31,7 @@ const LessonQuiz = ({
       }}
     >
       <div className="flex items-center gap-2 mb-3">
-        <HelpCircle size={13} style={{ color: accent }} strokeWidth={2.6} />
+        <HelpCircle aria-hidden size={13} style={{ color: accent }} strokeWidth={2.6} />
         <p
           className="text-[11px] font-bold text-muted-foreground"
           style={{ color: accent }}
@@ -85,10 +85,10 @@ const LessonQuiz = ({
                         }}
                       >
                         {showState && isCorrect && (
-                          <CheckCircle2 size={11} className="text-xp-green" />
+                          <CheckCircle2 aria-hidden size={11} className="text-xp-green" />
                         )}
                         {showState && isPicked && !isCorrect && (
-                          <XCircle size={11} className="text-rose-300" />
+                          <XCircle aria-hidden size={11} className="text-rose-300" />
                         )}
                       </span>
                       <span className="text-foreground/95 leading-snug">{choice}</span>

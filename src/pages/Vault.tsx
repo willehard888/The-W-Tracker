@@ -214,7 +214,7 @@ const Vault = () => {
 
         {/* No hardcoded price — a US/UK member paid a different number than the
             euro list price, and the store price is the only truth. */}
-        <p className="mt-8 text-center text-[11px] text-muted-foreground/70">Premium member</p>
+        <p className="mt-8 text-center text-[11px] text-muted-foreground/75">Premium member</p>
 
         <VaultArticleSheet
           article={openArticle?.article ?? null}
@@ -276,7 +276,7 @@ const VaultCategoryBlock = ({
         </div>
         <ChevronRight
           size={16}
-          className={cn("absolute bottom-4 right-4 z-10 text-white/70 transition-transform", expanded && "rotate-90")}
+          className={cn("absolute bottom-4 right-4 z-10 text-white/75 transition-transform", expanded && "rotate-90")}
           aria-hidden
         />
       </button>

@@ -234,7 +234,7 @@ const Chat = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" aria-label="Conversation options" className="rounded-full text-muted-foreground">
-                <MoreVertical size={18} />
+                <MoreVertical aria-hidden size={18} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[180px]">
@@ -324,7 +324,7 @@ const Chat = () => {
                   <p
                     className={cn(
                       "text-[10px] mt-1 px-1",
-                      isOwn ? "text-gold/50" : "text-muted-foreground/50"
+                      isOwn ? "text-gold/50" : "text-muted-foreground/75"
                     )}
                   >
                     {fmtRelative(msg.created_at)}
@@ -365,7 +365,7 @@ const Chat = () => {
             className="rounded-full shrink-0 h-11 w-11"
             aria-label="Send"
           >
-            <Send size={16} />
+            <Send aria-hidden size={16} />
           </Button>
         </div>
       </div>

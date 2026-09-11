@@ -41,19 +41,19 @@ interface VariantSpec {
 
 const VARIANTS: VariantSpec[] = [
   // Hero / next-level
-  { id: "ember", label: "Ember", group: "Hero", description: "Tribes/fire signature CTA — molten metal.", icon: <Flame /> },
+  { id: "ember", label: "Ember", group: "Hero", description: "Tribes/fire signature CTA — molten metal.", icon: <Flame aria-hidden /> },
 
   // Premium gold
-  { id: "default", label: "Default (Gold)", group: "Premium", description: "Clean polished gold bar — primary identity.", icon: <Sparkles /> },
+  { id: "default", label: "Default (Gold)", group: "Premium", description: "Clean polished gold bar — primary identity.", icon: <Sparkles aria-hidden /> },
   // "gold" was listed as an alias of default, but the Button cva has no such
   // variant — the row rendered unstyled. Dropped rather than added to Button.
-  { id: "tier", label: "Tier", group: "Premium", description: "Uses --tier-color CSS vars (defaults to gold).", icon: <Sparkles /> },
+  { id: "tier", label: "Tier", group: "Premium", description: "Uses --tier-color CSS vars (defaults to gold).", icon: <Sparkles aria-hidden /> },
 
   // Identity / system
-  { id: "obsidian", label: "Obsidian", group: "Identity", description: "Dark metal escape hatch when gold is too loud.", icon: <Zap /> },
-  { id: "destructive", label: "Destructive", group: "Identity", description: "Red metal with vignette — irreversible actions.", icon: <Zap /> },
-  { id: "success", label: "Success", group: "Identity", description: "Green metal — confirmations & completions.", icon: <Check /> },
-  { id: "warning", label: "Warning", group: "Identity", description: "Amber metal for risky-but-not-destructive.", icon: <Zap /> },
+  { id: "obsidian", label: "Obsidian", group: "Identity", description: "Dark metal escape hatch when gold is too loud.", icon: <Zap aria-hidden /> },
+  { id: "destructive", label: "Destructive", group: "Identity", description: "Red metal with vignette — irreversible actions.", icon: <Zap aria-hidden /> },
+  { id: "success", label: "Success", group: "Identity", description: "Green metal — confirmations & completions.", icon: <Check aria-hidden /> },
+  { id: "warning", label: "Warning", group: "Identity", description: "Amber metal for risky-but-not-destructive.", icon: <Zap aria-hidden /> },
 
   // Outlines & glass
   { id: "outline", label: "Outline", group: "Outline & Glass", description: "Premium ember-tinted glass with warm hairline." },
@@ -92,7 +92,7 @@ const ButtonGallery = () => {
           className="press h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
           aria-label="Back"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft aria-hidden size={18} />
         </Link>
         <div className="min-w-0">
           <h1 className="text-lg font-display font-bold tracking-tight">Button Gallery</h1>

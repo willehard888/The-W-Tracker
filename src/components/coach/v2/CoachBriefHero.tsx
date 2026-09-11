@@ -87,7 +87,7 @@ const CoachBriefHero = ({
       )}
 
       <Button variant="ember" size="lg" className="w-full mt-4" onClick={onOpenChat}>
-        <Send size={15} /> Ask your coach
+        <Send aria-hidden size={15} /> Ask your coach
       </Button>
     </div>
   );

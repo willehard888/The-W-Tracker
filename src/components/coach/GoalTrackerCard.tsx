@@ -67,7 +67,7 @@ const GoalTrackerCard = () => {
         className="w-full rounded-2xl border border-dashed border-border/50 bg-card/30 px-4 py-4 flex items-center gap-3 hover:border-[hsl(var(--gold)/0.5)] transition-colors"
       >
         <div className="h-9 w-9 rounded-xl bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-          <Target size={16} className="text-gold" />
+          <Target aria-hidden size={16} className="text-gold" />
         </div>
         <div className="text-left">
           <p className="text-sm font-bold">Set your North Star goal</p>
@@ -115,7 +115,7 @@ const GoalTrackerCard = () => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-bold text-gold flex items-center gap-1">
-            <Target size={12} /> North Star
+            <Target aria-hidden size={12} /> North Star
           </p>
           <h3 className="font-display text-base font-black mt-0.5 truncate">{activeGoal.title}</h3>
           <p className="text-[12px] text-muted-foreground mt-0.5">
@@ -147,11 +147,11 @@ const GoalTrackerCard = () => {
             hapticImpact("light");
             toast.success("Progress updated");
           }}>
-          <TrendingUp size={14} /> Log progress
+          <TrendingUp aria-hidden size={14} /> Log progress
         </Button>
         <Button variant="ghost" size="icon-sm"
           onClick={() => setConfirmDelete(true)} aria-label="Delete">
-          <Trash2 size={14} />
+          <Trash2 aria-hidden size={14} />
         </Button>
       </div>
 
@@ -159,7 +159,7 @@ const GoalTrackerCard = () => {
         <button type="button"
           onClick={() => setAdding(true)}
           className="mt-3 w-full text-[12px] text-muted-foreground/80 inline-flex items-center justify-center gap-1 hover:text-gold">
-          <Plus size={12} /> Add another goal
+          <Plus aria-hidden size={12} /> Add another goal
         </button>
       )}
       <ConfirmDialog

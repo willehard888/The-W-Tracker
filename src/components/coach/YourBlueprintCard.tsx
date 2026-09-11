@@ -98,16 +98,16 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
 
       <div className="mt-4 grid grid-cols-2 gap-2.5">
         {goalLabel && (
-          <Row icon={<Target size={11} />} label="Goal" value={goalLabel} />
+          <Row icon={<Target aria-hidden size={11} />} label="Goal" value={goalLabel} />
         )}
         {toneLabel && (
-          <Row icon={<MessageCircle size={11} />} label="Voice" value={toneLabel} />
+          <Row icon={<MessageCircle aria-hidden size={11} />} label="Voice" value={toneLabel} />
         )}
       </div>
 
       {hobbies.length > 0 && (
         <div className="mt-3 flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-bold inline-flex items-center gap-1 text-muted-foreground/70">
+          <span className="text-[11px] font-bold inline-flex items-center gap-1 text-muted-foreground/75">
             <Heart size={12} aria-hidden /> Joy
           </span>
           {hobbies.map((h) => (
@@ -140,7 +140,7 @@ const Row = ({
   value: string;
 }) => (
   <div className="surface-inset rounded-xl px-3 py-2 min-w-0">
-    <div className="flex items-center gap-1 text-muted-foreground/70 mb-0.5">
+    <div className="flex items-center gap-1 text-muted-foreground/75 mb-0.5">
       <span className="shrink-0">{icon}</span>
       <p className="text-[10px] font-bold text-muted-foreground">{label}</p>
     </div>

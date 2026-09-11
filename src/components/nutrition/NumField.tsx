@@ -32,7 +32,7 @@ const NumField = ({
         {label}
         {required && <span aria-hidden> *</span>}
       </span>
-      {unit && <span className="text-[11px] text-muted-foreground/70 shrink-0">{unit}</span>}
+      {unit && <span className="text-[11px] text-muted-foreground/75 shrink-0">{unit}</span>}
     </span>
     <input
       type="text"

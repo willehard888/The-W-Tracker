@@ -193,14 +193,14 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           <div aria-hidden className="absolute -inset-6 rounded-full"
             style={{ background: "radial-gradient(circle, hsl(var(--gold)/0.28) 0%, transparent 70%)" }} />
           <div className="relative h-20 w-20 rounded-3xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_8px_28px_hsl(var(--gold)/0.5)]">
-            <Sparkles size={32} className="text-background animate-pulse" strokeWidth={2.6} />
+            <Sparkles aria-hidden size={32} className="text-background animate-pulse" strokeWidth={2.6} />
           </div>
         </div>
         <h2 className="font-display text-2xl font-black mb-2">Coach is designing your block</h2>
         <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
           Tailoring 4 progressive weeks to your goal, body, schedule and last 30 days. ~25 seconds.
         </p>
-        <Loader2 size={20} className="animate-spin text-gold mt-6" />
+        <Loader2 aria-hidden size={20} className="animate-spin text-gold mt-6" />
       </div>
     );
   }
@@ -217,7 +217,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           <p className="text-[11px] font-bold text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
             className="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition-colors">
-            <Settings2 size={11} /> Edit
+            <Settings2 aria-hidden size={11} /> Edit
           </button>
         </div>
         <dl className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
@@ -247,7 +247,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
             rows={3}
             className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
           />
-          <p className="text-[11px] text-muted-foreground/70 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
+          <p className="text-[11px] text-muted-foreground/75 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
         </Field>
       </div>
 
@@ -278,9 +278,9 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       ))}
 
       <Button variant="ember" size="lg" className="w-full mt-6" onClick={generate}>
-        <Zap size={16} /> Design my block
+        <Zap aria-hidden size={16} /> Design my block
       </Button>
-      <p className="text-[11px] text-muted-foreground/70 text-center mt-3">
+      <p className="text-[11px] text-muted-foreground/75 text-center mt-3">
         Coach will use your profile, last 30 days of check-ins, and recent reflections to personalize every session.
       </p>
     </div>
@@ -299,7 +299,7 @@ const DayDots = ({ active }: { active: number[] }) => (
     {DAY_LETTERS.map((l, i) => (
       <span key={i} className={cn(
         "w-3.5 h-3.5 rounded-[5px] text-[10px] font-black flex items-center justify-center",
-        active.includes(i) ? "bg-[hsl(var(--gold)/0.8)] text-background" : "bg-card/60 text-muted-foreground/50",
+        active.includes(i) ? "bg-[hsl(var(--gold)/0.8)] text-background" : "bg-card/60 text-muted-foreground/75",
       )}>{l}</span>
     ))}
   </span>

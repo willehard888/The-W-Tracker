@@ -58,7 +58,7 @@ const DiarySlot = ({
                 aria-label={`${label} options`}
                 className="text-muted-foreground"
               >
-                <MoreHorizontal />
+                <MoreHorizontal aria-hidden />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

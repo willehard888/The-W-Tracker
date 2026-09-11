@@ -110,12 +110,12 @@ const PortionPanel = ({
       <div className="flex items-center gap-2 pt-1">
         {mode === "edit" && onDelete && (
           <Button variant="ghost" size="icon" aria-label="Delete item" className="min-h-11 min-w-11 text-muted-foreground" onClick={onDelete} disabled={busy}>
-            <Trash2 size={18} />
+            <Trash2 aria-hidden size={18} />
           </Button>
         )}
         {mode === "edit" && onDuplicate && (
           <Button variant="ghost" size="icon" aria-label="Duplicate item" className="min-h-11 min-w-11 text-muted-foreground" onClick={onDuplicate} disabled={busy}>
-            <Copy size={18} />
+            <Copy aria-hidden size={18} />
           </Button>
         )}
         <Button

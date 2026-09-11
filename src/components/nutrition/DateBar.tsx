@@ -23,7 +23,7 @@ const DateBar = ({ date, onChange, className }: { date: string; onChange: (next:
   return (
     <div className={cn("flex items-center justify-center gap-1", className)}>
       <Button variant="ghost" size="icon" aria-label="Previous day" className="min-h-11 min-w-11" onClick={() => onChange(localDateKey(addDays(d, -1)))}>
-        <ChevronLeft size={18} />
+        <ChevronLeft aria-hidden size={18} />
       </Button>
       <div className="relative min-h-11 min-w-[9rem] flex items-center justify-center">
         <span className="font-display text-[15px] font-black tracking-tight" aria-hidden>
@@ -46,7 +46,7 @@ const DateBar = ({ date, onChange, className }: { date: string; onChange: (next:
         className="min-h-11 min-w-11 disabled:opacity-30"
         onClick={() => onChange(localDateKey(addDays(d, 1)))}
       >
-        <ChevronRight size={18} />
+        <ChevronRight aria-hidden size={18} />
       </Button>
     </div>
   );

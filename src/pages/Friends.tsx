@@ -219,7 +219,7 @@ const Friends = () => {
                     type="button"
                     disabled={busy === f.user_id}
                     onClick={() => guard(f.user_id, () => removeFriend(f.user_id), "Removed from your circle.")}
-                    className="relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground/70 shrink-0"
+                    className="relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground/75 shrink-0"
                     aria-label={`Remove @${f.username}`}
                   >
                     <UserMinus size={15} aria-hidden />

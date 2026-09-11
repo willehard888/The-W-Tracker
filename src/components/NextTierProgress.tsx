@@ -36,7 +36,7 @@ const RequirementRow = ({
               : "bg-secondary/40 border-border text-muted-foreground",
           )}
         >
-          {met ? <Check size={14} /> : <Icon size={14} />}
+          {met ? <Check aria-hidden size={14} /> : <Icon size={14} />}
         </div>
         <span
           className={cn(
@@ -53,7 +53,7 @@ const RequirementRow = ({
           )}
         >
           {display}
-          <span className="text-muted-foreground/70"> / {target} {unit}</span>
+          <span className="text-muted-foreground/75"> / {target} {unit}</span>
         </span>
       </div>
       <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
@@ -106,7 +106,7 @@ const NextTierProgress = ({ className }: { className?: string }) => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-lg gradient-gold flex items-center justify-center glow-gold">
-              <Crown size={16} className="text-primary-foreground" />
+              <Crown aria-hidden size={16} className="text-primary-foreground" />
             </div>
             <div>
               <h3 className="font-display font-black text-base tracking-tight leading-none">

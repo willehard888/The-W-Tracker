@@ -36,7 +36,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
     <BottomSheet open={open} onClose={() => onOpenChange(false)} label={title} title={title} subtitle={subtitle}>
         <div className="pt-1 pb-2">
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -64,7 +64,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                   onClick={() => { onOpenChange(false); navigate("/friends"); }}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-gold px-4 py-2.5 text-[12px] font-black text-primary-foreground"
                 >
-                  <UserPlus size={14} /> Add friends
+                  <UserPlus aria-hidden size={14} /> Add friends
                 </button>
               )}
             </div>
@@ -89,7 +89,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                     <span>Lv {f.level ?? 1}</span>
                     {(f.streak ?? 0) > 0 && (
                       <span className="inline-flex items-center gap-0.5 text-[hsl(var(--streak-orange))]">
-                        <Flame size={11} /> {f.streak}
+                        <Flame aria-hidden size={11} /> {f.streak}
                       </span>
                     )}
                   </p>
@@ -97,7 +97,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 {busyId === f.user_id ? (
                   <span className="text-[12px] text-muted-foreground">…</span>
                 ) : (
-                  <ChevronRight size={16} className={cn("text-gold/60 shrink-0")} />
+                  <ChevronRight aria-hidden size={16} className={cn("text-gold/60 shrink-0")} />
                 )}
               </button>
             ))

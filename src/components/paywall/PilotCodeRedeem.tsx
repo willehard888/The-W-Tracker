@@ -113,7 +113,7 @@ const PilotCodeRedeem = () => {
           className="text-center tracking-widest uppercase"
         />
         <Button type="submit" variant="gold-outline" disabled={busy} className="shrink-0">
-          {busy ? <Loader2 size={16} className="animate-spin" /> : "Redeem"}
+          {busy ? <Loader2 aria-hidden size={16} className="animate-spin" /> : "Redeem"}
         </Button>
       </div>
       <button

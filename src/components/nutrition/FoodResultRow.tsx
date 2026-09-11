@@ -53,7 +53,7 @@ const FoodResultRow = ({
           {food.isRecipe ? "per serving" : "per 100 g"}
           {food.kcal != null && ` · ${Math.round(food.kcal)} kcal`}
           {food.protein != null && ` · P ${Math.round(food.protein)}`}
-          {tag && <span className="text-[10px] font-bold ml-1.5 text-muted-foreground/70">{tag}</span>}
+          {tag && <span className="text-[10px] font-bold ml-1.5 text-muted-foreground/75">{tag}</span>}
         </p>
       </button>
       {onToggleFavorite && (
@@ -67,10 +67,10 @@ const FoodResultRow = ({
           }}
           className={cn(
             "press shrink-0 min-h-11 min-w-11 flex items-center justify-center transition-transform",
-            food.isFavorite ? "text-gold" : "text-muted-foreground/50",
+            food.isFavorite ? "text-gold" : "text-muted-foreground/75",
           )}
         >
-          <Star size={16} fill={food.isFavorite ? "currentColor" : "none"} />
+          <Star aria-hidden size={16} fill={food.isFavorite ? "currentColor" : "none"} />
         </button>
       )}
     </div>

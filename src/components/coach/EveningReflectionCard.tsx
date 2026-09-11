@@ -36,7 +36,7 @@ const Scale = ({
               "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 h-9 rounded-lg text-[12px] font-black transition-[background-color,border-color,color] border",
               active
                 ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] border-[hsl(42_78%_48%)] shadow-[0_2px_8px_-2px_hsl(var(--gold)/0.6)]"
-                : "bg-card/40 border-border/40 text-muted-foreground/60 hover:border-border/80",
+                : "bg-card/40 border-border/40 text-muted-foreground/75 hover:border-border/80",
             )}
           >
             {n}
@@ -45,7 +45,7 @@ const Scale = ({
       })}
     </div>
     {hints && (
-      <div className="flex justify-between text-[10px] text-muted-foreground/60">
+      <div className="flex justify-between text-[10px] text-muted-foreground/75">
         <span>{hints[0]}</span><span>{hints[1]}</span>
       </div>
     )}
@@ -108,7 +108,7 @@ const EveningReflectionCard = () => {
             "h-9 w-9 rounded-xl flex items-center justify-center shrink-0",
             done ? "bg-gradient-to-br from-xp-green/30 to-xp-green/20 text-xp-green" : "bg-card/60 text-gold",
           )}>
-            {done ? <Check size={16} /> : <Moon size={16} />}
+            {done ? <Check aria-hidden size={16} /> : <Moon aria-hidden size={16} />}
           </div>
           <div className="min-w-0">
             <p className="text-[13px] font-black tracking-tight">
@@ -119,7 +119,7 @@ const EveningReflectionCard = () => {
             </p>
           </div>
         </div>
-        <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
+        <ChevronDown aria-hidden size={16} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
 
       <AnimatePresence initial={false}>
@@ -164,7 +164,7 @@ const EveningReflectionCard = () => {
                 loading={submit.isPending}
                 onClick={handleSubmit}
               >
-                <Sparkles size={14} className="mr-1.5" />
+                <Sparkles aria-hidden size={14} className="mr-1.5" />
                 {done ? "Update reflection" : "Log reflection"}
               </Button>
             </div>

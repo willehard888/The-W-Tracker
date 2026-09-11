@@ -116,7 +116,7 @@ const VaultArticleSheet = ({
                 )}
                 <EvidenceChip tier={article.evidence_tier} />
                 <span className="eyebrow-sm inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-muted-foreground">
-                  <Clock size={10} strokeWidth={3} />
+                  <Clock aria-hidden size={10} strokeWidth={3} />
                   {article.read_time_min} min
                 </span>
               </div>
@@ -169,7 +169,7 @@ const VaultArticleSheet = ({
                   }}
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <Target size={13} style={{ color: accent }} strokeWidth={2.6} />
+                    <Target aria-hidden size={13} style={{ color: accent }} strokeWidth={2.6} />
                     <p
                       className="text-[11px] font-bold text-muted-foreground"
                       style={{ color: accent }}
@@ -200,7 +200,7 @@ const VaultArticleSheet = ({
                   <ul className="space-y-1.5">
                     {article.benefits.map((b, i) => (
                       <li key={i} className="flex items-start gap-2 text-[12px]">
-                        <CheckCircle2
+                        <CheckCircle2 aria-hidden
                           size={13}
                           className="mt-[3px] shrink-0 text-xp-green"
                           strokeWidth={2.6}
@@ -218,7 +218,7 @@ const VaultArticleSheet = ({
                   <ul className="space-y-1.5">
                     {article.risks.map((r, i) => (
                       <li key={i} className="flex items-start gap-2 text-[12px]">
-                        <AlertTriangle
+                        <AlertTriangle aria-hidden
                           size={13}
                           className="mt-[3px] shrink-0 text-amber-400"
                           strokeWidth={2.6}
@@ -334,7 +334,7 @@ const VaultArticleSheet = ({
                     : "Mark lesson complete"}
               </button>
 
-              <p className="text-[11px] text-muted-foreground/70 text-center pt-1">
+              <p className="text-[11px] text-muted-foreground/75 text-center pt-1">
                 Educational content — not a substitute for medical advice.
               </p>
             </div>

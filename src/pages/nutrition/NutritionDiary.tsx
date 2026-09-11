@@ -536,10 +536,10 @@ const NutritionDiary = () => {
         action={
           <>
             <Button variant="ghost" size="icon" aria-label="Nutrition targets" onClick={() => navigate("/nutrition/targets")}>
-              <Target size={18} />
+              <Target aria-hidden size={18} />
             </Button>
             <Button variant="ghost" size="icon" aria-label="How estimates work" onClick={() => setInfoOpen(true)}>
-              <Info size={18} />
+              <Info aria-hidden size={18} />
             </Button>
           </>
         }

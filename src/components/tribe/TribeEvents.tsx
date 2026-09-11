@@ -103,7 +103,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
             size="pill"
             onClick={() => { hapticImpact("light"); setShowCreate(true); }}
           >
-            <Plus size={13} /> Host
+            <Plus aria-hidden size={13} /> Host
           </Button>
         )}
       </div>
@@ -241,7 +241,7 @@ const EventRow = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete 
             {safeHttpUrl(ev.meeting_url) && (
               <Button asChild variant="ember" size="sm" className="min-h-11">
                 <a href={safeHttpUrl(ev.meeting_url)} target="_blank" rel="noopener noreferrer">
-                  <Video size={12} /> Join
+                  <Video aria-hidden size={12} /> Join
                 </a>
               </Button>
             )}
@@ -252,7 +252,7 @@ const EventRow = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete 
               disabled={busy === ev.id || full}
               onClick={() => onRsvp(ev, "going")}
             >
-              <Check size={12} /> {full ? "Full" : "Going"}
+              <Check aria-hidden size={12} /> {full ? "Full" : "Going"}
             </Button>
             <Button
               variant={ev.my_status === "maybe" ? "gold-outline" : "outline"}
@@ -267,12 +267,12 @@ const EventRow = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete 
               <Button
                 variant="ghost"
                 size="icon"
-                className="ml-auto text-muted-foreground/60"
+                className="ml-auto text-muted-foreground/75"
                 disabled={busy === ev.id}
                 onClick={() => onDelete(ev)}
                 aria-label="Delete event"
               >
-                <Trash2 size={14} />
+                <Trash2 aria-hidden size={14} />
               </Button>
             )}
           </div>
@@ -317,12 +317,12 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
           <Button
             variant="ghost"
             size="icon"
-            className="shrink-0 text-muted-foreground/60"
+            className="shrink-0 text-muted-foreground/75"
             disabled={busy === series.id}
             onClick={onDeleteSeries}
             aria-label="Delete series"
           >
-            <Trash2 size={14} />
+            <Trash2 aria-hidden size={14} />
           </Button>
         )}
       </div>
@@ -348,7 +348,7 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
                   {s.meeting_url && (
                     <Button asChild variant="ember" size="icon-sm" className="min-h-11 min-w-11">
                       <a href={safeHttpUrl(s.meeting_url)} target="_blank" rel="noopener noreferrer" aria-label="Join">
-                        <Video size={12} />
+                        <Video aria-hidden size={12} />
                       </a>
                     </Button>
                   )}
@@ -360,7 +360,7 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
         })}
         {hidden > 0 && (
           <Button variant="ghost" size="sm" className="w-full min-h-11 text-muted-foreground" onClick={() => setExpanded(true)}>
-            <ChevronDown size={13} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
+            <ChevronDown aria-hidden size={13} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
           </Button>
         )}
       </div>
@@ -379,7 +379,7 @@ const SessionRsvp = ({ s, busy, onRsvp }: { s: TribeEvent; busy: boolean; onRsvp
       disabled={busy}
       onClick={() => onRsvp(s, "going")}
     >
-      {s.my_status === "going" ? <Check size={12} /> : "Going"}
+      {s.my_status === "going" ? <Check aria-hidden size={12} /> : "Going"}
     </Button>
   );
 };
@@ -533,7 +533,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="shrink-0 text-muted-foreground/60"
+                      className="shrink-0 text-muted-foreground/75"
                       onClick={() => setSessions((prev) => prev.filter((_, idx) => idx !== i))}
                       aria-label="Remove session"
                     >
@@ -550,7 +550,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                   className="w-full min-h-11"
                   onClick={() => setSessions((prev) => [...prev, ""])}
                 >
-                  <Plus size={13} /> Add session
+                  <Plus aria-hidden size={13} /> Add session
                 </Button>
               )}
             </div>

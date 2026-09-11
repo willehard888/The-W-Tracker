@@ -296,8 +296,8 @@ const StatusNameplate = ({
       {/* Sparkle accents — legend */}
       {isLegend && (
         <>
-          <Sparkles size={11} className="absolute top-2.5 right-3 text-gold/80" />
-          <Sparkles
+          <Sparkles aria-hidden size={11} className="absolute top-2.5 right-3 text-gold/80" />
+          <Sparkles aria-hidden
             size={10}
             className="absolute bottom-3 left-3 text-[hsl(280_70%_75%)]/70"
           />
@@ -321,7 +321,7 @@ const StatusNameplate = ({
 
       <div className="relative flex flex-col items-center text-center gap-1.5">
         {/* Tiny label */}
-        <p className="text-[11px] font-bold text-muted-foreground/70">
+        <p className="text-[11px] font-bold text-muted-foreground/75">
           Status
         </p>
 
@@ -376,7 +376,7 @@ const StatusNameplate = ({
           {showRank && (
             <span className="text-[11px] font-bold text-muted-foreground/80">
               #{fmtInt(rank!)}
-              <span className="text-muted-foreground/50 font-bold">
+              <span className="text-muted-foreground/75 font-bold">
                 {" / "}
                 {fmtInt(totalUsers!)}
               </span>

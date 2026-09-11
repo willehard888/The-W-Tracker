@@ -28,7 +28,7 @@ const PageBar = ({
   >
     {onBack ? (
       <Button variant="ghost" size="icon" aria-label="Back" onClick={onBack}>
-        <ArrowLeft size={18} />
+        <ArrowLeft aria-hidden size={18} />
       </Button>
     ) : (
       <span className="w-10" aria-hidden />

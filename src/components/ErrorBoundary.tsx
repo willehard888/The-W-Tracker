@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           {showDetails && (
           <details
-            className="w-full rounded-lg border border-white/15 bg-black/40 p-3 text-[12px] text-white/70 leading-relaxed"
+            className="w-full rounded-lg border border-white/15 bg-black/40 p-3 text-[12px] text-white/75 leading-relaxed"
             open
           >
             <summary className="cursor-pointer text-white/80 font-bold text-xs mb-1">

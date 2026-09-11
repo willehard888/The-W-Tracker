@@ -74,7 +74,7 @@ const MissionRow = ({
         )}
         aria-hidden
       >
-        {isDone && <Check size={12} strokeWidth={3} />}
+        {isDone && <Check aria-hidden size={12} strokeWidth={3} />}
       </span>
     </button>
   );

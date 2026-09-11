@@ -114,7 +114,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       {/* XP trend */}
       <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
         <div className="flex items-center gap-2 mb-2">
-          <TrendingUp size={14} className="text-gold" />
+          <TrendingUp aria-hidden size={14} className="text-gold" />
           <p className="text-[11px] font-bold text-muted-foreground">
             XP last 28 days
           </p>
@@ -131,8 +131,8 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
           <p className="text-[11px] font-bold text-gold">
             Coach's read
           </p>
-          <Button variant="ghost" size="sm" onClick={fetchRead} disabled={loading} className="h-7 px-2">
-            {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+          <Button variant="ghost" size="sm" aria-label="Refresh the coach's read" onClick={fetchRead} disabled={loading} className="h-7 px-2 before:absolute before:-inset-2 before:content-['']">
+            {loading ? <Loader2 aria-hidden size={12} className="animate-spin" /> : <RefreshCw aria-hidden size={12} />}
           </Button>
         </div>
         {loading && !read ? (
@@ -148,7 +148,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
         )}
       </div>
 
-      <p className="text-[11px] text-muted-foreground/70 text-center italic">
+      <p className="text-[11px] text-muted-foreground/75 text-center italic">
         Educational guidance — not medical advice.
       </p>
     </div>

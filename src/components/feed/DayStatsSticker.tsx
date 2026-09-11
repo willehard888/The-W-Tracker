@@ -56,7 +56,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
           </span>
           {stats.habits_done > 0 && (
             <span className="inline-flex items-center gap-0.5 text-[12px] font-bold text-white/85 leading-none tabular-nums">
-              <CheckCheck aria-hidden size={11} strokeWidth={2.8} className="text-white/60" />
+              <CheckCheck aria-hidden size={11} strokeWidth={2.8} className="text-white/75" />
               {stats.habits_done}
             </span>
           )}

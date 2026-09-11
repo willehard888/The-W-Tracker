@@ -69,11 +69,11 @@ export default function ModerationGate({
 
             <div className="flex items-start gap-3">
               {state === "validating" || state === "reviewing" ? (
-                <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-gold" />
+                <Loader2 aria-hidden className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-gold" />
               ) : state === "blocked" ? (
-                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                <ShieldAlert aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
               ) : (
-                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
+                <ShieldCheck aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-gold" />
               )}
               <div className="flex-1">
                 <p className="font-semibold leading-tight">

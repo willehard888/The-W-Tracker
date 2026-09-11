@@ -118,7 +118,7 @@ const WhealthIndexCard = ({ overall, priorOverall, priorDate, live, history, onS
             {history && history.length >= 2 ? (
               <>
                 <Sparkline values={history} className="w-full h-8 text-gold" />
-                <p className="text-[11px] font-bold text-muted-foreground/70 mt-1">28-day trend</p>
+                <p className="text-[11px] font-bold text-muted-foreground/75 mt-1">28-day trend</p>
               </>
             ) : (
               <p className="text-[12px] text-muted-foreground leading-snug">

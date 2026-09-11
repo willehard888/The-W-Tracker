@@ -152,7 +152,7 @@ const InviteAction = ({ invited, sending, onInvite }: { invited: boolean; sendin
   }
   return (
     <Button onClick={onInvite} loading={sending} size="sm" variant="ember" className="min-h-11">
-      <UserPlus size={12} /> Invite
+      <UserPlus aria-hidden size={12} /> Invite
     </Button>
   );
 };

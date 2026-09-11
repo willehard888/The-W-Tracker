@@ -155,10 +155,10 @@ const Messages = () => {
 
       {/* Search is a mode: while typing, results take the list's place. */}
       <div className="home-rise home-rise-1 mb-4 relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" aria-hidden />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/75" aria-hidden />
         <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search users…" className="h-11 rounded-xl pl-9 pr-11 text-[13px]" />
         {searchQuery && (
-          <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground/50 hover:text-foreground">
+          <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground/75 hover:text-foreground">
             <X size={14} />
           </button>
         )}
@@ -234,7 +234,7 @@ const PersonRow = ({ profile, subtitle, onClick }: {
       <TierUsername as="p" username={profile.username} tier={profile.status_tier || "recruit"} className="text-sm font-semibold truncate" />
       <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
     </div>
-    <MessageCircle size={14} className="text-muted-foreground/40 shrink-0" aria-hidden />
+    <MessageCircle size={14} className="text-muted-foreground/75 shrink-0" aria-hidden />
   </button>
 );
 
@@ -246,7 +246,7 @@ const ConversationRow = ({ conv, userId, navigate }: { conv: Thread; userId?: st
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <TierUsername as="p" username={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} className={cn("text-sm truncate", unread ? "font-bold" : "font-semibold")} />
-          <span className={cn("text-[11px] tabular-nums shrink-0", unread ? "text-foreground/70" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
+          <span className={cn("text-[11px] tabular-nums shrink-0", unread ? "text-foreground/75" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
         </div>
         <p className={cn("text-xs truncate mt-0.5", unread ? "text-foreground/85 font-medium" : "text-muted-foreground")}>
           {conv.lastMessage.sender_id === userId && "You: "}

@@ -80,7 +80,7 @@ const AthleteProfileSettings = () => {
         onBack={() => backOr(navigate, "/coach")}
         action={
           <Button variant="ghost" size="icon" onClick={() => setEditing(true)} aria-label="Edit">
-            <Pencil size={16} />
+            <Pencil aria-hidden size={16} />
           </Button>
         }
       />

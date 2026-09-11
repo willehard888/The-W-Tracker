@@ -23,7 +23,7 @@ const ProgressionSummaryCard = () => {
       className="w-full text-left surface-card surface-card-quiet p-4"
     >
       <div className="flex items-center gap-2 mb-2">
-        <TrendingUp size={13} className="text-muted-foreground" />
+        <TrendingUp aria-hidden size={13} className="text-muted-foreground" />
         <p className="text-[11px] font-bold text-muted-foreground">Strength progress</p>
         <span className="ml-auto text-[11px] font-bold text-muted-foreground">This week</span>
       </div>
@@ -35,9 +35,9 @@ const ProgressionSummaryCard = () => {
       ) : (
         <>
           <div className="flex items-center gap-4 mb-2">
-            <Stat icon={<Dumbbell size={13} className="text-foreground/70" />} value={data!.liftsThisWeek} label={data!.liftsThisWeek === 1 ? "lift" : "lifts"} />
-            <Stat icon={<TrendingUp size={13} className="text-foreground/70" />} value={data!.setsThisWeek} label="sets" />
-            <Stat icon={<Trophy size={13} className="text-xp-green" />} value={data!.prCount} label={data!.prCount === 1 ? "PR" : "PRs"} highlight={data!.prCount > 0} />
+            <Stat icon={<Dumbbell aria-hidden size={13} className="text-foreground/75" />} value={data!.liftsThisWeek} label={data!.liftsThisWeek === 1 ? "lift" : "lifts"} />
+            <Stat icon={<TrendingUp aria-hidden size={13} className="text-foreground/75" />} value={data!.setsThisWeek} label="sets" />
+            <Stat icon={<Trophy aria-hidden size={13} className="text-xp-green" />} value={data!.prCount} label={data!.prCount === 1 ? "PR" : "PRs"} highlight={data!.prCount > 0} />
           </div>
 
           {data!.movers.length > 0 ? (
@@ -47,7 +47,7 @@ const ProgressionSummaryCard = () => {
                   <span className="flex-1 truncate font-bold text-foreground/90">{m.name}</span>
                   <span className="tabular-nums text-muted-foreground">{m.latestWeight}kg</span>
                   <span className="tabular-nums font-black text-xp-green">+{Math.round(m.deltaKg * 10) / 10}kg</span>
-                  {m.isPR ? <Trophy size={11} className="text-xp-green" /> : <TrendingUp size={11} className="text-xp-green" />}
+                  {m.isPR ? <Trophy aria-hidden size={11} className="text-xp-green" /> : <TrendingUp aria-hidden size={11} className="text-xp-green" />}
                 </div>
               ))}
             </div>
@@ -58,7 +58,7 @@ const ProgressionSummaryCard = () => {
       )}
 
       <div className="text-[11px] font-bold text-muted-foreground flex items-center justify-end mt-2">
-        Open program <ChevronRight size={12} />
+        Open program <ChevronRight aria-hidden size={12} />
       </div>
     </button>
   );

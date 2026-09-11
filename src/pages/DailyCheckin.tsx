@@ -817,7 +817,7 @@ const DailyCheckin = () => {
         title={<p className="eyebrow text-muted-foreground/75 truncate">{dateLine}</p>}
         action={
           <Button variant="ghost" size="icon" aria-label="Customize habits" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
-            <SlidersHorizontal size={18} />
+            <SlidersHorizontal aria-hidden size={18} />
           </Button>
         }
       />

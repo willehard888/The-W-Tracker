@@ -43,7 +43,7 @@ const BattleChallengeModal = ({
       subtitle="Pick a discipline and how long it runs"
       footer={
         <Button variant="ember" className="w-full rounded-full" onClick={onChallenge} disabled={creating}>
-          <Swords size={14} />
+          <Swords aria-hidden size={14} />
           {creating ? "Sending…" : "Send challenge"}
         </Button>
       }

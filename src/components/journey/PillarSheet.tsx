@@ -45,7 +45,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
             <div key={p.key} className="flex items-center gap-2.5">
               <p className="w-[128px] shrink-0 text-[12px] font-bold text-foreground/85 leading-tight">
                 {p.label}
-                <span className="block text-[10px] font-medium text-muted-foreground/60">
+                <span className="block text-[10px] font-medium text-muted-foreground/75">
                   weight {p.weight}%
                 </span>
               </p>
@@ -56,7 +56,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
               </div>
               <p className="w-14 shrink-0 text-right text-[12px] font-black tabular-nums">
                 {p.score == null
-                  ? <span className="text-[10px] font-bold text-muted-foreground/50">no data yet</span>
+                  ? <span className="text-[10px] font-bold text-muted-foreground/75">no data yet</span>
                   : p.score}
               </p>
             </div>

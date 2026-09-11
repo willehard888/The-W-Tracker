@@ -81,7 +81,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
     : { run: onOpenDiary, label: "Open your food diary" };
 
   const headline = (() => {
-    if (loading) return <span className="text-muted-foreground/60">—</span>;
+    if (loading) return <span className="text-muted-foreground/75">—</span>;
     if (state === "no_targets" || left === null) {
       return <span className="font-display font-black text-[17px] leading-none">{beatFor(state, kcal, targetKcal)}</span>;
     }
@@ -140,7 +140,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
                 fileRef.current?.click();
               }}
             >
-              <Camera size={18} />
+              <Camera aria-hidden size={18} />
             </Button>
           </div>
         </div>

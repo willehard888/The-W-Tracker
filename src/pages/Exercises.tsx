@@ -255,7 +255,7 @@ const Exercises = () => {
                       {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.join(", ")}` : ""}
                     </span>
                   </span>
-                  <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
+                  <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
                 </button>
               </li>
             ))}
@@ -265,7 +265,7 @@ const Exercises = () => {
           )}
 
           {/* CC BY-SA attribution — required by the illustration license. */}
-          <p className="mt-8 text-center text-[11px] text-muted-foreground/50">
+          <p className="mt-8 text-center text-[11px] text-muted-foreground/75">
             Illustrations © Everkinetic · CC BY-SA 4.0
           </p>
         </div>

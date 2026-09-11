@@ -248,10 +248,10 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
 
                 <div className="flex gap-2 mt-3">
                   <Button size="sm" variant="outline" className="flex-1 min-h-11" loading={busy} onClick={() => dismissReport(r)}>
-                    <Check size={14} /> Dismiss
+                    <Check aria-hidden size={14} /> Dismiss
                   </Button>
                   <Button size="sm" variant="danger-outline" className="flex-1 min-h-11" disabled={busy || !r.post} onClick={() => setConfirmRemove(r)}>
-                    <Trash2 size={14} /> Remove post
+                    <Trash2 aria-hidden size={14} /> Remove post
                   </Button>
                 </div>
               </div>

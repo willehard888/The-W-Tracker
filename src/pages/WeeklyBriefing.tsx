@@ -242,7 +242,7 @@ const WeeklyBriefing = () => {
 
         <div className="home-rise home-rise-5 mt-8">
           <Button variant="ember" size="xl" className="w-full" onClick={handleShare} loading={sharing}>
-            <Share2 size={18} />
+            <Share2 aria-hidden size={18} />
             Share this week
           </Button>
         </div>

@@ -117,7 +117,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
           size="lg"
           className="w-full"
         >
-          <Swords size={14} /> Send challenge
+          <Swords aria-hidden size={14} /> Send challenge
         </Button>
       }
     >

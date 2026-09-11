@@ -60,7 +60,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
               </span>
               <ChevronDown
                 size={16}
-                className={cn("text-muted-foreground/60 shrink-0 transition-transform", open && "rotate-180")}
+                className={cn("text-muted-foreground/75 shrink-0 transition-transform", open && "rotate-180")}
                 aria-hidden
               />
             </button>
@@ -101,7 +101,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                           {isLogged && <Check size={14} className="text-xp-green shrink-0" role="img" aria-label="Done" />}
                           <ChevronDown
                             size={14}
-                            className={cn("text-muted-foreground/60 shrink-0 transition-transform", dayOpen && "rotate-180")}
+                            className={cn("text-muted-foreground/75 shrink-0 transition-transform", dayOpen && "rotate-180")}
                             aria-hidden
                           />
                         </button>

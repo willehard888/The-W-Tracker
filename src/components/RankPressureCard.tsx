@@ -129,7 +129,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
 
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <Trophy size={11} className={cn("shrink-0", config.textClass)} />
+                  <Trophy aria-hidden size={11} className={cn("shrink-0", config.textClass)} />
                   {/* Sentence case, not a second tracked micro-label: the
                       profile screen already spends its one eyebrow on
                       "Member since".
@@ -172,13 +172,13 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
               )}
             >
               {!hasRank ? (
-                <Sparkles size={16} strokeWidth={2.5} />
+                <Sparkles aria-hidden size={16} strokeWidth={2.5} />
               ) : isRising ? (
-                <TrendingUp size={16} strokeWidth={2.5} />
+                <TrendingUp aria-hidden size={16} strokeWidth={2.5} />
               ) : isFalling ? (
-                <TrendingDown size={16} strokeWidth={2.5} />
+                <TrendingDown aria-hidden size={16} strokeWidth={2.5} />
               ) : (
-                <TrendingUp size={16} strokeWidth={2.5} />
+                <TrendingUp aria-hidden size={16} strokeWidth={2.5} />
               )}
             </div>
           </div>
@@ -213,17 +213,17 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
           >
             {!hasRank ? (
               <>
-                <Sparkles size={12} />
+                <Sparkles aria-hidden size={12} />
                 Make your first check-in to enter the ranks
               </>
             ) : isFalling ? (
               <>
-                <AlertTriangle size={12} />
+                <AlertTriangle aria-hidden size={12} />
                 {pressureText}
               </>
             ) : isRising ? (
               <>
-                <Flame size={12} />
+                <Flame aria-hidden size={12} />
                 {pressureText}
               </>
             ) : (
@@ -234,7 +234,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
           {/* Days at tier */}
           {hasRank && daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
             <div className="flex items-center justify-center gap-1.5 mb-2 text-[11px]">
-              <Trophy size={12} className={cn("shrink-0", config.textClass)} />
+              <Trophy aria-hidden size={12} className={cn("shrink-0", config.textClass)} />
               <span className="text-muted-foreground">
                 <span className={cn("font-black tabular-nums", config.textClass)}>
                   {daysAtTier}{daysAtTier === 1 ? " day" : " days"}
@@ -248,22 +248,22 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
           {nextTier ? (
             <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
               <div className="flex items-center gap-1.5 min-w-0">
-                <ChevronRight size={12} className="text-muted-foreground/60 shrink-0" />
+                <ChevronRight aria-hidden size={12} className="text-muted-foreground/75 shrink-0" />
                 <p className="text-[11px] text-muted-foreground truncate">
                   Next:{" "}
                   <span className="font-black text-foreground">{nextTier.label}</span>
-                  <span className="text-muted-foreground/60"> · {nextTier.percentile}</span>
+                  <span className="text-muted-foreground/75"> · {nextTier.percentile}</span>
                 </p>
               </div>
               {rankScore !== undefined && (
-                <p className="text-[10px] text-muted-foreground/50 tabular-nums shrink-0">
+                <p className="text-[10px] text-muted-foreground/75 tabular-nums shrink-0">
                   Score: <span className="text-muted-foreground">{rankScore.toFixed(1)}</span>
                 </p>
               )}
             </div>
           ) : (
             rankScore !== undefined && (
-              <p className="text-[10px] text-muted-foreground/50 mt-2 text-right tabular-nums">
+              <p className="text-[10px] text-muted-foreground/75 mt-2 text-right tabular-nums">
                 Score: <span className="text-muted-foreground">{rankScore.toFixed(1)}</span>
               </p>
             )

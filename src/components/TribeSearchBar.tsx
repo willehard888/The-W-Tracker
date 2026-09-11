@@ -88,21 +88,21 @@ const TribeSearchBar = ({ onChanged }: Props) => {
   const renderActionButton = (r: SearchResult) => {
     if (r.viewer_status === "member") {
       return (
-        <Button size="sm" variant="outline" className="h-8 text-[12px]" onClick={() => handleAction(r)}>
+        <Button size="sm" variant="outline" className="h-8 before:absolute before:-inset-2 before:content-[''] text-[12px]" onClick={() => handleAction(r)}>
           Open
         </Button>
       );
     }
     if (r.viewer_status === "pending_join") {
       return (
-        <Button size="sm" variant="outline" disabled className="h-8 text-[12px]">
+        <Button size="sm" variant="outline" disabled className="h-8 before:absolute before:-inset-2 before:content-[''] text-[12px]">
           <Check aria-hidden size={11} /> Sent
         </Button>
       );
     }
     if (r.viewer_status === "pending_invite") {
       return (
-        <Button size="sm" variant="outline" className="h-8 text-[12px]" onClick={() => navigate("/squad?tab=tribes")}>
+        <Button size="sm" variant="outline" className="h-8 before:absolute before:-inset-2 before:content-[''] text-[12px]" onClick={() => navigate("/squad?tab=tribes")}>
           Accept invite
         </Button>
       );
@@ -113,7 +113,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
           size="sm"
           onClick={() => handleAction(r)}
           disabled={actingId === r.id}
-          className="h-8 text-[12px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
+          className="h-8 before:absolute before:-inset-2 before:content-[''] text-[12px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
         >
           {actingId === r.id ? <Loader2 aria-hidden size={11} className="animate-spin" /> : <Lock aria-hidden size={11} />}
           Request
@@ -125,7 +125,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
         size="sm"
         onClick={() => handleAction(r)}
         disabled={actingId === r.id}
-        className="h-8 text-[12px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
+        className="h-8 before:absolute before:-inset-2 before:content-[''] text-[12px] bg-gradient-to-r from-[hsl(var(--ember))] to-gold text-background font-black"
       >
         {actingId === r.id ? <Loader2 aria-hidden size={11} className="animate-spin" /> : "Join"}
       </Button>

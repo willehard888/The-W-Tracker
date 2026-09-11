@@ -18,7 +18,7 @@ const Has = ({ yes, mine }: { yes: boolean; mine?: boolean }) => (
   <span className="w-8 shrink-0 flex justify-center" role="img" aria-label={yes ? "has it" : "does not have it"}>
     {yes
       ? <Check size={16} strokeWidth={2.5} className={mine ? "text-gold" : "text-muted-foreground"} aria-hidden />
-      : <Minus size={16} className="text-muted-foreground/35" aria-hidden />}
+      : <Minus size={16} className="text-muted-foreground/75" aria-hidden />}
   </span>
 );
 

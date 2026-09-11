@@ -83,7 +83,7 @@ export const BottomSheet = ({
               <div className="px-3 pt-1 pb-2 flex items-center gap-1 shrink-0">
                 {leading ?? (onBack ? (
                   <Button variant="ghost" size="icon" aria-label="Back" className="min-h-11 min-w-11" onClick={onBack}>
-                    <ChevronLeft size={20} />
+                    <ChevronLeft aria-hidden size={20} />
                   </Button>
                 ) : (
                   <span className="w-11" aria-hidden />

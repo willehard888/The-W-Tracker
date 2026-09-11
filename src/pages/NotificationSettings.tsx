@@ -214,7 +214,7 @@ const NotificationSettings = () => {
             <p className="mt-1.5 text-[13px] font-bold leading-snug">{copy.title(previewStreak)}</p>
             <p className="mt-0.5 text-[12px] text-foreground/75 leading-snug">{copy.body}</p>
           </div>
-          <p className="mt-1.5 text-center text-[11px] text-muted-foreground/70">
+          <p className="mt-1.5 text-center text-[11px] text-muted-foreground/75">
             Your streak guard, in your coach's voice — exactly as it lands.
           </p>
         </div>

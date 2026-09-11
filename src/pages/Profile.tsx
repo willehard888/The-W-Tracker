@@ -57,9 +57,12 @@ import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/seg
 const snapshotWhen = (snapshotDate: string): string => {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  if (snapshotDate === localDateKey(yesterday)) return "last night";
-  if (snapshotDate === localDateKey()) return "today";
-  return fmtDate(`${snapshotDate}T00:00:00`);
+  // "Last scored" and not just the date: the point is that this is a STORED
+  // score that does not move, unlike Home's, which is recomputed on every open.
+  // A bare "today" said nothing — Home's number is today's too.
+  if (snapshotDate === localDateKey(yesterday)) return "Last scored last night";
+  if (snapshotDate === localDateKey()) return "Last scored today";
+  return `Last scored ${fmtDate(`${snapshotDate}T00:00:00`)}`;
 };
 
 const Profile = () => {
@@ -532,11 +535,10 @@ const Profile = () => {
                 <p className="font-display font-black text-3xl leading-none text-gold glow-gold-text tabular-nums">{latest.overall}</p>
                 <p className="text-[11px] font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
                 {/*
-                  Home prints the LIVE index; this one is the nightly snapshot,
-                  on purpose (the live hook is 11 queries). Unlabelled, the two
-                  screens printed 64 and 66 minutes apart and read as a bug.
-                  Say which day this number is and the difference becomes
-                  information instead of a contradiction.
+                  Home prints the LIVE index, recomputed on every open; this
+                  one is the stored nightly score, on purpose (the live hook is
+                  11 queries). Unlabelled, the two screens printed 64 and 66
+                  minutes apart and read as a bug.
                 */}
                 <p className="text-[11px] text-muted-foreground/75 mt-0.5">{snapshotWhen(latest.snapshotDate)}</p>
               </div>

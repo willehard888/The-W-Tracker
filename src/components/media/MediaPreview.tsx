@@ -61,7 +61,7 @@ const MediaPreview = ({ imageSrc, videoSrc, sizeBytes, onClear, progressLabel, c
       {/* Upload progress overlay */}
       {uploading && (
         <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2.5">
-          <Loader2 size={22} className="text-white animate-spin" />
+          <Loader2 aria-hidden size={22} className="text-white animate-spin" />
           <p className="text-[12px] font-bold text-white tracking-wide">{progressLabel}</p>
           <div className="h-1 w-32 rounded-full bg-white/20 overflow-hidden">
             <div className="h-full w-1/2 rounded-full bg-white/85 animate-[shimmer-slide_1.1s_ease-in-out_infinite]" />

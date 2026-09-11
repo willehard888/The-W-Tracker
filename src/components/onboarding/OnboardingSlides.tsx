@@ -25,7 +25,7 @@ const FlameHero = ({ size = 40, box = "w-36 h-36" }: { size?: number; box?: stri
     ))}
     <div className="absolute inset-0 flex items-center justify-center">
       <div style={{ animation: "flameDance 1.5s ease-in-out infinite" }}>
-        <Flame size={size} className="text-[hsl(var(--streak-orange))] drop-shadow-[0_0_20px_hsl(var(--streak-orange))]" />
+        <Flame aria-hidden size={size} className="text-[hsl(var(--streak-orange))] drop-shadow-[0_0_20px_hsl(var(--streak-orange))]" />
       </div>
     </div>
     <FloatingOrb color="hsl(var(--streak-orange))" size={7} delay={0} x="20%" y="28%" />
@@ -47,7 +47,7 @@ export const WelcomeSlide = ({ onNext }: { onNext: () => void }) => (
     </p>
     <Button variant="ember" size="xl" className="w-full max-w-xs group" onClick={onNext}>
       Build my setup
-      <ArrowRight size={18} className="transition-transform group-hover:translate-x-1 group-active:translate-x-1" />
+      <ArrowRight aria-hidden size={18} className="transition-transform group-hover:translate-x-1 group-active:translate-x-1" />
     </Button>
   </div>
 );
@@ -82,7 +82,7 @@ export const CoreLoopSlide = ({ struggle, onNext }: { struggle?: string; onNext:
               <span className="block text-sm font-bold text-foreground">{b.label}</span>
               <span className="block text-xs text-muted-foreground">{b.sub}</span>
             </span>
-            <span className="ml-auto text-muted-foreground/40 font-black text-xs">{i + 1}</span>
+            <span className="ml-auto text-muted-foreground/75 font-black text-xs">{i + 1}</span>
           </div>
         ))}
       </div>
@@ -121,7 +121,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
           >
             <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden><span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" /></span>
             <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
-            <span className="text-[11px] font-bold ml-auto text-muted-foreground/70">
+            <span className="text-[11px] font-bold ml-auto text-muted-foreground/75">
               {cfg.percentile}
             </span>
           </div>
@@ -164,7 +164,7 @@ export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
       ].map((line, i) => (
         <div key={line} className="flex items-center gap-2.5" style={{ animation: `fadeSlideUp 0.4s ease-out ${0.1 + i * 0.08}s both` }}>
           <span className="h-5 w-5 rounded-full bg-[hsl(var(--xp-green))]/15 border border-[hsl(var(--xp-green))]/40 flex items-center justify-center shrink-0">
-            <Check size={11} className="text-[hsl(var(--xp-green))]" />
+            <Check aria-hidden size={11} className="text-[hsl(var(--xp-green))]" />
           </span>
           <span className="text-sm font-semibold text-foreground/90">{line}</span>
         </div>
@@ -176,7 +176,7 @@ export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
     </div>
 
     <Button variant="ember" size="xl" className="w-full max-w-xs" onClick={onNext}>
-      <Sparkles size={16} />
+      <Sparkles aria-hidden size={16} />
       I'm in
     </Button>
   </div>
@@ -188,7 +188,7 @@ export const PushSlide = ({ onEnable, onSkip, busy }: { onEnable: () => void; on
     <div className="relative mb-7">
       <div className="absolute inset-0 -m-4 rounded-full bg-gold/15 blur-2xl" aria-hidden />
       <div className="relative h-20 w-20 rounded-3xl gradient-gold glow-gold flex items-center justify-center">
-        <Bell size={34} className="text-primary-foreground" />
+        <Bell aria-hidden size={34} className="text-primary-foreground" />
       </div>
     </div>
     <h1 className="font-display text-[26px] leading-tight font-black tracking-tight mb-1.5">
@@ -229,7 +229,7 @@ export const FinaleSlide = ({ goal, onNext }: { goal?: string; onNext: () => voi
       </p>
       <Button variant="ember" size="xl" className="w-full max-w-xs group" onClick={onNext}>
         Log my first W
-        <ArrowRight size={18} className="transition-transform group-hover:translate-x-1 group-active:translate-x-1" />
+        <ArrowRight aria-hidden size={18} className="transition-transform group-hover:translate-x-1 group-active:translate-x-1" />
       </Button>
     </div>
   );

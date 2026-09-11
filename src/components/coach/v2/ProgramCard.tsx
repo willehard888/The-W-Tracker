@@ -59,7 +59,7 @@ const ProgramCard = () => {
         <span className="block text-[14px] font-bold leading-tight truncate">{title}</span>
         <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>
       </span>
-      <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
+      <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
     </button>
   );
 };

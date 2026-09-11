@@ -269,7 +269,7 @@ const Auth = () => {
                 onClick={() => setShowPass(!showPass)}
                 className="absolute right-0 top-0 rounded-xl text-muted-foreground"
               >
-                {showPass ? <EyeOff /> : <Eye />}
+                {showPass ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
               </Button>
             </div>
           </div>
@@ -282,7 +282,7 @@ const Auth = () => {
 
           <Button variant="ember" size="xl" className="w-full" type="submit" loading={loading}>
             {mode === "login" ? "Sign in" : "Create account"}
-            <ArrowRight size={18} />
+            <ArrowRight aria-hidden size={18} />
           </Button>
         </form>
         )}

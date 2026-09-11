@@ -143,7 +143,7 @@ const ResetPassword = () => {
                 onClick={() => setShowPass(!showPass)}
                 className="absolute right-0 top-0 rounded-xl text-muted-foreground"
               >
-                {showPass ? <EyeOff /> : <Eye />}
+                {showPass ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
               </Button>
             </div>
           </div>

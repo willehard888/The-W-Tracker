@@ -144,14 +144,14 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
           <span className="font-bold text-sm text-foreground block truncate">{block.name}</span>
           {logged && (
             <span className="text-[11px] font-bold text-xp-green inline-flex items-center gap-1">
-              <Check size={12} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}{existing!.weight != null && existing!.reps != null ? " × " : ""}{existing!.reps != null ? `${existing!.reps}` : ""} logged
+              <Check aria-hidden size={12} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}{existing!.weight != null && existing!.reps != null ? " × " : ""}{existing!.reps != null ? `${existing!.reps}` : ""} logged
             </span>
           )}
         </div>
         <span className="text-[12px] font-bold text-foreground/85 tabular-nums whitespace-nowrap inline-flex items-center gap-1">
           {block.sets}×{block.reps}{block.rpe ? ` · RPE ${block.rpe}` : ""}
           {hasMore && (
-            <ChevronDown size={11} className={cn("text-muted-foreground/70 transition-transform", open && "rotate-180")} />
+            <ChevronDown aria-hidden size={11} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
           )}
         </span>
       </button>
@@ -297,7 +297,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
                   disabled={logSet.isPending}
                   className="press shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-2 text-[12px] font-black text-primary-foreground disabled:opacity-60 transition-transform"
                 >
-                  {logSet.isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                  {logSet.isPending ? <Loader2 aria-hidden size={13} className="animate-spin" /> : <Check aria-hidden size={13} />}
                   {logged ? "Update" : "Save"}
                 </button>
               </div>

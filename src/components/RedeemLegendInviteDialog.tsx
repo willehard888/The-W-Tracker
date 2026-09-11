@@ -71,7 +71,7 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
       <DialogTrigger asChild>
         {trigger ?? (
           <Button variant="gold-outline" size="sm" className="min-h-11">
-            <Crown size={14} fill="currentColor" />
+            <Crown aria-hidden size={14} fill="currentColor" />
             Redeem Legend invite
           </Button>
         )}
@@ -105,7 +105,7 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
               autoFocus
             />
             <Button onClick={redeem} loading={loading} variant="tier" className="w-full min-h-11">
-              <Crown className="h-4 w-4" fill="currentColor" />
+              <Crown aria-hidden className="h-4 w-4" fill="currentColor" />
               Redeem and ascend to Legend
             </Button>
             <p className="text-[12px] text-center text-muted-foreground">

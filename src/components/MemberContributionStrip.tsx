@@ -41,7 +41,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
         <h2 className="text-[11px] font-bold text-muted-foreground">
           Who's feeding the fire
         </h2>
-        <span className="text-[11px] font-bold tabular-nums text-muted-foreground/70">
+        <span className="text-[11px] font-bold tabular-nums text-muted-foreground/75">
           {members.length} member{members.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -79,7 +79,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                     boxShadow: `0 0 10px ${withAlpha(accent, 0.5)}`,
                   }}
                 >
-                  <Crown size={7} strokeWidth={2.6} fill="currentColor" />
+                  <Crown aria-hidden size={7} strokeWidth={2.6} fill="currentColor" />
                   Top
                 </span>
               )}

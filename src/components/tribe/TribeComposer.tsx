@@ -87,7 +87,7 @@ const TribeComposer = ({
           onClick={() => fileRef.current?.click()}
           aria-label="Add image"
         >
-          <ImageIcon size={16} />
+          <ImageIcon aria-hidden size={16} />
         </Button>
         <Button
           type="button"
@@ -98,7 +98,7 @@ const TribeComposer = ({
           onClick={() => videoInputRef.current?.click()}
           aria-label="Add video"
         >
-          <VideoIcon size={16} />
+          <VideoIcon aria-hidden size={16} />
         </Button>
         <span className="text-[11px] text-muted-foreground ml-1">{value.length}/500</span>
       </div>
@@ -112,7 +112,7 @@ const TribeComposer = ({
         disabled={!value.trim() && !hasImage && !hasVideo}
         onClick={onPost}
       >
-        <Send size={14} /> Post
+        <Send aria-hidden size={14} /> Post
       </Button>
     </div>
   </div>

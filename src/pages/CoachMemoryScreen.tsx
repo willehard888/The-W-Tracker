@@ -59,7 +59,7 @@ const CoachMemoryScreen = () => {
             className="h-11 rounded-xl"
           />
           <Button variant="ember" size="icon" className="h-11 w-11 min-h-11 shrink-0 rounded-xl" aria-label="Add fact" disabled={!draft.trim()} onClick={addFact}>
-            <Plus size={16} />
+            <Plus aria-hidden size={16} />
           </Button>
         </div>
 
@@ -105,7 +105,7 @@ const CoachMemoryScreen = () => {
                       onClick={async () => { await remove(m.id); hapticImpact("light"); }}
                       aria-label="Forget"
                     >
-                      <Trash2 size={14} className="text-muted-foreground" />
+                      <Trash2 aria-hidden size={14} className="text-muted-foreground" />
                     </Button>
                   </motion.div>
                 ))}

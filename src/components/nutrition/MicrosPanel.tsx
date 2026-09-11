@@ -54,7 +54,7 @@ const MicrosPanel = ({ rows, className }: { rows: MicroRow[]; className?: string
               </div>
             )}
             {r.value != null && (r.missingCount ?? 0) > 0 && (
-              <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+              <p className="text-[11px] text-muted-foreground/75 mt-0.5">
                 {r.missingCount} item{r.missingCount === 1 ? "" : "s"} without {r.label.toLowerCase()} data
               </p>
             )}

@@ -98,14 +98,14 @@ const Coach = () => {
         <PageBar title="AI Coach" onBack={() => backOr(navigate, "/")} action={<CoachMenu navigate={navigate} />} />
         <div className="home-rise px-6 pt-16 pb-6 text-center">
           <div className="max-w-sm mx-auto space-y-4">
-            <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto" aria-hidden><AlertTriangle size={32} className="text-muted-foreground" /></div>
+            <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto" aria-hidden><AlertTriangle aria-hidden size={32} className="text-muted-foreground" /></div>
             <h2 className="text-lg font-display font-bold">Coach is taking a breather</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               We couldn't load your Coach just now. Check your connection and try
               again — your progress is safe.
             </p>
             <Button onClick={() => { refetch(); refetchAthlete(); }} className="w-full">
-              <RotateCw size={14} className="mr-2" /> Retry
+              <RotateCw aria-hidden size={14} className="mr-2" /> Retry
             </Button>
           </div>
         </div>
@@ -634,7 +634,7 @@ const ChatSheet = ({
       height="tall"
       leading={
         <Button variant="ghost" size="icon" onClick={newChat} aria-label="New chat" title="New chat">
-          <Plus size={18} />
+          <Plus aria-hidden size={18} />
         </Button>
       }
       headerExtra={showMoodSnapshot ? (
@@ -666,7 +666,7 @@ const ChatSheet = ({
             className="h-11 w-11 min-h-11 shrink-0 rounded-xl"
             aria-label="Send"
           >
-            <Send size={16} />
+            <Send aria-hidden size={16} />
           </Button>
         </div>
       }
@@ -730,7 +730,7 @@ const ChatSheet = ({
               ) : m.content}
               {m.failed && (
                 <div className="mt-1.5 inline-flex items-center gap-1 text-[12px] text-destructive font-bold">
-                  <RotateCw size={11} /> Tap to retry
+                  <RotateCw aria-hidden size={11} /> Tap to retry
                 </div>
               )}
             </div>

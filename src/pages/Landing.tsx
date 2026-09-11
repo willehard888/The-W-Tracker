@@ -58,7 +58,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
         <div className="home-rise max-w-md mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-10">
-            <Flame size={14} className="text-gold" />
+            <Flame aria-hidden size={14} className="text-gold" />
             <span className="text-[12px] font-bold text-gold tracking-widest uppercase">
               Discipline is the new flex
             </span>
@@ -86,7 +86,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
               className="w-full group text-base"
             >
               Start Your Journey
-              <ArrowRight
+              <ArrowRight aria-hidden
                 size={18}
                 className="transition-transform group-hover:translate-x-1"
               />
@@ -124,11 +124,11 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       {/* Bottom tagline */}
       <footer className="relative pb-8 pt-4 text-center home-rise home-rise-4">
         <div className="flex items-center justify-center gap-2">
-          <Sparkles size={12} className="text-gold/30" />
-          <p className="text-[11px] text-muted-foreground/60 tracking-[0.22em] uppercase font-medium">
+          <Sparkles aria-hidden size={12} className="text-gold/30" />
+          <p className="text-[11px] text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
             Built for those who refuse to be average
           </p>
-          <Sparkles size={12} className="text-gold/30" />
+          <Sparkles aria-hidden size={12} className="text-gold/30" />
         </div>
       </footer>
     </div>

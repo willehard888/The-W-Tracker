@@ -192,7 +192,7 @@ const NutritionRecipeEditor = () => {
         action={
           id ? (
             <Button variant="ghost" size="icon" aria-label="Delete recipe" className="text-muted-foreground" onClick={() => setConfirmDelete(true)}>
-              <Trash2 size={18} />
+              <Trash2 aria-hidden size={18} />
             </Button>
           ) : undefined
         }
@@ -222,7 +222,7 @@ const NutritionRecipeEditor = () => {
                 if (errors.name) setErrors((er) => ({ ...er, name: undefined }));
               }}
               className={cn(
-                "w-full bg-transparent border-b border-border/60 py-2 font-display text-[24px] font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/40",
+                "w-full bg-transparent border-b border-border/60 py-2 font-display text-[24px] font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
                 errors.name && "border-destructive/60",
               )}
             />

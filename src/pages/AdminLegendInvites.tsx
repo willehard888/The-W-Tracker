@@ -117,8 +117,8 @@ export default function AdminLegendInvites() {
 
       <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-card to-card p-4 mb-6 space-y-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-gold" />
-          <h2 className="text-sm font-bold uppercase tracking-wider">Create new invite</h2>
+          <Sparkles aria-hidden className="h-4 w-4 text-gold" />
+          <h2 className="font-display font-bold text-sm tracking-tight">Create new invite</h2>
         </div>
         <div className="space-y-2">
           <Label className="text-xs">Custom code (optional, auto-generated if empty)</Label>
@@ -156,7 +156,7 @@ export default function AdminLegendInvites() {
           disabled={creating}
           className="w-full bg-gradient-to-r from-gold via-amber-500 to-gold text-background font-bold"
         >
-          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" />}
+          {creating ? <Loader2 aria-hidden className="h-4 w-4 animate-spin" /> : <Crown aria-hidden className="h-4 w-4" />}
           Generate Legend invite
         </Button>
       </div>
@@ -190,7 +190,7 @@ export default function AdminLegendInvites() {
                     </code>
                     {isUsed && (
                       <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground inline-flex items-center gap-1">
-                        <CheckCircle2 size={12} /> Redeemed
+                        <CheckCircle2 aria-hidden size={12} /> Redeemed
                       </span>
                     )}
                     {!isUsed && isExpired && (
@@ -208,7 +208,7 @@ export default function AdminLegendInvites() {
                     <p className="text-xs text-muted-foreground mt-1 truncate">{inv.note}</p>
                   )}
                   <p className="text-[11px] text-muted-foreground mt-1 inline-flex items-center gap-1">
-                    <Clock size={12} />
+                    <Clock aria-hidden size={12} />
                     Created {fmtRelative(inv.created_at)}
                     {inv.expires_at && ` · expires ${fmtRelative(inv.expires_at)}`}
                     {inv.used_at && ` · redeemed ${fmtRelative(inv.used_at)}`}
@@ -216,7 +216,7 @@ export default function AdminLegendInvites() {
                 </div>
                 {!isUsed && !isExpired && (
                   <Button size="sm" variant="outline" onClick={() => copyCode(inv.code)}>
-                    <Copy size={14} />
+                    <Copy size={14} aria-hidden />
                   </Button>
                 )}
               </div>

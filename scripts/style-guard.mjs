@@ -19,6 +19,17 @@ const RULES = [
   // Vocabulary
   { re: /tracking-\[0\.22em\]|tracking-widest|tracking-\[0\.1[468]em\]/, msg: "hand-rolled eyebrow — use .eyebrow / .eyebrow-sm",
     exempt: [UI, "src/components/StatusHeader.tsx", "src/pages/Landing.tsx", "src/components/StoryShareModal.tsx", "src/components/paywall/PilotCodeRedeem.tsx"] },
+  // NOT a rule: `uppercase` + `tracking-wide(r)`. It was tried, and 8 of its 9
+  // hits were badges and chips (ApexBadge, the "Reviewing…" pills, the habit
+  // picker's "Core") where .eyebrow is the wrong class — a bordered pill is not
+  // a micro-label. Only one was the real anti-pattern (an <h2> dressed as a
+  // kicker) and it is fixed. A rule that needs an exemption for 8 of 9 hits
+  // teaches people to add exemptions, not to stop.
+  // The a11y floor from the 2026-08-26 audit: muted text never goes below /75.
+  // 118 values had drifted to /40–/70 before this rule existed, including two
+  // that render on every screen in the app.
+  { re: /text-(?:muted-foreground|white|foreground)\/(?:[1-6]\d|70|[1-9])\b/, msg: "below the /75 muted-text floor (a11y)",
+    exempt: [UI, "src/components/StoryShareModal.tsx", "src/components/AmbientParticles.tsx", "src/pages/ButtonGallery.tsx"] },
   { re: /\.toLocaleString\(\)/, msg: "locale grouping — use fmtInt/fmtUnit from @/lib/format", stripComments: true, exempt: ["src/lib/format.ts"] },
   { re: /\.\.\.(?=["'`<]|\s*<\/)/, msg: "three dots — use the … glyph", stripComments: true, exempt: ["src/main.tsx"] },
   { re: /(?<![\w.])confirm\(/, msg: "window.confirm — use ConfirmDialog", exempt: [/__tests__/] },
@@ -36,6 +47,10 @@ const RULES = [
   // <button whose className sat two lines below an onClick arrow, and 13
   // sub-floor buttons shipped through it.
   { re: /<button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-([6-9]|10)|w-([6-9]|10)|p-1(\.5)?)\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt raw button — add min-h-11 / a before:-inset hit area or use <Button>", exempt: [UI, "src/components/StatusHeader.tsx"] },
+  // <Button> was invisible to the rule above, and an explicit h-7/h-8 beats the
+  // variant's own min-h-9 (cn is twMerge), so these land under even 36 pt.
+  { re: /<Button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-[3-8]|w-[3-8])\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt <Button> — an explicit h-7/h-8 beats the variant's min-h-9 (cn is twMerge) and outgrows its before:-inset-1; add min-h-11 or a wider before:-inset",
+    exempt: [UI, "src/pages/ButtonGallery.tsx"] },
 ];
 
 /**

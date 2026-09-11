@@ -77,7 +77,7 @@ const sidesOf = (battle: TribeBattleLite, myTribeId: string, scores: { challenge
 const scorePair = (mine: number, theirs: number) => (
   <p className="text-[13px] tabular-nums shrink-0">
     <span className={cn("font-black", mine < theirs && "text-muted-foreground")}>{fmtInt(mine)}</span>
-    <span className="text-muted-foreground/60">–</span>
+    <span className="text-muted-foreground/75">–</span>
     <span className={cn("font-black", mine > theirs && "text-muted-foreground")}>{fmtInt(theirs)}</span>
   </p>
 );
@@ -120,7 +120,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             {tier >= 0 ? (
               <TribeFireLite tier={tier} palette={collectivePalette(streak)} variant="mini" size={26} />
             ) : (
-              <Flame size={14} className="text-muted-foreground/40" strokeWidth={1.6} />
+              <Flame aria-hidden size={14} className="text-muted-foreground/75" strokeWidth={1.6} />
             )}
           </div>
           <div className="min-w-0">
@@ -133,7 +133,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
         {scored && (
           <p className={cn(
             "font-display font-black text-[22px] tabular-nums leading-none shrink-0",
-            felt ? "text-gold glow-gold-text" : "text-foreground/70",
+            felt ? "text-gold glow-gold-text" : "text-foreground/75",
           )}>
             {fmtInt(score)}
           </p>

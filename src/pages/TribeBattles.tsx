@@ -256,7 +256,7 @@ const TribeBattles = () => {
               {tier >= 0 ? (
                 <TribeFireLite tier={tier} palette={collectivePalette(collectiveStreak)} variant="mini" size={32} />
               ) : (
-                <Flame size={16} className="text-muted-foreground/40" strokeWidth={1.6} />
+                <Flame aria-hidden size={16} className="text-muted-foreground/75" strokeWidth={1.6} />
               )}
             </div>
             <p className="text-[13px] text-muted-foreground leading-snug">

@@ -191,9 +191,9 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
         onClick={markDone}
         className="w-full font-black mt-4"
       >
-        {saving ? <Loader2 size={16} className="animate-spin" />
-          : alreadyLogged ? <><Check size={16} /> Done · today</>
-          : <><Check size={16} /> {isRest ? "Mark rest" : "Done"}</>}
+        {saving ? <Loader2 aria-hidden size={16} className="animate-spin" />
+          : alreadyLogged ? <><Check aria-hidden size={16} /> Done · today</>
+          : <><Check aria-hidden size={16} /> {isRest ? "Mark rest" : "Done"}</>}
       </Button>
 
       {/* Effort — only after a real session is logged, and only until it's
@@ -219,7 +219,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
                   rpeSaving === value && "commit-pop",
                 )}
               >
-                {rpeSaving === value ? <Loader2 size={13} className="animate-spin mx-auto" /> : value}
+                {rpeSaving === value ? <Loader2 aria-hidden size={13} className="animate-spin mx-auto" /> : value}
               </button>
             ))}
           </div>
@@ -243,11 +243,11 @@ const CollapseRow = ({
     <span className={cn(LABEL, "mt-0.5 shrink-0")}>{label}</span>
     <span className={cn(
       "text-[12px] leading-snug flex-1",
-      open ? "text-foreground/90" : "text-foreground/70 truncate",
+      open ? "text-foreground/90" : "text-foreground/75 truncate",
     )}>
       {preview}
     </span>
-    <ChevronDown size={12} className={cn("text-muted-foreground/70 mt-1 transition-transform shrink-0", open && "rotate-180")} aria-hidden />
+    <ChevronDown size={12} className={cn("text-muted-foreground/75 mt-1 transition-transform shrink-0", open && "rotate-180")} aria-hidden />
   </button>
 );
 

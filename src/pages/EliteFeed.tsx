@@ -902,7 +902,7 @@ const EliteFeed = () => {
                     size="icon-sm"
                     onClick={() => { hapticSelection(); setComposerOpen(false); }}
                     aria-label="Close composer"
-                    className="self-start -mr-1.5 -mt-1.5 rounded-full text-muted-foreground/70 shrink-0"
+                    className="self-start -mr-1.5 -mt-1.5 rounded-full text-muted-foreground/75 shrink-0"
                   >
                     <X aria-hidden size={14} />
                   </Button>
@@ -968,7 +968,7 @@ const EliteFeed = () => {
                 {composerInitial}
               </span>
               <span className="flex-1 text-[14px] text-muted-foreground/80">Share your W today…</span>
-              <span className="flex items-center gap-2.5 text-muted-foreground/55 shrink-0">
+              <span className="flex items-center gap-2.5 text-muted-foreground/75 shrink-0">
                 <Image aria-hidden size={15} />
                 <Video aria-hidden size={15} />
               </span>
@@ -996,7 +996,7 @@ const EliteFeed = () => {
                 Read, react and give kudos while you are on trial.
               </span>
             </span>
-            <ChevronRight aria-hidden size={16} className="text-muted-foreground/60 shrink-0" />
+            <ChevronRight aria-hidden size={16} className="text-muted-foreground/75 shrink-0" />
           </button>
         </div>
       )}

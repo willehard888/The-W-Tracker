@@ -22,7 +22,7 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
   const Icon = won ? Trophy : Swords;
   return (
     <div className="flex items-center gap-3 py-3 min-h-11">
-      <Icon size={15} className={cn("shrink-0", won ? "text-foreground" : "text-muted-foreground/50")} aria-hidden />
+      <Icon size={15} className={cn("shrink-0", won ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
       <div className="flex-1 min-w-0">
         <p className="text-[14px] font-semibold leading-tight truncate">@{opponentName}</p>
         <p className="text-[12px] text-muted-foreground mt-0.5">
@@ -38,13 +38,13 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
       {isAdmin && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="Battle options" className="text-muted-foreground/50 -mr-2">
-              <MoreHorizontal size={14} />
+            <Button variant="ghost" size="icon-sm" aria-label="Battle options" className="text-muted-foreground/75 -mr-2">
+              <MoreHorizontal aria-hidden size={14} />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onAdminDelete(battle.id)} className="text-destructive focus:text-destructive">
-              <Trash2 size={14} className="mr-2" />
+              <Trash2 aria-hidden size={14} className="mr-2" />
               Delete battle
             </DropdownMenuItem>
           </DropdownMenuContent>

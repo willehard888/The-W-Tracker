@@ -81,7 +81,7 @@ const PerformanceOSDashboard = () => {
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">28-day trend</p>
           </div>
-          <Sparkles size={16} className="text-gold/60" />
+          <Sparkles aria-hidden size={16} className="text-gold/60" />
         </div>
         {values.length < 2 ? (
           <div className="h-12 flex items-center text-[11px] text-muted-foreground">Not enough data yet.</div>
@@ -99,7 +99,7 @@ const PerformanceOSDashboard = () => {
         ].map((c) => (
           <div key={c.label} className="surface-card p-3">
             <p className="text-[10px] font-bold text-muted-foreground">{c.label}</p>
-            <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-[11px] text-muted-foreground/60">/{c.max}</span></p>
+            <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-[11px] text-muted-foreground/75">/{c.max}</span></p>
             <div className="h-1 rounded-full bg-card mt-1 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] transition-[width]"
@@ -118,7 +118,7 @@ const PerformanceOSDashboard = () => {
           className="rounded-2xl border border-border/40 bg-card/30 p-4"
         >
           <div className="flex items-center gap-2 mb-2">
-            <Calendar size={12} className="text-gold" />
+            <Calendar aria-hidden size={12} className="text-gold" />
             <p className="text-[11px] font-bold text-gold/80">
               Week of {fmtDate(review.week_starts_on)}
             </p>
@@ -151,7 +151,7 @@ const PerformanceOSDashboard = () => {
         loading={generating}
         onClick={generateReview}
       >
-        <RefreshCw size={12} className="mr-1.5" />
+        <RefreshCw aria-hidden size={12} className="mr-1.5" />
         {review ? "Refresh weekly review" : "Generate weekly review"}
       </Button>
     </div>

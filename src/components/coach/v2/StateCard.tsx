@@ -79,9 +79,9 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
       {/* Signals inline: one quiet line, no tiles. */}
       {(signal.sleepAvg !== null || signal.hydrationAvg !== null) && (
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-muted-foreground tabular-nums">
-          <span>Sleep <b className={cn("font-black", signal.sleepAvg !== null && signal.sleepAvg >= 7.5 ? "text-foreground" : "text-foreground/70")}>{signal.sleepAvg !== null ? `${signal.sleepAvg.toFixed(1)}h` : "—"}</b></span>
-          <span>Water <b className={cn("font-black", signal.hydrationAvg !== null && signal.hydrationAvg >= 2.5 ? "text-foreground" : "text-foreground/70")}>{signal.hydrationAvg !== null ? `${signal.hydrationAvg.toFixed(1)}L` : "—"}</b></span>
-          <span>Reflection <b className={cn("font-black", reflection ? "text-foreground" : "text-foreground/70")}>{reflection ? "logged" : "not yet"}</b></span>
+          <span>Sleep <b className={cn("font-black", signal.sleepAvg !== null && signal.sleepAvg >= 7.5 ? "text-foreground" : "text-foreground/75")}>{signal.sleepAvg !== null ? `${signal.sleepAvg.toFixed(1)}h` : "—"}</b></span>
+          <span>Water <b className={cn("font-black", signal.hydrationAvg !== null && signal.hydrationAvg >= 2.5 ? "text-foreground" : "text-foreground/75")}>{signal.hydrationAvg !== null ? `${signal.hydrationAvg.toFixed(1)}L` : "—"}</b></span>
+          <span>Reflection <b className={cn("font-black", reflection ? "text-foreground" : "text-foreground/75")}>{reflection ? "logged" : "not yet"}</b></span>
         </p>
       )}
 
@@ -96,7 +96,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
           <span className={cn("block text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>{pillarMeta.name} is the gap</span>
           <span className="block text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-1">{pillarMeta.blurb}</span>
         </span>
-        <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" aria-hidden />
+        <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
       </button>
     </div>
   );

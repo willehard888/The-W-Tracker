@@ -176,7 +176,7 @@ export default function AdminModeration() {
 
       {!isLoading && queue && queue.length === 0 && (
         <div className="text-center py-16">
-          <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-gold/40" />
+          <CheckCircle2 aria-hidden className="h-10 w-10 mx-auto mb-3 text-gold/40" />
           <p className="text-sm font-semibold text-muted-foreground">Queue clear 🎉</p>
         </div>
       )}
@@ -197,7 +197,7 @@ export default function AdminModeration() {
                 />
               ) : (
                 <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                  <ShieldAlert className="h-6 w-6 text-muted-foreground" />
+                  <ShieldAlert aria-hidden className="h-6 w-6 text-muted-foreground" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -237,7 +237,7 @@ export default function AdminModeration() {
                 onClick={() => review(item, "approved")}
                 className="flex-1"
               >
-                <CheckCircle2 size={14} />
+                <CheckCircle2 aria-hidden size={14} />
                 Approve
               </Button>
               <Button
@@ -246,7 +246,7 @@ export default function AdminModeration() {
                 onClick={() => review(item, "rejected")}
                 className="flex-1"
               >
-                <XCircle size={14} />
+                <XCircle aria-hidden size={14} />
                 Reject
               </Button>
             </div>

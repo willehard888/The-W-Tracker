@@ -139,9 +139,9 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
                   </span>
                   <span className={cn("text-[11px] font-bold shrink-0", isCurrent ? "text-foreground" : "text-muted-foreground")}>{status}</span>
                   {status === "Locked" ? (
-                    <Lock aria-hidden size={12} className="text-muted-foreground/60 shrink-0" />
+                    <Lock aria-hidden size={12} className="text-muted-foreground/75 shrink-0" />
                   ) : (
-                    <ChevronDown aria-hidden size={14} className={cn("text-muted-foreground/60 shrink-0 transition-transform duration-200", isOpen && "rotate-180")} />
+                    <ChevronDown aria-hidden size={14} className={cn("text-muted-foreground/75 shrink-0 transition-transform duration-200", isOpen && "rotate-180")} />
                   )}
                 </button>
                 {isOpen && (

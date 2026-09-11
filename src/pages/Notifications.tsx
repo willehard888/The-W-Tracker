@@ -163,7 +163,7 @@ const Notifications = () => {
         action={
           unread > 0 ? (
             <Button variant="ghost" size="icon" aria-label="Mark all read" onClick={markAllRead}>
-              <CheckCheck size={18} />
+              <CheckCheck aria-hidden size={18} />
             </Button>
           ) : undefined
         }
@@ -260,13 +260,13 @@ const Notifications = () => {
                   // Entrance on a wrapper: the keyframe pins transform, which would kill the row's press.
                   <div key={n.id} className={cn(i < 8 && "animate-fade-in-up")} style={i < 8 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
                     <button type="button" onClick={() => openNotification(n)} className="w-full flex items-start gap-3 py-3 text-left">
-                      <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/70")} aria-hidden />
+                      <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
                       <span className="flex-1 min-w-0">
                         <span className={cn("block text-[13px] leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
                           {n.title}
                         </span>
                         {n.body && <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
-                        <span className="block text-[11px] text-muted-foreground/60 mt-1">{fmtRelative(n.created_at)}</span>
+                        <span className="block text-[11px] text-muted-foreground/75 mt-1">{fmtRelative(n.created_at)}</span>
                       </span>
                       {isUnread && <span className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
                     </button>

@@ -250,7 +250,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               placeholder="e.g. New baby, working remote, training around 6am only."
               className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[11px] text-muted-foreground/70 mt-1 tabular-nums">{(draft.life_context ?? "").length}/160</p>
+            <p className="text-[11px] text-muted-foreground/75 mt-1 tabular-nums">{(draft.life_context ?? "").length}/160</p>
           </Field>
 
           <Field label="Stress lately">
@@ -323,7 +323,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               placeholder="e.g. The dad my kids see show up strong every day. Someone who keeps promises to himself."
               className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[11px] text-muted-foreground/70 mt-1 tabular-nums">
+            <p className="text-[11px] text-muted-foreground/75 mt-1 tabular-nums">
               {draft.i_am.length}/160 · This is what every check-in is really for.
             </p>
           </Field>
@@ -404,11 +404,11 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       <div className="flex gap-2 mt-7 sticky bottom-0 pt-2 pb-2 bg-gradient-to-t from-background via-background/95 to-transparent">
         {step > 0 && (
           <Button variant="ghost" size="lg" onClick={() => { hapticImpact("light"); setStep(s => s - 1); }}>
-            <ChevronLeft size={16} /> Back
+            <ChevronLeft aria-hidden size={16} /> Back
           </Button>
         )}
         <Button variant="ember" size="lg" className="flex-1" loading={isSaving} disabled={blocked} onClick={next}>
-          {last ? "Lock it in" : optional ? "Continue" : "Next"} {!last && <ChevronRight size={16} />}
+          {last ? "Lock it in" : optional ? "Continue" : "Next"} {!last && <ChevronRight aria-hidden size={16} />}
         </Button>
       </div>
     </div>
@@ -448,7 +448,7 @@ const OptionRow = ({
         )}
         aria-hidden
       >
-        {active && <Check size={12} strokeWidth={3} />}
+        {active && <Check aria-hidden size={12} strokeWidth={3} />}
       </span>
     </button>
   );
@@ -482,7 +482,7 @@ const Scale = ({
         );
       })}
     </div>
-    <p className="mt-1 flex justify-between text-[11px] text-muted-foreground/70">
+    <p className="mt-1 flex justify-between text-[11px] text-muted-foreground/75">
       <span>{words[0]}</span>
       <span>{words[words.length - 1]}</span>
     </p>
@@ -532,7 +532,7 @@ const Stepper = ({
       <div className="flex items-center gap-2">
         <button type="button" onClick={dec} aria-label={`Decrease ${label.toLowerCase()}`}
           className="h-11 w-11 shrink-0 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground">
-          <Minus size={16} />
+          <Minus aria-hidden size={16} />
         </button>
         <div className="flex-1 text-center">
           <span className="font-display text-2xl font-black tabular-nums">{value}</span>
@@ -540,7 +540,7 @@ const Stepper = ({
         </div>
         <button type="button" onClick={inc} aria-label={`Increase ${label.toLowerCase()}`}
           className="h-11 w-11 shrink-0 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground">
-          <Plus size={16} />
+          <Plus aria-hidden size={16} />
         </button>
       </div>
     </div>

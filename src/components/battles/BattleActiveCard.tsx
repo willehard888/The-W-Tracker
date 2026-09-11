@@ -44,7 +44,7 @@ const BattleActiveCard = ({
   const score = (n: number, felt: boolean) => (
     <p className={cn(
       "font-display font-black text-[22px] tabular-nums leading-none shrink-0",
-      felt ? "text-gold glow-gold-text" : "text-foreground/70",
+      felt ? "text-gold glow-gold-text" : "text-foreground/75",
     )}>
       {fmtInt(n)}
     </p>
@@ -61,17 +61,17 @@ const BattleActiveCard = ({
           {isAdmin && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-sm" aria-label="Battle options" className="text-muted-foreground/60">
-                  <MoreHorizontal size={14} />
+                <Button variant="ghost" size="icon-sm" aria-label="Battle options" className="text-muted-foreground/75">
+                  <MoreHorizontal aria-hidden size={14} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[160px]">
                 <DropdownMenuItem onClick={() => onAdminCancel(battle.id)} className="text-[hsl(var(--streak-orange))]">
-                  <ShieldCheck size={14} className="mr-2" />
+                  <ShieldCheck aria-hidden size={14} className="mr-2" />
                   Cancel battle
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAdminDelete(battle.id)} className="text-destructive focus:text-destructive">
-                  <Trash2 size={14} className="mr-2" />
+                  <Trash2 aria-hidden size={14} className="mr-2" />
                   Delete battle
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -139,7 +139,7 @@ export const BattleActiveRow = ({
       </div>
       <p className="text-[13px] tabular-nums shrink-0">
         <span className={cn("font-black", myScore < oppScore && "text-muted-foreground")}>{fmtInt(myScore)}</span>
-        <span className="text-muted-foreground/60">–</span>
+        <span className="text-muted-foreground/75">–</span>
         <span className={cn("font-black", myScore > oppScore && "text-muted-foreground")}>{fmtInt(oppScore)}</span>
       </p>
       {!myProof && (

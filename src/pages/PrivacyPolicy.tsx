@@ -35,8 +35,10 @@ const PrivacyPolicy = () => {
 
         <section>
           <h2 className="font-semibold text-foreground mb-2">5. Apple Health (HealthKit)</h2>
-          <p>If you choose to connect Apple Health, the app reads your workouts, steps, and active energy from HealthKit solely to verify your daily check-ins (earning the "Verified Performer" badge). Only aggregate daily values (e.g. total steps, workout count and minutes) and a verification result are stored on our secure servers — raw HealthKit samples such as heart-rate streams or GPS workout routes are never accessed, stored, or transmitted. We never use Health data for advertising or marketing, and we never sell it or share it with third parties. Connecting Apple Health is entirely optional, and you can revoke access at any time in iOS Settings → Privacy &amp; Security → Health.</p>
-        </section>
+          <p>Connecting Apple Health is optional. If you connect it, the app reads the following from HealthKit: steps, walking/running and cycling distance, flights climbed, active energy, workouts (type, duration, calories and the app that recorded them — for example Garmin Connect, Polar Flow, Oura or Strava), mindful minutes, sleep (total time and sleep stages), resting heart rate, overnight heart rate, heart-rate variability, respiratory rate, blood oxygen, and your most recent body weight, body-fat percentage and VO₂ max.</p>
+          <p className="mt-2">We store only aggregates: one row per day (totals, counts, the longest workout's sport, and which apps contributed) and one row per night (sleep-stage minutes and overnight averages). Raw sample streams and workout GPS routes are never stored or transmitted. This data verifies your daily check-ins, powers the Whealth Index and the Recovery card, and gives the coach recovery context. It is never used for advertising, never sold, and never shared with third parties.</p>
+          <p className="mt-2">Two optional, separately-consented writes exist: your logged meals (energy, protein, carbohydrates, fat, water, caffeine) and your finished strength sessions can be saved to Apple Health if you turn those on in the app. You can revoke any of this at any time in iOS Settings → Privacy &amp; Security → Health, and deleting your account deletes the stored aggregates.</p>
+          </section>
 
         <section>
           <h2 className="font-semibold text-foreground mb-2">6. Subscriptions & Payments</h2>

@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
       "coach_goals", "coach_performance_snapshots", "coach_weekly_reviews", "coach_nudges",
       "weekly_briefings", "vault_lesson_progress", "user_habits", "user_habit_logs",
       "analytics_events", "tribe_members", "tribe_invites", "tribe_event_rsvps",
-      "moderation_queue", "content_moderations", "night_metrics", "workout_logs",
+      "moderation_queue", "content_moderations", "health_night_metrics", "workout_logs",
       "health_sync_snapshots",
       // Nutrition engine: diary, targets, recipes, favourites, scan cache
       // (auth.users cascades cover these too — explicit is the house rule).

@@ -1,32 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   isHealthKitAvailable,
   requestHealthKitPermissions,
-  readTodaySnapshot,
   type DaySnapshot,
 } from "@/lib/health/healthkit";
-import { readLastNightSleepHours } from "@/lib/health/night-metrics";
+import { syncDaySnapshot } from "@/lib/health/background-sync";
 import { markHealthConnected } from "@/lib/health/health-consent";
 
 /**
- * useHealthKit — single React entry point for HealthKit syncing.
+ * useHealthKit — the React entry point for HealthKit.
  *
- * Lifecycle:
- *  1. On mount, probe `isHealthKitAvailable()` to know if we should even
- *     surface a "connect" CTA.
- *  2. When the user opts in (via `connect()`), request permissions, sync
- *     today, and persist a snapshot via the `upsert_health_snapshot` RPC.
- *  3. `syncToday()` can be called any time (after a check-in submit, on
- *     manual refresh, on app foreground) to refresh.
+ *  1. On mount, probe `isHealthKitAvailable()` to know whether to surface the
+ *     connect CTA at all.
+ *  2. `connect()` is the ONE permission ask; it always follows an on-screen
+ *     explanation (HealthKitConnectCard) and records consent so the
+ *     background sync is allowed to touch Health afterwards.
+ *  3. `syncToday()` reads + persists today's snapshot on demand (check-in
+ *     open, check-in submit, the card's Sync button). The scheduled syncs live
+ *     in lib/health/background-sync.ts.
  *
- * Web / Android / missing plugin → `available = false` and all calls
- * resolve to no-ops, so consumer UI gracefully renders the "not
- * available on this platform" state.
+ * Web / Android / no HealthKit → `available = false` and every call no-ops.
  */
 export const useHealthKit = () => {
-  const { user } = useAuth();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [lastSnapshot, setLastSnapshot] = useState<DaySnapshot | null>(null);
@@ -46,53 +42,22 @@ export const useHealthKit = () => {
     return () => { alive = false; };
   }, []);
 
-  const persistSnapshot = useCallback(async (snap: DaySnapshot) => {
-    if (!user?.id) return;
-    const { error: rpcErr } = await supabase.rpc("upsert_health_snapshot", {
-      _date: snap.date,
-      // null → undefined: the arg is omitted from the payload and the SQL
-      // default (NULL) applies — same stored value, strict-clean.
-      _steps: snap.steps ?? undefined,
-      _workout_minutes: snap.workout_minutes ?? undefined,
-      _workout_count: snap.workout_count ?? undefined,
-      _sleep_hours: snap.sleep_hours ?? undefined,
-      _active_kcal: snap.active_kcal ?? undefined,
-      _source: "healthkit",
-      _mindful_minutes: snap.mindful_minutes ?? undefined,
-    });
-    if (rpcErr) throw new Error(rpcErr.message);
-  }, [user?.id]);
-
   /** Read HealthKit + upsert today's row. Safe to call repeatedly. */
   const syncToday = useCallback(async (): Promise<DaySnapshot | null> => {
     if (!available) return null;
     setSyncing(true);
     setError(null);
     try {
-      const snap = await readTodaySnapshot();
-      if (snap) {
-        // Self-heal for accounts that granted HealthKit BEFORE the consent
-        // flag existed: a successful read proves permission, so record it —
-        // otherwise their background sync stays off until they re-tap Connect.
-        markHealthConnected();
-        // capacitor-health can't read sleep, so fold in last night's sleep from
-        // the HealthNight plugin — otherwise sleep_hours is always null and the
-        // check-in's sleep can never be HealthKit-verified.
-        if (snap.sleep_hours == null) {
-          const sleepH = await readLastNightSleepHours();
-          if (sleepH != null) snap.sleep_hours = sleepH;
-        }
-        await persistSnapshot(snap);
-        setLastSnapshot(snap);
-      }
+      const snap = await syncDaySnapshot();
+      if (snap) setLastSnapshot(snap);
       return snap;
-    } catch (e: any) {
-      setError(e?.message ?? "Sync failed");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Sync failed");
       return null;
     } finally {
       setSyncing(false);
     }
-  }, [available, persistSnapshot]);
+  }, [available]);
 
   /** Request permission then run a first sync. Returns true if granted. */
   const connect = useCallback(async (): Promise<boolean> => {
@@ -102,9 +67,8 @@ export const useHealthKit = () => {
       setError(perm.error ?? "denied");
       return false;
     }
-    // This is the ONLY place permission is asked for, and it always follows an
-    // on-screen explanation. Recording it here is what unlocks the background
-    // sync — see lib/health/health-consent.ts.
+    // Recording consent here is what unlocks the background sync — see
+    // lib/health/health-consent.ts.
     markHealthConnected();
     await syncToday();
     return true;

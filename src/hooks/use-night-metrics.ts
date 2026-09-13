@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { syncNightMetrics } from "@/lib/health/night-metrics";
+import { hasHealthConsent } from "@/lib/health/health-consent";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface NightMetrics {
@@ -54,12 +55,18 @@ export const useSetNightFactors = () => {
 };
 
 /**
- * Trigger a HealthKit night-metrics sync once on mount (iOS only; no-op
- * elsewhere), then refresh the query so the Recovery card + coach see last night.
+ * Refresh last night on mount (iOS only; no-op elsewhere), then invalidate so
+ * the Recovery card + coach see it.
+ *
+ * Gated on consent: `syncNightMetrics` calls `requestAuthorization`, and
+ * without the gate opening Profile raised the iOS Health sheet cold over a
+ * screen that never mentioned Health — exactly what health-consent.ts exists
+ * to prevent. The ask belongs to HealthKitConnectCard.
  */
 export const useNightSync = () => {
   const qc = useQueryClient();
   useEffect(() => {
+    if (!hasHealthConsent()) return;
     let alive = true;
     syncNightMetrics().then((wrote) => {
       if (wrote && alive) qc.invalidateQueries({ queryKey: ["night-metrics"] });

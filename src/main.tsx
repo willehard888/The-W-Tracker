@@ -3,6 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
 import { applySessionFromUrl } from "@/lib/oauth-session";
+import { syncHealthIfStale } from "@/lib/health/background-sync";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -164,6 +165,9 @@ if (Capacitor.isNativePlatform()) {
           oauthHandled,
           href: window.location.href.slice(0, 160),
         });
+        // A watch syncs to Apple Health while the app is backgrounded; read it
+        // on the way back in (consent-gated, hour-throttled, fail-open).
+        void syncHealthIfStale();
 
         // If we were waiting for an OAuth session but none arrived yet,
         // check if Supabase already has a valid session from the redirect.

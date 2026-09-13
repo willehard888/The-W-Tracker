@@ -1456,46 +1456,64 @@ export type Database = {
       health_sync_snapshots: {
         Row: {
           active_kcal: number | null
+          body_fat_pct: number | null
+          body_mass_kg: number | null
           created_at: string
+          distance_m: number | null
+          flights: number | null
           id: string
           last_synced_at: string
           mindful_minutes: number | null
           sleep_hours: number | null
           snapshot_date: string
           source: string
+          sources: string[]
           steps: number | null
           updated_at: string
           user_id: string
+          vo2max: number | null
           workout_count: number | null
           workout_minutes: number | null
         }
         Insert: {
           active_kcal?: number | null
+          body_fat_pct?: number | null
+          body_mass_kg?: number | null
           created_at?: string
+          distance_m?: number | null
+          flights?: number | null
           id?: string
           last_synced_at?: string
           mindful_minutes?: number | null
           sleep_hours?: number | null
           snapshot_date: string
           source?: string
+          sources?: string[]
           steps?: number | null
           updated_at?: string
           user_id: string
+          vo2max?: number | null
           workout_count?: number | null
           workout_minutes?: number | null
         }
         Update: {
           active_kcal?: number | null
+          body_fat_pct?: number | null
+          body_mass_kg?: number | null
           created_at?: string
+          distance_m?: number | null
+          flights?: number | null
           id?: string
           last_synced_at?: string
           mindful_minutes?: number | null
           sleep_hours?: number | null
           snapshot_date?: string
           source?: string
+          sources?: string[]
           steps?: number | null
           updated_at?: string
           user_id?: string
+          vo2max?: number | null
           workout_count?: number | null
           workout_minutes?: number | null
         }
@@ -4345,32 +4363,25 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      upsert_health_snapshot:
-        | {
-            Args: {
-              _active_kcal?: number
-              _date: string
-              _sleep_hours?: number
-              _source?: string
-              _steps?: number
-              _workout_count?: number
-              _workout_minutes?: number
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              _active_kcal?: number
-              _date: string
-              _mindful_minutes?: number
-              _sleep_hours?: number
-              _source?: string
-              _steps?: number
-              _workout_count?: number
-              _workout_minutes?: number
-            }
-            Returns: Json
-          }
+      upsert_health_snapshot: {
+        Args: {
+          _active_kcal?: number
+          _body_fat_pct?: number
+          _body_mass_kg?: number
+          _date: string
+          _distance_m?: number
+          _flights?: number
+          _mindful_minutes?: number
+          _sleep_hours?: number
+          _source?: string
+          _sources?: string[]
+          _steps?: number
+          _vo2max?: number
+          _workout_count?: number
+          _workout_minutes?: number
+        }
+        Returns: Json
+      }
       upsert_night_metrics: {
         Args: {
           p_avg_hr?: number

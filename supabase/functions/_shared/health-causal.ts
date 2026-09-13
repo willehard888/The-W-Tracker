@@ -35,7 +35,7 @@ export interface NightSignals {
   hasData: boolean;
   last?: NightRow;
   baseline?: { restingHr: number | null; respRate: number | null; sleepMin: number | null; deepMin: number | null; remMin: number | null };
-  training?: { workoutMin: number | null; activeKcal: number | null; lastRpe: number | null };
+  training?: { workoutMin: number | null; activeKcal: number | null; distanceM: number | null; lastRpe: number | null; sources: string[] };
 }
 
 export async function gatherNightSignals(supabase: AnyClient, _userId: string): Promise<NightSignals> {
@@ -50,10 +50,10 @@ export async function gatherNightSignals(supabase: AnyClient, _userId: string): 
 
     // Yesterday's training load (to separate "hard session" from other causes)
     // + most recent RPE. Best-effort.
-    let training: NightSignals["training"] = { workoutMin: null, activeKcal: null, lastRpe: null };
+    let training: NightSignals["training"] = { workoutMin: null, activeKcal: null, distanceM: null, lastRpe: null, sources: [] };
     try {
       const [{ data: snaps }, { data: refl }] = await Promise.all([
-        supabase.from("health_sync_snapshots").select("snapshot_date, workout_minutes, active_kcal").order("snapshot_date", { ascending: false }).limit(3),
+        supabase.from("health_sync_snapshots").select("snapshot_date, workout_minutes, active_kcal, distance_m, sources").order("snapshot_date", { ascending: false }).limit(3),
         supabase.from("coach_reflections").select("rpe_1to10").order("reflection_date", { ascending: false }).limit(1).maybeSingle(),
       ]);
       // The training that affects "last night" is the day before night_date.
@@ -63,7 +63,9 @@ export async function gatherNightSignals(supabase: AnyClient, _userId: string): 
       training = {
         workoutMin: s?.workout_minutes ?? null,
         activeKcal: s?.active_kcal ?? null,
+        distanceM: s?.distance_m ?? null,
         lastRpe: (refl as any)?.rpe_1to10 ?? null,
+        sources: Array.isArray(s?.sources) ? (s.sources as string[]) : [],
       };
     } catch { /* ignore */ }
 
@@ -117,8 +119,11 @@ export function buildCausalBlock(s: NightSignals): string {
   // other disruptors (both raise resting HR).
   const t = s.training;
   const hardSession = (t?.workoutMin ?? 0) >= 60 || (t?.lastRpe ?? 0) >= 8 || (t?.activeKcal ?? 0) >= 700;
-  const trainLine = t && (t.workoutMin || t.activeKcal || t.lastRpe)
-    ? `\nYesterday's training load: ${t.workoutMin ? `${t.workoutMin}min` : "?"}${t.activeKcal ? `, ${t.activeKcal} active kcal` : ""}${t.lastRpe ? `, last RPE ${t.lastRpe}/10` : ""}${hardSession ? " (HARD)" : ""}.`
+  // Naming the source app ("recorded by Garmin Connect") is what lets the coach
+  // say "your Garmin saw…" instead of "Apple Health saw…" when that is the truth.
+  const via = t?.sources?.length ? ` — recorded by ${t.sources.join(", ")}` : "";
+  const trainLine = t && (t.workoutMin || t.activeKcal || t.lastRpe || t.distanceM)
+    ? `\nYesterday's training load: ${t.workoutMin ? `${t.workoutMin}min` : "?"}${t.distanceM ? `, ${(t.distanceM / 1000).toFixed(1)} km` : ""}${t.activeKcal ? `, ${t.activeKcal} active kcal` : ""}${t.lastRpe ? `, last RPE ${t.lastRpe}/10` : ""}${hardSession ? " (HARD)" : ""}${via}.`
     : "";
 
   // Disruption / alcohol-signature detection.

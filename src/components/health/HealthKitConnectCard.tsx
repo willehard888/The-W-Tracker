@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useHealthKit } from "@/hooks/use-healthkit";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { hasHealthConsent } from "@/lib/health/health-consent";
+import { hasHealthConsent, hasStaleHealthConsent } from "@/lib/health/health-consent";
 import { track, FUNNEL } from "@/lib/analytics";
 
 /**
@@ -91,16 +91,19 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
   };
 
   if (!connected) {
+    const reconnect = hasStaleHealthConsent();
     return (
       <div className="surface-card surface-card-quiet p-4">
-        <p className="text-[14px] font-bold leading-tight">Verify your check-ins automatically</p>
+        <p className="text-[14px] font-bold leading-tight">
+          {reconnect ? "Apple Health can give more now" : "Verify your check-ins automatically"}
+        </p>
         <p className="text-[12px] text-muted-foreground leading-snug mt-1">
-          Connect Apple Health and every workout, night of sleep and step count
-          your watch records — Garmin, Polar, Oura, Apple Watch — confirms your
-          check-in for you. Verified check-ins earn the "Verified Performer" badge.
+          {reconnect
+            ? "This update reads workouts, steps, distance and body metrics on top of sleep — allow the new types once and every watch that syncs to Health (Garmin, Polar, Oura, Apple Watch) feeds your check-ins."
+            : "Connect Apple Health and every workout, night of sleep and step count your watch records — Garmin, Polar, Oura, Apple Watch — confirms your check-in for you. Verified check-ins earn the \"Verified Performer\" badge."}
         </p>
         <Button variant="secondary" loading={syncing} onClick={handleConnect} className="w-full mt-3">
-          <Heart aria-hidden size={14} /> Connect Apple Health
+          <Heart aria-hidden size={14} /> {reconnect ? "Allow the new types" : "Connect Apple Health"}
         </Button>
       </div>
     );

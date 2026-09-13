@@ -6,6 +6,8 @@ import {
   markWorkoutWriteEnabled,
   hasWorkoutWriteConsent,
   clearWorkoutWriteConsent,
+  hasStaleHealthConsent,
+  HEALTH_CONSENT_KEY,
   WORKOUT_WRITE_CONSENT_KEY,
 } from "@/lib/health/health-consent";
 
@@ -20,6 +22,19 @@ describe("health-consent", () => {
   it("reports consent once connected", () => {
     markHealthConnected();
     expect(hasHealthConsent()).toBe(true);
+  });
+
+  it("treats a consent given for the old, narrower read set as not connected — and as stale", () => {
+    localStorage.setItem(HEALTH_CONSENT_KEY, "1");
+    expect(hasHealthConsent()).toBe(false);
+    expect(hasStaleHealthConsent()).toBe(true);
+    markHealthConnected();
+    expect(hasHealthConsent()).toBe(true);
+    expect(hasStaleHealthConsent()).toBe(false);
+  });
+
+  it("is not stale when it was never given", () => {
+    expect(hasStaleHealthConsent()).toBe(false);
   });
 
   it("clears consent on sign-out", () => {

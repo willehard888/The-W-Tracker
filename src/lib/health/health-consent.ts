@@ -23,9 +23,19 @@
 export const HEALTH_CONSENT_KEY = "w_health_connected";
 const KEY = HEALTH_CONSENT_KEY;
 
+/**
+ * The consent is versioned by the READ SET it was given for. When the app
+ * starts asking for more types (v2: steps, distance, workouts, mindful
+ * minutes, body metrics on top of the v1 night set), iOS shows its sheet again
+ * for the new ones — and an old "1" flag would let the background sync raise
+ * that sheet cold. A stale version reads as "not connected", so the ask comes
+ * from the card, primed, like the first time.
+ */
+export const HEALTH_CONSENT_VERSION = "2";
+
 export const markHealthConnected = (): void => {
   try {
-    localStorage.setItem(KEY, "1");
+    localStorage.setItem(KEY, HEALTH_CONSENT_VERSION);
   } catch {
     /* storage unavailable — worst case the user is asked again, deliberately */
   }
@@ -33,10 +43,20 @@ export const markHealthConnected = (): void => {
 
 export const hasHealthConsent = (): boolean => {
   try {
-    return localStorage.getItem(KEY) === "1";
+    return localStorage.getItem(KEY) === HEALTH_CONSENT_VERSION;
   } catch {
     // Fail CLOSED: if we can't tell, don't prompt. An un-primed system sheet
     // is a worse outcome than a missed background sync.
+    return false;
+  }
+};
+
+/** True when Health was connected under an older, narrower read set. */
+export const hasStaleHealthConsent = (): boolean => {
+  try {
+    const v = localStorage.getItem(KEY);
+    return v != null && v !== HEALTH_CONSENT_VERSION;
+  } catch {
     return false;
   }
 };

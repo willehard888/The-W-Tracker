@@ -1,7 +1,7 @@
-// Reads last night's recovery signals from HealthKit via our custom native
-// plugin (ios/local-plugins/HealthNight) and upserts them to health_night_metrics,
-// so the coach can reason about WHY sleep / performance changed. iOS-native only;
-// fully fail-open (never throws to callers).
+// The JS side of `ios/App/App/HealthNight.swift` — the app's one HealthKit
+// plugin. This module owns the proxy and the NIGHT sync (upsert to
+// health_night_metrics); `healthkit.ts` builds the DAY snapshot on the same
+// proxy. iOS-native only; fully fail-open (never throws to callers).
 import { registerPlugin, Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -47,10 +47,42 @@ export interface WorkoutWriteArgs {
   end: string;
 }
 
+/** Raw `queryDay` result — sums over the local day, plus who contributed. */
+export interface DayResult {
+  available?: boolean;
+  steps?: number;
+  active_kcal?: number;
+  distance_walk_m?: number;
+  distance_cycle_m?: number;
+  flights?: number;
+  workouts?: Array<{ type?: string; duration_s?: number; kcal?: number; source?: string }>;
+  /** camelCase HKWorkoutActivityType of the day's longest workout. */
+  primary_type?: string;
+  mindful_minutes?: number;
+  /** Distinct source-app names that wrote anything today. */
+  sources?: string[];
+}
+
+/** Raw `queryBody` result — newest reading of each over the last 90 days. */
+export interface BodyResult {
+  available?: boolean;
+  body_mass_kg?: number;
+  body_mass_kg_at?: string;
+  body_fat_pct?: number;
+  body_fat_pct_at?: string;
+  vo2max?: number;
+  vo2max_at?: string;
+}
+
 interface HealthNightPlugin {
-  /** Read-only (night metrics) — share-free, called on every sync. */
+  /** `HKHealthStore.isHealthDataAvailable()` — the platform probe. */
+  isAvailable(): Promise<{ available: boolean }>;
+  /** Read-only, the ONE sheet: night + day + body types together. */
   requestAuthorization(): Promise<{ granted: boolean }>;
   queryNight(): Promise<NightResult>;
+  /** ISO start/end; defaults to the device's local day. */
+  queryDay(args?: { start?: string; end?: string }): Promise<DayResult>;
+  queryBody(): Promise<BodyResult>;
   /** Share auth for the six dietary types; rejects when HealthKit is unavailable. */
   requestMealWriteAuthorization(): Promise<{ granted: boolean }>;
   writeMeal(args: MealWriteArgs): Promise<{ written: boolean; samples?: number }>;
@@ -70,10 +102,8 @@ const round1 = (v: number | null | undefined) => (v == null ? undefined : Math.r
 const localDate = (d = new Date()) => d.toLocaleDateString("en-CA"); // YYYY-MM-DD
 
 /**
- * Last night's total sleep in hours, for the daily HealthKit snapshot.
- * capacitor-health can't read sleep, so `health_sync_snapshots.sleep_hours`
- * was always null — this bridges the HealthNight plugin's sleep total in so
- * check-in verification and the coach see real (not just self-reported) sleep.
+ * Last night's total sleep in hours, folded into the day snapshot so
+ * check-in verification and the coach see real (not self-reported) sleep.
  * Fail-open → null.
  */
 export async function readLastNightSleepHours(): Promise<number | null> {

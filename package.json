@@ -51,7 +51,6 @@
     "@sentry/react": "^10.62.0",
     "@supabase/supabase-js": "^2.99.3",
     "@tanstack/react-query": "^5.83.0",
-    "capacitor-health": "^8.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",

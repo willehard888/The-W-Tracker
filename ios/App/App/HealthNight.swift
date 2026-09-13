@@ -2,8 +2,18 @@ import Foundation
 import Capacitor
 import HealthKit
 
-/// Reads last night's recovery metrics from HealthKit (sleep stages, resting HR,
-/// respiratory rate, overnight HR, SpO2) for the Causal Health engine.
+/// The app's ONE HealthKit plugin: last night's recovery metrics (sleep stages,
+/// resting HR, respiratory rate, overnight HR, HRV, SpO2), today's day snapshot
+/// (steps, distance, active energy, workouts with their sport and source app,
+/// mindful minutes), the newest body/fitness readings, and the two opt-in writes.
+///
+/// It used to share the job with the `capacitor-health` pod. That pod registers
+/// itself as `HealthPlugin`, the JS looked up `Capacitor.Plugins.Health`, and
+/// nothing ever imported it — so the day-snapshot half of the integration was
+/// dead from 2026-05-25 (a58bd296): no auto-detect, no verified check-ins, no
+/// connect card. One plugin here means one permission sheet, one registry name
+/// checked in code, and access to the types that pod could not read at all
+/// (VO2 max, body mass).
 ///
 /// This is compiled DIRECTLY INTO THE APP TARGET and registered in code from
 /// `MainViewController.capacitorDidLoad()` (via `bridge.registerPluginInstance`),
@@ -21,8 +31,11 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "HealthNight"
     public let jsName = "HealthNight"
     public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "queryNight", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "queryDay", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "queryBody", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestMealWriteAuthorization", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "writeMeal", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "deleteMeal", returnType: CAPPluginReturnPromise),
@@ -32,14 +45,32 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
 
     private let store = HKHealthStore()
 
+    /// Everything the app reads, requested once so iOS shows one sheet. Not on
+    /// the list on purpose: workout routes / GPS and blood pressure — nothing
+    /// consumes them and the privacy policy promises they are never read.
     private func readTypes() -> Set<HKObjectType> {
         var types = Set<HKObjectType>()
-        if let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(sleep) }
-        let ids: [HKQuantityTypeIdentifier] = [.restingHeartRate, .respiratoryRate, .heartRate, .oxygenSaturation, .heartRateVariabilitySDNN]
+        let categories: [HKCategoryTypeIdentifier] = [.sleepAnalysis, .mindfulSession]
+        for id in categories {
+            if let t = HKObjectType.categoryType(forIdentifier: id) { types.insert(t) }
+        }
+        let ids: [HKQuantityTypeIdentifier] = [
+            // night
+            .restingHeartRate, .respiratoryRate, .heartRate, .oxygenSaturation, .heartRateVariabilitySDNN,
+            // day
+            .stepCount, .activeEnergyBurned, .distanceWalkingRunning, .distanceCycling, .flightsClimbed,
+            // body / fitness
+            .bodyMass, .bodyFatPercentage, .vo2Max
+        ]
         for id in ids {
             if let t = HKObjectType.quantityType(forIdentifier: id) { types.insert(t) }
         }
+        types.insert(HKObjectType.workoutType())
         return types
+    }
+
+    @objc func isAvailable(_ call: CAPPluginCall) {
+        call.resolve(["available": HKHealthStore.isHealthDataAvailable()])
     }
 
     @objc func requestAuthorization(_ call: CAPPluginCall) {
@@ -129,6 +160,153 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
             call.resolve(result)
         }
     }
+
+    // MARK: - Day snapshot (steps, distance, energy, workouts, mindful minutes)
+
+    /// Today's aggregates in one round trip. Sums use HKStatisticsQuery, which
+    /// de-duplicates overlapping sources for us — a Garmin watch and an iPhone
+    /// both counting the same steps do not double. `sources` is the set of app
+    /// names that contributed anything today ("Garmin Connect", "Oura", "Polar
+    /// Flow", "Strava", "Apple Watch"): the visible proof a device's data arrived.
+    @objc func queryDay(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.resolve(["available": false])
+            return
+        }
+        let end = Self.parseDate(call.getString("end")) ?? Date()
+        let start = Self.parseDate(call.getString("start")) ?? Calendar.current.startOfDay(for: end)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let group = DispatchGroup()
+        var result: [String: Any] = ["available": true]
+        var sources = Set<String>()
+        let lock = NSLock()
+        func put(_ key: String, _ value: Any) { lock.lock(); result[key] = value; lock.unlock() }
+        func source(_ name: String) { lock.lock(); sources.insert(name); lock.unlock() }
+
+        func sum(_ id: HKQuantityTypeIdentifier, unit: HKUnit, key: String) {
+            guard let qt = HKObjectType.quantityType(forIdentifier: id) else { return }
+            group.enter()
+            let q = HKStatisticsQuery(quantityType: qt, quantitySamplePredicate: predicate, options: [.cumulativeSum, .separateBySource]) { _, stats, _ in
+                if let total = stats?.sumQuantity()?.doubleValue(for: unit), total.isFinite, total > 0 {
+                    put(key, total)
+                }
+                for src in stats?.sources ?? [] { source(src.name) }
+                group.leave()
+            }
+            store.execute(q)
+        }
+
+        sum(.stepCount, unit: .count(), key: "steps")
+        sum(.activeEnergyBurned, unit: .kilocalorie(), key: "active_kcal")
+        sum(.distanceWalkingRunning, unit: .meter(), key: "distance_walk_m")
+        sum(.distanceCycling, unit: .meter(), key: "distance_cycle_m")
+        sum(.flightsClimbed, unit: .count(), key: "flights")
+
+        // Workouts — count, total minutes, the longest one's sport, its source.
+        group.enter()
+        let sort = [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)]
+        let wq = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sort) { _, samples, _ in
+            var list: [[String: Any]] = []
+            var longest: HKWorkout?
+            for case let w as HKWorkout in (samples ?? []) {
+                source(w.sourceRevision.source.name)
+                let kcal = w.totalEnergyBurned?.doubleValue(for: .kilocalorie())
+                list.append([
+                    "type": Self.workoutTypeName[w.workoutActivityType.rawValue] ?? "other",
+                    "duration_s": w.duration,
+                    "kcal": kcal ?? 0,
+                    "source": w.sourceRevision.source.name
+                ])
+                if longest == nil || w.duration > longest!.duration { longest = w }
+            }
+            put("workouts", list)
+            if let l = longest { put("primary_type", Self.workoutTypeName[l.workoutActivityType.rawValue] ?? "other") }
+            group.leave()
+        }
+        store.execute(wq)
+
+        // Mindful minutes — category samples, summed.
+        if let mindful = HKObjectType.categoryType(forIdentifier: .mindfulSession) {
+            group.enter()
+            let mq = HKSampleQuery(sampleType: mindful, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
+                var minutes = 0.0
+                for s in (samples ?? []) {
+                    minutes += s.endDate.timeIntervalSince(s.startDate) / 60.0
+                    source(s.sourceRevision.source.name)
+                }
+                if minutes > 0 { put("mindful_minutes", minutes) }
+                group.leave()
+            }
+            store.execute(mq)
+        }
+
+        group.notify(queue: .main) {
+            lock.lock(); result["sources"] = Array(sources).sorted(); lock.unlock()
+            call.resolve(result)
+        }
+    }
+
+    // MARK: - Body & fitness (newest reading wins, like resting_hr above)
+
+    @objc func queryBody(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            call.resolve(["available": false])
+            return
+        }
+        let end = Date()
+        let start = end.addingTimeInterval(-90 * 86_400)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let group = DispatchGroup()
+        let iso = ISO8601DateFormatter()
+        var result: [String: Any] = ["available": true]
+        let lock = NSLock()
+        func put(_ key: String, _ value: Any) { lock.lock(); result[key] = value; lock.unlock() }
+
+        func newest(_ id: HKQuantityTypeIdentifier, unit: HKUnit, key: String, scale: Double = 1) {
+            guard let qt = HKObjectType.quantityType(forIdentifier: id) else { return }
+            group.enter()
+            let sort = [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]
+            let q = HKSampleQuery(sampleType: qt, predicate: predicate, limit: 1, sortDescriptors: sort) { _, samples, _ in
+                if let s = (samples as? [HKQuantitySample])?.first {
+                    put(key, s.quantity.doubleValue(for: unit) * scale)
+                    put(key + "_at", iso.string(from: s.endDate))
+                }
+                group.leave()
+            }
+            store.execute(q)
+        }
+
+        newest(.bodyMass, unit: .gramUnit(with: .kilo), key: "body_mass_kg")
+        newest(.bodyFatPercentage, unit: .percent(), key: "body_fat_pct", scale: 100)
+        // VO2 max unit is mL/(kg·min); HKUnit has no shorthand for it.
+        newest(.vo2Max, unit: HKUnit(from: "ml/kg*min"), key: "vo2max")
+
+        group.notify(queue: .main) { call.resolve(result) }
+    }
+
+    /// HKWorkoutActivityType → the camelCase names `src/lib/sports.ts`
+    /// (`sportFromHealthKit`) already maps. Same table the retired
+    /// capacitor-health pod used, so the sport picker keeps prefilling.
+    private static let workoutTypeName: [UInt: String] = [
+        1: "americanFootball", 2: "archery", 3: "australianFootball", 4: "badminton", 5: "baseball",
+        6: "basketball", 7: "bowling", 8: "boxing", 9: "climbing", 10: "cricket", 11: "crossTraining",
+        12: "curling", 13: "cycling", 14: "dance", 15: "danceInspiredTraining", 16: "elliptical",
+        17: "equestrianSports", 18: "fencing", 19: "fishing", 20: "functionalStrengthTraining",
+        21: "golf", 22: "gymnastics", 23: "handball", 24: "hiking", 25: "hockey", 26: "hunting",
+        27: "lacrosse", 28: "martialArts", 29: "mindAndBody", 30: "mixedMetabolicCardioTraining",
+        31: "paddleSports", 32: "play", 33: "preparationAndRecovery", 34: "racquetball", 35: "rowing",
+        36: "rugby", 37: "running", 38: "sailing", 39: "skatingSports", 40: "snowSports", 41: "soccer",
+        42: "softball", 43: "squash", 44: "stairClimbing", 45: "surfingSports", 46: "swimming",
+        47: "tableTennis", 48: "tennis", 49: "trackAndField", 50: "traditionalStrengthTraining",
+        51: "volleyball", 52: "walking", 53: "waterFitness", 54: "waterPolo", 55: "waterSports",
+        56: "wrestling", 57: "yoga", 58: "barre", 59: "coreTraining", 60: "crossCountrySkiing",
+        61: "downhillSkiing", 62: "flexibility", 63: "highIntensityIntervalTraining", 64: "jumpRope",
+        65: "kickboxing", 66: "pilates", 67: "snowboarding", 68: "stairs", 69: "stepTraining",
+        70: "wheelchairWalkPace", 71: "wheelchairRunPace", 72: "taiChi", 73: "mixedCardio",
+        74: "handCycling", 75: "discSports", 76: "fitnessGaming", 77: "cardioDance", 78: "socialDance",
+        79: "pickleball", 80: "cooldown", 82: "swimBikeRun", 83: "transition", 84: "underwaterDiving",
+        3000: "other"
+    ]
 
     // MARK: - Meal write (Nutrition diary → Apple Health)
     //

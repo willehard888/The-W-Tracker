@@ -43,7 +43,6 @@ def capacitor_pods
   pod 'CapacitorShare', :path => '../../node_modules/@capacitor/share'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
   pod 'RevenuecatPurchasesCapacitor', :path => '../../node_modules/@revenuecat/purchases-capacitor'
-  pod 'CapacitorHealth', :path => '../../node_modules/capacitor-health'
 end
 
 target 'App' do

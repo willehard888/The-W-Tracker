@@ -124,9 +124,9 @@ export const buildForYou = (
 };
 
 // ── HealthKit → sport id ─────────────────────────────────────────────────────
-// capacitor-health returns HKWorkoutActivityType as camelCase strings (its
-// workoutTypeMapping table). Map them to our catalog so Apple-detected
-// workouts pre-fill the check-in picker with the RIGHT sport. Conservative:
+// HealthNight.swift returns HKWorkoutActivityType as camelCase strings (its
+// workoutTypeName table). Map them to our catalog so Apple-detected workouts
+// pre-fill the check-in picker with the RIGHT sport. Conservative:
 // ambiguous racket/misc types land on "other" rather than the wrong label.
 const HEALTHKIT_SPORT: Record<string, string> = {
   tennis: "tennis",

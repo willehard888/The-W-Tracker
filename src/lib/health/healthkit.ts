@@ -1,24 +1,30 @@
 /**
- * Apple HealthKit wrapper — gracefully degrades.
+ * Apple HealthKit — the day snapshot. Gracefully degrades: on web, Android,
+ * or when HealthKit is unavailable every function resolves to "not available"
+ * and the rest of the app keeps working.
  *
- * Uses `capacitor-health` (Capacitor 8 native plugin) on iOS. On web,
- * Android, or when the plugin isn't registered, every function returns
- * a safe "not available" response so the rest of the app keeps working.
+ * Reads through `HealthNight`, the app's one HealthKit plugin (compiled into
+ * the App target, registered in code — see ios/App/App/HealthNight.swift).
+ * The previous implementation looked up `Capacitor.Plugins.Health`, which the
+ * `capacitor-health` pod never populated (it registers as `HealthPlugin`, and
+ * nothing imported it), so from 2026-05-25 to now this whole file returned
+ * "unavailable" on every device: no auto-detect, no verified check-ins, no
+ * connect card. One plugin, one permission sheet, one name checked here.
  *
- * Capabilities (per the plugin's API):
- *   ✓ Steps              — aggregated per day
- *   ✓ Workouts           — list with type, duration, calories
- *   ✓ Active calories    — aggregated per day
- *   ✗ Sleep              — NOT supported by this plugin (left null;
- *                          sleep_hours stays self-reported in check-in)
- *
- * Native setup (already done in Xcode):
- *   - HealthKit capability added to App target
- *   - Info.plist: NSHealthShareUsageDescription set
- *   - Apple Developer portal: HealthKit enabled on app.lovable.wtracker
+ * What a day carries: steps, distance, flights, active energy, workouts (count,
+ * minutes, the longest one's sport), mindful minutes, last night's sleep, the
+ * newest body-mass / body-fat / VO2 max readings, and `sources` — the apps that
+ * wrote any of it ("Garmin Connect", "Oura", "Polar Flow", "Strava", "Apple
+ * Watch"). Every wearable that syncs to Apple Health arrives through here.
  */
 
 import { Capacitor } from "@capacitor/core";
+import {
+  HealthNight,
+  readLastNightSleepHours,
+  type BodyResult,
+  type DayResult,
+} from "@/lib/health/night-metrics";
 import { sportFromHealthKit } from "@/lib/sports";
 import { localDateKey } from "@/lib/date";
 
@@ -26,158 +32,123 @@ export interface DaySnapshot {
   /** YYYY-MM-DD in the user's local timezone. */
   date: string;
   steps: number | null;
+  /** Walking + running + cycling, metres. */
+  distance_m: number | null;
+  flights: number | null;
   workout_minutes: number | null;
   workout_count: number | null;
-  /** Sport id (src/lib/sports.ts) of the day's LONGEST workout, from
-   *  HKWorkoutActivityType — pre-fills the check-in sport picker. */
+  /** Sport id (src/lib/sports.ts) of the day's LONGEST workout — pre-fills
+   *  the check-in sport picker. */
   primary_sport: string | null;
-  /** capacitor-health doesn't expose sleep — kept null until plugin upgrade. */
+  /** Last night, from the same plugin's sleep query. */
   sleep_hours: number | null;
   active_kcal: number | null;
-  /** Total mindful-session minutes today (HKCategoryTypeIdentifierMindfulSession). */
   mindful_minutes: number | null;
+  /** Newest reading in the last 90 days; null when the user never logs it. */
+  body_mass_kg: number | null;
+  body_fat_pct: number | null;
+  vo2max: number | null;
+  /** Distinct source apps that wrote anything today. Empty when nothing did. */
+  sources: string[];
 }
+
+const isIos = () => Capacitor.getPlatform() === "ios";
+
+/** Finite, non-negative, rounded — or null. Malformed HK reads never reach the server. */
+const whole = (v: unknown): number | null => {
+  const n = Number(v);
+  return v != null && Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
+};
+const tenth = (v: unknown): number | null => {
+  const n = Number(v);
+  return v != null && Number.isFinite(n) && n >= 0 ? Math.round(n * 10) / 10 : null;
+};
 
 /**
- * Lookup the plugin via Capacitor's runtime registry. Returns null on
- * any platform where capacitor-health isn't registered.
+ * Pure assembly of a snapshot from the plugin's raw results. Exported so the
+ * clamps and the longest-workout rule can be tested without a device.
  */
-function getPlugin(): any | null {
-  if (Capacitor.getPlatform() !== "ios") return null;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const plugins = (Capacitor as any).Plugins ?? {};
-    return plugins.Health ?? null;
-  } catch {
-    return null;
-  }
+export function assembleDaySnapshot(
+  date: string,
+  day: DayResult | null,
+  body: BodyResult | null,
+  sleepHours: number | null,
+): DaySnapshot {
+  const workouts = (day?.workouts ?? []).filter((w) => Number.isFinite(Number(w.duration_s)));
+  const totalSeconds = workouts.reduce((s, w) => s + Math.max(0, Number(w.duration_s) || 0), 0);
+  const longest = [...workouts].sort((a, b) => (Number(b.duration_s) || 0) - (Number(a.duration_s) || 0))[0];
+  const walk = Number(day?.distance_walk_m) || 0;
+  const cycle = Number(day?.distance_cycle_m) || 0;
+  const distance = walk + cycle;
+
+  return {
+    date,
+    steps: whole(day?.steps),
+    distance_m: distance > 0 ? whole(distance) : null,
+    flights: whole(day?.flights),
+    workout_count: workouts.length || null,
+    workout_minutes: totalSeconds > 0 ? Math.round(totalSeconds / 60) : null,
+    primary_sport: sportFromHealthKit(longest?.type ?? day?.primary_type),
+    sleep_hours: sleepHours,
+    active_kcal: whole(day?.active_kcal),
+    mindful_minutes: whole(day?.mindful_minutes),
+    body_mass_kg: tenth(body?.body_mass_kg),
+    body_fat_pct: tenth(body?.body_fat_pct),
+    vo2max: tenth(body?.vo2max),
+    sources: Array.from(new Set((day?.sources ?? []).filter((s): s is string => typeof s === "string" && s.length > 0))).sort(),
+  };
 }
 
-/** True on iOS where the plugin is registered and HealthKit available. */
+/** True on iOS where HealthKit exists on this device. */
 export async function isHealthKitAvailable(): Promise<boolean> {
-  const plugin = getPlugin();
-  if (!plugin) return false;
+  if (!isIos()) return false;
   try {
-    const result = await plugin.isHealthAvailable();
-    return !!result?.available;
+    const r = await HealthNight.isAvailable();
+    return !!r?.available;
   } catch {
     return false;
   }
 }
 
 /**
- * Request read permission for steps + workouts + active calories.
- * Idempotent — iOS won't re-prompt if already granted/denied.
+ * The one permission ask — night, day and body types on a single sheet.
+ * Idempotent: iOS does not re-prompt once answered. `granted` is what the
+ * sheet reported; for READ types iOS never reveals a denial, so an empty
+ * read afterwards is the only signal there is (the connect card says so).
  */
 export async function requestHealthKitPermissions(): Promise<{ granted: boolean; error?: string }> {
-  const plugin = getPlugin();
-  if (!plugin) return { granted: false, error: "plugin_unavailable" };
+  if (!isIos()) return { granted: false, error: "plugin_unavailable" };
   try {
-    await plugin.requestHealthPermissions({
-      permissions: [
-        "READ_STEPS",
-        "READ_WORKOUTS",
-        "READ_ACTIVE_CALORIES",
-        "READ_MINDFULNESS",
-      ],
-    });
-    return { granted: true };
-  } catch (e: any) {
-    return { granted: false, error: e?.message ?? "denied" };
+    const r = await HealthNight.requestAuthorization();
+    return r?.granted ? { granted: true } : { granted: false, error: "denied" };
+  } catch (e) {
+    return { granted: false, error: e instanceof Error ? e.message : "denied" };
   }
 }
 
 /**
- * Read today's snapshot from HealthKit. Returns null on non-iOS or if
- * the plugin is unavailable. Each metric is read independently — a
- * missing permission for one type doesn't blank out the whole snapshot.
+ * Today's snapshot. Null on non-iOS or when HealthKit is unavailable. The
+ * three plugin calls are independent — a failed body read does not blank the
+ * day — and last night's sleep rides along from the same plugin.
  */
 export async function readTodaySnapshot(): Promise<DaySnapshot | null> {
-  const plugin = getPlugin();
-  if (!plugin) return null;
-
-  const today = new Date();
-  const start = new Date(today);
+  if (!isIos()) return null;
+  const now = new Date();
+  const start = new Date(now);
   start.setHours(0, 0, 0, 0);
-  const end = new Date(today);
+  const end = new Date(now);
   end.setHours(23, 59, 59, 999);
 
-  const dateStr = localDateKey(today);
-  const startISO = start.toISOString();
-  const endISO = end.toISOString();
-
-  const safeCall = async <T>(fn: () => Promise<T>): Promise<T | null> => {
+  const safe = async <T>(fn: () => Promise<T>): Promise<T | null> => {
     try { return await fn(); } catch { return null; }
   };
 
-  // Steps — aggregated daily bucket = single value for today.
-  const stepsRes = await safeCall(() =>
-    plugin.queryAggregated({
-      startDate: startISO,
-      endDate: endISO,
-      dataType: "steps",
-      bucket: "day",
-    }),
-  );
-  const stepsSample = (stepsRes as any)?.aggregatedData?.[0];
-  const stepsRaw = stepsSample?.value != null ? Number(stepsSample.value) : null;
-  // Clamp out negatives / NaN / Infinity so malformed HK reads never reach the server.
-  const steps = stepsRaw != null && Number.isFinite(stepsRaw) ? Math.max(0, Math.round(stepsRaw)) : null;
+  const [day, body, sleepHours] = await Promise.all([
+    safe(() => HealthNight.queryDay({ start: start.toISOString(), end: end.toISOString() })),
+    safe(() => HealthNight.queryBody()),
+    readLastNightSleepHours(),
+  ]);
+  if (!day || day.available === false) return null;
 
-  // Active calories — same shape.
-  const kcalRes = await safeCall(() =>
-    plugin.queryAggregated({
-      startDate: startISO,
-      endDate: endISO,
-      dataType: "active-calories",
-      bucket: "day",
-    }),
-  );
-  const kcalSample = (kcalRes as any)?.aggregatedData?.[0];
-  const kcalRaw = kcalSample?.value != null ? Number(kcalSample.value) : null;
-  const active_kcal = kcalRaw != null && Number.isFinite(kcalRaw) ? Math.max(0, Math.round(kcalRaw)) : null;
-
-  // Workouts — list, then aggregate to count + total minutes.
-  const wkRes = await safeCall(() =>
-    plugin.queryWorkouts({
-      startDate: startISO,
-      endDate: endISO,
-      includeHeartRate: false,
-      includeRoute: false,
-      includeSteps: false,
-    }),
-  );
-  const workouts = ((wkRes as any)?.workouts ?? []) as Array<{ duration?: number; workoutType?: string }>;
-  const workout_count = workouts.length || null;
-  // `duration` from this plugin is seconds.
-  const totalSeconds = workouts.reduce((s, w) => s + (Number(w.duration) || 0), 0);
-  const workout_minutes = totalSeconds > 0 ? Math.round(totalSeconds / 60) : null;
-  // Apple knows WHICH sport — take the day's longest workout's type.
-  const longest = [...workouts].sort((a, b) => (Number(b.duration) || 0) - (Number(a.duration) || 0))[0];
-  const primary_sport = sportFromHealthKit(longest?.workoutType);
-
-  // Mindful minutes — aggregated MindfulSession duration (seconds → minutes).
-  const mindRes = await safeCall(() =>
-    plugin.queryAggregated({
-      startDate: startISO,
-      endDate: endISO,
-      dataType: "mindfulness",
-      bucket: "day",
-    }),
-  );
-  const mindSeconds = (mindRes as any)?.aggregatedData?.reduce(
-    (s: number, d: any) => s + (Number(d?.value) || 0), 0) ?? 0;
-  const mindful_minutes = mindSeconds > 0 && Number.isFinite(mindSeconds)
-    ? Math.max(0, Math.round(mindSeconds / 60)) : null;
-
-  return {
-    date: dateStr,
-    steps,
-    workout_minutes,
-    workout_count,
-    primary_sport,
-    sleep_hours: null, // capacitor-health doesn't support sleep yet
-    active_kcal,
-    mindful_minutes,
-  };
+  return assembleDaySnapshot(localDateKey(now), day, body, sleepHours);
 }

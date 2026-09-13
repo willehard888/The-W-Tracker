@@ -69,3 +69,36 @@ export const fetchSeasonBoard = async (seasonId: string) => {
   const board = (data ?? {}) as { top?: LeaderRow[]; my_rank?: number | null; total?: number };
   return { top: board.top ?? [], myRank: board.my_rank ?? null, total: board.total ?? 0 };
 };
+
+export interface RankMark {
+  /** Competition rank: everyone in a tie block shares the block's first position. */
+  position: number;
+  /** True when at least one other row holds the same score. */
+  tied: boolean;
+}
+
+/**
+ * Display positions for an already-ordered board.
+ *
+ * `season_board` orders by `season_points DESC, xp DESC, user_id` — the last
+ * clause is there so the order is stable across refetches, but it means a UUID
+ * decided which of two people with identical scores got the third podium card
+ * and which got a plain chase row. On screen both read "40 XP", so it looked
+ * arbitrary because it was.
+ *
+ * The fix is not to invent a tiebreak they do not differ on. It is to stop
+ * implying a difference: a tie block shares its first position (1, 2, =3, =3, 5)
+ * and both rows say so. The SQL order is untouched.
+ */
+export const rankMarks = (scores: number[]): RankMark[] => {
+  let blockStart = 0;
+  return scores.map((score, i) => {
+    if (i > 0 && score !== scores[i - 1]) blockStart = i;
+    return {
+      position: blockStart + 1,
+      tied:
+        (i > 0 && score === scores[i - 1]) ||
+        (i + 1 < scores.length && score === scores[i + 1]),
+    };
+  });
+};

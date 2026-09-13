@@ -4,7 +4,7 @@ import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllTimeLeaders, fetchActiveSeason, fetchSeasonBoard, type LeaderRow } from "@/lib/leaderboard-query";
+import { rankMarks, fetchAllTimeLeaders, fetchActiveSeason, fetchSeasonBoard, type LeaderRow, type RankMark } from "@/lib/leaderboard-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -245,9 +245,20 @@ const Leaderboard = () => {
   // Who is just above you: the lead of the person one place up, when both of
   // you are on the visible board. Off the board, the beat states rank alone.
   const points = (u: LeaderRow) => (mode === "season" ? u.season_points || 0 : u.xp);
+  // Shared positions for tie blocks. The SQL breaks ties on user_id so the order
+  // stays stable across refetches — which meant a UUID decided who got the third
+  // podium card between two people both showing "40 XP".
+  const marks = useMemo(
+    () => rankMarks(currentLeaders.map((u) => (mode === "season" ? u.season_points || 0 : u.xp))),
+    [currentLeaders, mode],
+  );
   const me = rank ? currentLeaders[rank - 1] : undefined;
   const above = rank && rank > 1 ? currentLeaders[rank - 2] : undefined;
   const gap = me && above && me.user_id === profile?.user_id ? points(above) - points(me) : null;
+  // The beat uses the same shared position as the rows: SQL's row_number would
+  // say "#4" in the headline while your own row says "=3".
+  const myMark = me && me.user_id === profile?.user_id ? marks[rank! - 1] : undefined;
+  const displayRank = myMark?.position ?? rank;
 
   // Access is gated globally by AccessGate (8,99 €/mo membership or 14-day trial).
   return (
@@ -271,11 +282,13 @@ const Leaderboard = () => {
             <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
               {hasRank && rank ? (
                 <>
-                  <span className="text-gold tabular-nums">#{fmtInt(rank)}</span> of {fmtInt(boardTotal)}.
-                  {rank === 1
+                  <span className="text-gold tabular-nums">#{fmtInt(displayRank!)}</span> of {fmtInt(boardTotal)}.
+                  {displayRank === 1 && !myMark?.tied
                     ? " Nobody above you."
                     : gap != null && gap > 0
                     ? ` ${fmtUnit(gap, "XP")} above you.`
+                    : myMark?.tied
+                    ? " Tied."
                     : null}
                 </>
               ) : (
@@ -285,7 +298,7 @@ const Leaderboard = () => {
             <p className="text-[11px] font-bold text-muted-foreground mt-2">
               {mode === "season" ? (
                 <>
-                  {activeSeason?.name || "Season"}
+                  {activeSeason?.name || "Season"} · season XP
                   {activeSeason?.ends_at && <> · <CountdownTimer endsAt={activeSeason.ends_at} /></>}
                 </>
               ) : (
@@ -336,6 +349,7 @@ const Leaderboard = () => {
                   key={u.user_id}
                   user={u}
                   rank={(i + 1) as 1 | 2 | 3}
+                  mark={marks[i]}
                   points={points(u)}
                   isMe={u.user_id === profile?.user_id}
                   wins={championData?.counts?.[u.user_id] || 0}
@@ -372,7 +386,7 @@ const Leaderboard = () => {
                   className="w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
                   <span className={cn("w-6 shrink-0 font-display font-black text-sm tabular-nums", isMe ? "text-gold" : "text-muted-foreground")}>
-                    {i + 4}
+                    {marks[i + 3]?.tied ? `=${marks[i + 3].position}` : i + 4}
                   </span>
                   <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || "recruit"} size="sm" animated={false} />
                   <span className="flex-1 min-w-0">
@@ -464,11 +478,16 @@ const Leaderboard = () => {
 interface PodiumCardProps {
   user: LeaderRow;
   rank: 1 | 2 | 3;
+  /** Shared position when this score is tied; the medal shape still follows `rank`. */
+  mark?: RankMark;
   points: number;
   isMe: boolean;
   wins: number;
   onClick: () => void;
 }
+
+/** Ordinals for the shared-position label; past 3rd a tie is a plain number. */
+const ORDINAL: Record<number, string> = { 1: "1st", 2: "2nd", 3: "3rd" };
 
 // Stepped heights keep the podium silhouette; only #1 wears the full surface
 // and the gold border — #2 and #3 are quiet so the leader is the spectacle.
@@ -478,7 +497,7 @@ const PODIUM = {
   3: { label: "3rd", shape: "surface-card-quiet pt-5 pb-3.5 mt-10" },
 } as const;
 
-const PodiumCard = ({ user, rank, points, isMe, wins, onClick }: PodiumCardProps) => {
+const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCardProps) => {
   const isFirst = rank === 1;
   return (
     <button
@@ -492,7 +511,7 @@ const PodiumCard = ({ user, rank, points, isMe, wins, onClick }: PodiumCardProps
     >
       {isFirst && <Crown aria-hidden size={22} className="absolute -top-3 left-1/2 -translate-x-1/2 text-gold" />}
       <span className={cn("text-[10px] font-bold text-muted-foreground absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
-        {PODIUM[rank].label}
+        {mark?.tied ? `=${ORDINAL[mark.position] ?? mark.position}` : PODIUM[rank].label}
       </span>
       <StatusAvatar
         src={user.avatar_url}

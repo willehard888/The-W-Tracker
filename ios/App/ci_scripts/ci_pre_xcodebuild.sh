@@ -21,10 +21,21 @@ echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 # the same push in the same minute, the second upload is rejected as a
 # duplicate — harmless, the other pipeline's build is identical.
 # ───────────────────────────────────────────────────────────────────────────
+# 2026-09-14: the agvtool line alone never reached the archive. Info.plist
+# reads CFBundleVersion from $(CURRENT_PROJECT_VERSION), and Xcode Cloud
+# overrides that build setting with its own workflow counter at archive time
+# (builds 1159–1162 shipped with the counter, not the floor). The morning that
+# counter fell behind App Store Connect's newest build, every archive died
+# with "The bundle version must be higher than the previously uploaded
+# version". A literal in Info.plist is what the archive actually carries, so
+# the floor is written there too — monotonic per minute, independent of any
+# counter in ASC, and printed so the XC log shows the number that shipped.
 if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" ]]; then
   XC_BUILD_NUMBER=$(( ( $(date +%s) - 1767225600 ) / 60 ))
   echo "☁️  Xcode Cloud build — setting CFBundleVersion to time floor ${XC_BUILD_NUMBER}"
   ( cd "$IOS_APP_DIR" && agvtool new-version -all "${XC_BUILD_NUMBER}" >/dev/null )
+  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${XC_BUILD_NUMBER}" "$IOS_APP_DIR/App/Info.plist"
+  echo "☁️  Info.plist CFBundleVersion now: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$IOS_APP_DIR/App/Info.plist")"
 fi
 
 

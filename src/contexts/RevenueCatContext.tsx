@@ -112,7 +112,7 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
 }
 
 /** Check whether a customerInfo has our entitlement active. */
-function hasElite(info: any): boolean {
+export function hasElite(info: any): boolean {
   return !!info?.entitlements?.active?.[ENTITLEMENT];
 }
 
@@ -176,7 +176,7 @@ function isMonthlyPackage(pkg: any): boolean {
 }
 
 /** True when user cancelled (not a real error). */
-function isCancellation(e: any): boolean {
+export function isCancellation(e: any): boolean {
   return e?.code === "1" || e?.code === 1 || !!e?.userCancelled;
 }
 

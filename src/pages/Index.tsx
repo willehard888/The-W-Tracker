@@ -387,11 +387,23 @@ const Index = () => {
         </div>
       )}
 
+      {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
+             from the Vault) leading a clean shelf of what the membership
+             unlocks. Two shapes, one grammar. Directly under the standing row
+             (founder: "siirrä library ja daily insight ylemmäs"), the same
+             cards as before — the day's doors follow it. ── */}
+      <div className="home-rise home-rise-4 mb-6 relative z-10">
+        <DailyInsightCard />
+        <div className="mt-3">
+          <LibraryHub />
+        </div>
+      </div>
+
       {/* ── FUEL — what is left of today, the shape of the day as a rail, and
              the camera. Home's one nutrition door: the Library's duplicate
              "Fuel diary" row is gone. No gold of its own — the hero and the
              W-Index keep Home's whole gold budget. ── */}
-      <div className="home-rise home-rise-4 mb-6 relative z-10">
+      <div className="home-rise home-rise-5 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <FuelZone
             loading={fuelLoading || fuelTargetsLoading}
@@ -444,16 +456,6 @@ const Index = () => {
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <CoachStrip />
         </ErrorBoundary>
-      </div>
-
-      {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
-             from the Vault) leading a clean shelf of what the membership
-             unlocks. Two shapes, one grammar — the card-soup is gone. ── */}
-      <div className="home-rise home-rise-5 mb-6 relative z-10">
-        <DailyInsightCard />
-        <div className="mt-3">
-          <LibraryHub />
-        </div>
       </div>
 
       {/* SECONDARY — Today stays focused. Invite + badges one tap under "More". */}

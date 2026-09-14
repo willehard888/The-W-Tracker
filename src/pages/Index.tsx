@@ -387,31 +387,13 @@ const Index = () => {
         </div>
       )}
 
-      {/* ── THE LIBRARY — what the membership unlocks, three doors in one strip,
-             directly under the standing row. Founder: "siirrä The Library
-             ylemmäs" — and the list with a header and a subtitle per row was
-             five lines of text the doors did not need. ── */}
+      {/* ── FUEL — what is left of today, the shape of the day as a rail, and
+             the camera. Home's one nutrition door: the Library's duplicate
+             "Fuel diary" row is gone. No gold of its own — the hero and the
+             W-Index keep Home's whole gold budget. ── */}
       <div className="home-rise home-rise-4 mb-6 relative z-10">
-        <LibraryHub />
-      </div>
-
-      {/* ── TODAY — the two daily doors, one quiet card, one row each. Fuel and
-             Training used to be two cards with their own labels, sub-lines and
-             macro text; the day's work reads as one list now. No gold of their
-             own: the hero and the W-Index keep Home's whole gold budget. ── */}
-      {(hasAccess || !(fuelError && !fuelDay)) && (
-      <div className="home-rise home-rise-5 mb-6 relative z-10 surface-card surface-card-quiet divide-y divide-border/35 overflow-hidden">
-        {/* Boot cost: two small reads (active program, newest 60 logs) in
-            parallel, cached 10 / 5 min and shared with /coach — only for
-            members, who are the only people who can hold a program. */}
-        {hasAccess && (
-          <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-            <TrainingZone row />
-          </ErrorBoundary>
-        )}
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <FuelZone
-            row
             loading={fuelLoading || fuelTargetsLoading}
             totals={fuelTotals}
             targets={fuelTargetMacros}
@@ -428,38 +410,58 @@ const Index = () => {
           />
         </ErrorBoundary>
       </div>
-      )}
 
       {/* APPLE HEALTH — the ask that makes check-ins verifiable. Native only,
-          until connected; renders nothing on web/Android. Home owns this door;
-          Profile only shows the card once it is connected. */}
+          until connected; renders nothing on web/Android. */}
       {isNativePlatform() && !healthConnected && (
-        <div className="mb-6 relative z-10">
+        <div className="home-rise home-rise-5 mb-6 relative z-10">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
           </ErrorBoundary>
         </div>
       )}
 
-      {/* ── COACH — one line, one door. The coach's two-line voice is the first
-             thing /coach shows; here it was the second block of italic text on
-             the screen. ── */}
-      <div className="mb-6 relative z-10">
+      {/* ── TRAINING — today's prescribed session, stated plainly. Same quiet
+             grammar as Fuel, and no gold of its own: the hero and the W-Index
+             keep Home's whole gold budget. Before this the day's exercises
+             lived on exactly one screen two taps away, and nothing on Home
+             ever mentioned them. ── */}
+      {/* Boot cost: two small reads (active program, newest 60 logs) in
+             parallel, cached 10 / 5 min and shared with /coach — only for
+             members, who are the only people who can hold a program. */}
+      {hasAccess && (
+        <div className="home-rise home-rise-5 mb-6 relative z-10">
+          <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
+            <TrainingZone />
+          </ErrorBoundary>
+        </div>
+      )}
+
+      {/* ── COACH — a whisper, not a card. The coach's one line in its own
+             voice; a low quiet band so it reads as a presence, never a second
+             button competing with the hero. ── */}
+      <div className="home-rise home-rise-5 mb-6 relative z-10">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <CoachStrip />
         </ErrorBoundary>
       </div>
 
-      {/* SECONDARY — Today stays focused. The Vault's daily thought, the invite
-          and the badges live one tap under "More". */}
+      {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
+             from the Vault) leading a clean shelf of what the membership
+             unlocks. Two shapes, one grammar — the card-soup is gone. ── */}
+      <div className="home-rise home-rise-5 mb-6 relative z-10">
+        <DailyInsightCard />
+        <div className="mt-3">
+          <LibraryHub />
+        </div>
+      </div>
+
+      {/* SECONDARY — Today stays focused. Invite + badges one tap under "More". */}
       <MoreSection label="More" className="relative z-10 mt-1 mb-2">
+      {/* EARN FREE MEMBERSHIP — referral CTA */}
       {/* Inside a disclosure and below the fold: no entrance of their own.
           The scroll-reveal wrapper these sat in was dead on every iPhone
           (disabled under pointer: coarse), so they never animated anyway. */}
-      <div className="mb-4 relative z-10">
-        <DailyInsightCard />
-      </div>
-      {/* EARN FREE MEMBERSHIP — referral CTA */}
       <div className="mb-4 relative z-10">
         <InviteCTA referralCount={profile.referral_count || 0} />
       </div>
@@ -506,6 +508,13 @@ const Index = () => {
         )}
       </div>
       </MoreSection>
+
+      {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
+      <div className="mt-6 mb-2 text-center">
+        <p className="text-[11px] font-bold text-muted-foreground">
+          {tierConfig.message}
+        </p>
+      </div>
 
       {/* Trial-end conversion moment — one-shot value recap + upgrade CTA. */}
       <TrialExpirySheet />

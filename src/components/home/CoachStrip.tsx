@@ -2,6 +2,9 @@ import { Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useCoachObservation } from "@/hooks/use-coach-observation";
+import { useCoachBrief } from "@/hooks/use-coach-brief";
+import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
+import { briefPreview } from "@/lib/coach-signoff";
 
 interface CoachStripProps {
   className?: string;
@@ -45,43 +48,70 @@ const shortHeadline = (h: string): string => {
 
 const CoachStrip = (_props: CoachStripProps) => {
   const navigate = useNavigate();
-  const { headline, missionsDone, missionsTotal } = useCoachObservation({ context: "home" });
+  const {
+    text: coachLine,
+    headline,
+    missionsDone,
+    missionsTotal,
+  } = useCoachObservation({ context: "home" });
+  const { brief } = useCoachBrief();
+  const { data: snapshots } = useWhealthSnapshots(1);
 
   const hasPlan = missionsTotal > 0;
   const planDone = hasPlan && missionsDone >= missionsTotal;
 
+  // Voice priority: today's AI brief → the nightly Whealth focus (grounded in
+  // ALL the user's computed data) → the deterministic template line.
+  const line =
+    briefPreview(brief?.brief_md) ||
+    snapshots?.[0]?.focus ||
+    coachLine?.trim() ||
+    "Training, sleep, mind — anything on your mind.";
+
   return (
-    // One line, one door. The coach's two-line voice is the first thing
-    // /coach shows; on Home it was the second block of italic text on the
-    // screen. What stays is the plan's name (or the open invitation), the
-    // mission count, and the one small gold mark that says who is speaking.
-    // No aria-label: it would REPLACE the inner text for screen readers.
+    // A whisper, not a card. The coach's own line is the point and leads at
+    // reading size; the big gold glow-tile is gone (accent discipline — gold
+    // belongs to the hero, not to a second stacked card). A quiet ground and a
+    // small gold mark keep the identity without shouting.
+    // No aria-label: it would REPLACE the inner text for screen readers,
+    // hiding the coach's actual line. The content reads itself in order.
     <button
       onClick={() => navigate("/coach")}
-      className="press w-full surface-card surface-card-quiet min-h-14 px-4 py-3 text-left flex items-center gap-3 overflow-hidden group"
+      className="w-full surface-card surface-card-quiet px-4 py-3.5 text-left transition-transform overflow-hidden group"
     >
-      <Sparkles aria-hidden size={15} className="text-gold shrink-0" strokeWidth={2.4} />
-      <span className="flex-1 min-w-0">
-        <span className="block text-[11px] font-bold text-muted-foreground leading-none">AI Coach</span>
-        <span className="block text-[14px] font-bold leading-tight truncate mt-1">
+      <div className="relative">
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <Sparkles aria-hidden size={13} className="text-gold shrink-0" strokeWidth={2.4} />
+          <p className="text-[11px] font-bold text-muted-foreground">AI Coach</p>
+          {/* Mission progress rides the eyebrow row — no extra height. */}
+          {hasPlan && (
+            <span
+              className={cn(
+                "ml-auto text-[11px] font-black tabular-nums leading-none shrink-0",
+                planDone ? "text-gold" : "text-muted-foreground",
+              )}
+            >
+              {missionsDone}/{missionsTotal}
+            </span>
+          )}
+        </div>
+
+        {/* The voice — the coach speaking, at reading size. */}
+        <p className="text-[15px] italic text-foreground/90 leading-snug line-clamp-2">
+          {line}
+        </p>
+
+        {/* Context + the tap, quiet: the plan name (or the open invitation)
+            with an inline chevron, so nothing looks like a second CTA. */}
+        <p className="flex items-center gap-1 text-[12px] text-muted-foreground mt-1.5">
           {hasPlan
             ? headline
               ? shortHeadline(headline)
               : "Your session is ready"
             : "Ask your AI Coach anything"}
-        </span>
-      </span>
-      {hasPlan && (
-        <span
-          className={cn(
-            "text-[11px] font-black tabular-nums leading-none shrink-0",
-            planDone ? "text-gold" : "text-muted-foreground",
-          )}
-        >
-          {missionsDone}/{missionsTotal}
-        </span>
-      )}
-      <ChevronRight aria-hidden size={15} className="text-muted-foreground shrink-0 transition-transform group-active:translate-x-0.5" />
+          <ChevronRight aria-hidden size={13} className="text-gold/70 shrink-0 transition-transform group-active:translate-x-0.5" />
+        </p>
+      </div>
     </button>
   );
 };

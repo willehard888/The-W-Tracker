@@ -38,11 +38,13 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
   // Verification stats (server-computed over the last 14 days).
   useEffect(() => {
     if (!user?.id) return;
+    let alive = true;
     void supabase.rpc("user_verified_performer_stats", { _user_id: user.id })
       .then(
-        ({ data }) => { if (data) setStats(data as unknown as NonNullable<typeof stats>); },
+        ({ data }) => { if (alive && data) setStats(data as unknown as NonNullable<typeof stats>); },
         () => { /* table may not exist yet on pre-migration DBs */ },
       );
+    return () => { alive = false; };
   }, [user?.id, syncing]);
 
   // Who has been feeding Health, and whether anything came through at all.

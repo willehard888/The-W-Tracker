@@ -218,6 +218,10 @@ const TribeDetail = () => {
           ? supabase.from("tribe_post_kudos").select("post_id").eq("giver_id", userId).in("post_id", postIds)
           : Promise.resolve({ data: [] as any[] } as any),
       ]);
+      // A denied or dropped join read is an error, not an empty list — it
+      // used to render every post unliked and author-less on a blip.
+      const joinErr = (authorRes as any).error ?? (reactionsRes as any).error ?? (kudosRes as any).error;
+      if (joinErr) throw joinErr;
       const aMap = new Map(((authorRes as any).data ?? []).map((a: any) => [a.user_id, a]));
       const likedSet = new Set(((reactionsRes as any).data ?? []).map((r: any) => r.post_id));
       const kudosedSet = new Set(((kudosRes as any).data ?? []).map((r: any) => r.post_id));

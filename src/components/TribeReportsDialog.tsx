@@ -117,18 +117,33 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
         .in("user_id", reporterIds),
     ]);
 
-    const posts = ((postsRes as any).data ?? []) as any[];
+    // A denied or dropped join read is an error, not an empty list: the
+    // dialog used to render every report author-less on a blip.
+    const joinErr = postsRes.error ?? reportersRes.error;
+    if (joinErr) {
+      setLoadError(friendlyError(joinErr));
+      setReports([]);
+      setLoading(false);
+      return;
+    }
+    const posts = (postsRes.data ?? []) as any[];
     const authorIds = Array.from(new Set(posts.map((p) => p.user_id)));
-    const { data: authors } = await supabase
+    const { data: authors, error: authorsErr } = await supabase
       .from("profiles")
       .select("user_id, username, avatar_url")
       .in("user_id", authorIds);
-    const authorMap = new Map(((authors as any) ?? []).map((a: any) => [a.user_id, a]));
+    if (authorsErr) {
+      setLoadError(friendlyError(authorsErr));
+      setReports([]);
+      setLoading(false);
+      return;
+    }
+    const authorMap = new Map((authors ?? []).map((a) => [a.user_id, a]));
     const postMap = new Map(
       posts.map((p) => [p.id, { ...p, author: authorMap.get(p.user_id) ?? null }]),
     );
     const reporterMap = new Map(
-      ((reportersRes as any).data ?? []).map((r: any) => [r.user_id, r]),
+      (reportersRes.data ?? []).map((r) => [r.user_id, r]),
     );
 
     setReports(

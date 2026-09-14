@@ -1,5 +1,5 @@
 import { AlertTriangle, Flame, ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import type { TierRiskState } from "@/hooks/use-tier-risk";
@@ -61,7 +61,7 @@ const TierRiskBanner = ({ risk, className }: TierRiskBannerProps) => {
   const sub = coachSub;
 
   return (
-    <motion.button
+    <m.button
       type="button"
       onClick={() => navigate("/checkin")}
       initial={{ opacity: 0, y: -8 }}
@@ -116,7 +116,7 @@ const TierRiskBanner = ({ risk, className }: TierRiskBannerProps) => {
           className={cn("shrink-0", isDanger ? "text-destructive/70" : "text-gold/70")}
         />
       </div>
-    </motion.button>
+    </m.button>
   );
 };
 

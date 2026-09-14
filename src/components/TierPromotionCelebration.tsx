@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Crown, Sparkles, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -68,7 +68,7 @@ const TierPromotionCelebration = () => {
     <>
       <AnimatePresence>
         {showCelebration && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -89,16 +89,16 @@ const TierPromotionCelebration = () => {
             </button>
 
             <div className="text-center max-w-sm">
-              <motion.p
+              <m.p
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
                 className="text-[11px] font-bold text-gold/80 mb-3"
               >
                 Status Promotion
-              </motion.p>
+              </m.p>
 
-              <motion.div
+              <m.div
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 180, damping: 14 }}
@@ -112,10 +112,10 @@ const TierPromotionCelebration = () => {
                 }}
               >
                 {config.emoji}
-              </motion.div>
+              </m.div>
 
               {previousTier && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
@@ -123,10 +123,10 @@ const TierPromotionCelebration = () => {
                 >
                   <span className="line-through opacity-50">{previousTier}</span>
                   <span>→</span>
-                </motion.div>
+                </m.div>
               )}
 
-              <motion.h1
+              <m.h1
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.5, type: "spring" }}
@@ -136,27 +136,27 @@ const TierPromotionCelebration = () => {
                 )}
               >
                 {formatTier(tier, division)}
-              </motion.h1>
+              </m.h1>
 
-              <motion.p
+              <m.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
                 className="text-sm text-foreground/80 mb-1"
               >
                 {config.message}
-              </motion.p>
+              </m.p>
 
-              <motion.p
+              <m.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
                 className="text-xs text-muted-foreground mb-6"
               >
                 You're now in the <span className="font-bold text-foreground">{config.percentile}</span>
-              </motion.p>
+              </m.p>
 
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1 }}
@@ -181,9 +181,9 @@ const TierPromotionCelebration = () => {
                 >
                   Continue
                 </button>
-              </motion.div>
+              </m.div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

@@ -33,6 +33,42 @@ export type VaultArticle = {
   quiz: VaultQuizQ[];
 };
 
+/**
+ * What the index needs — and nothing it does not. The list used to select
+ * every column, so opening the Vault downloaded all 70 articles' `body_md`,
+ * `quiz` and references (173 kB measured in prod) to paint titles and
+ * summaries (19 kB), and the headline sat as a skeleton for ~1.5 s. The
+ * article sheet fetches its own body by id through `useVaultArticle`.
+ */
+export type VaultArticleSummary = Pick<
+  VaultArticle,
+  "id" | "category_id" | "slug" | "title" | "subtitle" | "summary" | "evidence_tier"
+  | "read_time_min" | "display_order" | "lesson_number" | "course_role"
+>;
+
+const SUMMARY_COLUMNS =
+  "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, display_order, lesson_number, course_role";
+
+/** The index fetcher, shared with the shell's idle prefetch (keys must match). */
+export const vaultArticlesKey = (userId: string | undefined, categoryId?: string) =>
+  ["vault-articles", categoryId ?? "all", userId] as const;
+
+export const fetchVaultArticleSummaries = async (categoryId?: string): Promise<VaultArticleSummary[]> => {
+  let q = supabase
+    .from("vault_articles")
+    .select(SUMMARY_COLUMNS)
+    .order("category_id", { ascending: true })
+    .order("lesson_number", { ascending: true, nullsFirst: false })
+    .order("display_order", { ascending: true });
+  if (categoryId) q = q.eq("category_id", categoryId);
+  const { data, error } = await q;
+  if (error) {
+    console.error("[vault] fetch error", error);
+    throw error;
+  }
+  return (data ?? []) as VaultArticleSummary[];
+};
+
 export const useVaultArticles = (categoryId?: string) => {
   const { user, isPremium } = useAuth();
   // Trialists have server-side read access (has_active_access RLS since
@@ -40,25 +76,30 @@ export const useVaultArticles = (categoryId?: string) => {
   // staring at an empty library the page gate had already let them into.
   const { isInTrial } = useTrialAccess();
   return useQuery({
-    queryKey: ["vault-articles", categoryId ?? "all", user?.id],
+    queryKey: vaultArticlesKey(user?.id, categoryId),
     enabled: !!user?.id && (!!isPremium || isInTrial),
     staleTime: 5 * 60 * 1000,
+    queryFn: () => fetchVaultArticleSummaries(categoryId),
+  });
+};
+
+/** One article in full — body, protocol, quiz, references — for the sheet. */
+export const useVaultArticle = (id: string | null | undefined) => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["vault-article", id, user?.id],
+    enabled: !!id && !!user?.id,
+    staleTime: 30 * 60 * 1000,
     queryFn: async () => {
-      let q = supabase
+      const { data, error } = await supabase
         .from("vault_articles")
         .select(
           "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, protocol, benefits, risks, body_md, references_json, display_order, lesson_number, course_role, why_it_matters, try_today, key_takeaways, quiz",
         )
-        .order("category_id", { ascending: true })
-        .order("lesson_number", { ascending: true, nullsFirst: false })
-        .order("display_order", { ascending: true });
-      if (categoryId) q = q.eq("category_id", categoryId);
-      const { data, error } = await q;
-      if (error) {
-        console.error("[vault] fetch error", error);
-        throw error;
-      }
-      return (data ?? []) as VaultArticle[];
+        .eq("id", id!)
+        .single();
+      if (error) throw error;
+      return data as unknown as VaultArticle;
     },
   });
 };

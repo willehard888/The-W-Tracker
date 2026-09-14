@@ -1,8 +1,10 @@
 import ConfirmDialog from "@/components/ui/confirm-dialog";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, type ReactNode } from "react";
+import { m } from "framer-motion";
 import { Plus, Target, TrendingUp, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { fmtDate } from "@/lib/format";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useCoachGoals } from "@/hooks/use-coach-goals";
@@ -61,39 +63,52 @@ const GoalTrackerCard = () => {
 
   if (!activeGoal && !adding) {
     return (
-      <button
-        type="button"
-        onClick={() => setAdding(true)}
-        className="w-full rounded-2xl border border-dashed border-border/50 bg-card/30 px-4 py-4 flex items-center gap-3 hover:border-[hsl(var(--gold)/0.5)] transition-colors"
-      >
-        <div className="h-9 w-9 rounded-xl bg-[hsl(var(--gold)/0.12)] flex items-center justify-center">
-          <Target aria-hidden size={16} className="text-gold" />
-        </div>
-        <div className="text-left">
-          <p className="text-sm font-bold">Set your North Star goal</p>
-          <p className="text-[12px] text-muted-foreground">e.g. Bench 100 kg by August.</p>
-        </div>
-      </button>
+      <EmptyState
+        icon={Target}
+        title="Set your North Star goal"
+        description="e.g. Bench 100 kg by August."
+        action={<Button variant="ember" size="sm" onClick={() => setAdding(true)}>Set a goal</Button>}
+      />
     );
   }
 
   if (adding) {
+    const field = (label: string, node: ReactNode) => (
+      <label className="block">
+        <span className="eyebrow mb-1 block">{label}</span>
+        {node}
+      </label>
+    );
     return (
-      <div className="rounded-2xl border border-border/40 bg-card/50 p-4 space-y-3">
-        <p className="text-[11px] font-bold text-gold">New goal</p>
-        <Input placeholder="Title (e.g. Bench 100 kg)" value={draft.title}
-          onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />
+      <div className="surface-card surface-card-quiet p-4 space-y-3">
+        <p className="font-display font-black text-[17px] tracking-tight leading-tight">New goal</p>
+        {field("Goal", <Input placeholder="Bench 100 kg" value={draft.title}
+          onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />)}
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="Now" type="number" value={draft.baseline_value}
-            onChange={e => setDraft(d => ({ ...d, baseline_value: e.target.value }))} />
-          <Input placeholder="Target" type="number" value={draft.target_value}
-            onChange={e => setDraft(d => ({ ...d, target_value: e.target.value }))} />
+          {field("Now", <Input type="number" inputMode="decimal" value={draft.baseline_value}
+            onChange={e => setDraft(d => ({ ...d, baseline_value: e.target.value }))} />)}
+          {field("Target", <Input type="number" inputMode="decimal" value={draft.target_value}
+            onChange={e => setDraft(d => ({ ...d, target_value: e.target.value }))} />)}
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="Unit (kg, km…)" value={draft.unit}
-            onChange={e => setDraft(d => ({ ...d, unit: e.target.value }))} />
-          <Input type="date" value={draft.deadline}
-            onChange={e => setDraft(d => ({ ...d, deadline: e.target.value }))} />
+          {field("Unit", <Input placeholder="kg, km…" value={draft.unit}
+            onChange={e => setDraft(d => ({ ...d, unit: e.target.value }))} />)}
+          {/* Native date picker under house type — the DateBar pattern. */}
+          <div>
+            <span className="eyebrow mb-1 block">Deadline</span>
+            <div className="relative surface-inset h-10 rounded-md px-3 flex items-center">
+              <span className={cn("text-sm font-medium", draft.deadline ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
+                {draft.deadline ? fmtDate(draft.deadline) : "Pick a date"}
+              </span>
+              <input
+                type="date"
+                value={draft.deadline}
+                aria-label="Deadline"
+                onChange={e => setDraft(d => ({ ...d, deadline: e.target.value }))}
+                className="absolute inset-0 h-full w-full opacity-0"
+              />
+            </div>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" className="flex-1" onClick={() => setAdding(false)}>Cancel</Button>
@@ -107,7 +122,7 @@ const GoalTrackerCard = () => {
   const { pct, etaText, onPace } = computePace(activeGoal);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-gradient-to-br from-[hsl(var(--gold)/0.08)] to-card/50 p-4"
@@ -168,7 +183,7 @@ const GoalTrackerCard = () => {
         title="Delete this goal?"
         onConfirm={() => { setConfirmDelete(false); void remove(activeGoal.id); }}
       />
-    </motion.div>
+    </m.div>
   );
 };
 

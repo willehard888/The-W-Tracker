@@ -30,7 +30,8 @@ const RecoveryCard = () => {
   const hasData = !!last && (last.resting_hr != null || last.sleep_total_min != null);
 
   if (!hasData) {
-    if (isLoading || Capacitor.getPlatform() !== "ios") return null;
+    if (Capacitor.getPlatform() !== "ios") return null;
+    if (isLoading) return <div className="skeleton-block h-24 rounded-2xl" aria-hidden />;
     return (
       <button
         type="button"

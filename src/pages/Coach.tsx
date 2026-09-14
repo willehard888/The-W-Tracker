@@ -7,7 +7,7 @@ import { Send, BookOpen, RotateCw, Plus, Sparkles, MoreVertical, User, Brain, Al
 import { matchFaq, COACH_FAQ, FaqEntry } from "@/lib/coach-faq";
 import FaqBrowser from "@/components/coach/FaqBrowser";
 import ReactMarkdown from "react-markdown";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as fm, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -695,7 +695,7 @@ const ChatSheet = ({
       )}
       <AnimatePresence initial={false}>
         {messages.map((m, i) => (
-          <motion.div
+          <fm.div
             key={i}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -748,7 +748,7 @@ const ChatSheet = ({
                 <Sparkles size={12} aria-hidden /> Go deeper
               </button>
             )}
-          </motion.div>
+          </fm.div>
         ))}
       </AnimatePresence>
       {streaming && messages[messages.length - 1]?.role === "user" && <ThinkingIndicator />}

@@ -1,5 +1,5 @@
 import { fmtDate } from "@/lib/format";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, Sparkles, Calendar, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePerformanceSnapshots, useLatestWeeklyReview } from "@/hooks/use-performance-snapshots";
@@ -60,7 +60,7 @@ const PerformanceOSDashboard = () => {
   return (
     <div className="space-y-3">
       {/* Performance Score Card */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl border border-border/40 bg-gradient-to-br from-[hsl(255_18%_8%)] to-[hsl(255_22%_5%)] p-4 overflow-hidden shadow-[0_12px_28px_-16px_hsl(0_0%_0%/0.7)]"
@@ -81,14 +81,14 @@ const PerformanceOSDashboard = () => {
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">28-day trend</p>
           </div>
-          <Sparkles aria-hidden size={16} className="text-gold/60" />
+          <Sparkles aria-hidden size={16} className="text-gold/70" />
         </div>
         {values.length < 2 ? (
           <div className="h-12 flex items-center text-[11px] text-muted-foreground">Not enough data yet.</div>
         ) : (
           <Sparkline values={values} domain={[0, 100]} className="w-full h-12" />
         )}
-      </motion.div>
+      </m.div>
 
       {/* Component breakdown */}
       <div className="grid grid-cols-3 gap-2">
@@ -112,7 +112,7 @@ const PerformanceOSDashboard = () => {
 
       {/* Latest weekly review */}
       {review && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           className="rounded-2xl border border-border/40 bg-card/30 p-4"
@@ -141,7 +141,7 @@ const PerformanceOSDashboard = () => {
               <p className="text-[12px] mt-0.5">{review.program_tweak}</p>
             </div>
           )}
-        </motion.div>
+        </m.div>
       )}
 
       <Button

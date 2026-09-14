@@ -1,5 +1,5 @@
 import { fmtInt } from "@/lib/format";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Crown, Flame, Sparkles, Zap, Star, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierConfig, topShareLabel, type StatusTier } from "@/lib/status-tiers";
@@ -132,7 +132,7 @@ const StatusNameplate = ({
     rank <= totalUsers;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.92, y: 6 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
@@ -384,7 +384,7 @@ const StatusNameplate = ({
           )}
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

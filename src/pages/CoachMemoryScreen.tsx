@@ -8,7 +8,7 @@ import PageBar from "@/components/ui/page-bar";
 import { Input } from "@/components/ui/input";
 import EmptyState from "@/components/ui/empty-state";
 import { useCoachMemory } from "@/hooks/use-coach-memory";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as fm, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { hapticImpact } from "@/lib/haptics";
 import { friendlyError } from "@/lib/error-copy";
@@ -85,7 +85,7 @@ const CoachMemoryScreen = () => {
             <div className="divide-y divide-border/35 border-t border-border/35">
               <AnimatePresence initial={false}>
                 {memories.map((m) => (
-                  <motion.div
+                  <fm.div
                     key={m.id}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -107,7 +107,7 @@ const CoachMemoryScreen = () => {
                     >
                       <Trash2 aria-hidden size={14} className="text-muted-foreground" />
                     </Button>
-                  </motion.div>
+                  </fm.div>
                 ))}
               </AnimatePresence>
             </div>

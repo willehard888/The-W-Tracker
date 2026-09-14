@@ -1,7 +1,13 @@
 import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
-import { MotionConfig } from "framer-motion";
+import { LazyMotion, MotionConfig } from "framer-motion";
+
+// Animation features load AFTER first paint. With the eager `motion` import
+// the 40 kB gzip framer chunk sat in modulepreload on every cold start to
+// power one StatusHeader bar; `m` renders the same elements, `domAnimation`
+// arrives on the first animation.
+const loadMotionFeatures = () => import("framer-motion").then((mod) => mod.domAnimation);
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { readLocal, writeLocal } from "@/lib/storage";
@@ -26,12 +32,15 @@ import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
 import TierPromotionCelebration from "@/components/TierPromotionCelebration";
 import Index from "./pages/Index";
-import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
 
 // Lazy-loaded pages for code-splitting
+// Landing and Auth were static imports — 110 kB gzip of entry chunk carried
+// two screens a signed-in user never renders (and Auth dragged the Apple
+// button's motion + native-auth along). Lazy like the other 56 routes.
+const Landing = lazy(() => import("./pages/Landing"));
+const Auth = lazy(() => import("./pages/Auth"));
 const DailyCheckin = lazy(() => import("./pages/DailyCheckin"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Battles = lazy(() => import("./pages/Battles"));
@@ -90,6 +99,7 @@ import RouteFallback from "@/components/RouteFallback";
 import { fetchFeedPosts } from "@/lib/feed-query";
 import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/leaderboard-query";
 import { fetchMyTribeMembership, fetchTribesPage } from "@/lib/tribes-query";
+import { fetchVaultArticleSummaries, vaultArticlesKey } from "@/hooks/use-vault-articles";
 import { afterIdle } from "@/lib/idle";
 
 // Paths reachable WITHOUT an active subscription/trial — the paywall itself,
@@ -250,7 +260,7 @@ const AppRoutes = () => {
     return () => { savedScroll.set(key, el.scrollTop); };
   }, [key]);
 
-  // Page-transition wrap was REMOVED — keying a motion.div on
+  // Page-transition wrap was REMOVED — keying a m.div on
   // location.pathname caused React to unmount + remount the entire
   // page tree on every navigation, which:
   //   - reset scroll position on every tab switch
@@ -426,7 +436,17 @@ const TabPrefetcher = () => {
         // each was a Suspense skeleton on first tap.
         void import("./pages/Coach");
         void import("./pages/nutrition/NutritionDiary");
-        void import("./pages/Exercises");
+        // Not Exercises: its chunk drags ExerciseIllustration (165 kB) and
+        // ExerciseCoachingBlock (137 kB) — a main-thread parse spike while the
+        // user is reading Home, for a screen reached from the Library shelf.
+
+        // The Vault index (light columns) — its headline used to be a skeleton
+        // for ~1.5 s because the page fetched every article body to count them.
+        void queryClient.prefetchQuery({
+          queryKey: vaultArticlesKey(userId),
+          queryFn: () => fetchVaultArticleSummaries(),
+          staleTime: 5 * 60_000,
+        });
 
         // Ranks: season chain + all-time board (keys match Leaderboard.tsx).
         await queryClient.prefetchQuery({
@@ -494,6 +514,7 @@ const App = () => {
           matches the CSS --ease-spring token) so motion reads as one designed
           system instead of framer's stock tween. Components with their own
           transition still override. */}
+      <LazyMotion features={loadMotionFeatures} strict>
       <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 320, damping: 30 }}>
       <QueryClientProvider client={queryClient}>
         <Sonner />
@@ -510,6 +531,7 @@ const App = () => {
           </BrowserRouter>
       </QueryClientProvider>
       </MotionConfig>
+      </LazyMotion>
     </ErrorBoundary>
   );
 };

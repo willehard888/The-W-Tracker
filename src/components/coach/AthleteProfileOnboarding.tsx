@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { SPORTS } from "@/lib/sports";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   ChevronRight, ChevronLeft, Minus, Plus, Check,
   Zap, Dumbbell, BicepsFlexed, Flame, Footprints, Leaf, Brain,
@@ -389,7 +389,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
       <div className="home-rise home-rise-1">
         <AnimatePresence mode="wait">
-          <motion.div
+          <m.div
             key={step}
             initial={{ opacity: 0, x: 18 }}
             animate={{ opacity: 1, x: 0 }}
@@ -397,7 +397,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
             transition={{ duration: 0.2 }}
           >
             {cur.content}
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </div>
 

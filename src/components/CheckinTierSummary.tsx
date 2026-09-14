@@ -1,6 +1,6 @@
 import { fmtInt } from "@/lib/format";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Zap, Flame, Trophy, ArrowUp, Crown, Target, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierConfig } from "@/lib/status-tiers";
@@ -122,7 +122,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
 
       <div className="relative w-full max-w-sm">
         {/* Tier ribbon */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           // Stagger ladder: 60ms steps in strict DOM order (the coach line
@@ -143,10 +143,10 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             {cfg.rank === 6 && <Sparkles aria-hidden size={12} strokeWidth={3} className="text-gold" />}
             {cfg.label} Tier
           </span>
-        </motion.div>
+        </m.div>
 
         {/* Hero icon */}
-        <motion.div
+        <m.div
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.06 }}
@@ -163,28 +163,28 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           ) : (
             <Zap aria-hidden size={34} strokeWidth={2.4} fill="currentColor" />
           )}
-        </motion.div>
+        </m.div>
 
         {/* Headline */}
-        <motion.h1
+        <m.h1
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12 }}
           className="font-display text-[26px] font-black tracking-tight uppercase leading-none mb-1"
         >
           {headline}
-        </motion.h1>
-        <motion.p
+        </m.h1>
+        <m.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.18 }}
           className="text-xs text-muted-foreground font-bold mb-4"
         >
           {subline}
-        </motion.p>
+        </m.p>
 
         {/* XP earned hero */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.24 }}
@@ -210,10 +210,10 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           <p className="relative text-[12px] text-muted-foreground mt-2">
             <span className="font-bold text-foreground/80 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/75")}>{perfPct}%</span> output
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Level + Streak grid */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -232,7 +232,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
               <Trophy aria-hidden size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
               <p className="text-[10px] font-bold text-muted-foreground">Level</p>
               {leveledUp && (
-                <motion.span
+                <m.span
                   animate={{ y: [0, -2, 0] }}
                   // Three bounces, then rest — an infinite main-thread loop
                   // kept running long after the moment passed.
@@ -240,7 +240,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                   className="ml-auto flex items-center gap-0.5 text-[10px] font-black text-gold"
                 >
                   <ArrowUp aria-hidden size={12} strokeWidth={3} />UP
-                </motion.span>
+                </m.span>
               )}
             </div>
             <AnimatedNumber
@@ -251,7 +251,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             <div className="relative mt-2 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
               {/* translateX reveal instead of width — transform composites on
                   the GPU while width relayouts every frame. */}
-              <motion.div
+              <m.div
                 initial={{ transform: "translateX(-100%)" }}
                 animate={{ transform: `translateX(-${100 - summary.levelProgressPct}%)` }}
                 transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 0.61, 0.36, 1] }}
@@ -320,10 +320,10 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                 : "Hold the chain"}
             </p>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Total XP bar */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.36 }}
@@ -339,13 +339,13 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           <span className="font-display text-xl font-black tabular-nums">
             {fmtInt(summary.newTotalXp)}
           </span>
-        </motion.div>
+        </m.div>
 
         {/* Coach reaction — one short line in the user's tone right above
             the CTAs. Pure derivation from cached LifeOS brief data, no
             extra AI call. Wrapped in ErrorBoundary so a hook fault can
             never break the post-checkin celebration screen. */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.42 }}
@@ -354,10 +354,10 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           <ErrorBoundary fallback={<></>}>
             <PostCheckinCoachLine summary={summary} onAskCoach={onAskCoach} />
           </ErrorBoundary>
-        </motion.div>
+        </m.div>
 
         {/* CTAs */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.48 }}
@@ -369,11 +369,11 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           <Button variant="ember" size="lg" onClick={onDashboard}>
             Dashboard
           </Button>
-        </motion.div>
+        </m.div>
 
         {/* Apex/Legend extra crown */}
         {cfg.rank >= 5 && (
-          <motion.p
+          <m.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.54 }}
@@ -381,7 +381,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           >
             <Crown aria-hidden size={11} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle standard" : "Apex doesn't skip days"}
-          </motion.p>
+          </m.p>
         )}
       </div>
     </div>
@@ -434,13 +434,13 @@ const PostCheckinCoachLine = ({
   return (
     <div className="space-y-1">
       {/* key={text} cross-fades the template → AI upgrade instead of a hard swap */}
-      <motion.div key={text} initial={{ opacity: 0.55 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+      <m.div key={text} initial={{ opacity: 0.55 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
         <CoachLine
           text={text}
           tone="celebration"
           onClick={canContinue ? () => onAskCoach!(text) : undefined}
         />
-      </motion.div>
+      </m.div>
       {canContinue && (
         <p className="text-[11px] font-bold text-xp-green/80 pl-3.5 flex items-center gap-1">
           Tap to ask the Coach how to improve →

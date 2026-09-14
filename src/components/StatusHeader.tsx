@@ -13,7 +13,7 @@ import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { Crown, Clock, ChevronRight, Flame, Zap, Bell as BellIcon, Shield as ShieldIcon } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
 
 // Voice matches the tier `message` strings in status-tiers.ts — quiet, earned,
@@ -307,7 +307,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
 
             {/* Row 3: progress bar — metallic */}
             <div className="h-[3px] rounded-full bg-secondary/70 overflow-hidden mt-1.5 shadow-[inset_0_1px_1px_hsl(0_0%_0%/0.3)]">
-              <motion.div
+              <m.div
                 className={cn("h-full w-full rounded-full relative origin-left", progressBarColor)}
                 style={{ boxShadow: "inset 0 0.5px 0 hsl(0 0% 100% / 0.45)" }}
                 initial={false}

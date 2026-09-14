@@ -48,7 +48,9 @@ export default defineConfig(({ mode }) => {
             if (id.includes("react-router")) return "vendor";
             if (id.includes("react-dom") || /node_modules\/react\//.test(id) || id.includes("scheduler")) return "vendor";
             if (id.includes("@supabase")) return "supabase";
-            if (id.includes("framer-motion")) return "motion";
+            // framer-motion is NOT pinned: LazyMotion + `m` (App.tsx) keep the
+            // core in the eager graph and `domAnimation` in a lazy chunk, and a
+            // pin here would fold both back into one preloaded 40 kB gzip blob.
             if (id.includes("lucide")) return "icons";
             if (id.includes("@tanstack")) return "query";
             if (id.includes("@radix-ui")) return "ui";

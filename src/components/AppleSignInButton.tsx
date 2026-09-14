@@ -1,5 +1,5 @@
 import { useState, forwardRef } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { toast } from "sonner";
 import { nativeAppleSignIn } from "@/lib/native-auth";
 import { cn } from "@/lib/utils";
@@ -57,7 +57,7 @@ const AppleSignInButton = forwardRef<HTMLButtonElement, AppleSignInButtonProps>(
   };
 
   return (
-    <motion.button
+    <m.button
       ref={ref}
       type="button"
       onClick={handleAppleSignIn}
@@ -81,7 +81,7 @@ const AppleSignInButton = forwardRef<HTMLButtonElement, AppleSignInButtonProps>(
     >
       {/* Subtle moving sheen — feels premium, not flashy */}
       {!isLoading && (
-        <motion.span
+        <m.span
           aria-hidden
           className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"
           animate={{ translateX: ["-100%", "200%"] }}
@@ -119,7 +119,7 @@ const AppleSignInButton = forwardRef<HTMLButtonElement, AppleSignInButtonProps>(
           <span>Sign in with Apple</span>
         </>
       )}
-    </motion.button>
+    </m.button>
   );
 });
 AppleSignInButton.displayName = "AppleSignInButton";

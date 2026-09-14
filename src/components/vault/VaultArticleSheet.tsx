@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import EvidenceChip from "./EvidenceChip";
 import LessonQuiz from "./LessonQuiz";
-import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
+import { useVaultArticle, useVaultArticles, type VaultArticle, type VaultArticleSummary } from "@/hooks/use-vault-articles";
 import { useCompleteLesson, useVaultProgress } from "@/hooks/use-vault-progress";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -33,16 +33,26 @@ import { toast } from "sonner";
  */
 
 const VaultArticleSheet = ({
-  article,
+  article: summary,
   accent,
   open,
   onClose,
 }: {
-  article: VaultArticle | null;
+  article: VaultArticleSummary | null;
   accent: string;
   open: boolean;
   onClose: () => void;
 }) => {
+  // The index carries titles and summaries only; the body, protocol, quiz and
+  // references arrive by id when a piece opens (see use-vault-articles.ts).
+  // Until they land the heavy sections are empty and "The science" shows a
+  // skeleton — the header paints from the summary at once.
+  const { data: full, isLoading: bodyLoading } = useVaultArticle(summary?.id);
+  const article: VaultArticle | null = summary
+    ? full && full.id === summary.id
+      ? full
+      : { ...summary, protocol: {}, benefits: [], risks: [], body_md: "", references_json: [], why_it_matters: null, try_today: [], key_takeaways: [], quiz: [] }
+    : null;
   const { data: progress } = useVaultProgress();
   const completeLesson = useCompleteLesson();
   const [quizScore, setQuizScore] = useState<number | null>(null);
@@ -232,9 +242,17 @@ const VaultArticleSheet = ({
 
               <section>
                 <SectionHeader Icon={BookMarked} label="The science" color={accent} />
-                <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-[16px] prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-[14px] prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-[12px] prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
-                  <ReactMarkdown>{article.body_md}</ReactMarkdown>
-                </article>
+                {bodyLoading && !article.body_md ? (
+                  <div className="space-y-2" aria-hidden>
+                    {[92, 100, 84, 96, 60].map((w, i) => (
+                      <div key={i} className="h-3.5 rounded skeleton-block bg-secondary/30" style={{ width: `${w}%` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-[16px] prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-[14px] prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-[12px] prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
+                    <ReactMarkdown>{article.body_md}</ReactMarkdown>
+                  </article>
+                )}
               </section>
 
               {article.try_today?.length > 0 && (

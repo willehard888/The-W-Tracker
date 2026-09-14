@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,7 +214,7 @@ const Onboarding = () => {
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={step}
           initial={{ opacity: 0, x: 18 }}
           animate={{ opacity: 1, x: 0 }}
@@ -274,7 +274,7 @@ const Onboarding = () => {
           {step === "trial" && <TrialSlide onNext={enterTrialCommit} />}
           {step === "push" && <PushSlide onEnable={handleEnablePush} onSkip={handleSkipPush} busy={pushBusy} />}
           {step === "finale" && <FinaleSlide goal={answers.primary_goal} onNext={() => finish(false)} />}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
     </div>
   );

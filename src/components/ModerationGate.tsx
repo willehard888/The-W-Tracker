@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
@@ -40,7 +40,7 @@ export default function ModerationGate({
     <Portal>
     <AnimatePresence>
       {visible && (
-        <motion.div
+        <m.div
           key="moderation-gate"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -48,7 +48,7 @@ export default function ModerationGate({
           transition={{ duration: 0.18 }}
           className="fixed inset-0 z-[80] flex items-center justify-center bg-background/95 p-6"
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0.96, y: 8 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.98 }}
@@ -105,8 +105,8 @@ export default function ModerationGate({
                 Cancel
               </button>
             )}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
     </Portal>

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { getTierConfig, getNextTier } from "@/lib/status-tiers";
 import { TrendingUp, TrendingDown, AlertTriangle, ChevronRight, Flame, Trophy, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 interface RankPressureCardProps {
   tier: string;
@@ -64,7 +64,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
       : null;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
@@ -108,7 +108,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
           {/* Header row */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <motion.div
+              <m.div
                 whileHover={{ scale: 1.05, rotate: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
@@ -125,7 +125,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
                 {/* Glossy highlight */}
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
                 <span className="relative">#{rank || "?"}</span>
-              </motion.div>
+              </m.div>
 
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -186,7 +186,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
           {/* Animated percentile bar */}
           <div className="mb-3">
             <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
-              <motion.div
+              <m.div
                 className={cn("h-full rounded-full bg-gradient-to-r", accentGradient)}
                 initial={{ width: 0 }}
                 animate={{ width: hasRank ? `${Math.max(4, percentile)}%` : "0%" }}
@@ -196,7 +196,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
           </div>
 
           {/* Pressure microcopy */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -229,7 +229,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
             ) : (
               pressureText
             )}
-          </motion.div>
+          </m.div>
 
           {/* Days at tier */}
           {hasRank && daysAtTier !== undefined && daysAtTier > 0 && tier !== "recruit" && tier !== "normal" && (
@@ -270,7 +270,7 @@ const RankPressureCard = ({ tier, rank, totalUsers, percentile, hasRank = true, 
           )}
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

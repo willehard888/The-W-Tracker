@@ -1,6 +1,6 @@
 import type { ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { ChevronLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
@@ -56,7 +56,7 @@ export const BottomSheet = ({
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           role="dialog"
           aria-modal="true"
           aria-label={label}
@@ -68,7 +68,7 @@ export const BottomSheet = ({
         >
           {/* Solid backdrop — no backdrop-filter, which iOS WKWebView mis-composites. */}
           <div className="absolute inset-0 bg-black/70" onClick={onClose} aria-hidden />
-          <motion.div
+          <m.div
             className={cn(
               "relative mt-auto flex flex-col w-full rounded-t-[28px] border-t border-white/10 bg-[hsl(255_14%_7%)] shadow-[0_-20px_60px_-12px_hsl(0_0%_0%/0.7)] overflow-hidden",
               height === "tall" ? "h-[90dvh]" : "max-h-[93vh]",
@@ -112,8 +112,8 @@ export const BottomSheet = ({
               {children}
             </div>
             {footer && <div className="shrink-0 px-4 pt-3 border-t border-border/60">{footer}</div>}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>,
     document.body,

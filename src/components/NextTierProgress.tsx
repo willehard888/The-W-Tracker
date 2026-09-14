@@ -1,5 +1,5 @@
 import { Crown, TrendingUp, CalendarCheck, Flame, Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useNextTierProgress } from "@/hooks/use-next-tier-progress";
 import { tierBandLabel, tierRequirementSentence } from "@/lib/status-tiers";
@@ -57,7 +57,7 @@ const RequirementRow = ({
         </span>
       </div>
       <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
-        <motion.div
+        <m.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.max(2, pct)}%` }}
           transition={{ duration: 0.9, ease: "easeOut" }}

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { ArrowUp, ArrowDown, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatusAvatar from "@/components/StatusAvatar";
@@ -16,12 +16,15 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
   const navigate = useNavigate();
   const { data, isLoading } = useLiveRivals(userId, myScore);
 
-  if (isLoading || (!data?.above && !data?.below)) return null;
+  // The silhouette is in the first paint; the card fills it. A null while
+  // loading was a void below the fold that popped into a card.
+  if (isLoading) return <div className={cn("skeleton-block h-24 rounded-2xl", className)} aria-hidden />;
+  if (!data?.above && !data?.below) return null;
 
   const heatBelow = data.below && data.below.delta < 5;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
@@ -117,7 +120,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
           </button>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

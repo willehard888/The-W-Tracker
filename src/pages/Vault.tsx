@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import PageBar from "@/components/ui/page-bar";
-import { useVaultArticles, type VaultArticle } from "@/hooks/use-vault-articles";
+import { useVaultArticles, type VaultArticleSummary } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { EVIDENCE_LABEL } from "@/components/vault/EvidenceChip";
@@ -125,7 +125,7 @@ const Vault = () => {
   // `wasRead` is the row's state when its sheet opened: a row that turns read
   // while the sheet is up gets its commit-pop when the sheet closes, not
   // while it is hidden behind it.
-  const [openArticle, setOpenArticle] = useState<{ article: VaultArticle; accent: string; wasRead: boolean } | null>(
+  const [openArticle, setOpenArticle] = useState<{ article: VaultArticleSummary; accent: string; wasRead: boolean } | null>(
     null,
   );
   const [poppedId, setPoppedId] = useState<string | null>(null);
@@ -204,7 +204,7 @@ const Vault = () => {
         {/* The shelf — covers are the categories. No frame, no strip below. */}
         <div className="mt-5 space-y-3">
           {CATEGORIES.map((cat, i) => (
-            <div key={cat.id} className="animate-fade-in-up" style={{ animationDelay: `${120 + i * 45}ms` }}>
+            <div key={cat.id} className={cn("", i < 4 && "animate-fade-in-up", "")} style={i < 4 ? { animationDelay: `${120 + i * 45}ms` } : undefined}>
               <VaultCategoryBlock
                 category={cat}
                 poppedId={poppedId}
@@ -239,7 +239,7 @@ const VaultCategoryBlock = ({
 }: {
   category: VaultCategory;
   poppedId: string | null;
-  onOpenArticle: (a: VaultArticle) => void;
+  onOpenArticle: (a: VaultArticleSummary) => void;
 }) => {
   const Icon = category.icon;
   const navigate = useNavigate();

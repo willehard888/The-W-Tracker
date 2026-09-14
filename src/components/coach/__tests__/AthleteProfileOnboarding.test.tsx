@@ -17,6 +17,8 @@ vi.mock("@/hooks/use-athlete-profile", () => ({
 vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   motion: { div: ({ children }: { children: React.ReactNode }) => <div>{children}</div> },
+  // The app renders through `m` (LazyMotion) now; same stand-in under both names.
+  m: { div: ({ children }: { children: React.ReactNode }) => <div>{children}</div> },
 }));
 
 describe("AthleteProfileOnboarding", () => {

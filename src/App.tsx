@@ -253,11 +253,24 @@ const AppRoutes = () => {
   // the top of Profile, every time — the user re-scrolled after every hop.
   // The position is saved for the page being left and restored before paint
   // for the four roots; every other page still opens at the top.
-  useLayoutEffect(() => {
+  //
+  // The position is recorded as the user scrolls, not read in the effect's
+  // cleanup: the cleanup runs after the commit has already swapped the page
+  // out of the scroller, so `scrollTop` had already been clamped against the
+  // new (shorter) content and every root "restored" to 0 (seen on device).
+  const keyRef = useRef(key);
+  keyRef.current = key;
+  useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    el.scrollTo(0, TAB_ROOTS.has(key) ? (savedScroll.get(key) ?? 0) : 0);
-    return () => { savedScroll.set(key, el.scrollTop); };
+    const onScroll = () => {
+      if (TAB_ROOTS.has(keyRef.current)) savedScroll.set(keyRef.current, el.scrollTop);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+  useLayoutEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, TAB_ROOTS.has(key) ? (savedScroll.get(key) ?? 0) : 0);
   }, [key]);
 
   // Page-transition wrap was REMOVED — keying a m.div on

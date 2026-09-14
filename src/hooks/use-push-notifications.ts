@@ -5,6 +5,7 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import { supabase } from "@/integrations/supabase/client";
 import { queryClient } from "@/lib/query-client";
 import { track, FUNNEL } from "@/lib/analytics";
+import { shouldPrimeNow } from "@/lib/push-priming";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   requestStreakNotificationPermission,
@@ -51,7 +52,9 @@ const safeNavigate = (route: string) => {
 
 // Re-prime a dismissed user at most once a week (never nag every launch).
 const PRIMING_DISMISS_KEY = "push_priming_dismissed_at";
-const REPRIME_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+const readSnoozedAt = (): number => {
+  try { return Number(localStorage.getItem(PRIMING_DISMISS_KEY) ?? 0); } catch { return 0; }
+};
 
 // Registration health. Module-level, not hook state: the screen that surfaces a
 // failure (NotificationSettings) does not own the hook — AppContent mounts it
@@ -73,6 +76,15 @@ export interface PushNotificationState {
   dismissPriming: () => void;
   /** Re-read prefs/tone and reschedule the local streak warning (settings screen). */
   resyncStreakWarning: () => Promise<void>;
+  /**
+   * The moment of intent: right after a check-in, ask for reminders if the OS
+   * would still prompt and the user has not snoozed us this week. The Home
+   * sheet 3.5 s after a later launch stays as the fallback; production shows
+   * it reached one user in a month.
+   */
+  primeAfterCheckin: () => Promise<void>;
+  /** Which door opened the sheet — the copy names the reason. */
+  primingContext: "home" | "checkin";
 }
 
 /**
@@ -83,7 +95,7 @@ export interface PushNotificationState {
  */
 export const PushControlsContext = createContext<Pick<
   PushNotificationState,
-  "enablePush" | "dismissPriming" | "resyncStreakWarning"
+  "enablePush" | "dismissPriming" | "resyncStreakWarning" | "primeAfterCheckin"
 > | null>(null);
 
 export const usePushControls = () => useContext(PushControlsContext);
@@ -91,6 +103,7 @@ export const usePushControls = () => useContext(PushControlsContext);
 export const usePushNotifications = (): PushNotificationState => {
   const { user } = useAuth();
   const [needsPriming, setNeedsPriming] = useState(false);
+  const [primingContext, setPrimingContext] = useState<"home" | "checkin">("home");
   const activatedRef = useRef(false);
   // Retain the exact listener handles we added, so cleanup removes ONLY ours —
   // never a global removeAllListeners() that would also kill listeners other
@@ -171,10 +184,14 @@ export const usePushNotifications = (): PushNotificationState => {
       }),
       () => PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
         const route = action.notification.data?.route;
+        // The one signal that a banner did anything: joined against push_sent
+        // (server) and the next checkin_completed on the founder's page.
+        void track(FUNNEL.pushOpened, { kind: "remote", route: typeof route === "string" ? route : null });
         safeNavigate(typeof route === "string" ? route : "");
       }),
       () => LocalNotifications.addListener("localNotificationActionPerformed", (event) => {
         const route = event.notification.extra?.route;
+        void track(FUNNEL.pushOpened, { kind: "local", route: typeof route === "string" ? route : null });
         safeNavigate(typeof route === "string" ? route : "");
       }),
     ];
@@ -196,20 +213,31 @@ export const usePushNotifications = (): PushNotificationState => {
     try {
       const perm = await PushNotifications.requestPermissions();
       // Opt-in rate is the single biggest lever on every push retention loop.
-      void track(FUNNEL.pushPermission, { granted: perm.receive === "granted" });
+      const granted = perm.receive === "granted";
+      void track(FUNNEL.pushPermission, { stage: granted ? "granted" : "denied", granted, source: primingContext });
       if (perm.receive === "granted") await activate();
     } catch (e) {
       // The permission prompt is the single biggest lever on every retention
       // loop in the app; a failure here used to leave no trace anywhere.
       console.warn("push permission request failed", e);
       captureException(e, { where: "push.requestPermissions" });
-      void track(FUNNEL.pushPermission, { granted: false, failed: true });
+      void track(FUNNEL.pushPermission, { stage: "denied", granted: false, failed: true, source: primingContext });
     }
-  }, [activate]);
+  }, [activate, primingContext]);
 
   const dismissPriming = useCallback(() => {
     setNeedsPriming(false);
     try { localStorage.setItem(PRIMING_DISMISS_KEY, String(Date.now())); } catch { /* noop */ }
+    void track(FUNNEL.pushPermission, { stage: "dismissed", source: primingContext });
+  }, [primingContext]);
+
+  const primeAfterCheckin = useCallback(async () => {
+    if (!Capacitor.isNativePlatform()) return;
+    const perm = await PushNotifications.checkPermissions().catch(() => null);
+    if (!shouldPrimeNow({ permission: perm?.receive, snoozedAt: readSnoozedAt() })) return;
+    setPrimingContext("checkin");
+    setNeedsPriming(true);
+    void track(FUNNEL.pushPermission, { stage: "shown", source: "checkin" });
   }, []);
 
   useEffect(() => {
@@ -257,10 +285,13 @@ export const usePushNotifications = (): PushNotificationState => {
       let onboardingDone = false;
       try { onboardingDone = !!localStorage.getItem("w_onboarding_done"); } catch { /* noop */ }
       if (!onboardingDone) return;
-      let snoozedAt = 0;
-      try { snoozedAt = Number(localStorage.getItem(PRIMING_DISMISS_KEY) ?? 0); } catch { /* noop */ }
-      if (Date.now() - snoozedAt > REPRIME_AFTER_MS) {
-        primeTimer = setTimeout(() => { if (!cancelled) setNeedsPriming(true); }, 3500);
+      if (shouldPrimeNow({ permission: perm.receive, snoozedAt: readSnoozedAt() })) {
+        primeTimer = setTimeout(() => {
+          if (cancelled) return;
+          setPrimingContext("home");
+          setNeedsPriming(true);
+          void track(FUNNEL.pushPermission, { stage: "shown", source: "home" });
+        }, 3500);
       }
     })();
 
@@ -279,5 +310,5 @@ export const usePushNotifications = (): PushNotificationState => {
     // every hour, dropping a notification tap that landed mid-teardown.
   }, [user?.id, activate]);
 
-  return { needsPriming, enablePush, dismissPriming, resyncStreakWarning: syncStreakWarning };
+  return { needsPriming, primingContext, enablePush, dismissPriming, resyncStreakWarning: syncStreakWarning, primeAfterCheckin };
 };

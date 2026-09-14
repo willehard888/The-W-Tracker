@@ -5,6 +5,8 @@ import { hapticSelection } from "@/lib/haptics";
 
 interface PushPrimingSheetProps {
   open: boolean;
+  /** Opened from the Home fallback, or right after a check-in (the copy names the chain). */
+  context?: "home" | "checkin";
   onEnable: () => void;
   onDismiss: () => void;
 }
@@ -22,8 +24,9 @@ const ROWS = [
  * when they tap "Turn on reminders". The shell (rise, scrim, scroll lock,
  * exit) is BottomSheet's; this file owns only the argument.
  */
-export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrimingSheetProps) {
+export default function PushPrimingSheet({ open, context = "home", onEnable, onDismiss }: PushPrimingSheetProps) {
   const dismiss = () => { hapticSelection(); onDismiss(); };
+  const afterCheckin = context === "checkin";
   return (
     <BottomSheet open={open} onClose={dismiss} label="Turn on reminders" bodyClassName="px-6">
       <div className="mx-auto mt-2 mb-4 flex h-16 w-16 items-center justify-center rounded-2xl gradient-gold glow-gold">
@@ -31,10 +34,12 @@ export default function PushPrimingSheet({ open, onEnable, onDismiss }: PushPrim
       </div>
 
       <h2 className="text-center font-display text-2xl font-black tracking-tight">
-        Never break the chain
+        {afterCheckin ? "Keep the chain" : "Never break the chain"}
       </h2>
       <p className="mx-auto mt-2 mb-5 max-w-[300px] text-center text-sm text-muted-foreground">
-        Turn on reminders so a busy day never costs you your streak. You stay in control — only what matters.
+        {afterCheckin
+          ? "Day one is in. A reminder tomorrow evening keeps a busy day from costing you this streak."
+          : "Turn on reminders so a busy day never costs you your streak. You stay in control — only what matters."}
       </p>
 
       <ul className="mb-6 divide-y divide-border/35">

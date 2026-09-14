@@ -1035,6 +1035,18 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             description={canPost
               ? "Be the first to share your W — the elite feed only counts proof."
               : "The feed only counts proof. Members post it; everyone reads it."}
+            action={
+              <div className="flex flex-wrap justify-center gap-2">
+                {canPost && (
+                  <Button size="sm" variant="ember" onClick={() => { hapticSelection(); setComposerOpen(true); }}>
+                    Post your first W
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={() => navigate("/referrals")}>
+                  Invite a friend
+                </Button>
+              </div>
+            }
           />
         )}
 

@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Flame, MessageCircle, Users } from "lucide-react";
 import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
@@ -34,8 +35,14 @@ const Squad = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const unread = useUnreadMessageCount().data ?? 0;
   const raw = searchParams.get("tab");
+  // With no tab asked for and a feed known to be empty (the shell warms this
+  // key), open on Tribes: an empty feed is the wrong first impression of
+  // "Squad" while the founder's tribe fire is one tap away.
+  const queryClient = useQueryClient();
+  const feedKnownEmpty = raw === null &&
+    (queryClient.getQueryData(["feed-posts", false]) as unknown[] | undefined)?.length === 0;
   const tab: "feed" | "tribes" =
-    raw === "tribes" || raw === "mine" || raw === "browse" ? "tribes" : "feed";
+    raw === "tribes" || raw === "mine" || raw === "browse" || feedKnownEmpty ? "tribes" : "feed";
   // mine/browse aliases pre-select the sub-tab inside Tribes.
   const initialSub = raw === "mine" || raw === "browse" ? raw : undefined;
   const setTab = (next: "feed" | "tribes") =>

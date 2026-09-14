@@ -1,4 +1,5 @@
 import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
+import { shouldGateOnboarding } from "@/lib/onboarding-gate";
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { LazyMotion, MotionConfig } from "framer-motion";
@@ -156,9 +157,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // a reinstall / new device / signOut on a shared device never replays the
   // flow; localStorage stays as a sync fast-path cache for the same device.
   const onboardedLocally = readLocal("w_onboarding_done") === "true";
-  const onboarded = !!profile?.onboarded_at || onboardedLocally;
   if (profile?.onboarded_at && !onboardedLocally) writeLocal("w_onboarding_done", "true");
-  if (!onboarded && path !== "/onboarding" && path !== "/choose-username") {
+  if (shouldGateOnboarding(profile, onboardedLocally) && path !== "/onboarding" && path !== "/choose-username") {
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -220,12 +220,12 @@ const AppRoutes = () => {
   // a raw history.pushState — that dropped the router's idx for the session.
   const navigate = useNavigate();
   useEffect(() => { setNavigator(navigate); }, [navigate]);
-  const { needsPriming, enablePush, dismissPriming, resyncStreakWarning } = usePushNotifications();
+  const { needsPriming, primingContext, enablePush, dismissPriming, resyncStreakWarning, primeAfterCheckin } = usePushNotifications();
   // One object identity per callback set — a fresh literal re-rendered every
   // context consumer on each shell render.
   const pushControls = useMemo(
-    () => ({ enablePush, dismissPriming, resyncStreakWarning }),
-    [enablePush, dismissPriming, resyncStreakWarning],
+    () => ({ enablePush, dismissPriming, resyncStreakWarning, primeAfterCheckin }),
+    [enablePush, dismissPriming, resyncStreakWarning, primeAfterCheckin],
   );
   useOfflineCheckinSync();
   useOfflineNutritionSync();
@@ -400,7 +400,7 @@ const AppRoutes = () => {
       </ScrollContainerProvider>
       <BottomNav />
       {user && <TierPromotionCelebration />}
-      <PushPrimingSheet open={needsPriming} onEnable={enablePush} onDismiss={dismissPriming} />
+      <PushPrimingSheet open={needsPriming} context={primingContext} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
     </OnboardingProvider>
     </PushControlsContext.Provider>

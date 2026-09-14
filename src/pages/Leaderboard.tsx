@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { SettingsRow } from "@/components/settings/SettingsList";
 import StreakFlameInline from "@/components/StreakFlameInline";
+import TierLadder from "@/components/TierLadder";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
 import EmptyState from "@/components/ui/empty-state";
@@ -329,6 +330,16 @@ const Leaderboard = () => {
 
       {boardLoading && currentLeaders.length === 0 && <BoardSkeleton />}
 
+      {/* A board of one or two is not a race yet. The ladder is the climb the
+          user actually has in front of them, so it comes first; the short
+          board follows and stops looking like a broken query. */}
+      {!boardLoading && !boardError && currentLeaders.length > 0 && currentLeaders.length < 3 && (
+        <div className="home-rise home-rise-1 mb-5">
+          <p className="eyebrow mb-2">Your climb</p>
+          <TierLadder currentTier={profile?.status_tier ?? "recruit"} />
+        </div>
+      )}
+
       {/* ── HERO — the podium. One spotlight, behind #1; the other two sit
              on quiet surfaces so the leader is the screen's spectacle. ── */}
       {!boardLoading && currentLeaders.length > 0 && (
@@ -433,10 +444,13 @@ const Leaderboard = () => {
         <div className="home-rise home-rise-2">
           <EmptyState
             icon={Trophy}
-            title="The board is warming up"
-            description="Be the first to check in and claim rank #1."
+            title="No one on the board yet"
+            description="Check in to claim #1. The ladder below is the climb either way."
             action={<Button size="sm" onClick={() => navigate("/checkin")}>Check in now</Button>}
           />
+          <div className="mt-4">
+            <TierLadder currentTier={profile?.status_tier ?? "recruit"} />
+          </div>
         </div>
       )}
 

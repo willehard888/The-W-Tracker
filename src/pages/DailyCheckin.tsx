@@ -28,6 +28,7 @@ import AnimatedNumber from "@/components/AnimatedNumber";
 import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";
+import { usePushControls } from "@/hooks/use-push-notifications";
 import { getNotificationPrefs } from "@/lib/notification-prefs";
 import { useModeration } from "@/hooks/use-moderation";
 import ModerationGate from "@/components/ModerationGate";
@@ -141,6 +142,7 @@ const CUSTOM = new Set(["sleep", "workout", "hydration"]);
 const DailyCheckin = () => {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
+  const pushControls = usePushControls();
   const { profile: athlete } = useAthleteProfile();
   const why = athlete?.i_am?.trim();
   const queryClient = useQueryClient();
@@ -664,6 +666,9 @@ const DailyCheckin = () => {
             enabled: prefs.streak_guard,
           });
         } catch (e) { console.warn("streak notif", e); captureException(e, { where: "checkin.streakNotif" }); }
+        // The moment of intent: the user just locked a day in. If the OS would
+        // still prompt for reminders, ask now — with the chain as the reason.
+        try { await pushControls?.primeAfterCheckin(); } catch { /* the Home fallback still exists */ }
         // rpc() resolves with { error } — it never rejects, so this catch was
         // unreachable and the tier silently stopped advancing after check-ins
         // without the captureException below ever firing.

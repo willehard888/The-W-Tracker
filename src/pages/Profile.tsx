@@ -21,7 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
@@ -107,7 +107,16 @@ const Profile = () => {
   // "is my work paying off?" view), Badges (the trophy case), Settings
   // (sign-out + delete + subscription management). The hero card above
   // stays always visible because it's the identity.
-  const [profileTab, setProfileTab] = useState<"stats" | "badges" | "settings">("stats");
+  // In the URL (`/profile?tab=settings`), not in state: the route boundary
+  // remounts Profile on every return from a sub-page, and a state tab reset to
+  // Stats at the top after every setting opened — the user scrolled down and
+  // re-tapped Settings for each one. Replace-navigation keeps Back clean.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get("tab");
+  const profileTab: "stats" | "badges" | "settings" =
+    rawTab === "badges" || rawTab === "settings" ? rawTab : "stats";
+  const setProfileTab = (t: "stats" | "badges" | "settings") =>
+    setSearchParams(t === "stats" ? {} : { tab: t }, { replace: true });
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

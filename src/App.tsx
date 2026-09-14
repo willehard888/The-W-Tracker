@@ -200,6 +200,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
  * Then cross-reference against:
  *   grep -oE 'path="/[^"]+"' src/App.tsx | sort -u
  */
+/** The pages whose scroll position survives a hop into a sub-page and back. */
+const TAB_ROOTS = new Set(["/", "/squad", "/leaderboard", "/profile"]);
+const savedScroll = new Map<string, number>();
+
 const AppRoutes = () => {
   const { user } = useAuth();
   // Native listeners (a push tap) navigate through the router, never through
@@ -234,8 +238,16 @@ const AppRoutes = () => {
   const location = useLocation();
   const key = pageKey(location.pathname);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // A tab root keeps its place. Home → Library → an exercise → Back used to
+  // land at the top of the day, and Profile → Settings → a setting → Back at
+  // the top of Profile, every time — the user re-scrolled after every hop.
+  // The position is saved for the page being left and restored before paint
+  // for the four roots; every other page still opens at the top.
   useLayoutEffect(() => {
-    scrollContainerRef.current?.scrollTo(0, 0);
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollTo(0, TAB_ROOTS.has(key) ? (savedScroll.get(key) ?? 0) : 0);
+    return () => { savedScroll.set(key, el.scrollTop); };
   }, [key]);
 
   // Page-transition wrap was REMOVED — keying a motion.div on

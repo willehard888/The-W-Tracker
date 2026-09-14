@@ -40,16 +40,21 @@ const TribeNew = () => {
       return;
     }
     setNameStatus("checking");
+    // `clearTimeout` cancels a pending check, not one already in flight: type
+    // "Iron", wait, keep typing "Ironclad", and the first response could land
+    // last and stamp its verdict on the wrong name. `active` drops it.
+    let active = true;
     const t = setTimeout(async () => {
       const { data } = await supabase
         .from("tribes")
         .select("id")
         .ilike("name", trimmed)
         .limit(1);
+      if (!active) return;
       const taken = (data ?? []).length > 0;
       setNameStatus(taken ? "taken" : "available");
     }, 400);
-    return () => clearTimeout(t);
+    return () => { active = false; clearTimeout(t); };
   }, [name]);
 
   const handleCreate = async () => {

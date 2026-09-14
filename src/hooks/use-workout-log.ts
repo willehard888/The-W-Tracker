@@ -164,7 +164,12 @@ export const useLogSet = () => {
     onSuccess: (_d, p) => {
       qc.invalidateQueries({ queryKey: ["day-logs", p.programId, p.week, p.day] });
       qc.invalidateQueries({ queryKey: ["day-sets", p.programId, p.week, p.day] });
-      qc.invalidateQueries({ queryKey: ["exercise-history", p.slug] });
+      // The history query is keyed ["exercise-history", userId, slug]; the old
+      // ["exercise-history", slug] put the slug where the user id sits, matched
+      // nothing, and a freshly logged set never showed in the exercise's
+      // history until staleTime lapsed. One device is one user — the bare
+      // prefix is exact enough and cannot drift again.
+      qc.invalidateQueries({ queryKey: ["exercise-history"] });
       qc.invalidateQueries({ queryKey: ["recent-workout-logs"] });
     },
   });

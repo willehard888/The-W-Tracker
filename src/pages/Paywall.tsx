@@ -152,7 +152,14 @@ const Paywall = () => {
     track(FUNNEL.purchaseStarted, { plan, platform: "native" });
 
     try {
-      await purchasePremiumPlan(plan);
+      const outcome = await purchasePremiumPlan(plan);
+      if (outcome?.cancelled) {
+        // The StoreKit sheet was dismissed. Nothing to verify, nothing to
+        // apologise for — back to the offer.
+        track(FUNNEL.purchaseCancelled, { plan, platform: "native" });
+        setStatus("idle");
+        return;
+      }
       setStatus("verifying");
       const ok = await pollVerification(8000);
       if (ok) {
@@ -203,8 +210,17 @@ const Paywall = () => {
     hapticImpact("light");
     setErrorMessage(null);
     try {
-      await restorePurchases();
+      const { restored } = await restorePurchases();
       await checkSubscription();
+      if (!restored) {
+        // A successful call with nothing in it — the normal outcome for an
+        // Apple ID that never bought. Not a green toast.
+        toast("No purchase found on this Apple ID.", {
+          description: "Restore only brings back a membership bought with the Apple ID signed in on this iPhone.",
+        });
+        hapticNotification("warning");
+        return;
+      }
       track(FUNNEL.purchaseRestored);
       toast.success("Purchases restored.");
       hapticNotification("success");

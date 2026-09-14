@@ -516,6 +516,11 @@ const DailyCheckin = () => {
           await supabase.auth.getSession().catch(() => {});
         }
       }
+      // The one failure in the app that costs a streak day had no signal
+      // beyond the user's own toast. Now it has a count.
+      if (rpcError && !rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) {
+        void track(FUNNEL.checkinFailed, { network: hadNetworkError, message: rpcError.message?.slice(0, 120) });
+      }
 
       // Reconstruct the success screen from the DB when the RPC's own response
       // can't be trusted (a prior attempt committed then the response dropped).

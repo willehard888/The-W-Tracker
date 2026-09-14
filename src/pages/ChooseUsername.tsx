@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/error-copy";
 
 const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
 
@@ -109,7 +110,7 @@ const ChooseUsername = () => {
       // Race: someone grabbed it between the check and submit.
       const taken = /duplicate|unique|already/i.test(error.message || "");
       if (taken) setAvailability("taken");
-      toast.error(taken ? "That name is taken — try another." : (error.message || "Failed to save username"));
+      toast.error(taken ? "That name is taken — try another." : friendlyError(error));
       return;
     }
 

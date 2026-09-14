@@ -101,7 +101,12 @@ export const useDailyPlan = () => {
   }, [user?.id, qc]);
 
   const generate = async () => {
-    const { data, error } = await supabase.functions.invoke("coach-daily-plan");
+    // The function runs in UTC; without the device's offset it stamped the plan
+    // with the UTC day while this hook reads the local one — in Finland the
+    // plan "vanished" every night between 00:00 and 03:00.
+    const { data, error } = await supabase.functions.invoke("coach-daily-plan", {
+      body: { tz_offset_minutes: new Date().getTimezoneOffset() },
+    });
     if (error) {
       // supabase.functions.invoke wraps non-2xx as FunctionsHttpError with the
       // Response on `context` — surface the status so the UI can distinguish

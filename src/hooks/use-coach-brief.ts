@@ -43,7 +43,11 @@ export const useCoachBrief = () => {
     gcTime: 24 * 60 * 60 * 1000,
     retry: 1,
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("coach-daily-brief", { body: {} });
+      // Device offset so the server caches the brief on the SAME day this hook
+      // keys it by (`localDateKey`) — it was rolling over at UTC midnight.
+      const { data, error } = await supabase.functions.invoke("coach-daily-brief", {
+        body: { tz_offset_minutes: new Date().getTimezoneOffset() },
+      });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
       return (data?.brief as CoachBrief) ?? null;

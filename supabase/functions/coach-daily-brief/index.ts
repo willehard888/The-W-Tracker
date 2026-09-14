@@ -8,6 +8,7 @@ import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.t
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { programWeekState } from "../_shared/program-week.ts";
+import { clampTzOffset, localDayKey } from "../_shared/local-day.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,7 +45,9 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const force = !!body?.force;
-    const today = new Date().toISOString().slice(0, 10);
+    // The device's calendar day, not the server's UTC one — the client keys
+    // its cache on localDateKey(), and the two disagreed for hours every day.
+    const today = localDayKey(clampTzOffset(body?.tz_offset_minutes));
 
     if (!force) {
       const { data: cached } = await sb

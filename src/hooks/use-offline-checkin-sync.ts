@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { flushPendingCheckin, getPendingCheckin } from "@/lib/offline-checkin";
+import { track, FUNNEL } from "@/lib/analytics";
 
 const STATIC_KEYS = new Set(["vault-articles", "nutrient-definitions", "food", "food-search", "food-sources", "recipe-per-serving", "exercise-library"]);
 
@@ -34,6 +35,7 @@ export function useOfflineCheckinSync() {
             description: "We saved it while you were offline and just logged it.",
           });
         } else if (res === "stale") {
+          void track(FUNNEL.checkinSyncStale);
           toast.error("Yesterday's check-in couldn't sync", {
             description: "You were offline past midnight, so it can't be logged for the right day. Today is a fresh start.",
             duration: 8000,

@@ -55,6 +55,7 @@ const Battles = () => {
   // already-responded battle and flash a spurious error toast.
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [uploadingProof, setUploadingProof] = useState<string | null>(null);
+  const votingRef = useRef<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeProofBattleId, setActiveProofBattleId] = useState<string | null>(null);
 
@@ -239,11 +240,17 @@ const Battles = () => {
 
   const handleVote = async (battleId: string, votedFor: string) => {
     if (!profile) return;
+    // The button only disables once `myVote` refetches; two fast taps used to
+    // reach the unique constraint and toast "You already voted" on a vote that
+    // had just landed.
+    if (votingRef.current.has(battleId)) return;
+    votingRef.current.add(battleId);
     const { error } = await supabase.from("battle_votes").insert({
       battle_id: battleId,
       voter_id: profile.user_id,
       voted_for: votedFor,
     });
+    votingRef.current.delete(battleId);
     if (error) {
       // 23505 = already voted (unique constraint); RLS blocks self-votes.
       toast.error(error.code === "23505" ? "You already voted in this battle" : "Failed to vote");

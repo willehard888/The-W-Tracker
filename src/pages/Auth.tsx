@@ -14,6 +14,7 @@ import AppleSignInButton from "@/components/AppleSignInButton";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { isNativePlatform } from "@/lib/platform";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/error-copy";
 
 const Auth = () => {
   const isNative = isNativePlatform();
@@ -133,12 +134,12 @@ const Auth = () => {
       if (nameStatus === "taken") return fail("That username is taken — pick another.");
       void trackAnon("signup_submitted"); // pre-auth: fires whether or not signUp succeeds
       const { error: err } = await signUp(email, password, username);
-      if (err) return fail(err.message);
+      if (err) return fail(friendlyError(err));
       setEmailSent(true);
       hapticNotification("success");
     } else {
       const { error: err } = await signIn(email, password);
-      if (err) return fail(err.message);
+      if (err) return fail(friendlyError(err));
       hapticNotification("success");
       navigate("/");
     }

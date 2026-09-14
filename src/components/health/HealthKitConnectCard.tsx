@@ -45,28 +45,38 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
       );
   }, [user?.id, syncing]);
 
-  // Today's row — who contributed. The hook's last snapshot is freshest; the
-  // stored row covers a cold open before any sync has run this session.
+  // Who has been feeding Health, and whether anything came through at all.
+  //
+  // Judged on the STORED rows from the last three days, not on the freshest
+  // in-session read: on a new morning, before the first steps, today's read is
+  // all-null — and judging on it alone made the card announce "Nothing came
+  // through from Health, check Settings" over yesterday's 9 000 stored steps.
+  // A quiet morning is not a broken connection. The in-session read can only
+  // ADD sources to the line; it cannot empty it.
   useEffect(() => {
     if (!user?.id || !connected) return;
-    if (lastSnapshot) {
-      const hasData = lastSnapshot.steps != null || lastSnapshot.workout_count != null
-        || lastSnapshot.sleep_hours != null || lastSnapshot.active_kcal != null;
-      setToday({ sources: lastSnapshot.sources, hasData });
-      return;
-    }
+    let alive = true;
+    const since = new Date();
+    since.setDate(since.getDate() - 3);
     void supabase
       .from("health_sync_snapshots")
-      .select("steps, workout_count, sleep_hours, active_kcal, sources")
+      .select("snapshot_date, steps, workout_count, sleep_hours, active_kcal, sources")
       .eq("user_id", user.id)
+      .gte("snapshot_date", since.toISOString().slice(0, 10))
       .order("snapshot_date", { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .limit(3)
       .then(({ data }) => {
-        if (!data) { setToday({ sources: [], hasData: false }); return; }
-        const hasData = data.steps != null || data.workout_count != null || data.sleep_hours != null || data.active_kcal != null;
-        setToday({ sources: (data.sources as string[] | null) ?? [], hasData });
+        if (!alive) return;
+        const rows = data ?? [];
+        const withData = rows.filter((r) => r.steps != null || r.workout_count != null || r.sleep_hours != null || r.active_kcal != null);
+        const stored = new Set<string>();
+        for (const r of withData) for (const src of (r.sources as string[] | null) ?? []) stored.add(src);
+        for (const src of lastSnapshot?.sources ?? []) stored.add(src);
+        const liveHasData = !!lastSnapshot && (lastSnapshot.steps != null || lastSnapshot.workout_count != null
+          || lastSnapshot.sleep_hours != null || lastSnapshot.active_kcal != null);
+        setToday({ sources: Array.from(stored).sort(), hasData: withData.length > 0 || liveHasData });
       });
+    return () => { alive = false; };
   }, [user?.id, connected, lastSnapshot]);
 
   if (available === false) return null;       // wrong platform, hide
@@ -127,8 +137,9 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
     );
   }
 
-  // Connected — who is feeding it, and the verification line.
-  const via = today?.sources.length ? today.sources.join(" · ") : "Apple Health";
+  // Connected — who is feeding it, and the verification line. Before the
+  // first row of the day lands the line says so instead of guessing.
+  const via = today?.sources.length ? today.sources.join(" · ") : "Health · syncing";
   return (
     <div className="surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
       <ShieldCheck size={16} className="text-xp-green shrink-0" aria-hidden />

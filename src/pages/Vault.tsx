@@ -111,11 +111,16 @@ const CATEGORIES: VaultCategory[] = [
  */
 const Vault = () => {
   const navigate = useNavigate();
-  const { isPremium, subscriptionLoading } = useAuth();
+  const { isPremium } = useAuth();
   // Trial = full access (the header pill literally promises "Full access ·
   // Nd"). Server RLS agrees since vault_trial_access — has_active_access
   // covers members AND trialists, same gate the AI Coach uses.
-  const { isInTrial } = useTrialAccess();
+  // Gate on `useTrialAccess().loading`, not AuthContext's `subscriptionLoading`:
+  // that one clears after an 8 s race even when the profile is still null, and
+  // in that state this effect bounced a PAYING member to the paywall on a slow
+  // cold start. `loading` here is true until the answer exists — the same flag
+  // ProtectedRoute waits on.
+  const { isInTrial, loading: accessLoading } = useTrialAccess();
   const hasVaultAccess = isPremium || isInTrial;
   // `wasRead` is the row's state when its sheet opened: a row that turns read
   // while the sheet is up gets its commit-pop when the sheet closes, not
@@ -133,9 +138,9 @@ const Vault = () => {
   readIdsRef.current = readIds;
 
   useEffect(() => {
-    if (subscriptionLoading) return;
+    if (accessLoading) return;
     if (!hasVaultAccess) navigate("/paywall", { replace: true });
-  }, [hasVaultAccess, subscriptionLoading, navigate]);
+  }, [hasVaultAccess, accessLoading, navigate]);
 
   // ?lesson=<slug> deep link (Daily Insight card and coach references) — open
   // the article sheet once the library resolves, then strip the param so

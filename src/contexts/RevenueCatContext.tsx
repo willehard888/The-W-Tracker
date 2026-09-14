@@ -32,6 +32,18 @@ const PRODUCT_IDS = [
 const PRIMARY_PRODUCT_ID = "WhealthFactory499";
 
 // ─── Types ──────────────────────────────────────────────
+/**
+ * A purchase call resolves in three ways, and the caller has to tell them
+ * apart: bought, failed (throws), or CANCELLED. Cancellation used to be
+ * swallowed here as a normal resolve — so the Paywall spun for 8 s "verifying"
+ * a purchase that never happened and then told the user "Payment confirmed but
+ * we couldn't verify access". Its own userCancelled branch was unreachable,
+ * which is why `purchase_cancelled` had zero rows in production.
+ */
+export interface PurchaseOutcome {
+  cancelled: boolean;
+}
+
 interface RevenueCatContextType {
   rcElite: boolean;
   rcLoading: boolean;
@@ -41,15 +53,15 @@ interface RevenueCatContextType {
   /** True only when the store actually has an annual package available. */
   yearlyAvailable: boolean;
   packages: any[];
-  purchase: (pkg: any) => Promise<void>;
-  purchaseProduct: (productId: string) => Promise<void>;
+  purchase: (pkg: any) => Promise<PurchaseOutcome>;
+  purchaseProduct: (productId: string) => Promise<PurchaseOutcome>;
   /**
    * Purchase the Premium plan for the requested billing cadence.
    * Honors an annual offering package when one exists; otherwise falls back
    * to the directly-configured monthly product.
    */
-  purchasePremiumPlan: (plan: "monthly" | "yearly") => Promise<void>;
-  restorePurchases: () => Promise<void>;
+  purchasePremiumPlan: (plan: "monthly" | "yearly") => Promise<PurchaseOutcome>;
+  restorePurchases: () => Promise<{ restored: boolean }>;
 }
 
 const RevenueCatContext = createContext<RevenueCatContextType | undefined>(
@@ -418,8 +430,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
         const { customerInfo } = await CapPurchases.purchasePackage({ aPackage: pkg });
         await applyElite(customerInfo);
+        return { cancelled: false };
       } catch (e: any) {
-        if (isCancellation(e)) return;
+        if (isCancellation(e)) return { cancelled: true };
         console.error("[RC] Package purchase error:", e);
         const message = toMessage(e);
         updateRevenueCatDebug({ lastPurchaseError: message });
@@ -473,8 +486,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           product: selectedProduct,
         });
         await applyElite(customerInfo);
+        return { cancelled: false };
       } catch (e: any) {
-        if (isCancellation(e)) return;
+        if (isCancellation(e)) return { cancelled: true };
         console.error("[RC] Product purchase error:", e);
         const message = toMessage(e);
         updateRevenueCatDebug({ lastPurchaseError: message });
@@ -497,16 +511,13 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           ? packages.find(isAnnualPackage)
           : (packages.find(isMonthlyPackage) ??
              packages.find((p) => productId(storeProduct(p)) === PRIMARY_PRODUCT_ID));
-      if (pkg) {
-        await purchase(pkg);
-        return;
-      }
+      if (pkg) return purchase(pkg);
       // No matching package — only the monthly product is configured directly.
       // Guard against silently charging monthly for a "yearly" tap.
       if (plan === "yearly") {
         throw new Error("Yearly plan isn't available right now. Please choose monthly.");
       }
-      await purchaseProduct(PRIMARY_PRODUCT_ID);
+      return purchaseProduct(PRIMARY_PRODUCT_ID);
     },
     [packages, purchase, purchaseProduct],
   );
@@ -518,6 +529,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       pushIosDebugLog("RevenueCat", "Restore purchases started");
       const { customerInfo } = await CapPurchases.restorePurchases();
       await applyElite(customerInfo);
+      // StoreKit resolves happily for an Apple ID that never bought anything;
+      // "restored" has to mean an entitlement actually came back.
+      return { restored: hasElite(customerInfo) };
     } catch (e) {
       console.error("[RC] Restore error:", e);
       const message = toMessage(e);

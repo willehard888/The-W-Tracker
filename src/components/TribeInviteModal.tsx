@@ -32,6 +32,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
 
   useEffect(() => {
     if (!open || !tribeId) return;
+    let alive = true;
     (async () => {
       const [m, i] = await Promise.all([
         supabase
@@ -44,9 +45,11 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
           .eq("tribe_id", tribeId)
           .eq("status", "pending"),
       ]);
+      if (!alive) return;
       setMemberIds(new Set((m.data ?? []).map((r) => r.user_id)));
       setInvitedIds(new Set((i.data ?? []).map((r) => r.invitee_id)));
     })();
+    return () => { alive = false; };
   }, [open, tribeId]);
 
   // One search for the whole app (react-query owns the caching and the

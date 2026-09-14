@@ -11,6 +11,7 @@ import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.t
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 import { programWeekState } from "../_shared/program-week.ts";
+import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,10 +34,6 @@ interface Checkin {
   no_phone_evening: boolean;
 }
 
-const todayLocalISO = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
 
 const computeReadiness = (checkins: Checkin[], lastRpe: number | null, streak: number, missedSessions7d: number) => {
   // Sleep component (0..40)
@@ -463,6 +460,12 @@ const fallbackPlan = (todayDay: any, adjustment: string, readinessScore: number,
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  // The device's tz offset (getTimezoneOffset, minutes behind UTC). This
+  // function runs in UTC; the plan's date and the program weekday have to be
+  // the USER's, or the client — which reads plan_date = its local day — asks
+  // for a row that does not exist for hours every night. Clamped; absent → 0.
+  const body = await req.json().catch(() => ({}));
+  const tzOffsetMinutes = clampTzOffset(body?.tz_offset_minutes);
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -665,7 +668,7 @@ Deno.serve(async (req) => {
       // Calendar AND logs — the same week the runner shows, so the plan never
       // prescribes week 4 to someone the client shows on week 2.
       const week = programWeekState({ startedOn: program.started_on, weeks: program.weeks, logs: programLogs, now: today }).currentWeek;
-      const js = today.getDay();
+      const js = localWeekday(tzOffsetMinutes, today.getTime());
       const dayIdx = (js + 6) % 7;
       const w = (program.plan_json?.weeks ?? []).find((x: any) => x.week === week);
       todayDay = w?.days?.[dayIdx] ?? null;
@@ -755,7 +758,7 @@ Deno.serve(async (req) => {
 
     // Persist via SECURITY DEFINER RPC
     const { data: planId, error: rpcErr } = await supabase.rpc("upsert_daily_plan", {
-      _plan_date: todayLocalISO(),
+      _plan_date: localDayKey(tzOffsetMinutes),
       _readiness_score: readiness.score,
       _readiness_breakdown: readiness.breakdown,
       _adjustment: adjustment,

@@ -50,6 +50,10 @@ export const FUNNEL = {
   healthkitConnected: "healthkit_connected",
   checkinCompleted: "checkin_completed",
   checkinVerified: "checkin_verified",
+  /** record_checkin failed after its retries — the user saw a toast, nobody else did. */
+  checkinFailed: "checkin_failed",
+  /** An offline check-in came back after midnight and could not be logged for its day. */
+  checkinSyncStale: "checkin_sync_stale",
   streakMilestone: "streak_milestone",
   // Monetization
   // Trial lifecycle — enables trial→paid conversion measurement, which was

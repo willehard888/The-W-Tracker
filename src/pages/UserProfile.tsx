@@ -157,8 +157,13 @@ const UserProfile = () => {
   // deletes the row so they can ask again. One implementation now.
   const { sendRequest, acceptRequest, declineRequest, removeFriend, invalidate } = useFriendActions();
 
+  // One friend action in flight at a time. A double tap used to reach the
+  // UNIQUE constraint and come back through friendlyError as "That already
+  // exists — try a different name." on an Add-friend button.
+  const [friendBusy, setFriendBusy] = useState(false);
   const handleFriendAction = async (action: "send" | "accept" | "decline" | "cancel" | "remove") => {
-    if (!myProfile || !userId) return;
+    if (!myProfile || !userId || friendBusy) return;
+    setFriendBusy(true);
     try {
       if (action === "send") {
         await sendRequest(userId);
@@ -182,6 +187,8 @@ const UserProfile = () => {
       invalidate();
     } catch (e) {
       toast.error(friendlyError(e, "Something went wrong"));
+    } finally {
+      setFriendBusy(false);
     }
   };
 
@@ -286,24 +293,24 @@ const UserProfile = () => {
           <div className="home-rise home-rise-2 mt-4 flex items-center gap-1.5">
             <div key={friendState} className={cn("flex-1 min-w-0 flex items-center gap-1.5", landed && "commit-pop")}>
               {friendState === "friends" ? (
-                <Button variant="gold-outline" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("remove")}>
+                <Button variant="gold-outline" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => handleFriendAction("remove")}>
                   <UserCheck size={15} aria-hidden /> Friends
                 </Button>
               ) : friendState === "incoming" ? (
                 <>
-                  <Button variant="ember" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("accept")}>
+                  <Button variant="ember" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => handleFriendAction("accept")}>
                     <UserCheck size={15} aria-hidden /> Accept
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground" aria-label="Decline request" onClick={() => handleFriendAction("decline")}>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground" aria-label="Decline request" loading={friendBusy} onClick={() => handleFriendAction("decline")}>
                     <UserX size={18} aria-hidden />
                   </Button>
                 </>
               ) : friendState === "sent" ? (
-                <Button variant="secondary" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("cancel")}>
+                <Button variant="secondary" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => handleFriendAction("cancel")}>
                   <Clock size={14} aria-hidden /> Pending
                 </Button>
               ) : (
-                <Button variant="ember" size="sm" className="flex-1 min-h-11" onClick={() => handleFriendAction("send")}>
+                <Button variant="ember" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => handleFriendAction("send")}>
                   <UserPlus size={15} aria-hidden /> Add friend
                 </Button>
               )}

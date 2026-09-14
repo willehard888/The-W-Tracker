@@ -65,7 +65,9 @@ const PILLAR_ORDER: CheckinPillar[] = [
 
 // The lit state every answered block shares — sleep, workout, hydration and
 // each habit toggle light the same gold once they are done.
-const LIT = "border-gold/45 bg-gradient-to-r from-gold/[0.12] to-gold/[0.04] shadow-[0_0_0_1px_hsl(var(--gold)/0.15),0_4px_14px_-6px_hsl(var(--gold)/0.35)]";
+// Lit = live, and live is ember in the house vocabulary; gold on every locked-in
+// card fought the one gold number (Day N) the screen is about.
+const LIT = "border-[hsl(var(--ember))]/45 bg-gradient-to-r from-[hsl(var(--ember))]/[0.12] to-[hsl(var(--ember))]/[0.04] shadow-[0_0_0_1px_hsl(var(--ember)/0.15),0_4px_14px_-6px_hsl(var(--ember)/0.35)]";
 
 // A single evidence-based habit rendered as an emoji toggle, with an optional
 // "Detected" badge when Apple Health confirms it.

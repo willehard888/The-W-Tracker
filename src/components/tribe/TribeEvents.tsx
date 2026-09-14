@@ -25,6 +25,23 @@ const errMsg = (e: any) =>
   ERR[e?.message?.match(/not_member|event_full|title_required|unauthorized|forbidden/)?.[0] ?? ""] ?? e?.message ?? "Something went wrong";
 
 const LABEL = "text-[11px] font-bold text-muted-foreground";
+
+// Native datetime-local under house type: the picker stays the platform's,
+// the field is ours. Same shape as nutrition's DateBar.
+const DateTimeField = ({ value, onChange, label, className }: { value: string; onChange: (v: string) => void; label: string; className?: string }) => (
+  <div className={cn("relative surface-inset h-11 rounded-xl px-3 flex items-center", className)}>
+    <span className={cn("text-[13px] font-medium", value ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
+      {value ? format(new Date(value), "EEE d MMM · HH:mm") : "Pick date & time"}
+    </span>
+    <input
+      type="datetime-local"
+      value={value}
+      aria-label={label}
+      onChange={(e) => onChange(e.target.value)}
+      className="absolute inset-0 h-full w-full opacity-0"
+    />
+  </div>
+);
 const EMBER = "text-[hsl(var(--ember))]";
 
 interface SeriesItem {
@@ -456,6 +473,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
 
   const field = "w-full surface-inset rounded-xl px-3 py-2.5 text-[13px] outline-none focus:border-gold/50";
   const input = "h-11 rounded-xl text-[13px]";
+
   const sessionCount = sessions.filter((s) => s.trim()).length;
 
   return (
@@ -518,16 +536,17 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           </div>
 
           {kind === "single" ? (
-            <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className={input} />
+            <DateTimeField value={when} onChange={setWhen} label="Date and time" />
           ) : (
             <div className="space-y-1.5">
               <label className={cn(LABEL, "block")}>Sessions</label>
               {sessions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <span className="shrink-0 w-5 text-[11px] font-bold text-muted-foreground tabular-nums text-center">{i + 1}</span>
-                  <Input type="datetime-local" value={s}
-                    onChange={(e) => setSessions((prev) => prev.map((x, idx) => idx === i ? e.target.value : x))}
-                    className={cn(input, "flex-1")} />
+                  <DateTimeField value={s}
+                    onChange={(v) => setSessions((prev) => prev.map((x, idx) => idx === i ? v : x))}
+                    label={`Session ${i + 1} date and time`}
+                    className="flex-1" />
                   {sessions.length > 1 && (
                     <Button
                       type="button"

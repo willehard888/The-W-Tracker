@@ -6,7 +6,9 @@ import { strugglePromise, GOAL_OPTIONS } from "@/lib/onboarding";
 import { cn } from "@/lib/utils";
 
 /* The flame hero's keyframes (onboarding-float, pulseRing, flameDance,
-   fadeSlideUp) live at the end of src/index.css under "Auth". */
+   Entrances use the house `animate-fade-in-up`, which every reduced-motion
+   guard covers — the old inline `fadeSlideUp` keyframe was the one flow that
+   kept moving for a user who asked it not to. */
 const FloatingOrb = ({ color, size, delay, x, y }: { color: string; size: number; delay: number; x: string; y: string }) => (
   <div
     className="absolute rounded-full blur-sm opacity-60"
@@ -68,24 +70,27 @@ export const CoreLoopSlide = ({ struggle, onNext }: { struggle?: string; onNext:
       </h1>
       <p className="text-sm text-muted-foreground text-center mb-7 max-w-[300px]">{promise.sub}</p>
 
-      <div className="w-full space-y-2.5 mb-9">
+      {/* The loop as one ember line: live is ember; the flame above keeps the gold. */}
+      <ol className="w-full mb-9 pl-1">
         {beats.map((b, i) => (
-          <div
+          <li
             key={b.label}
-            className="surface-card flex items-center gap-3 p-3.5"
-            style={{ animation: `fadeSlideUp 0.5s ease-out ${0.15 + i * 0.12}s both` }}
+            className="relative flex gap-4 pb-5 last:pb-0 animate-fade-in-up"
+            style={{ animationDelay: `${150 + Math.min(i, 3) * 90}ms` }}
           >
-            <span className="h-9 w-9 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
-              <b.icon size={16} className="text-gold" />
+            {i < beats.length - 1 && (
+              <span aria-hidden className="absolute left-[15px] top-8 bottom-0 w-px bg-[hsl(var(--ember))]/35" />
+            )}
+            <span className="relative h-8 w-8 rounded-full bg-[hsl(var(--ember))]/12 border border-[hsl(var(--ember))]/40 flex items-center justify-center shrink-0">
+              <b.icon size={14} className="text-[hsl(var(--ember))]" aria-hidden />
             </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-bold text-foreground">{b.label}</span>
-              <span className="block text-xs text-muted-foreground">{b.sub}</span>
+            <span className="min-w-0 pt-1">
+              <span className="block text-[15px] font-bold leading-tight text-foreground">{b.label}</span>
+              <span className="block text-[12px] text-muted-foreground mt-0.5">{b.sub}</span>
             </span>
-            <span className="ml-auto text-muted-foreground/75 font-black text-xs">{i + 1}</span>
-          </div>
+          </li>
         ))}
-      </div>
+      </ol>
 
       <Button variant="ember" size="xl" className="w-full max-w-xs" onClick={onNext}>
         Show me the climb
@@ -106,33 +111,34 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
       {TIER_ORDER.length} tiers from {getTierConfig("recruit").label} to {getTierConfig("legend").label}. Rank is earned — never bought.
     </p>
 
-    <div className="w-full space-y-2 mb-6">
+    {/* A hairline ladder, bottom rung first: each rung's own tier colour is the
+        only accent, so the top rung reads as the top without a gold box. */}
+    <ol className="w-full mb-6 divide-y divide-border/35 border-y border-border/35">
       {LADDER_PREVIEW.map((t, i) => {
         const cfg = TIER_CONFIG[t];
         const top = i === LADDER_PREVIEW.length - 1;
         return (
-          <div
+          <li
             key={t}
-            className={cn(
-              "flex items-center gap-3 rounded-2xl border p-3",
-              top ? "border-gold/40 bg-gold/5" : "border-border/40 bg-card/40",
-            )}
-            style={{ animation: `fadeSlideUp 0.5s ease-out ${0.1 + i * 0.1}s both` }}
+            className="animate-fade-in-up flex items-center gap-3 py-3"
+            style={{ animationDelay: `${100 + Math.min(i, 3) * 80}ms` }}
           >
-            <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden><span className="h-2.5 w-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" /></span>
-            <span className={cn("text-sm font-black", cfg.textClass)}>{cfg.label}</span>
-            <span className="text-[11px] font-bold ml-auto text-muted-foreground/75">
+            <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden>
+              <span className={cn("rounded-full bg-current", top ? "h-3 w-3 shadow-[0_0_10px_currentColor]" : "h-2.5 w-2.5")} />
+            </span>
+            <span className={cn("font-display font-black tracking-tight", top ? "text-[17px]" : "text-[15px]", cfg.textClass)}>{cfg.label}</span>
+            <span className="text-[11px] font-bold ml-auto text-muted-foreground/75 tabular-nums">
               {cfg.percentile}
             </span>
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
 
     <div className="w-full flex items-center justify-center gap-4 text-muted-foreground mb-8">
       {[{ icon: Bot, label: "AI Coach" }, { icon: BookOpen, label: "Library" }, { icon: Users, label: "Tribes" }].map((f) => (
         <span key={f.label} className="flex items-center gap-1.5 text-[12px] font-bold">
-          <f.icon size={13} className="text-gold/80" />
+          <f.icon size={13} aria-hidden />
           {f.label}
         </span>
       ))}
@@ -162,7 +168,7 @@ export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
         "Tribes & 1v1 battles",
         "Full stats, streaks & rank ladder",
       ].map((line, i) => (
-        <div key={line} className="flex items-center gap-2.5" style={{ animation: `fadeSlideUp 0.4s ease-out ${0.1 + i * 0.08}s both` }}>
+        <div key={line} className="flex items-center gap-2.5 animate-fade-in-up"  style={{ animationDelay: `${100 + Math.min(i, 3) * 60}ms` }}>
           <span className="h-5 w-5 rounded-full bg-[hsl(var(--xp-green))]/15 border border-[hsl(var(--xp-green))]/40 flex items-center justify-center shrink-0">
             <Check aria-hidden size={11} className="text-[hsl(var(--xp-green))]" />
           </span>

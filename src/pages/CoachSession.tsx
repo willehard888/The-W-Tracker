@@ -100,7 +100,7 @@ const Stepper = ({
       value={value}
       aria-label={label}
       onChange={(e) => onChange(e.target.value)}
-      className="w-[4.25rem] min-h-11 rounded-lg border border-border/50 bg-background/60 px-1 text-center text-[16px] font-bold tabular-nums outline-none focus:border-gold/50"
+      className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-[16px] font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50"
     />
     <Button variant="ghost" size="icon" aria-label={`Add ${stepLabel}`} onClick={() => onStep(1)}>
       <Plus size={16} aria-hidden />
@@ -330,9 +330,9 @@ const CoachSession = () => {
 
   if (!program || !planDay || plan.length === 0) {
     return (
-      <div className="px-5 pt-10 text-center">
-        <p className="text-[15px] font-bold mb-1">Nothing to run here</p>
-        <p className="text-[13px] text-muted-foreground mb-5">
+      <div className="home-rise px-5 pt-10">
+        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Nothing to run here</h1>
+        <p className="mt-1.5 text-[13px] text-muted-foreground mb-5">
           This day has no exercises in your plan.
         </p>
         <Button variant="outline" onClick={() => navigate("/coach/program")}>

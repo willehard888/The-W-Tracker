@@ -1,9 +1,8 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { trackAnon } from "@/lib/analytics";
-import { ArrowRight, Flame, Trophy, Sparkles, Dumbbell, Utensils, Moon, ShieldCheck } from "lucide-react";
+import { ArrowRight, Trophy, Sparkles, Dumbbell, Utensils, Moon, ShieldCheck } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 
 // What the app ACTUALLY delivers — names the substance (coach, training,
@@ -21,6 +20,12 @@ const WHAT_YOU_GET = [
   { icon: Trophy, title: "Compete", text: "Streaks, ranks, 1v1 battles & the leaderboard." },
 ] as const;
 
+/**
+ * Thesis: the proof. One beat, one spectacle (the lava CTA, framed with air),
+ * the six benefits as one hairline list that recedes. Gold lives on the h1
+ * span alone — the previous body spent it on twelve elements, six identical
+ * tiles and a hand-rolled kicker, and nothing was the hero.
+ */
 const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
   const navigate = useNavigate();
   // Anonymous top-of-funnel: the only pre-auth measurement point.
@@ -44,92 +49,74 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       />
 
       {/* Header */}
-      <header className="relative flex items-center justify-between px-6 pt-6 pb-4 home-rise">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="absolute -inset-2 rounded-2xl opacity-50 blur-lg" style={{ background: "hsl(var(--gold) / 0.35)" }} />
-            <BrandLogo size={80} priority className="relative rounded-2xl" />
-          </div>
-          <span className="font-display font-bold text-lg tracking-tight text-gold">Whealth Factory</span>
-        </div>
+      <header className="relative flex items-center gap-3 px-6 pt-6 pb-2 home-rise">
+        <BrandLogo size={44} priority className="rounded-xl" />
+        <span className="font-display font-bold text-[15px] tracking-tight">Whealth Factory</span>
       </header>
 
-      {/* Hero */}
-      <main className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <div className="home-rise max-w-md mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-gold/30 mb-10">
-            <Flame aria-hidden size={14} className="text-gold" />
-            <span className="text-[12px] font-bold text-gold tracking-widest uppercase">
-              Discipline is the new flex
-            </span>
-          </div>
-
-          <h1 className="font-display text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[0.92] mb-6">
+      <main className="relative flex-1 flex flex-col px-6 pt-10">
+        {/* Opening beat */}
+        <div className="home-rise home-rise-1 max-w-md">
+          <p className="eyebrow">Discipline is the new flex</p>
+          <h1 className="mt-3 font-display text-[2.75rem] font-black tracking-tight leading-[0.92]">
             You either{" "}
             <span className="text-gold">level up</span>
             <br />
             or fall behind.
           </h1>
-
-          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-sm mx-auto mb-10">
+          <p className="mt-5 text-muted-foreground text-base leading-relaxed max-w-sm">
             Turn self-improvement into a visible status game.{" "}
             <span className="text-foreground font-medium">
               Track your discipline. Compete with others. Earn your Status.
             </span>
           </p>
+        </div>
 
-          <div className="flex flex-col gap-3 w-full max-w-xs mx-auto home-rise home-rise-2">
-            <Button
-              variant="ember"
-              size="xl"
-              onClick={() => navigate("/auth?mode=signup")}
-              className="w-full group text-base"
-            >
-              Start Your Journey
-              <ArrowRight aria-hidden
-                size={18}
-                className="transition-transform group-hover:translate-x-1"
-              />
-            </Button>
-            <Button variant="gold-outline" size="lg" onClick={() => navigate("/auth?mode=login")} className="text-sm">
-              I already have an account
-            </Button>
-          </div>
+        {/* The one spectacle: the lava CTA, with air around it. */}
+        <div className="home-rise home-rise-2 mt-10 max-w-md">
+          <Button
+            variant="ember"
+            size="xl"
+            onClick={() => navigate("/auth?mode=signup")}
+            className="w-full group text-base"
+          >
+            Start Your Journey
+            <ArrowRight aria-hidden
+              size={18}
+              className="transition-transform group-hover:translate-x-1"
+            />
+          </Button>
+          <button
+            type="button"
+            onClick={() => navigate("/auth?mode=login")}
+            className="press mt-2 w-full min-h-11 text-[13px] font-bold text-muted-foreground"
+          >
+            I already have an account
+          </button>
         </div>
 
         {/* What you actually get — one app replaces the whole stack */}
-        <div className="w-full max-w-md mx-auto mt-14 home-rise home-rise-3">
-          <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-gold/70 mb-3">
-            One app · replaces five
-          </p>
-          <div className="grid grid-cols-2 gap-2.5 text-left">
+        <div className="home-rise home-rise-3 mt-14 max-w-md">
+          <p className="font-display font-black text-[17px] tracking-tight leading-tight">One app · replaces five</p>
+          <ul className="mt-2 divide-y divide-border/35 border-t border-border/35">
             {WHAT_YOU_GET.map(({ icon: Icon, title, text }) => (
-              <div
-                key={title}
-                className="flex gap-2.5 p-3 surface-card backdrop-blur-sm"
-              >
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gold/10">
-                  <Icon size={14} className="text-gold" />
-                </div>
+              <li key={title} className="flex items-start gap-3 py-3">
+                <Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
                 <div className="min-w-0">
-                  <p className="text-[12px] font-bold leading-tight">{title}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{text}</p>
+                  <p className="text-[14px] font-bold leading-tight">{title}</p>
+                  <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{text}</p>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </main>
 
       {/* Bottom tagline */}
-      <footer className="relative pb-8 pt-4 text-center home-rise home-rise-4">
-        <div className="flex items-center justify-center gap-2">
-          <Sparkles aria-hidden size={12} className="text-gold/30" />
-          <p className="text-[11px] text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
-            Built for those who refuse to be average
-          </p>
-          <Sparkles aria-hidden size={12} className="text-gold/30" />
-        </div>
+      <footer className="relative px-6 pb-8 pt-10 home-rise home-rise-4">
+        <p className="text-[11px] text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
+          Built for those who refuse to be average
+        </p>
       </footer>
     </div>
   );

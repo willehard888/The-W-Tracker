@@ -109,7 +109,7 @@ const CoachStrip = (_props: CoachStripProps) => {
               ? shortHeadline(headline)
               : "Your session is ready"
             : "Ask your AI Coach anything"}
-          <ChevronRight aria-hidden size={13} className="text-gold/60 shrink-0 transition-transform group-active:translate-x-0.5" />
+          <ChevronRight aria-hidden size={13} className="text-gold/70 shrink-0 transition-transform group-active:translate-x-0.5" />
         </p>
       </div>
     </button>

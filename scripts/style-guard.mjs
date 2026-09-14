@@ -30,6 +30,9 @@ const RULES = [
   // that render on every screen in the app.
   { re: /text-(?:muted-foreground|white|foreground)\/(?:[1-6]\d|70|[1-9])\b/, msg: "below the /75 muted-text floor (a11y)",
     exempt: [UI, "src/components/StoryShareModal.tsx", "src/components/AmbientParticles.tsx", "src/pages/ButtonGallery.tsx"] },
+  // Gold is the hero's colour; at /30–/60 it is a wash on sparkles, kickers
+  // and share-card ornaments — the accent glut the redesign playbook names.
+  { re: /text-gold\/(?:[1-6]\d|[1-9])\b/, msg: "gold below /70 — gold is scarce, not a wash", exempt: ["src/components/StoryShareModal.tsx"] },
   { re: /\.toLocaleString\(\)/, msg: "locale grouping — use fmtInt/fmtUnit from @/lib/format", stripComments: true, exempt: ["src/lib/format.ts"] },
   { re: /\.\.\.(?=["'`<]|\s*<\/)/, msg: "three dots — use the … glyph", stripComments: true, exempt: ["src/main.tsx"] },
   { re: /(?<![\w.])confirm\(/, msg: "window.confirm — use ConfirmDialog", exempt: [/__tests__/] },

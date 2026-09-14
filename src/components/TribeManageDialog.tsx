@@ -309,20 +309,30 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
         </div>
         <div>
           <label className={cn(LABEL, "mb-1.5 block")}>Activity</label>
-          <select
-            value={activity}
-            onChange={(e) => setActivity(e.target.value)}
-            className="surface-inset w-full h-11 rounded-md px-3 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-gold/50"
-          >
-            <option value="">No activity set</option>
-            {TRIBE_ACTIVITY_GROUPS.map((g) => (
-              <optgroup key={g.label} label={g.label}>
-                {g.items.map((a) => (
-                  <option key={a.name} value={a.name}>{a.name}</option>
-                ))}
-              </optgroup>
+          {/* Same pill grid as TribeNew — the native <select> was the one UA
+              control on the screen. Tap the active pill again to clear it. */}
+          <div className="space-y-3">
+            {TRIBE_ACTIVITY_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-[11px] text-muted-foreground/75 mb-1.5">{group.label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.items.map(({ name, icon: Icon }) => (
+                    <Button
+                      key={name}
+                      type="button"
+                      variant={activity === name ? "gold-outline" : "outline"}
+                      size="pill"
+                      aria-pressed={activity === name}
+                      onClick={() => setActivity(name === activity ? "" : name)}
+                    >
+                      <Icon size={12} strokeWidth={2.4} aria-hidden />
+                      {name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             ))}
-          </select>
+          </div>
           <p className="text-[11px] text-muted-foreground mt-1">
             Shown on the browse list — how new members find you.
           </p>

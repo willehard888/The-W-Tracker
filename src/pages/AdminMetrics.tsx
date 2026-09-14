@@ -269,7 +269,7 @@ export default function AdminMetrics() {
       {/* 1 — Headline KPIs */}
       <SectionHeader icon={Users} title="Pulse" sub="live" />
       {!overview ? (
-        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/60" /></div>
+        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/70" /></div>
       ) : (
         <>
           <div className="grid grid-cols-3 gap-2">
@@ -308,7 +308,7 @@ export default function AdminMetrics() {
       {/* 2 — Retention cohorts */}
       <SectionHeader icon={Flame} title="Retention" sub="by signup week" />
       {!cohorts ? (
-        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/60" /></div>
+        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/70" /></div>
       ) : cohorts.length === 0 ? (
         <p className="text-xs text-muted-foreground py-4 text-center">No cohorts yet.</p>
       ) : (
@@ -347,7 +347,7 @@ export default function AdminMetrics() {
       {/* 3 — Funnels */}
       <SectionHeader icon={TrendingUp} title="Funnel" sub={`${funnel?.window_days ?? 30} days`} />
       {!funnel ? (
-        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/60" /></div>
+        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/70" /></div>
       ) : (
         <div className="space-y-5">
           <div className="surface-card p-4">
@@ -364,7 +364,7 @@ export default function AdminMetrics() {
       {/* 4 — Virality */}
       <SectionHeader icon={Share2} title="Virality" sub={`${virality?.window_days ?? 30} days`} />
       {!virality ? (
-        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/60" /></div>
+        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/70" /></div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
           <StatTile
@@ -382,7 +382,7 @@ export default function AdminMetrics() {
       {/* 5 — Waitlist */}
       <SectionHeader icon={Mail} title="Waitlist" sub="pre-launch" />
       {!waitlist ? (
-        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/60" /></div>
+        <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/70" /></div>
       ) : (
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-2">

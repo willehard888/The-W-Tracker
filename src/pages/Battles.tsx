@@ -349,8 +349,10 @@ const Battles = () => {
 
   const getOpponent = (battle: any) => {
     const oppId = battle.challenger_id === profile?.user_id ? battle.opponent_id : battle.challenger_id;
-    // "Loading…" beats a literal "vs ..." card while participants resolve.
-    return participants?.[oppId] || { username: "Loading…", xp: 0, streak: 0 };
+    // Unreachable while `participants` is still resolving — the list holds its
+    // skeleton until then (see the render gate), because this placeholder used
+    // to reach four cards and the Tied ledger as a literal "@Loading…".
+    return participants?.[oppId] || { username: "", xp: 0, streak: 0 };
   };
 
   const getBattleTypeInfo = (typeId: string) => BATTLE_TYPES.find(t => t.id === typeId) || BATTLE_TYPES[0];
@@ -424,7 +426,7 @@ const Battles = () => {
           }}
         />
 
-        {isLoading ? (
+        {isLoading || ((battles?.length ?? 0) > 0 && !participants) ? (
           <BattlesSkeleton />
         ) : isError && !battles ? (
           <ErrorState title="Couldn't load your battles" onRetry={refetch} />

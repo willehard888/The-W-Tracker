@@ -14,7 +14,9 @@ import TribeFireLite from "@/components/TribeFireLite";
 import { tierPalette } from "@/lib/tribe-streak";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
+// Field labels are the house micro-label (`.eyebrow`); a local copy was a
+// fourth spelling of it in the app.
+const LABEL = "eyebrow";
 
 const TribeNew = () => {
   const navigate = useNavigate();
@@ -241,12 +243,13 @@ const TribeNew = () => {
                 onClick={() => setVisibility(o.v)}
                 aria-pressed={visibility === o.v}
                 className={cn(
-                  "press min-h-11 rounded-xl border p-3 text-left transition-colors",
-                  visibility === o.v ? "border-gold/50 bg-gold/[0.07]" : "border-border/60 bg-card/40",
+                  "press relative min-h-11 rounded-xl border p-3 text-left transition-colors",
+                  visibility === o.v ? "border-foreground/40 bg-secondary/70" : "border-border/60 bg-card/40",
                 )}
               >
-                <o.icon size={15} className={visibility === o.v ? "text-gold" : "text-muted-foreground"} aria-hidden />
-                <p className={cn("text-[12px] font-black mt-1.5", visibility === o.v ? "text-gold" : "text-foreground")}>{o.t}</p>
+                {visibility === o.v && <Check size={13} className="absolute right-2.5 top-2.5 text-foreground" aria-hidden />}
+                <o.icon size={15} className={visibility === o.v ? "text-foreground" : "text-muted-foreground"} aria-hidden />
+                <p className={cn("text-[12px] font-black mt-1.5", visibility === o.v ? "text-foreground" : "text-muted-foreground")}>{o.t}</p>
                 <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{o.d}</p>
               </button>
             ))}

@@ -71,7 +71,7 @@ const TargetsProposal = ({
       <ul className="space-y-1.5">
         {notes.filter(Boolean).map((n) => (
           <li key={n} className="text-[12px] text-muted-foreground leading-snug flex gap-1.5">
-            <span className="text-gold/50 shrink-0">•</span>
+            <span className="text-gold/70 shrink-0">•</span>
             {n}
           </li>
         ))}

@@ -97,7 +97,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 {busyId === f.user_id ? (
                   <span className="text-[12px] text-muted-foreground">…</span>
                 ) : (
-                  <ChevronRight aria-hidden size={16} className={cn("text-gold/60 shrink-0")} />
+                  <ChevronRight aria-hidden size={16} className={cn("text-gold/70 shrink-0")} />
                 )}
               </button>
             ))

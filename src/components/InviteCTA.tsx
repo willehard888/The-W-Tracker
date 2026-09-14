@@ -61,7 +61,7 @@ const InviteCTA = ({ referralCount }: InviteCTAProps) => {
             {message.sub}
           </p>
         </div>
-        <ChevronRight aria-hidden size={18} className="text-gold/60 shrink-0" />
+        <ChevronRight aria-hidden size={18} className="text-gold/70 shrink-0" />
       </div>
     </button>
   );

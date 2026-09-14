@@ -19,7 +19,7 @@ interface AuthContextType {
   isElite: boolean;
   /** Alias of isElite — some legacy call sites read `isPremium`. */
   isPremium: boolean;
-  /** Always true for any logged-in user after the paywall removal. */
+  /** Always true for any logged-in user since the paywall gates the whole app, not this flag. */
   isApexSubscriber: boolean;
   /** Mirrors `loading` so legacy `subscriptionLoading` reads keep working. */
   subscriptionLoading: boolean;

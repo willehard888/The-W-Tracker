@@ -230,7 +230,9 @@ Also produce:
     payload.week = weekIdx;
     payload.day_index = dayIdx;
 
-    await sb.rpc("upsert_daily_brief" as any, { _payload: payload });
+    // Stored under the day it was asked for: the read above keys on the
+    // device's local day, and CURRENT_DATE on the server is UTC.
+    await sb.rpc("upsert_daily_brief" as any, { _payload: payload, _brief_date: today });
 
     return json({ brief: payload, cached: false });
   } catch (e) {

@@ -74,15 +74,25 @@ const TRAINING_LABELS: Record<string, string> = {
 // Display order mirrors the actual user journey; conversion % is step/first.
 const ACTIVATION_STEPS = [
   ["signup", "Signup"],
+  ["onboarding_viewed", "Onboarding opened"],
+  ["onboarding_done", "Onboarding done"],
+  ["push_permission", "Reminders asked"],
   ["healthkit_connected", "HealthKit connected"],
   ["checkin_completed", "Check-in done"],
   ["checkin_verified", "Check-in verified"],
   ["streak_milestone", "Streak milestone"],
 ] as const;
 const MONETIZATION_STEPS = [
+  ["trial_expired", "Trial expired"],
   ["paywall_viewed", "Paywall viewed"],
   ["purchase_started", "Purchase started"],
   ["purchase_completed", "Purchase completed"],
+] as const;
+// Reach: did a reminder leave the server, and did anyone tap one.
+const REACH_STEPS = [
+  ["push_sent", "Push sent"],
+  ["push_opened", "Push opened"],
+  ["checkin_completed", "Check-in done"],
 ] as const;
 
 const num = (v: unknown): number => (typeof v === "number" ? v : Number(v) || 0);
@@ -300,7 +310,6 @@ export default function AdminMetrics() {
             />
             <StatTile label="Trials started" value={num(o.trials_started_30d)} />
             <StatTile label="Cancellations" value={num(o.cancellations_30d)} />
-            <StatTile label="Payment fails" value={num(o.payment_failures_30d)} />
           </div>
         </>
       )}
@@ -353,6 +362,15 @@ export default function AdminMetrics() {
           <div className="surface-card p-4">
             <p className="text-[11px] font-bold text-muted-foreground mb-3">Activation</p>
             <FunnelBars steps={ACTIVATION_STEPS} byStep={steps} />
+            {num(steps?.checkin_failed) > 0 && (
+              <p className="mt-3 text-[11px] font-bold text-destructive">
+                {num(steps?.checkin_failed)} {num(steps?.checkin_failed) === 1 ? "user" : "users"} hit a failed check-in — this was invisible before.
+              </p>
+            )}
+          </div>
+          <div className="surface-card p-4">
+            <p className="text-[11px] font-bold text-muted-foreground mb-3">Reach</p>
+            <FunnelBars steps={REACH_STEPS} byStep={steps} />
           </div>
           <div className="surface-card p-4">
             <p className="text-[11px] font-bold text-muted-foreground mb-3">Monetization</p>

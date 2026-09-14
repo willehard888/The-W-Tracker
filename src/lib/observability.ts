@@ -41,8 +41,20 @@ export async function initObservability(): Promise<void> {
       // sentry-lite re-exports just these three — the direct SDK import
       // (namespace or destructured) kept the whole SDK in the chunk.
       const { init, captureException, setUser } = await import("@/lib/sentry-lite");
+      // A crash could not be tied to a TestFlight build: nothing tagged the
+      // release. Native carries the bundle's version+build; web stays untagged.
+      let release: string | undefined;
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (Capacitor.isNativePlatform()) {
+          const { App } = await import("@capacitor/app");
+          const info = await App.getInfo();
+          release = `${info.version}+${info.build}`;
+        }
+      } catch { /* web, or the plugin is missing — untagged is still reported */ }
       init({
         dsn: DSN,
+        release,
         environment: import.meta.env.MODE,
         tracesSampleRate: 0,
         // Don't capture benign aborts / network noise.

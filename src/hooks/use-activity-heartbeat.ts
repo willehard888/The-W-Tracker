@@ -31,7 +31,9 @@ export function useActivityHeartbeat() {
       lastBeat = nowMs;
       if (!appOpenedTracked) {
         appOpenedTracked = true;
-        void track(FUNNEL.appOpened);
+        // Navigation start → authenticated shell, the one cold-start number
+        // the founder can read back (median of props->>'ms').
+        void track(FUNNEL.appOpened, { ms: Math.round(performance.now()) });
       }
       let tz: string | null = null;
       try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch { /* keep null */ }

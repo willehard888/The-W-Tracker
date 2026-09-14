@@ -429,7 +429,7 @@ const PostCheckinCoachLine = ({
   if (!text) return null;
   // Chat entry is available from the first paint — the template line seeds
   // the conversation just as well as the AI one (Coach ?seed= accepts both),
-  // and coach access is universal while the paywall is off.
+  // and coach access is universal behind the app-wide paywall (on since 2026-09-01).
   const canContinue = !!onAskCoach;
   return (
     <div className="space-y-1">

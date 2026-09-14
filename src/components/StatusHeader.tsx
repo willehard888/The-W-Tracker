@@ -82,7 +82,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
   const tierProgress = (TIER_ORDER.indexOf(tier) + 1) / TIER_ORDER.length;
 
   // The trial is a GIFT (full access), not a countdown to doom — and since the
-  // hard paywall is off, "expiry" isn't a hard cliff. Only flag the very last
+  // hard paywall has been on since 2026-09-01, expiry is a real cliff. Only flag the very last
   // day as time-sensitive; otherwise present it as the premium state it is.
   const trialUrgent = isInTrial && !isElite && daysRemaining <= 1;
   const trialLabel =

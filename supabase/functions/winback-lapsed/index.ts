@@ -71,16 +71,10 @@ Deno.serve(async (req) => {
         // Escalating tiers supersede each other — an unopened d3 banner should
         // be replaced by d7, not stack under it.
         collapseId: "winback",
-      });
+      }, { supabase, kind: `winback:d${tier.daysAgo}` });
       const sent = pushResults.filter((r) => r.status === 200).length;
-      const dead = pushResults
-        .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-        .map((r) => r.token);
-      if (dead.length > 0) {
-        await supabase.from("push_tokens").delete().in("token", dead);
-      }
       results[`d${tier.daysAgo}`] = sent;
-      console.log(`Win-back d${tier.daysAgo}: sent=${sent}/${pushResults.length}, cleaned=${dead.length}`);
+      console.log(`Win-back d${tier.daysAgo}: sent=${sent}/${pushResults.length}`);
 
       // Attribution: without a sent-event, win-back effectiveness is
       // unmeasurable (join winback_sent → next app_opened per user).

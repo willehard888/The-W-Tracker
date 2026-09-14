@@ -408,7 +408,7 @@ Rules:
       const { data: tokens } = prefAllows((profile as any).notification_prefs, "briefing")
         ? await supabase
             .from("push_tokens")
-            .select("token, platform")
+            .select("user_id, token, platform")
             .eq("user_id", profile.user_id)
         : { data: [] };
 
@@ -418,15 +418,9 @@ Rules:
           body: parsed.headline ?? "Tap to see your week.",
           data: { route: `/briefing/${inserted.id}` },
           threadId: "coach",
-        });
+        }, { supabase, kind: "briefing" });
         const sent = pushResults.filter((r) => r.status === 200).length;
-        const dead = pushResults
-          .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-          .map((r) => r.token);
-        if (dead.length > 0) {
-          await supabase.from("push_tokens").delete().in("token", dead);
-        }
-        console.log(`Push for ${profile.user_id}: sent=${sent}/${tokens.length}, cleaned=${dead.length}`);
+        console.log(`Push for ${profile.user_id}: sent=${sent}/${tokens.length}`);
       }
     } catch (e) {
       console.error(`Unexpected error for ${profile.user_id}:`, e);

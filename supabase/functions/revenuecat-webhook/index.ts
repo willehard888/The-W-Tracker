@@ -329,9 +329,8 @@ Deno.serve(async (req) => {
                       body: `@${(who as any)?.username ?? "A friend"} converted (+500 XP). ${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`,
                       data: { route: "/referrals" },
                       threadId: "social",
-                    });
-                const dead = results.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
-                if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
+                    }, { supabase, kind: "referral_converted" });
+                void results;
               }
               // Track for the virality funnel (service role bypasses RLS).
               await supabase.from("notifications").insert({

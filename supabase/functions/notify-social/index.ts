@@ -68,12 +68,8 @@ Deno.serve(async (req) => {
 
     let sent = 0;
     if (tokens.length > 0) {
-      const results = await sendApnsBatch(tokens, { ...payload, threadId: "social" });
+      const results = await sendApnsBatch(tokens, { ...payload, threadId: "social" }, { supabase, kind: `social:${kind}` });
       sent = results.filter((r) => r.status === 200).length;
-      const dead = results
-        .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-        .map((r) => r.token);
-      if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
     }
 
     await supabase.from("analytics_events").insert({

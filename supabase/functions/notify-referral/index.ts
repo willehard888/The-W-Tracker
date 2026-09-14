@@ -80,12 +80,8 @@ Deno.serve(async (req) => {
 
     let sent = 0;
     if (tokens.length > 0) {
-      const results = await sendApnsBatch(tokens, { ...push, threadId: "social" });
+      const results = await sendApnsBatch(tokens, { ...push, threadId: "social" }, { supabase, kind: "referral" });
       sent = results.filter((r) => r.status === 200).length;
-      const dead = results
-        .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-        .map((r) => r.token);
-      if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
     }
 
     // Track for measurement (service role bypasses RLS). Feeds the virality funnel.

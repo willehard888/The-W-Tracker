@@ -161,12 +161,8 @@ Deno.serve(async (req) => {
         body: push.body,
         data: { route: push.route },
         threadId: "tribe",
-      });
+      }, { supabase, kind: "tribe" });
       sent = results.filter((r) => r.status === 200).length;
-      const dead = results
-        .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-        .map((r) => r.token);
-      if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
     }
 
     return new Response(JSON.stringify({ ok: true, sent }), {

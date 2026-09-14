@@ -97,40 +97,48 @@ Deno.serve(async (req) => {
     const purchases = await countEvents(supabase, "purchase_completed", daysAgo(7));
     const trials = await countEvents(supabase, "trial_started", daysAgo(7));
 
+    // ── Reach: did reminders leave the server, did anyone tap one ────────
+    const pushSent = await countEvents(supabase, "push_sent", daysAgo(7));
+    const pushOpened = await countEvents(supabase, "push_opened", daysAgo(7));
+
     // ── Retention: D7 of the latest mature cohort (signed up 8-14d ago) ──
-    const { data: cohort } = await supabase
-      .from("profiles").select("user_id, created_at")
-      .gte("created_at", daysAgo(14)).lt("created_at", daysAgo(8));
-    let d7Str = "—";
-    const cohortRows = cohort ?? [];
-    if (cohortRows.length > 0) {
+    // Both windows mirror admin_retention_cohorts: D1 = a check-in on day 1
+    // (cohort signed up 2-8 days ago), D7 = a check-in on day 5-9 (8-14 days ago).
+    const retention = async (fromDaysAgo: number, toDaysAgo: number, lo: number, hi: number) => {
+      const { data: cohort } = await supabase
+        .from("profiles").select("user_id, created_at")
+        .gte("created_at", daysAgo(fromDaysAgo)).lt("created_at", daysAgo(toDaysAgo));
+      const cohortRows = cohort ?? [];
+      if (cohortRows.length === 0) return "—";
       const ids = cohortRows.map((r: { user_id: string }) => r.user_id);
       const { data: checks } = await supabase
         .from("daily_checkins").select("user_id, checked_in_at")
-        .in("user_id", ids).gte("checked_in_at", daysAgo(14));
+        .in("user_id", ids).gte("checked_in_at", daysAgo(fromDaysAgo));
       const byUser = new Map<string, string[]>();
       for (const c of checks ?? []) {
         const arr = byUser.get(c.user_id) ?? [];
         arr.push(c.checked_in_at);
         byUser.set(c.user_id, arr);
       }
-      // D7 window mirrors admin_retention_cohorts: returned on day 5-9 post-signup.
       let returned = 0;
       for (const u of cohortRows) {
         const signup = new Date(u.created_at).getTime();
         const hits = (byUser.get(u.user_id) ?? []).some((t: string) => {
           const d = Math.floor((new Date(t).getTime() - signup) / 86400000);
-          return d >= 5 && d <= 9;
+          return d >= lo && d <= hi;
         });
         if (hits) returned++;
       }
-      d7Str = `${Math.round((100 * returned) / cohortRows.length)}%`;
-    }
+      return `${Math.round((100 * returned) / cohortRows.length)}%`;
+    };
+    const d1Str = await retention(8, 2, 1, 1);
+    const d7Str = await retention(14, 8, 5, 9);
 
     const title = "📊 Week in review";
     const body =
       `WAU ${wau} (${deltaStr}) · ${newUsers ?? 0} new · ` +
-      `${purchases} purchase${purchases === 1 ? "" : "s"} · ${trials} trials · D7 ${d7Str}`;
+      `${purchases} purchase${purchases === 1 ? "" : "s"} · ${trials} trials · ` +
+      `D1 ${d1Str} · D7 ${d7Str} · push ${pushSent} sent / ${pushOpened} opened`;
 
     // ── Deliver to every admin's devices ─────────────────────────────────
     const { data: admins, error: adminErr } = await supabase
@@ -143,7 +151,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: tokens } = await supabase
-      .from("push_tokens").select("token, platform").in("user_id", adminIds);
+      .from("push_tokens").select("user_id, token, platform").in("user_id", adminIds);
     if (!tokens || tokens.length === 0) {
       console.log("founder-digest: no admin push tokens; digest was:", body);
       return;
@@ -154,14 +162,8 @@ Deno.serve(async (req) => {
       title,
       body,
       data: { route: "/admin/metrics" },
-    });
+    }, { supabase, kind: "founder_digest" });
     const sent = results.filter((r) => r.status === 200).length;
-    const dead = results
-      .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-      .map((r) => r.token);
-    if (dead.length > 0) {
-      await supabase.from("push_tokens").delete().in("token", dead);
-    }
     console.log(`founder-digest: sent=${sent}/${results.length} — ${body}`);
   };
 

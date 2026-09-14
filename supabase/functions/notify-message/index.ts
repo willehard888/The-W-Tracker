@@ -119,21 +119,10 @@ Deno.serve(async (req) => {
       collapseId: `chat-${user.id}`,
     };
 
-    const results = await sendApnsBatch(tokens, payload);
+    const results = await sendApnsBatch(tokens, payload, { supabase: serviceClient, kind: "message" });
     const sent = results.filter((r) => r.status === 200).length;
     const failed = results.filter((r) => r.status !== 200);
-
-    if (failed.length > 0) {
-      console.warn("APNs failures:", failed);
-      // Clean up invalid tokens (BadDeviceToken / Unregistered)
-      const dead = failed
-        .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-        .map((r) => r.token);
-      if (dead.length > 0) {
-        await serviceClient.from("push_tokens").delete().in("token", dead);
-        console.log(`Cleaned up ${dead.length} invalid tokens`);
-      }
-    }
+    if (failed.length > 0) console.warn("APNs failures:", failed);
 
     console.log(`Push for ${receiver_id}: sent=${sent}, failed=${failed.length}`);
 

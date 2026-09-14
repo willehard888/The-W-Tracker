@@ -43,11 +43,7 @@ Deno.serve(async (req) => {
     if (userIds.length === 0) return 0;
     const tokens = await getPushTargets(supabase, userIds, "tribe");
     if (tokens.length === 0) return 0;
-    const results = await sendApnsBatch(tokens, { title, body, data: { route }, threadId: "tribe" });
-    const dead = results
-      .filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered")
-      .map((r) => r.token);
-    if (dead.length) await supabase.from("push_tokens").delete().in("token", dead);
+    const results = await sendApnsBatch(tokens, { title, body, data: { route }, threadId: "tribe" }, { supabase, kind: route === "/checkin" ? "tribe_fire" : "tribe_event" });
     return results.filter((r) => r.status === 200).length;
   };
 

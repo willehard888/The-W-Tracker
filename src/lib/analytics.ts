@@ -75,12 +75,16 @@ export const FUNNEL = {
   // Server-fired lifecycle (webhooks) — kept here so the constant list stays
   // the single inventory of every event name in the table.
   subscriptionCancelled: "subscription_cancelled",
-  paymentFailed: "payment_failed",
-  // Server-fired push attribution (winback-lapsed / daily-reminder /
-  // coach-proactive) — join against app_opened to measure push→return.
+  // Server-fired push attribution (winback-lapsed / coach-proactive) — join
+  // against app_opened to measure push→return. `push_sent` is written by the
+  // shared APNs batch sender for EVERY push, one row per device with
+  // { kind, ok, reason }; `push_opened` by the tap handlers on the device.
+  // (`payment_failed` and `reminder_sent` were declared here for years with
+  // no emitter — the admin page rendered a permanent zero for one of them.)
   winbackSent: "winback_sent",
-  reminderSent: "reminder_sent",
   nudgeSent: "nudge_sent",
+  pushSent: "push_sent",
+  pushOpened: "push_opened",
   // Activation spine (Growth Engine): every step a user can drop from.
   onboardingViewed: "onboarding_viewed",
   onboardingStep: "onboarding_step",

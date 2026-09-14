@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
       const wantsPush = trigger.kind !== "streak_risk" &&
         prefAllows((p as any).notification_prefs, "coach");
       const { data: tokens } = wantsPush
-        ? await supabase.from("push_tokens").select("token, platform").eq("user_id", p.user_id)
+        ? await supabase.from("push_tokens").select("user_id, token, platform").eq("user_id", p.user_id)
         : { data: [] };
       if (tokens && tokens.length > 0) {
         const push = await sendApnsBatch(tokens as any, {
@@ -202,10 +202,8 @@ Deno.serve(async (req) => {
           body: content,
           data: { route: trigger.route },
           threadId: "coach",
-        });
+        }, { supabase, kind: `coach:${trigger.kind}` });
         const ok = push.filter((r) => r.status === 200).length;
-        const dead = push.filter((r) => r.reason === "BadDeviceToken" || r.reason === "Unregistered").map((r) => r.token);
-        if (dead.length > 0) await supabase.from("push_tokens").delete().in("token", dead);
         if (ok > 0) {
           results.sent++; results.byKind[trigger.kind] = (results.byKind[trigger.kind] ?? 0) + 1;
           // Attribution: which nudge kinds actually re-engage (join vs app_opened).

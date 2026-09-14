@@ -1,5 +1,6 @@
 // Apple Push Notification service (APNs) helper using token-based auth (.p8)
 // Uses Web Crypto for ES256 JWT signing — works in Deno edge runtime.
+import { deadTokens, pushSentRows } from "./push-targets.ts";
 
 interface CachedToken {
   jwt: string;
@@ -151,10 +152,16 @@ export async function sendApnsPush(
 
 /**
  * Send same payload to many tokens. Filters to platform === 'ios'.
+ *
+ * With `log`, the sender also prunes dead tokens and writes one `push_sent`
+ * analytics row per device (see push-targets.ts) — the eleven senders used to
+ * do the pruning inline and throw the delivery result away.
  */
 export async function sendApnsBatch(
-  tokens: { token: string; platform: string }[],
+  tokens: { token: string; platform: string; user_id?: string | null }[],
   payload: ApnsPayload,
+  // deno-lint-ignore no-explicit-any
+  log?: { supabase: any; kind: string },
 ): Promise<ApnsResult[]> {
   const ios = tokens.filter((t) => t.platform === "ios");
   if (ios.length === 0) return [];
@@ -175,6 +182,19 @@ export async function sendApnsBatch(
       ),
     );
     results.push(...settled);
+  }
+  if (log) {
+    try {
+      const dead = deadTokens(results);
+      if (dead.length > 0) await log.supabase.from("push_tokens").delete().in("token", dead);
+      const rows = pushSentRows(results, ios, log.kind);
+      if (rows.length > 0) {
+        const { error } = await log.supabase.from("analytics_events").insert(rows);
+        if (error) console.warn("push_sent insert failed:", error.message);
+      }
+    } catch (e) {
+      console.warn("push bookkeeping failed:", e instanceof Error ? e.message : String(e));
+    }
   }
   return results;
 }

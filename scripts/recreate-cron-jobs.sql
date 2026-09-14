@@ -71,21 +71,8 @@ SELECT cron.schedule(
   $$
 );
 
--- Coach morning nudge — 07:30 in the user's local TZ; cron fires hourly,
--- the function self-filters which users to ping based on their tz/profile.
-SELECT cron.schedule(
-  'coach-morning-nudge',
-  '0 * * * *',
-  $$
-    SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-morning-nudge',
-      headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
-    );
-  $$
-);
+-- coach-morning-nudge was deleted in round 10 (2026-09-14): never scheduled on
+-- the live project, elite-only, and the in-app brief already owns the morning.
 
 -- NOTE: coach-weekly-review is deliberately NOT cron-scheduled. The function
 -- authenticates a USER JWT (auth.getUser), so a service-role cron call 401s —

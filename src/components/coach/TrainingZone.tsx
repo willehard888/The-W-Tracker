@@ -27,11 +27,15 @@ import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/s
  * stated plainly.
  */
 
-const ROW = "surface-card surface-card-quiet flex items-center";
+const CARD = "surface-card surface-card-quiet flex items-center";
+// `row`: Home renders this inside one shared Today card with Fuel — no
+// surface of its own, the wrapper owns it.
+const BARE = "flex items-center";
 const BODY = "flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity";
 const LABEL = "text-[11px] font-bold text-muted-foreground/75 mb-0.5";
 
-const TrainingZone = () => {
+const TrainingZone = ({ row = false }: { row?: boolean } = {}) => {
+  const ROW = row ? BARE : CARD;
   const navigate = useNavigate();
   const { program, logs, currentWeek, todayDayIndex, isLoading } = useCoachProgram();
 

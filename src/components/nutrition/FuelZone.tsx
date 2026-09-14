@@ -12,6 +12,12 @@ import type { MacroSummary } from "@/components/nutrition/MacroRow";
 import type { DayState } from "@/lib/nutrition/totals";
 
 export interface FuelZoneProps {
+  /**
+   * Home renders this as one row of a shared Today card with Training: no
+   * surface of its own, no macro line (that lives on /nutrition) — label,
+   * the number, the rail, the camera.
+   */
+  row?: boolean;
   loading: boolean;
   /** Today's consumed macros; null while loading or on error. */
   totals: MacroSummary | null;
@@ -65,7 +71,7 @@ const markTipSeen = () => {
  * — log when nothing is logged, targets when there are none, the diary once
  * the day is under way. The camera is the one visible control.
  */
-const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable, onOpenDiary, onOpenTargets, onLog, onPhoto }: FuelZoneProps) => {
+const FuelZone = ({ row = false, loading, totals, targets, state, mealCount = 0, unavailable, onOpenDiary, onOpenTargets, onLog, onPhoto }: FuelZoneProps) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [tipOpen, setTipOpen] = useState(false);
   if (unavailable) return null;
@@ -102,7 +108,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
   })();
 
   return (
-    <div className="surface-card surface-card-quiet relative">
+    <div className={row ? "relative" : "surface-card surface-card-quiet relative"}>
       {/* Overlay button: one press target for the whole card, with the content
           above it and inert, so the camera can still be its own control
           without ever nesting a button inside a button. */}
@@ -110,10 +116,10 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
         type="button"
         onClick={() => { hapticImpact("light"); act.run(); }}
         aria-label={act.label}
-        className="absolute inset-0 rounded-2xl active:opacity-70 transition-opacity"
+        className={cn("absolute inset-0 active:opacity-70 transition-opacity", !row && "rounded-2xl")}
       />
 
-      <div className="relative pointer-events-none px-4 py-3.5">
+      <div className={cn("relative pointer-events-none px-4", row ? "py-3" : "py-3.5")}>
         <div className="flex items-center gap-2">
           <p className="text-[11px] font-bold text-muted-foreground/75">Fuel</p>
           {mealCount > 0 && (
@@ -123,7 +129,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
           )}
         </div>
 
-        <div className="mt-1.5 flex items-center gap-3 min-h-11">
+        <div className={cn("flex items-center gap-3", row ? "mt-0.5 min-h-9" : "mt-1.5 min-h-11")}>
           {headline}
           <div className="ml-auto pointer-events-auto shrink-0">
             <Button
@@ -169,7 +175,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
         {/* The macros, once there is something to break down. An untouched
             day would read "0/160 · 0/260 · 0/80" — noise where a sentence
             says the same thing better. */}
-        <p className="mt-2 text-[11px] text-muted-foreground/75 tabular-nums truncate">
+        {!row && <p className="mt-2 text-[11px] text-muted-foreground/75 tabular-nums truncate">
           {targets && !loading && kcal > 0 ? (
             <>
               Protein <span className="font-bold text-foreground">{fmtInt(Math.round(totals?.protein ?? 0))}</span>/{fmtInt(Math.round(targets.protein))} ·{" "}
@@ -181,7 +187,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
           ) : (
             subFor(state, kcal, targetKcal, mealCount)
           )}
-        </p>
+        </p>}
       </div>
 
       <NutritionSheet open={tipOpen} onClose={() => setTipOpen(false)} title="Before you shoot" label="Photo tip">

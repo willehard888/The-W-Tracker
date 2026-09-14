@@ -10,6 +10,8 @@ import { RedeemLegendInviteDialog } from "@/components/RedeemLegendInviteDialog"
 interface TierLadderProps {
   currentTier: string;
   className?: string;
+  /** Row only, no surface — NextTierProgress renders it as its last row. */
+  bare?: boolean;
 }
 
 /** One accent per rung, tokens only: the ladder warms from muted to ember. */
@@ -35,7 +37,7 @@ const TierMark = ({ rank, className, children }: { rank: number; className?: str
  * every other rung a hairline row that opens into its rule and unlocks.
  * `?tier=<key>` (the header's next-tier chip) opens the sheet on that rung.
  */
-const TierLadder = ({ currentTier, className }: TierLadderProps) => {
+const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) => {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<StatusTier | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -62,7 +64,7 @@ const TierLadder = ({ currentTier, className }: TierLadderProps) => {
   }, [searchParams, setSearchParams]);
 
   return (
-    <div id="tier-ladder-anchor" className={cn("surface-card surface-card-quiet overflow-hidden scroll-mt-20", className)}>
+    <div id="tier-ladder-anchor" className={cn(!bare && "surface-card surface-card-quiet overflow-hidden", "scroll-mt-20", className)}>
       <button
         type="button"
         onClick={() => { setExpanded(nextKey ?? null); setOpen(true); }}

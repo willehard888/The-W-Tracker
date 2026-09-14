@@ -272,7 +272,6 @@ const UserProfile = () => {
             profile={profile}
             rankData={rankData}
             championWins={championHistory?.wins ?? 0}
-            tierMessage={tier.message}
             featuredBadge={featuredBadge}
             nameplateSize="md"
             nameSuffix={

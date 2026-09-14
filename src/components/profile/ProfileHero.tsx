@@ -1,7 +1,6 @@
 import { Camera, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierHeroSurface } from "@/lib/status-tiers";
-import BadgeShowcase from "@/components/BadgeShowcase";
 import StatusAvatar from "@/components/StatusAvatar";
 import IdentityCore, { type IdentityRankData } from "@/components/profile/IdentityCore";
 import { format } from "date-fns";
@@ -15,10 +14,7 @@ export interface ProfileHeroProps {
   tier: string;
   rankData?: IdentityRankData | null;
   championHistory?: { wins: number } | null;
-  tierMessage?: string;
   featuredBadge: any | null;
-  earnedBadges: any[] | undefined;
-  onPreviewBadge: (badge: any) => void;
   verified?: boolean;
   onShare: () => void;
 }
@@ -40,10 +36,7 @@ const ProfileHero = ({
   tier,
   rankData,
   championHistory,
-  tierMessage,
   featuredBadge,
-  earnedBadges,
-  onPreviewBadge,
   verified,
   onShare,
 }: ProfileHeroProps) => {
@@ -79,7 +72,6 @@ const ProfileHero = ({
         rankData={rankData}
         championWins={championHistory?.wins ?? 0}
         verified={verified}
-        tierMessage={tierMessage}
         featuredBadge={featuredBadge}
         showLock
         nameplateSize="lg"
@@ -116,17 +108,6 @@ const ProfileHero = ({
       />
 
       <div className="relative flex flex-col items-center text-center">
-        {/* Badge row — circular icons */}
-        {earnedBadges && earnedBadges.length > 0 && (
-          <div className="mt-7 w-full">
-            <BadgeShowcase
-              badges={earnedBadges}
-              totalEarned={earnedBadges.length}
-              onBadgeClick={onPreviewBadge}
-            />
-          </div>
-        )}
-
         {/* Member since — quiet closing line */}
         {profile.created_at && (
           <p className="eyebrow mt-6">

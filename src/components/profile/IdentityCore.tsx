@@ -21,7 +21,6 @@ export interface IdentityCoreProps {
   rankData?: IdentityRankData | null;
   championWins?: number;
   verified?: boolean;
-  tierMessage?: string;
   featuredBadge?: { name: string; icon: string; rarity?: string | null } | null;
   /** Custom avatar block (own profile adds the camera button). */
   avatarSlot?: ReactNode;
@@ -47,7 +46,6 @@ const IdentityCore = ({
   rankData,
   championWins = 0,
   verified,
-  tierMessage,
   featuredBadge,
   avatarSlot,
   nameSuffix,
@@ -184,13 +182,6 @@ const IdentityCore = ({
           <span className="text-[11px] font-bold text-muted-foreground">Level</span>
         </div>
       </div>
-
-      {/* Tier message — italic, subtle */}
-      {tierMessage && (
-        <p className="text-sm text-muted-foreground/75 font-medium italic mt-5 max-w-[280px]">
-          {tierMessage}
-        </p>
-      )}
 
       {/* Featured badge title — one component everywhere */}
       {featuredBadge && (

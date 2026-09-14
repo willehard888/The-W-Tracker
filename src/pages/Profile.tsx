@@ -3,7 +3,6 @@ import { fmtDate, fmtInt, fmtRelative } from "@/lib/format";
 import { localDateKey } from "@/lib/date";
 import { Flame, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils, Compass } from "lucide-react";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsList";
-import WeeklySleepCard from "@/components/profile/WeeklySleepCard";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import RecoveryCard from "@/components/profile/RecoveryCard";
 import ProfileHero from "@/components/profile/ProfileHero";
@@ -13,7 +12,6 @@ import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 import { friendlyError } from "@/lib/error-copy";
 import { hapticSelection } from "@/lib/haptics";
 import BadgeVault from "@/components/BadgeVault";
-import RankPressureCard from "@/components/RankPressureCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -34,8 +32,6 @@ import NextTierProgress from "@/components/NextTierProgress";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import TierLadder from "@/components/TierLadder";
 import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
-import CoachLine from "@/components/coach/CoachLine";
-import { useCoachObservation } from "@/hooks/use-coach-observation";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useModeration } from "@/hooks/use-moderation";
 import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
@@ -185,7 +181,6 @@ const Profile = () => {
     }
   };
 
-
   const { data: allBadges, isError: badgesError, refetch: refetchBadges } = useQuery({
     queryKey: ["all-badges"],
     staleTime: 60 * 60_000,  // badge catalog is essentially static
@@ -262,37 +257,6 @@ const Profile = () => {
     enabled: !!profile,
   });
 
-  const { data: weeklySleep } = useQuery({
-    queryKey: ["weekly-sleep", profile?.user_id],
-    staleTime: 10 * 60_000,  // sleep data changes only at daily check-in
-    gcTime:    30 * 60_000,
-    queryFn: async () => {
-      if (!profile) return null;
-      const sevenDaysAgo = subDays(new Date(), 7).toISOString();
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("sleep_hours")
-        .eq("user_id", profile.user_id)
-        .gte("checked_in_at", sevenDaysAgo);
-      if (!data || data.length === 0) return null;
-      const hours = data.map((d) => Number(d.sleep_hours));
-      const avg = hours.reduce((s, h) => s + h, 0) / hours.length;
-      const oversleepCount = hours.filter((h) => h >= 10).length;
-      const isChronicOversleep = oversleepCount >= 3;
-
-      // Match per-checkin tiers using weekly avg
-      let multiplier: number;
-      if (avg >= 7.5 && avg <= 9) multiplier = 1.0;
-      else if (avg >= 10) multiplier = isChronicOversleep ? 0.6 : 0.95;
-      else if (avg >= 7) multiplier = 0.85; // 7–7.4h avg = sub-optimal
-      else if (avg >= 6) multiplier = 0.7;
-      else if (avg >= 5) multiplier = 0.55;
-      else multiplier = 0.4;
-
-      return { avg: Math.round(avg * 10) / 10, days: data.length, multiplier, isChronicOversleep, oversleepCount };
-    },
-    enabled: !!profile,
-  });
 
   // Lifetime check-in count — the "days you showed up" number.
   const { data: checkinTotal } = useQuery({
@@ -485,10 +449,7 @@ const Profile = () => {
         tier={tier}
         rankData={rankData}
         championHistory={championHistory}
-        tierMessage={tierConfig.message}
         featuredBadge={featuredBadge}
-        earnedBadges={earnedBadges}
-        onPreviewBadge={setPreviewBadge}
         verified={!!verifiedStats?.is_verified_performer}
         onShare={handleShareProfile}
       />
@@ -541,7 +502,7 @@ const Profile = () => {
               className="w-full text-left surface-card surface-card-quiet p-4 flex items-center gap-4"
             >
               <div className="shrink-0">
-                <p className="font-display font-black text-3xl leading-none text-gold glow-gold-text tabular-nums">{latest.overall}</p>
+                <p className="font-display font-black text-3xl leading-none tabular-nums">{latest.overall}</p>
                 <p className="text-[11px] font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
                 {/*
                   Home prints the LIVE index, recomputed on every open; this
@@ -573,19 +534,16 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Rank Position */}
-      {rankData && (
-        <div className="home-rise home-rise-5">
-          <RankPressureCard
-            tier={tier}
-            rank={rankData.rank}
-            totalUsers={rankData.totalUsers}
-            percentile={rankData.percentile}
-            hasRank={rankData.hasRank}
-            rankScore={profile.rank_score}
-          />
-        </div>
-      )}
+      {/* ── ROAD TO THE NEXT TIER — the one next-tier card. The rank itself is
+             printed once, in the nameplate above; this card says what the next
+             rung asks for, and its last row is the door into the ladder. The
+             RankPressureCard that restated the rank with zero controls is gone. ── */}
+      <div className="home-rise home-rise-5">
+        <NextTierProgress
+          ladder={<TierLadder bare currentTier={profile.status_tier || "recruit"} />}
+          fallback={<TierLadder currentTier={profile.status_tier || "recruit"} />}
+        />
+      </div>
 
       {/* Live Rivals — who's ahead, who's behind. Below the fold: no entrance. */}
       <div>
@@ -604,23 +562,9 @@ const Profile = () => {
         <YourBlueprintCard />
       </ErrorBoundary>
 
-      {/* Coach voice: one-line read of the week through Coach's eyes. */}
-      <ErrorBoundary fallback={<></>}>
-        <ProfileCoachLine />
-      </ErrorBoundary>
-
-      {/* Tier Ladder — full progression map */}
-      <TierLadder currentTier={profile.status_tier || "recruit"} />
-
-      {/* Road to Elite — earned-status progress */}
-      <NextTierProgress />
-
-      {/* Verified Performer — connect HealthKit to earn unfakeable status.
-          Self-hides on non-iOS / when probing (component handles it). */}
-      <HealthKitConnectCard />
-
-      {/* Weekly Sleep — recovery context / XP multiplier */}
-      {weeklySleep && <WeeklySleepCard data={weeklySleep} />}
+      {/* Apple Health — status only here (who is feeding it, what verified);
+          Home owns the connect ask. Self-hides on non-iOS / when probing. */}
+      <HealthKitConnectCard statusOnly />
 
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
@@ -813,12 +757,5 @@ const Standing = ({ value, label }: { value: number; label: string }) => (
     <span className="text-[11px] text-muted-foreground">{label}</span>
   </span>
 );
-
-/** Scoped Coach line on Profile — null when hook is loading or empty. */
-const ProfileCoachLine = () => {
-  const { text, isLoading } = useCoachObservation({ context: "profile" });
-  if (isLoading || !text) return null;
-  return <CoachLine text={text} />;
-};
 
 export default Profile;

@@ -1,5 +1,6 @@
 import { Crown, TrendingUp, CalendarCheck, Flame, Check } from "lucide-react";
 import { m } from "framer-motion";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useNextTierProgress } from "@/hooks/use-next-tier-progress";
 import { tierBandLabel, tierRequirementSentence } from "@/lib/status-tiers";
@@ -32,7 +33,7 @@ const RequirementRow = ({
           className={cn(
             "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border transition-colors",
             met
-              ? "bg-gold/15 border-gold/40 text-gold"
+              ? "bg-xp-green/15 border-xp-green/40 text-xp-green"
               : "bg-secondary/40 border-border text-muted-foreground",
           )}
         >
@@ -41,7 +42,7 @@ const RequirementRow = ({
         <span
           className={cn(
             "text-xs font-semibold tracking-tight",
-            met ? "text-gold" : "text-foreground/85",
+            met ? "text-xp-green" : "text-foreground/85",
           )}
         >
           {label}
@@ -49,7 +50,7 @@ const RequirementRow = ({
         <span
           className={cn(
             "ml-auto text-[12px] tabular-nums font-bold",
-            met ? "text-gold" : "text-muted-foreground",
+            met ? "text-xp-green" : "text-muted-foreground",
           )}
         >
           {display}
@@ -63,7 +64,7 @@ const RequirementRow = ({
           transition={{ duration: 0.9, ease: "easeOut" }}
           className={cn(
             "h-full rounded-full",
-            met ? "gradient-gold" : "bg-gold/40",
+            met ? "bg-xp-green/70" : "bg-gold/60",
           )}
         />
       </div>
@@ -78,35 +79,28 @@ const RequirementRow = ({
  * copy of them and promised Elite at a 21-day streak while the ladder beside
  * it, and the server, both said 30.
  */
-const NextTierProgress = ({ className }: { className?: string }) => {
+/**
+ * `ladder` renders as the card's last row (the door into the tier sheet), so
+ * the next tier is one card on Profile instead of three. `fallback` is what
+ * to show when there is no road to draw (no data, top of the ladder).
+ */
+const NextTierProgress = ({ className, ladder, fallback }: { className?: string; ladder?: ReactNode; fallback?: ReactNode }) => {
   const r = useNextTierProgress();
 
-  if (r.loading || !r.hasData || !r.next) return null;
+  if (r.loading || !r.hasData || !r.next) return fallback ?? null;
 
   const req = r.next.requirements;
 
   return (
     <div
-      className={cn(
-        "rounded-2xl glass-card-gold p-5 gradient-border-animated relative overflow-hidden",
-        className,
-      )}
+      className={cn("surface-card surface-card-quiet relative overflow-hidden", className)}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-50"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(var(--gold) / 0.18) 0%, transparent 70%)",
-        }}
-      />
-
-      <div className="relative">
+      <div className="relative p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg gradient-gold flex items-center justify-center glow-gold">
-              <Crown aria-hidden size={16} className="text-primary-foreground" />
+            <div className="h-9 w-9 rounded-lg bg-secondary flex items-center justify-center">
+              <Crown aria-hidden size={16} className="text-muted-foreground" />
             </div>
             <div>
               <h3 className="font-display font-black text-base tracking-tight leading-none">
@@ -118,7 +112,7 @@ const NextTierProgress = ({ className }: { className?: string }) => {
             </div>
           </div>
           <div className="text-right">
-            <p className="font-display font-black text-2xl text-gold leading-none tabular-nums">
+            <p className="font-display font-black text-2xl leading-none tabular-nums">
               {r.overallPercent}
               <span className="text-sm text-muted-foreground">%</span>
             </p>
@@ -161,12 +155,13 @@ const NextTierProgress = ({ className }: { className?: string }) => {
         </div>
 
         {/* Footer — the rule in the ladder's own words. */}
-        <div className="mt-4 pt-3 border-t border-gold/15">
+        <div className="mt-4 pt-3 border-t border-border/35">
           <p className="text-[12px] text-center text-muted-foreground italic font-medium">
             {tierRequirementSentence(r.next.key)}.
           </p>
         </div>
       </div>
+      {ladder && <div className="border-t border-border/35">{ladder}</div>}
     </div>
   );
 };

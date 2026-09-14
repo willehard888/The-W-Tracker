@@ -23,7 +23,12 @@ import { track, FUNNEL } from "@/lib/analytics";
  * zero for the whole first day after connecting, and the card was re-asking a
  * user who had already said yes.
  */
-const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}) => {
+/**
+ * `statusOnly`: render only once Health is connected (the sources line and the
+ * verification stats). Home owns the connect ask; Profile showed the same ask
+ * a second time, one screen over.
+ */
+const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected?: () => void; statusOnly?: boolean } = {}) => {
   const { available, connect, syncToday, syncing, error, lastSnapshot } = useHealthKit();
   const { user } = useAuth();
   const [connected, setConnected] = useState(() => hasHealthConsent());
@@ -103,6 +108,7 @@ const HealthKitConnectCard = ({ onConnected }: { onConnected?: () => void } = {}
   };
 
   if (!connected) {
+    if (statusOnly) return null;
     const reconnect = hasStaleHealthConsent();
     return (
       <div className="surface-card surface-card-quiet p-4">

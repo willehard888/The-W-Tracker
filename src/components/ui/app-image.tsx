@@ -10,9 +10,11 @@ interface AppImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src">
   /** Reserve space to avoid layout shift, e.g. "1 / 1", "4 / 3", "16 / 9". */
   aspectRatio?: string;
   /**
-   * Reserve space ONLY while loading (releases to the natural aspect once the
-   * image arrives). Kills the collapse→expand layout jump in feeds without
-   * permanently cropping to a fixed ratio.
+   * Reserve the box before the image arrives, and keep it: the image is
+   * `object-cover`ed into that ratio. It used to release to the natural
+   * aspect on load, which re-flowed every non-4:5 feed photo under the
+   * thumb mid-scroll — the exact jump the prop was meant to kill. Today it is
+   * `aspectRatio` under the name the feed already passes.
    */
   placeholderAspect?: string;
   quality?: number;
@@ -82,7 +84,7 @@ export const AppImage = ({
         !loaded && placeholderAspect && "bg-secondary/40",
         className,
       )}
-      style={{ aspectRatio: aspectRatio ?? (!loaded ? placeholderAspect : undefined), ...style }}
+      style={{ aspectRatio: aspectRatio ?? placeholderAspect, ...style }}
       {...rest}
     />
   );

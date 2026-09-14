@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, useEffect } from "react";
 // useParams: an exercise is a route (/exercises/:slug), so the coach can link
 // straight to a movement and the phone's back gesture closes the detail
 // instead of leaving the library entirely.
@@ -145,6 +145,11 @@ const Exercises = () => {
   // its entrance every time a detail closes over it.
   const [opened, setOpened] = useState(false);
   const listScroll = useRef(0);
+  // 269 rows rebuilt on every keystroke; the first 60 are a full screen and a
+  // half. A filter change resets the window.
+  const PAGE = 60;
+  const [limit, setLimit] = useState(PAGE);
+  useEffect(() => { setLimit(PAGE); }, [query, group]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -241,7 +246,7 @@ const Exercises = () => {
           </div>
 
           <ul className="divide-y divide-border/35 border-t border-border/35">
-            {filtered.map((ex, i) => (
+            {filtered.slice(0, limit).map((ex, i) => (
               <li key={ex.slug} style={i < 6 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
                 <button
                   type="button"
@@ -260,6 +265,15 @@ const Exercises = () => {
               </li>
             ))}
           </ul>
+          {filtered.length > limit && (
+            <button
+              type="button"
+              onClick={() => setLimit((n) => n + PAGE)}
+              className="press mt-3 w-full min-h-11 rounded-xl border border-border/60 bg-card/40 text-[13px] font-bold text-muted-foreground"
+            >
+              Show {Math.min(PAGE, filtered.length - limit)} more · {filtered.length - limit} left
+            </button>
+          )}
           {filtered.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-10">No exercises match — try another search.</p>
           )}

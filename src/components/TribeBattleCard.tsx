@@ -118,7 +118,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8 h-9 flex items-end justify-center shrink-0" aria-hidden>
             {tier >= 0 ? (
-              <TribeFireLite tier={tier} palette={collectivePalette(streak)} variant="mini" size={26} />
+              <TribeFireLite tier={tier} palette={collectivePalette(streak)} variant="mini" still size={26} />
             ) : (
               <Flame aria-hidden size={14} className="text-muted-foreground/75" strokeWidth={1.6} />
             )}

@@ -184,7 +184,7 @@ const Messages = () => {
           {rows.length > 0 && (
             <div className="divide-y divide-border/35">
               {rows.map((row, i) => (
-                <div key={row.key} className="animate-fade-in-up" style={{ animationDelay: `${210 + Math.min(i, 8) * 40}ms` }}>{row.node}</div>
+                <div key={row.key} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${210 + i * 40}ms` } : undefined}>{row.node}</div>
               ))}
             </div>
           )}

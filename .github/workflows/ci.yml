@@ -43,3 +43,8 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      # Measures, does not gate: the boot-path bytes against perf/before.json
+      # in every run's log, so a regression is seen the day it lands.
+      - name: Perf snapshot (boot path vs perf/before.json)
+        run: npm run perf:snapshot -- --baseline perf/before.json

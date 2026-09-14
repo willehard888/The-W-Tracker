@@ -53,7 +53,7 @@ const isVideoUrl = (url: string) => SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.t
 // prop — keeps FeedPostCard's memo intact (a fresh [] would re-render every card).
 const EMPTY_TREE: any[] = [];
 
-const EliteFeed = () => {
+const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
   const { user, profile, isElite } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -93,6 +93,8 @@ const EliteFeed = () => {
 
   const { data: posts, isLoading, isError, refetch: refetchPosts } = useQuery({
     queryKey: ["feed-posts", showReported],
+    // Paused while Squad parks the feed under display:none.
+    enabled: active,
     placeholderData: keepPreviousData,
     // Shared with the app-shell prefetcher (FeedPrefetcher in App.tsx) —
     // by the time the user taps Squad this is usually already in cache.
@@ -123,7 +125,7 @@ const EliteFeed = () => {
       const reporterMap = Object.fromEntries((reporterData || []).map(p => [p.user_id, p]));
       return data.map(r => ({ ...r, post: postMap[r.post_id!], reporter: reporterMap[r.reporter_id] }));
     },
-    enabled: !!isAdmin,
+    enabled: active && !!isAdmin,
   });
 
   // Kudos: which posts the user has kudos'd
@@ -149,7 +151,7 @@ const EliteFeed = () => {
         reactionPosts: reactionsRes.data?.map((r) => r.post_id) ?? [],
       };
     },
-    enabled: !!user,
+    enabled: active && !!user,
   });
 
   // Use Sets for O(1) per-post lookups instead of O(n) array.includes()
@@ -387,7 +389,7 @@ const EliteFeed = () => {
       const profileMap = Object.fromEntries((profiles || []).map((p) => [p.user_id, p]));
       return data.map((c) => ({ ...c, profile: profileMap[c.user_id] }));
     },
-    enabled: !!showComments,
+    enabled: active && !!showComments,
   });
 
   const addComment = useMutation({
@@ -677,6 +679,8 @@ const EliteFeed = () => {
   //    momentum ("everyone's moving, add yours").
   const { data: todayWins } = useQuery({
     queryKey: ["feed-today-wins"],
+    // Paused while Squad parks the feed under display:none.
+    enabled: active,
     staleTime: 5 * 60_000,
     queryFn: async () => {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();

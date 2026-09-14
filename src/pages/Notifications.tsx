@@ -258,7 +258,7 @@ const Notifications = () => {
                 const isUnread = !n.read_at;
                 return (
                   // Entrance on a wrapper: the keyframe pins transform, which would kill the row's press.
-                  <div key={n.id} className={cn(i < 8 && "animate-fade-in-up")} style={i < 8 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
+                  <div key={n.id} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
                     <button type="button" onClick={() => openNotification(n)} className="w-full flex items-start gap-3 py-3 text-left">
                       <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
                       <span className="flex-1 min-w-0">

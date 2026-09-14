@@ -37,6 +37,15 @@ interface Props {
   size?: number;
   variant?: "hero" | "standard" | "mini";
   className?: string;
+  /**
+   * Render the flame without any looping animation. Size, palette and layer
+   * count still track the tier, so a row reads the same at a glance. Use it
+   * wherever the flame repeats down a list: every animated mini instance
+   * runs seven infinite keyframes (three sways, a flicker, three embers), and
+   * `content-visibility` skips the paint but not the ticks. Same lever as
+   * `StreakFlameInline`'s `still`.
+   */
+  still?: boolean;
 }
 
 const FLAME_BACK  = "M50 12 C 58 30, 72 38, 76 56 C 82 76, 78 96, 68 110 C 60 122, 54 132, 50 138 C 46 132, 40 122, 32 110 C 22 96, 18 76, 24 56 C 28 38, 42 30, 50 12 Z";
@@ -52,7 +61,8 @@ const legacyAccentPalette = (accent: string): FlamePalette => ({
   text:  accent,
 });
 
-const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard", className }: Props) => {
+const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard", className, still = false }: Props) => {
+  const anim = (a: string) => (still ? undefined : a);
   const uid = useId();
   const pal = palette ?? (accent ? legacyAccentPalette(accent) : tierPalette(tier));
   const t = Math.max(-1, Math.min(6, tier));
@@ -89,7 +99,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
   const flameHeightPx = size * (1.15 + tierBoost * 0.25);
 
   // Diamond+ hue wash (aurora) / Firestorm plasma cycle — the top-tier "wow".
-  const hueAnim = isMini
+  const hueAnim = isMini || still
     ? undefined
     : isFirestorm
     ? "flame-plasma-hue 4s linear infinite"
@@ -105,7 +115,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
       // contain: layout only — paint containment clipped the halo bloom /
       // ground cast into a hard rectangle at the container bounds. The light
       // layers are transform/opacity-animated, so compositing stays cheap.
-      style={{ width: size, height: flameHeightPx, contain: "layout", willChange: "transform" }}
+      style={{ width: size, height: flameHeightPx, contain: "layout", willChange: still ? undefined : "transform" }}
       aria-hidden
     >
       {/* Chiaroscuro contact shadow — grounds the flame (Blazing+, non-mini) */}
@@ -118,7 +128,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
             bottom: -size * 0.05,
             background: "radial-gradient(ellipse at 50% 50%, hsl(0 0% 0% / 0.42) 0%, hsl(0 0% 0% / 0.18) 45%, transparent 78%)",
             filter: `blur(${Math.max(3, size * 0.06)}px)`,
-            animation: `flame-chiaroscuro ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`,
+            animation: anim(`flame-chiaroscuro ${(speed * 4.2).toFixed(2)}s ease-in-out infinite`),
             transform: "translateX(-50%)",
           }}
         />
@@ -134,7 +144,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
             background: `radial-gradient(ellipse at 50% 72%, ${withAlpha(pal.glow, 0.5)} 0%, ${withAlpha(pal.glow, 0.16)} 42%, transparent 72%)`,
             mixBlendMode: "screen",
             transform: "translate(-50%, 8%)",
-            animation: `flame-halo-bloom ${(speed * 3.8).toFixed(2)}s ease-in-out infinite`,
+            animation: anim(`flame-halo-bloom ${(speed * 3.8).toFixed(2)}s ease-in-out infinite`),
           }}
         />
       )}
@@ -162,7 +172,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
             filter: "blur(5px)",
             mixBlendMode: "screen",
             transform: "translateX(-50%)",
-            animation: `flame-ground-cast ${(speed * 4).toFixed(2)}s ease-in-out infinite`,
+            animation: anim(`flame-ground-cast ${(speed * 4).toFixed(2)}s ease-in-out infinite`),
           }}
         />
       )}
@@ -177,7 +187,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
             bottom: -size * 0.02,
             background: `radial-gradient(ellipse at 50% 50%, ${withAlpha(pal.core, 0.75)} 0%, ${withAlpha(pal.outer, 0.4)} 45%, transparent 80%)`,
             transform: "translateX(-50%)",
-            animation: "tribeflame-pool 3.6s ease-in-out infinite",
+            animation: anim("tribeflame-pool 3.6s ease-in-out infinite"),
           }}
         />
       )}
@@ -218,14 +228,14 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
             </radialGradient>
           </defs>
 
-          <g style={{ animation: `tfl-sway-back ${(speed * 2.9).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
+          <g style={{ animation: anim(`tfl-sway-back ${(speed * 2.9).toFixed(2)}s ease-in-out infinite`), transformOrigin: "50% 100%" }}>
             <path d={FLAME_BACK} fill={`url(#tfl-b-${uid})`} />
           </g>
-          <g style={{ animation: `tfl-sway-mid ${(speed * 2.3).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
+          <g style={{ animation: anim(`tfl-sway-mid ${(speed * 2.3).toFixed(2)}s ease-in-out infinite`), transformOrigin: "50% 100%" }}>
             <path d={FLAME_MID} fill={`url(#tfl-m-${uid})`} />
           </g>
-          <g style={{ animation: `tfl-sway-front ${(speed * 1.7).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
-            <g style={{ animation: `tfl-flicker-v2 ${speed.toFixed(2)}s ease-in-out infinite`, transformOrigin: "50% 100%" }}>
+          <g style={{ animation: anim(`tfl-sway-front ${(speed * 1.7).toFixed(2)}s ease-in-out infinite`), transformOrigin: "50% 100%" }}>
+            <g style={{ animation: anim(`tfl-flicker-v2 ${speed.toFixed(2)}s ease-in-out infinite`), transformOrigin: "50% 100%" }}>
               <path d={FLAME_FRONT} fill={`url(#tfl-f-${uid})`} />
             </g>
           </g>
@@ -233,7 +243,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
           {/* White-hot inner core — its own faster lick (On Fire+, non-mini) */}
           {isFirePlus && !isMini && (
             <g transform="translate(22.5 62.1) scale(0.55)">
-              <g style={{ animation: `tfl-core-lick ${(speed * 0.55).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50px 138px" }}>
+              <g style={{ animation: anim(`tfl-core-lick ${(speed * 0.55).toFixed(2)}s ease-in-out infinite`), transformOrigin: "50px 138px" }}>
                 <path d={FLAME_FRONT} fill={pal.core} opacity="0.9" />
                 <ellipse cx="50" cy="112" rx="10" ry="20" fill="hsl(0 0% 100%)" opacity="0.55" />
               </g>
@@ -243,14 +253,14 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
           {/* Secondary fork tongue (Legendary+, non-mini) */}
           {isLegendary && !isMini && (
             <g transform="translate(12 93.8) scale(0.32)">
-              <g style={{ animation: `tfl-fork-lick ${(speed * 0.45).toFixed(2)}s ease-in-out infinite`, transformOrigin: "50px 138px" }}>
+              <g style={{ animation: anim(`tfl-fork-lick ${(speed * 0.45).toFixed(2)}s ease-in-out infinite`), transformOrigin: "50px 138px" }}>
                 <path d={FLAME_FRONT} fill={pal.mid} opacity="0.8" />
               </g>
             </g>
           )}
 
           {/* Rising embers — per-ember drift so they never move in formation */}
-          {embers.map((e) => (
+          {!still && embers.map((e) => (
             <circle
               key={e.id}
               cx={e.x}
@@ -258,7 +268,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
               r={e.r}
               fill={`url(#tfl-e-${uid})`}
               style={{
-                animation: `tfl-ember-rise ${e.dur}s linear ${e.delay}s infinite`,
+                animation: anim(`tfl-ember-rise ${e.dur}s linear ${e.delay}s infinite`),
                 transformOrigin: "center",
                 ["--tfl-ember-drift" as string]: `${e.drift}px`,
               }}
@@ -277,7 +287,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
               background: `radial-gradient(ellipse at 50% 60%, hsl(0 0% 100% / 0.9) 0%, ${withAlpha(pal.core, 0.6)} 45%, transparent 75%)`,
               mixBlendMode: "screen",
               transform: "translateX(-50%)",
-              animation: `flame-heart-bloom ${(speed * 2).toFixed(2)}s ease-in-out infinite`,
+              animation: anim(`flame-heart-bloom ${(speed * 2).toFixed(2)}s ease-in-out infinite`),
             }}
           />
         )}
@@ -295,7 +305,7 @@ const TribeFireLite = ({ tier, palette, accent, size = 200, variant = "standard"
                 bottom: size * 0.3,
                 background: pal.core,
                 boxShadow: `0 0 6px ${pal.glow}, 0 0 12px ${pal.glow}`,
-                animation: `flame-ember-float ${(speed * (2.4 + i * 0.7)).toFixed(2)}s ease-out ${(i * 0.9).toFixed(1)}s infinite`,
+                animation: anim(`flame-ember-float ${(speed * (2.4 + i * 0.7)).toFixed(2)}s ease-out ${(i * 0.9).toFixed(1)}s infinite`),
                 ["--ember-rise" as string]: `${-size * 1.05}px`,
               }}
             />

@@ -81,7 +81,7 @@ const Squad = () => {
 
       {/* A visited tab stays mounted and parks under display:none — the
           segment used to destroy and rebuild a 1 000-line tree on every tap. */}
-      {visited.has("feed") && <div hidden={tab !== "feed"}><EliteFeed /></div>}
+      {visited.has("feed") && <div hidden={tab !== "feed"}><EliteFeed active={tab === "feed"} /></div>}
       {visited.has("tribes") && <div hidden={tab !== "tribes"}><Tribes initialSub={initialSub} /></div>}
     </div>
   );

@@ -482,7 +482,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               )}
               {cTier >= 0 ? (
                 <div className="relative w-full h-full flex items-center justify-center" style={intakeStyle(pulses)}>
-                  <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={36} variant="mini" />
+                  <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={36} variant="mini" still />
                 </div>
               ) : !t.cover_url ? (
                 <TribeEmberSeed aria-hidden size={36} />

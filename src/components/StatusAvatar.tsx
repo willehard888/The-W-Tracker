@@ -136,9 +136,13 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
                   : isApex
                   ? "hsl(var(--ember) / 0.5)"
                   : "hsl(var(--gold) / 0.4)",
-                willChange: "transform",
-                transform: "translateZ(0)",
-                backfaceVisibility: "hidden",
+                // A compositor layer only when the aura actually animates. The
+                // feed and the leaderboard pass `animated={false}` and were
+                // still promoting every elite/apex/legend avatar to its own
+                // layer — one per row, for nothing.
+                ...(animated
+                  ? { willChange: "transform" as const, transform: "translateZ(0)", backfaceVisibility: "hidden" as const }
+                  : {}),
               }
             : undefined
         }

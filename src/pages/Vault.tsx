@@ -102,6 +102,15 @@ const CATEGORIES: VaultCategory[] = [
     icon: Sparkles,
     accent: "hsl(45 90% 58%)",
   },
+  {
+    id: "wisdom",
+    title: "Wisdom",
+    tagline: "Great books · great teachers · the practice",
+    description:
+      "Nine sources, one rule: take the practice, test the claim. Atomic Habits, The Power of Now, A New Earth, The Greatest Secret, Wealth Money Can't Buy, and the teachings of Jung, Dispenza, Huberman and Watts, each tiered honestly.",
+    icon: BookOpen,
+    accent: "hsl(350 60% 64%)",
+  },
 ];
 
 /**

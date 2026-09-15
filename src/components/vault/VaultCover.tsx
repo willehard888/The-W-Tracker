@@ -208,6 +208,52 @@ const LongevityMotif = ({ accent }: { accent: string }) => (
   </g>
 );
 
+/** Wisdom — three books stacked under a small reading light, with faint
+ *  engraved lines of text drifting off the page to the left: the library, lit. */
+const WisdomMotif = ({ accent }: { accent: string }) => (
+  <g fill="none" strokeLinecap="round">
+    {/* shelf */}
+    <path d="M244 132 h 144" stroke={GOLD} strokeOpacity="0.25" strokeWidth="1.5" />
+    {/* three stacked books, each a slab with a gold spine line */}
+    {[
+      { x: 296, w: 72, y: 121 },
+      { x: 302, w: 62, y: 110 },
+      { x: 308, w: 54, y: 99 },
+    ].map((b, i) => (
+      <g key={i}>
+        <rect x={b.x} y={b.y} width={b.w} height="11" rx="1.5" fill={accent} fillOpacity={0.14 + i * 0.08} stroke={accent} strokeOpacity="0.6" strokeWidth="1" />
+        <line x1={b.x + 4} y1={b.y + 5.5} x2={b.x + b.w - 4} y2={b.y + 5.5} stroke={GOLD} strokeOpacity="0.35" strokeWidth="1" />
+      </g>
+    ))}
+    {/* the reading light */}
+    <g transform="translate(335 70)">
+      <circle r="13" fill={accent} fillOpacity="0.16" />
+      <circle r="7" fill={accent} fillOpacity="0.9" />
+      <circle r="10" stroke={GOLD} strokeOpacity="0.5" strokeWidth="1" />
+      {[-60, -30, 0, 30, 60].map((deg) => {
+        const rad = ((deg - 90) * Math.PI) / 180;
+        return (
+          <path
+            key={deg}
+            d={`M${Math.cos(rad) * 15} ${Math.sin(rad) * 15} L${Math.cos(rad) * 22} ${Math.sin(rad) * 22}`}
+            stroke={deg === 0 ? accent : GOLD}
+            strokeOpacity={deg === 0 ? 0.8 : 0.45}
+            strokeWidth="2"
+          />
+        );
+      })}
+    </g>
+    {/* engraved lines of text, drifting off the page */}
+    {[{ y: 62, w: 34 }, { y: 74, w: 26 }, { y: 86, w: 40 }, { y: 98, w: 22 }].map((l, i) => (
+      <line key={i} x1="246" y1={l.y} x2={246 + l.w} y2={l.y} stroke={GOLD} strokeOpacity={0.35 - i * 0.05} strokeWidth="1.5" />
+    ))}
+    {/* star field */}
+    {[{ x: 262, y: 40, r: 1.3 }, { x: 300, y: 32, r: 1.0 }, { x: 384, y: 50, r: 1.2 }].map((s, i) => (
+      <circle key={i} cx={s.x} cy={s.y} r={s.r} fill={GOLD} fillOpacity="0.8" />
+    ))}
+  </g>
+);
+
 const MOTIFS: Record<string, (p: { accent: string }) => JSX.Element> = {
   recipes: NutritionMotif,
   training: TrainingMotif,
@@ -216,6 +262,7 @@ const MOTIFS: Record<string, (p: { accent: string }) => JSX.Element> = {
   "nervous-system": NerveMotif,
   "inner-work": InnerWorkMotif,
   longevity: LongevityMotif,
+  wisdom: WisdomMotif,
 };
 
 const VaultCover = ({ id, accent }: { id: string; accent: string }) => {

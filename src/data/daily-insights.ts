@@ -1,9 +1,10 @@
 /**
  * Daily Vault insights — one surfaces on Home per day (see
  * DailyInsightCard + pickDaily). Each deep-links to its Vault lesson via
- * /vault?lesson=<slug>. Two courses feed the pool: Inner Work (attention,
- * identity, state) and Longevity (healthspan, the five levers). Tone matches
- * the courses: honest-premium, evidence-first, no woo claims.
+ * /vault?lesson=<slug>. Three courses feed the pool: Inner Work (attention,
+ * identity, state), Longevity (healthspan, the five levers) and Wisdom (the
+ * great books and teachers, in our own words, never a quoted line). Tone
+ * matches the courses: honest-premium, evidence-first, no woo claims.
  */
 export interface DailyInsight {
   id: string;
@@ -119,4 +120,28 @@ export const DAILY_INSIGHTS: DailyInsight[] = [
   // L10 · Recap
   { id: "lon-os-1", text: "The last decade of your life is being negotiated this decade — in ordinary weeks like this one. Run the week.", lessonSlug: "hundred-year-operating-system" },
   { id: "lon-os-2", text: "Bad weeks shrink the system, never stop it. One lift, one walk, protein, sleep — the floor keeps the identity alive.", lessonSlug: "hundred-year-operating-system" },
+
+  // ── Wisdom · the great books and teachers (20260916090001)
+  { id: "wis-read-1", text: "Read a teacher for the practice you can run on Tuesday. The worldview can wait.", lessonSlug: "how-to-read-a-teacher" },
+  { id: "wis-read-2", text: "Speculative is not an insult. It means keep the exercise, drop the explanation.", lessonSlug: "how-to-read-a-teacher" },
+  { id: "wis-atomic-1", text: "You don't need a unanimous election. Every small action is a vote for who you are. Win the majority.", lessonSlug: "atomic-habits-identity" },
+  { id: "wis-atomic-2", text: "Design the room and you stop needing the willpower. Then never miss twice.", lessonSlug: "atomic-habits-identity" },
+  { id: "wis-now-1", text: "The moment you watch a thought, you are no longer inside it. That half-step is the whole practice.", lessonSlug: "power-of-now-presence" },
+  { id: "wis-now-2", text: "The situation right now is usually fine. The story about tomorrow is what hurts.", lessonSlug: "power-of-now-presence" },
+  { id: "wis-ego-1", text: "Ego is the mind saying “I am” to things that can be lost. Catch it once a day, in the act.", lessonSlug: "new-earth-ego" },
+  { id: "wis-ego-2", text: "Do you want to be right, or do you want it fixed? The ego only ever picks one.", lessonSlug: "new-earth-ego" },
+  { id: "wis-aware-1", text: "A feeling that is allowed passes in minutes. A feeling that is fought can last for days.", lessonSlug: "greatest-secret-awareness" },
+  { id: "wis-aware-2", text: "Am I aware? The answer arrived before any thought did. Two seconds, back in the room.", lessonSlug: "greatest-secret-awareness" },
+  { id: "wis-wealth-1", text: "Money at five, family at one. That is not wealth, whatever the number says.", lessonSlug: "eight-forms-of-wealth" },
+  { id: "wis-wealth-2", text: "Score eight forms, not one. Then work on the lowest, because the lowest sets how rich life feels.", lessonSlug: "eight-forms-of-wealth" },
+  { id: "wis-jung-1", text: "Whoever irritates you out of proportion is showing you a page from your own shadow.", lessonSlug: "jung-shadow-individuation" },
+  { id: "wis-jung-2", text: "What you refuse does not vanish. It leaks, at the worst possible moment.", lessonSlug: "jung-shadow-individuation" },
+  { id: "wis-rehearse-1", text: "Rehearse the next set from the inside, including the moment it gets hard. Then go lift it.", lessonSlug: "dispenza-rehearsal" },
+  { id: "wis-rehearse-2", text: "Every morning you rehearse the same self. Ten minutes a day, rehearse another one.", lessonSlug: "dispenza-rehearsal" },
+  { id: "wis-huber-1", text: "Ten minutes of morning light sets the clock your whole day, and your sleep, runs on.", lessonSlug: "huberman-protocol-stack" },
+  { id: "wis-huber-2", text: "Two inhales, one long exhale. The fastest evidenced way to bring the day back down.", lessonSlug: "huberman-protocol-stack" },
+  { id: "wis-watts-1", text: "Thrash and you sink. Relax and you float. Reaching for calm is what keeps it away.", lessonSlug: "watts-wisdom-of-insecurity" },
+  { id: "wis-watts-2", text: "Nobody plays a symphony to reach the final chord. Train like the playing is the point.", lessonSlug: "watts-wisdom-of-insecurity" },
+  { id: "wis-stack-1", text: "Nine teachers, one week, under twenty minutes a day. Believe none of it. Run all of it.", lessonSlug: "wisdom-practice-stack" },
+  { id: "wis-stack-2", text: "A course is finished when it changes a week, not when the last lesson is marked complete.", lessonSlug: "wisdom-practice-stack" },
 ];

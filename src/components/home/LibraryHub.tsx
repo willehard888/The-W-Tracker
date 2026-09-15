@@ -47,7 +47,7 @@ const ROWS = [
     key: "vault",
     path: "/vault",
     title: "The Vault",
-    sub: "Courses: training, longevity, recovery, mind & inner work",
+    sub: "Courses: training, nutrition, longevity, recovery, mind, inner work & wisdom",
     chip: "Premium",
     chipGold: true,
   },

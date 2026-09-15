@@ -2,6 +2,7 @@
 // modes of content edits: a recipe id without a bundled image (gold fallback
 // square forever), a daily insight pointing at a lesson slug that doesn't
 // exist (dead deep link to the paywalled Vault), duplicate ids.
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import { RECIPES } from "@/data/recipes";
 import { DAILY_INSIGHTS } from "@/data/daily-insights";
@@ -60,10 +61,25 @@ describe("fmtQty — the shopping-list math users cook from", () => {
 });
 
 describe("daily insights ↔ Vault lessons", () => {
-  // Slugs seeded by 20260811085218_vault_inner_work_content.sql and
-  // 20260820061501_vault_longevity_content.sql — the deep link
+  // Slugs seeded by 20260811085218_vault_inner_work_content.sql,
+  // 20260820061501_vault_longevity_content.sql and
+  // 20260916090001_vault_wisdom_content.sql — the deep link
   // /vault?lesson=<slug> dies silently if these drift.
+  const WISDOM_SLUGS = [
+    "how-to-read-a-teacher",
+    "atomic-habits-identity",
+    "power-of-now-presence",
+    "new-earth-ego",
+    "greatest-secret-awareness",
+    "eight-forms-of-wealth",
+    "jung-shadow-individuation",
+    "dispenza-rehearsal",
+    "huberman-protocol-stack",
+    "watts-wisdom-of-insecurity",
+    "wisdom-practice-stack",
+  ];
   const LESSON_SLUGS = new Set([
+    ...WISDOM_SLUGS,
     "inner-operating-system",
     "manifestation-demystified",
     "woop-mental-contrasting",
@@ -89,6 +105,31 @@ describe("daily insights ↔ Vault lessons", () => {
   it("every insight points at a real lesson slug", () => {
     for (const i of DAILY_INSIGHTS) {
       expect(LESSON_SLUGS.has(i.lessonSlug), `${i.id} → ${i.lessonSlug}`).toBe(true);
+    }
+  });
+
+  // The Wisdom course is an 11-row SQL literal. A typo in a quiz or reference
+  // JSON would only surface at `db push`; this reads the migration and parses
+  // every jsonb literal the way Postgres will.
+  it("the wisdom migration's JSON parses and every quiz answer is in range", () => {
+    const sql = readFileSync("supabase/migrations/20260916090001_vault_wisdom_content.sql", "utf8");
+    for (const slug of WISDOM_SLUGS) expect(sql.includes(`('wisdom', '${slug}',`), slug).toBe(true);
+    const literals = [...sql.matchAll(/'(\[[\s\S]*?\])'::jsonb/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")) as unknown[]);
+    const quizzes = literals.filter((l) => (l[0] as { q?: string })?.q);
+    const refs = literals.filter((l) => (l[0] as { author?: string })?.author);
+    expect(quizzes).toHaveLength(WISDOM_SLUGS.length);
+    expect(refs).toHaveLength(WISDOM_SLUGS.length);
+    for (const quiz of quizzes as { q: string; choices: string[]; correct: number; explain: string }[][]) {
+      expect(quiz.length).toBeGreaterThanOrEqual(2);
+      for (const q of quiz) {
+        expect(q.correct).toBeGreaterThanOrEqual(0);
+        expect(q.correct).toBeLessThan(q.choices.length);
+        expect(q.explain.length).toBeGreaterThan(0);
+      }
+    }
+    for (const r of refs as { author: string; title: string }[][]) {
+      expect(r.length).toBeGreaterThanOrEqual(2);
+      expect(r.some((x) => x.author === "Note"), "every lesson carries the attribution note").toBe(true);
     }
   });
 

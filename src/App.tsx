@@ -1,5 +1,7 @@
 import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
 import { shouldGateOnboarding } from "@/lib/onboarding-gate";
+import { HARNESS_KEY, readHarnessParam, shouldForcePaywall } from "@/lib/paywall-harness";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { LazyMotion, MotionConfig } from "framer-motion";
@@ -121,15 +123,21 @@ const ACCESS_EXEMPT = new Set([
 // which grants membership credits — not by the gate being open.
 const PAYWALL_ENABLED = true;
 
-// Dev harness (?paywallDev=1): force the gate closed to exercise the paywall
-// without waiting 14 days. Sticky via sessionStorage (SPA navigation drops
-// the query string). Dead code in production builds.
-const devForcedPaywall = (): boolean => {
-  if (!import.meta.env.DEV) return false;
-  if (new URLSearchParams(window.location.search).has("paywallDev")) {
-    sessionStorage.setItem("w_paywall_dev", "1");
-  }
-  return sessionStorage.getItem("w_paywall_dev") === "1";
+// Harness (?paywallDev=1 / ?paywallDev=0): force the gate closed to exercise
+// the paywall without waiting 14 days. Sticky via sessionStorage (SPA
+// navigation drops the query string). Live in dev builds and for admin
+// accounts in any build — sandbox purchases are driven on the simulator and
+// TestFlight. It only ever closes the gate, never opens it.
+const forcedPaywall = (isAdmin: boolean): boolean => {
+  const param = readHarnessParam(window.location.search);
+  if (param === "on") sessionStorage.setItem(HARNESS_KEY, "1");
+  if (param === "off") sessionStorage.removeItem(HARNESS_KEY);
+  return shouldForcePaywall({
+    dev: import.meta.env.DEV,
+    isAdmin,
+    param,
+    sticky: sessionStorage.getItem(HARNESS_KEY) === "1",
+  });
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -137,6 +145,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Membership OR live 14-day trial (hook is isElite-aware) — called before
   // any early return so the hook order stays stable.
   const trial = useTrialAccess();
+  // Admins may force the paywall shut on themselves (the sandbox harness).
+  const isAdmin = useIsAdmin(user?.id);
   // The router's location, not the window global the component never
   // subscribed to; a trailing slash used to miss the exemption list.
   const { pathname } = useLocation();
@@ -171,7 +181,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // and the legal pages reachable — without it a gated user is bounced in a
   // loop with no way to pay, redeem a pilot code, or read the terms.
   const gated =
-    (PAYWALL_ENABLED && !trial.loading && !trial.hasAccess) || devForcedPaywall();
+    (PAYWALL_ENABLED && !trial.loading && !trial.hasAccess) || forcedPaywall(isAdmin);
   if (gated && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/paywall" replace />;
   }

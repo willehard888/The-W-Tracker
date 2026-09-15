@@ -27,7 +27,6 @@ const ENTITLEMENT = "The W Tracker Pro";
 const PRODUCT_IDS = [
   "WhealthFactory499", "com.app.WhealthFactory499",
   "eliteyearly4799", "com.app.eliteyearly4799",
-  "elitemonthly499", "com.app.elitemonthly499",
 ] as const;
 const PRIMARY_PRODUCT_ID = "WhealthFactory499";
 
@@ -42,6 +41,8 @@ const PRIMARY_PRODUCT_ID = "WhealthFactory499";
  */
 export interface PurchaseOutcome {
   cancelled: boolean;
+  /** true = App Store sandbox, false = money, null = no active entitlement / cancelled. */
+  sandbox?: boolean | null;
 }
 
 interface RevenueCatContextType {
@@ -110,6 +111,14 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
   }
   throw lastErr;
 }
+
+/** Where the entitlement came from: true for an App Store sandbox purchase,
+ *  false for money, null when the entitlement is not active. The ledger keeps
+ *  test and revenue apart with it. */
+export const purchaseSandboxFlag = (info: { entitlements?: { active?: Record<string, { isSandbox?: boolean }> } } | null | undefined): boolean | null => {
+  const ent = info?.entitlements?.active?.[ENTITLEMENT];
+  return ent ? ent.isSandbox === true : null;
+};
 
 /** Check whether a customerInfo has our entitlement active. */
 export function hasElite(info: any): boolean {
@@ -430,7 +439,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
 
         const { customerInfo } = await CapPurchases.purchasePackage({ aPackage: pkg });
         await applyElite(customerInfo);
-        return { cancelled: false };
+        return { cancelled: false, sandbox: purchaseSandboxFlag(customerInfo) };
       } catch (e: any) {
         if (isCancellation(e)) return { cancelled: true };
         console.error("[RC] Package purchase error:", e);
@@ -486,7 +495,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           product: selectedProduct,
         });
         await applyElite(customerInfo);
-        return { cancelled: false };
+        return { cancelled: false, sandbox: purchaseSandboxFlag(customerInfo) };
       } catch (e: any) {
         if (isCancellation(e)) return { cancelled: true };
         console.error("[RC] Product purchase error:", e);

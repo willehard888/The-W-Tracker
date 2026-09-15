@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { allowSandboxEvent } from "../_shared/sandbox-rule.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
 
@@ -76,20 +77,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // SECURITY: sandbox purchases fire the same authentic INITIAL_PURCHASE /
-    // RENEWAL webhooks as production but cost nothing (a free Apple sandbox
-    // account, or a StoreKit-hooked device, buys the €4.99 product for €0 and
-    // it "renews" every few minutes). Never grant a real entitlement from a
-    // sandbox event. DEBUG_ALLOW_SANDBOX lets our own TestFlight testing opt in.
-    if (event.environment && event.environment !== "PRODUCTION"
-        && Deno.env.get("DEBUG_ALLOW_SANDBOX") !== "true") {
-      console.log(`RevenueCat: ignoring ${event.environment} event ${event.type}`);
-      return new Response(JSON.stringify({ ok: true, skipped: "non-production" }), {
-        status: 200,
-        headers: jsonHeaders,
-      });
-    }
-
     const productId: string | undefined = event.product_id;
     const entitlementIds: string[] = Array.isArray(event.entitlement_ids)
       ? event.entitlement_ids
@@ -124,6 +111,26 @@ Deno.serve(async (req) => {
         status: 400,
         headers: jsonHeaders,
       });
+    }
+
+    // SECURITY: sandbox purchases fire the same authentic INITIAL_PURCHASE /
+    // RENEWAL webhooks as production but cost nothing (a free Apple sandbox
+    // account buys the product for €0 and it "renews" every five minutes).
+    // A sandbox event may only move entitlements for the app's own testers —
+    // an app_user_id holding the admin role — or when DEBUG_ALLOW_SANDBOX
+    // opts the project in. Everyone else's sandbox event is acknowledged
+    // and dropped.
+    const environment: string = event.environment ?? "PRODUCTION";
+    if (environment !== "PRODUCTION") {
+      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: appUserId, _role: "admin" });
+      if (!allowSandboxEvent({ environment, isAdmin: isAdmin === true, debugAllow: Deno.env.get("DEBUG_ALLOW_SANDBOX") === "true" })) {
+        console.log(`RevenueCat: ignoring ${environment} event ${event.type} for a non-tester`);
+        return new Response(JSON.stringify({ ok: true, skipped: "non-production" }), {
+          status: 200,
+          headers: jsonHeaders,
+        });
+      }
+      console.log(`RevenueCat: ${environment} event ${event.type} accepted for tester ${appUserId}`);
     }
 
     // Dedup + ordering guard. RevenueCat retries failed deliveries for hours
@@ -196,7 +203,7 @@ Deno.serve(async (req) => {
         const { error: evErr } = await supabase.from("analytics_events").insert({
           user_id: appUserId,
           event: "purchase_completed",
-          props: { source: "revenuecat_webhook", store: event.store ?? null, product_id: productId ?? null },
+          props: { source: "revenuecat_webhook", store: event.store ?? null, product_id: productId ?? null, environment },
         });
         if (evErr) console.warn("purchase analytics insert failed:", evErr.message);
       }

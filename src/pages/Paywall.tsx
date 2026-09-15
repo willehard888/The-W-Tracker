@@ -1,7 +1,9 @@
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
-import { readSession, writeSession } from "@/lib/storage";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+import { HARNESS_KEY, shouldForcePaywall } from "@/lib/paywall-harness";
+import { readSession, removeSession, writeSession } from "@/lib/storage";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { friendlyError } from "@/lib/error-copy";
@@ -31,7 +33,8 @@ type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
 const quiet = "press min-h-11 px-3 text-[12px] text-muted-foreground";
 
 const Paywall = () => {
-  const { isElite, isPremium, checkSubscription, profile, subscriptionLoading } = useAuth();
+  const { user, isElite, isPremium, checkSubscription, profile, subscriptionLoading } = useAuth();
+  const isAdmin = useIsAdmin(user?.id);
   const {
     purchasePremiumPlan, restorePurchases,
     rcLoading, rcReady,
@@ -73,11 +76,20 @@ const Paywall = () => {
     wasMemberRef.current = isElite;
   }, [isElite]);
 
+  // The harness keeps an admin on the offer screen even as a member, so a
+  // sandbox purchase can be driven again after the last one expired.
+  const forced = shouldForcePaywall({
+    dev: import.meta.env.DEV,
+    isAdmin,
+    param: null,
+    sticky: readSession(HARNESS_KEY) === "1",
+  });
+
   // Once Premium is active, leave the paywall behind
   useEffect(() => {
-    if (!isPremium) return;
+    if (!isPremium || forced) return;
     navigate("/", { replace: true });
-  }, [isPremium, navigate]);
+  }, [isPremium, forced, navigate]);
 
   // ─── Verify membership by polling checkSubscription ──────────
   // NOTE: this useCallback MUST sit above the `if (isElite) return ...`
@@ -111,7 +123,7 @@ const Paywall = () => {
   }, [checkSubscription]);
 
   // ─── Already a member ────────────────────────────────────────
-  if (isElite) {
+  if (isElite && !forced) {
     return (
       <div className="min-h-full">
         <PageBar onBack={() => backOr(navigate, "/")} />
@@ -163,7 +175,7 @@ const Paywall = () => {
       setStatus("verifying");
       const ok = await pollVerification(8000);
       if (ok) {
-        track(FUNNEL.purchaseCompleted, { plan, platform: "native" });
+        track(FUNNEL.purchaseCompleted, { plan, platform: "native", sandbox: outcome?.sandbox ?? null });
         hapticNotification("success");
         // Effect above will navigate home when isPremium flips true
       } else {
@@ -255,6 +267,17 @@ const Paywall = () => {
             </p>
           )}
         </header>
+
+        {forced && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={() => { removeSession(HARNESS_KEY); navigate("/", { replace: true }); }}
+          >
+            Exit test mode
+          </Button>
+        )}
 
         {/* HERO: the plan card, then what it unlocks. */}
         <div className="home-rise home-rise-1 mt-4">

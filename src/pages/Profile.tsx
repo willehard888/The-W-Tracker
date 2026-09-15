@@ -1,7 +1,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { fmtDate, fmtInt, fmtRelative } from "@/lib/format";
 import { localDateKey } from "@/lib/date";
-import { Flame, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils, Compass } from "lucide-react";
+import { Flame, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils, Compass, FlaskConical } from "lucide-react";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsList";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import RecoveryCard from "@/components/profile/RecoveryCard";
@@ -33,6 +33,8 @@ import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import TierLadder from "@/components/TierLadder";
 import YourBlueprintCard from "@/components/coach/YourBlueprintCard";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { HARNESS_KEY } from "@/lib/paywall-harness";
+import { writeSession } from "@/lib/storage";
 import { useModeration } from "@/hooks/use-moderation";
 import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -667,6 +669,10 @@ const Profile = () => {
           {isAdmin && (
             <SettingsGroup title="Founder">
               <SettingsRow icon={BarChart3} label="Command Center" sub="Growth metrics & waitlist" onClick={() => navigate("/admin/metrics")} />
+              {/* Shows the paywall to an admin who already has access, so a
+                  sandbox purchase can be driven on this device. Closes the
+                  gate for this session only; never opens it. */}
+              <SettingsRow icon={FlaskConical} label="Paywall test mode" sub="Open the offer screen as a tester" onClick={() => { writeSession(HARNESS_KEY, "1"); navigate("/paywall"); }} />
             </SettingsGroup>
           )}
 

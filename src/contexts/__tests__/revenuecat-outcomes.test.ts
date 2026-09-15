@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isCancellation, hasElite } from "@/contexts/RevenueCatContext";
+import { isCancellation, hasElite, purchaseSandboxFlag } from "@/contexts/RevenueCatContext";
 
 // The two predicates every purchase outcome hangs on. `isCancellation` decides
 // whether the Paywall goes idle (cancelled) or spins for 8 s into "Payment
@@ -25,5 +25,15 @@ describe("hasElite", () => {
     expect(hasElite({ entitlements: { active: {} } })).toBe(false);
     expect(hasElite({ entitlements: { all: { "The W Tracker Pro": {} } } })).toBe(false);
     expect(hasElite(null)).toBe(false);
+  });
+});
+
+describe("purchaseSandboxFlag", () => {
+  it("reads the store environment off the active entitlement, null when inactive", () => {
+    const active = (isSandbox: boolean) => ({ entitlements: { active: { "The W Tracker Pro": { isSandbox } } } });
+    expect(purchaseSandboxFlag(active(true))).toBe(true);
+    expect(purchaseSandboxFlag(active(false))).toBe(false);
+    expect(purchaseSandboxFlag({ entitlements: { active: {} } })).toBeNull();
+    expect(purchaseSandboxFlag(null)).toBeNull();
   });
 });

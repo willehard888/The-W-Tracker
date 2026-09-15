@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
-import { Loader2 } from "lucide-react";
+import { FlaskConical, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,6 +103,14 @@ const Paywall = () => {
     navigate("/", { replace: true });
   }, [isPremium, forced, navigate]);
 
+  // The way out. Under the harness the route guard sends every screen back
+  // here, so leaving the page must also drop the harness — the founder was
+  // trapped on the first sandbox run: back arrow, tab bar, all roads led here.
+  const leave = () => {
+    if (forced) removeSession(HARNESS_KEY);
+    backOr(navigate, "/");
+  };
+
   // ─── Verify membership by polling checkSubscription ──────────
   // NOTE: this useCallback MUST sit above the `if (isElite) return ...`
   // early-return below. Previously it lived after the early return, which
@@ -138,7 +146,7 @@ const Paywall = () => {
   if (isElite && !forced) {
     return (
       <div className="min-h-full">
-        <PageBar onBack={() => backOr(navigate, "/")} />
+        <PageBar onBack={leave} />
         <div className="home-rise px-4 pt-3 pb-6">
           <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">You're in.</h1>
           <p className="mt-1.5 text-[13px] text-muted-foreground">
@@ -265,7 +273,7 @@ const Paywall = () => {
     <div className="min-h-full">
       {/* The bar's back is the escape hatch — the bottom nav and brand header
           are hidden on /paywall, so without it the page is a hard dead end. */}
-      <PageBar onBack={() => backOr(navigate, "/")} />
+      <PageBar onBack={leave} />
 
       <div className="px-4 pt-3 pb-6">
         {/* BEAT: what this buys, or how long it is already free. */}
@@ -293,7 +301,7 @@ const Paywall = () => {
             className="text-muted-foreground"
             onClick={() => { removeSession(HARNESS_KEY); navigate("/", { replace: true }); }}
           >
-            Exit test mode
+            <FlaskConical aria-hidden size={14} /> Exit test mode
           </Button>
         )}
 

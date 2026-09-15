@@ -92,6 +92,22 @@ describe("setsDoneFor", () => {
 });
 
 describe("sessionProgress", () => {
+  it("moves past a skipped exercise and completes once everything is done or skipped", () => {
+    const plan = buildSessionPlan([
+      { slug: "a", name: "A", sets: 2 },
+      { slug: "b", name: "B", sets: 2 },
+    ]);
+    const one = sessionProgress(plan, {}, new Set(["a"]));
+    expect(one.currentExerciseIndex).toBe(1);
+    expect(one.doneSets).toBe(0);
+    expect(one.isComplete).toBe(false);
+    const both = sessionProgress(plan, {}, new Set(["a", "b"]));
+    expect(both.currentExerciseIndex).toBe(-1);
+    expect(both.isComplete).toBe(true);
+    // a skipped exercise that later gets its sets is simply done
+    const logged = { a: [{ set_index: 1 }, { set_index: 2 }] } as Parameters<typeof sessionProgress>[1];
+    expect(sessionProgress(plan, logged, new Set(["a"])).exercisesDone).toBe(1);
+  });
   const plan = [ex("a", 3), ex("b", 3), ex("c", 2)];
 
   it("starts at the first exercise, first set", () => {

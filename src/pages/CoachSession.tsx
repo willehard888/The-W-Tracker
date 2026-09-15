@@ -2,7 +2,7 @@ import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
-import { ArrowLeftRight, Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, Check, ChevronRight, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ import { fmtInt, fmtUnit, NBSP } from "@/lib/format";
 import {
   buildSessionPlan,
   sessionProgress,
+  setsDoneFor,
   suggestedLoad,
   sessionVolume,
   sessionPRs,
@@ -292,10 +293,29 @@ const CoachSession = () => {
   const planDay = program?.plan_json?.weeks?.find((w) => w.week === week)?.days?.[day];
   const plan = useMemo(() => buildSessionPlan(planDay?.blocks), [planDay]);
   const logged = daySets ?? {};
-  const progress = sessionProgress(plan, logged);
+
+  // Exercises moved past on purpose (the machine is taken, two sets were
+  // enough). Kept on the device per session slot so a reopen lands where the
+  // athlete was, cleared when they choose to keep training after a summary.
+  const skipKey = program?.id ? `session-skipped:${program.id}:${week}:${day}` : null;
+  const [skipped, setSkipped] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    try { setSkipped(new Set(skipKey ? (JSON.parse(readLocal(skipKey) ?? "[]") as string[]) : [])); }
+    catch { setSkipped(new Set()); }
+  }, [skipKey]);
+  const persistSkipped = (next: Set<string>) => {
+    setSkipped(next);
+    if (!skipKey) return;
+    if (next.size) writeLocal(skipKey, JSON.stringify([...next])); else removeLocal(skipKey);
+  };
+  // A finished session can be reopened: the row stays finished until the
+  // next finish rewrites it with the longer, true duration.
+  const [resumed, setResumed] = useState(false);
+
+  const progress = sessionProgress(plan, logged, skipped);
 
   const current = progress.currentExerciseIndex >= 0 ? plan[progress.currentExerciseIndex] : null;
-  const summaryShown = progress.isComplete || showSummary || !!session?.completed;
+  const summaryShown = progress.isComplete || showSummary || (!!session?.completed && !resumed);
 
   // Every set logged: the session is finished whether or not a button gets
   // pressed — someone who closes the app on the summary still trained today,
@@ -304,10 +324,10 @@ const CoachSession = () => {
   finishRef.current = finish;
   const autoFinished = useRef(false);
   useEffect(() => {
-    if (!progress.isComplete || !session || session.completed || autoFinished.current) return;
+    if (!progress.isComplete || !session || (session.completed && !resumed) || autoFinished.current) return;
     autoFinished.current = true;
     finishRef.current().catch(() => { autoFinished.current = false; });
-  }, [progress.isComplete, session]);
+  }, [progress.isComplete, session, resumed]);
   const illustrated = useMemo(() => (current ? resolveIllustration(current.slug, current.name) : null), [current]);
 
   const { data: history } = useExerciseHistory(current?.slug ?? null);
@@ -450,7 +470,7 @@ const CoachSession = () => {
               disabled={isFinishing}
               onClick={async () => {
                 try {
-                  if (!session?.completed) await finish();
+                  if (!session?.completed || resumed) await finish();
                   hapticNotification("success");
                 } catch {
                   toast.error("Couldn't save the session — your sets are still logged.");
@@ -465,12 +485,30 @@ const CoachSession = () => {
               size="lg"
               className="w-full mt-2"
               onClick={async () => {
-                try { if (!session?.completed) await finish(); } catch { /* sets are safe */ }
+                try { if (!session?.completed || resumed) await finish(); } catch { /* sets are safe */ }
                 navigate(isFocusSession ? "/coach" : "/coach/program");
               }}
             >
               {isFocusSession ? "Back to Coach" : "Back to program"}
             </Button>
+            {/* Finished too early, or came back for more: the open sets are
+                still here. Nothing is lost by walking back in. */}
+            {(!progress.isComplete || skipped.size > 0) && (
+              <Button
+                variant="ghost"
+                size="lg"
+                className="w-full mt-2 text-muted-foreground"
+                onClick={() => {
+                  hapticImpact("light");
+                  autoFinished.current = false;
+                  persistSkipped(new Set());
+                  setShowSummary(false);
+                  setResumed(true);
+                }}
+              >
+                Keep training
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -479,6 +517,9 @@ const CoachSession = () => {
 
   // ── Active session ────────────────────────────────────────────────────────
   const nextSet = progress.currentSetIndex;
+  const nextExercise = plan
+    .slice(progress.currentExerciseIndex + 1)
+    .find((ex) => !skipped.has(ex.slug) && setsDoneFor(ex, logged[ex.slug]) < ex.sets) ?? null;
   const suggestion = suggestedLoad(history, nextSet, logged[current!.slug], current!.reps);
 
   const logCurrent = async (setIndex: number, weightStr: string, repsStr: string) => {
@@ -626,6 +667,26 @@ const CoachSession = () => {
               </div>
             </div>
           </>
+        )}
+
+        {/* Moving on before every set is logged is how a gym session actually
+            goes. The next open exercise by name, so the step is a known one. */}
+        {current && nextExercise && (
+          <div className="mt-3">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                hapticImpact("light");
+                clearRest();
+                persistSkipped(new Set([...skipped, current.slug]));
+              }}
+            >
+              <span className="truncate">Next · {nextExercise.name}</span>
+              <ChevronRight aria-hidden size={16} className="shrink-0" />
+            </Button>
+          </div>
         )}
 
         {/* Finishing early is a normal thing to do, not a failure. Open sets

@@ -115,10 +115,14 @@ export interface SessionProgress {
 export const sessionProgress = (
   plan: SessionExercise[],
   logged: Record<string, LoggedSet[]>,
+  /** Exercises the athlete moved past on purpose — a busy machine, two sets
+   *  were enough. Not done, not current; the session completes around them. */
+  skipped?: ReadonlySet<string>,
 ): SessionProgress => {
   let totalSets = 0;
   let doneSets = 0;
   let exercisesDone = 0;
+  let skippedOpen = 0;
   let currentExerciseIndex = -1;
   let currentSetIndex = 0;
 
@@ -128,6 +132,8 @@ export const sessionProgress = (
     doneSets += done;
     if (done >= ex.sets) {
       exercisesDone += 1;
+    } else if (skipped?.has(ex.slug)) {
+      skippedOpen += 1;
     } else if (currentExerciseIndex === -1) {
       currentExerciseIndex = i;
       // The next set is the lowest prescribed number not yet logged, so a gap
@@ -147,7 +153,7 @@ export const sessionProgress = (
     fraction: totalSets > 0 ? doneSets / totalSets : 0,
     currentExerciseIndex,
     currentSetIndex,
-    isComplete: plan.length > 0 && exercisesDone === plan.length,
+    isComplete: plan.length > 0 && exercisesDone + skippedOpen === plan.length,
   };
 };
 

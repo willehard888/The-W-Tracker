@@ -65,7 +65,7 @@ export const CoreLoopSlide = ({ struggle, onNext }: { struggle?: string; onNext:
   return (
     <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
       <FlameHero />
-      <h1 className="font-display text-[26px] leading-tight font-black tracking-tight text-center mt-5 mb-1.5">
+      <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mt-5 mb-1.5">
         {promise.title}
       </h1>
       <p className="text-sm text-muted-foreground text-center mb-7 max-w-[300px]">{promise.sub}</p>
@@ -104,7 +104,7 @@ const LADDER_PREVIEW = ["recruit", "performer", "elite", "legend"] as const;
 
 export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-    <h1 className="font-display text-[26px] leading-tight font-black tracking-tight text-center mb-1.5">
+    <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
       Every check-in climbs the ladder.
     </h1>
     <p className="text-sm text-muted-foreground text-center mb-6 max-w-[300px]">
@@ -197,7 +197,7 @@ export const PushSlide = ({ onEnable, onSkip, busy }: { onEnable: () => void; on
         <Bell aria-hidden size={34} className="text-primary-foreground" />
       </div>
     </div>
-    <h1 className="font-display text-[26px] leading-tight font-black tracking-tight mb-1.5">
+    <h1 className="font-display text-beat leading-tight font-black tracking-tight mb-1.5">
       Guard your streak?
     </h1>
     <p className="text-sm text-muted-foreground mb-9 max-w-[280px]">

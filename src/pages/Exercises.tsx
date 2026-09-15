@@ -112,7 +112,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
 
       {/* The library carries beginner technique guidance, so it carries the
           same line the rest of the app uses for it. */}
-      <p className="mt-7 text-[11.5px] text-muted-foreground/80 leading-snug">
+      <p className="mt-7 text-meta text-muted-foreground/80 leading-snug">
         Educational guidance &mdash; not medical advice. Start lighter than you think you need to,
         and stop if a movement causes pain.
       </p>

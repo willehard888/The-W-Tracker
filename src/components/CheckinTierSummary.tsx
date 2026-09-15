@@ -170,7 +170,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12 }}
-          className="font-display text-[26px] font-black tracking-tight uppercase leading-none mb-1"
+          className="font-display text-beat font-black tracking-tight uppercase leading-none mb-1"
         >
           {headline}
         </m.h1>

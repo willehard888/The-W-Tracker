@@ -275,7 +275,7 @@ const VaultCategoryBlock = ({
             <Icon size={12} strokeWidth={2.6} aria-hidden />
             {category.tagline}
           </p>
-          <p className="font-display text-[19px] font-black leading-none tracking-tight text-white drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">
+          <p className="font-display text-head font-black leading-none tracking-tight text-white drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">
             {category.title}
           </p>
         </div>

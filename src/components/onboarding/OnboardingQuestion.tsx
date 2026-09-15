@@ -63,7 +63,7 @@ const OnboardingQuestion = (props: Props) => {
 
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col min-h-0 flex-1">
-      <h1 className="font-display text-[26px] leading-tight font-black tracking-tight text-center mb-1.5">
+      <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
         {title}
       </h1>
       {sub && <p className="text-sm text-muted-foreground text-center mb-5">{sub}</p>}

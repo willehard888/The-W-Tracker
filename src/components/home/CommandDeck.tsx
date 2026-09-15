@@ -175,7 +175,7 @@ const CommandDeck = ({
 
             <div className="min-w-0 flex-1">
               <p className="text-label font-bold text-gold/85 mb-0.5">Lock your day</p>
-              <p className="font-display font-black text-[19px] leading-none tracking-tight">
+              <p className="font-display font-black text-head leading-none tracking-tight">
                 Daily Check-In
               </p>
               <p className="text-meta text-muted-foreground mt-1 leading-snug">
@@ -329,7 +329,7 @@ const CommandDeck = ({
                   }}
                 />
                 <span
-                  className="cta-melt-label relative z-[2] font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5"
+                  className="cta-melt-label relative z-[2] font-display font-black text-beat leading-none uppercase tracking-tight inline-flex items-center gap-2.5"
                   style={{ color: "hsl(20 85% 10%)", textShadow: "0 1px 0 hsl(46 100% 75% / 0.6)" }}
                 >
                   <Flame aria-hidden size={24} strokeWidth={2.9} /> Lock in

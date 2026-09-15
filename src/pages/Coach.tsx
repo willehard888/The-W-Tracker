@@ -187,17 +187,20 @@ const CoachShell = ({
   // ?seed=<the day's coach feedback> → open chat with it as the opening
   // assistant bubble so the user can continue that exact conversation.
   const seedRef = useRef<string | null>(searchParams.get("seed"));
+  // ?chat=1 → open the chat with no seed: Home's coach door lands here.
+  const openRef = useRef(searchParams.get("chat") === "1");
   const [seedAssistant] = useState<string | null>(() => seedRef.current);
-  const [chatOpen, setChatOpen] = useState(!!seedRef.current);
+  const [chatOpen, setChatOpen] = useState(!!seedRef.current || openRef.current);
   const [chatPrompt, setChatPrompt] = useState<string | null>(null);
   // The page's single daily-plan subscription: the hero shows its readiness
   // number, the plan card its missions. (Two calls would open two channels.)
   const daily = useDailyPlan();
 
-  // Strip ?seed once consumed so a refresh doesn't re-seed the chat.
+  // Strip ?seed / ?chat once consumed so a refresh doesn't reopen the chat.
   useEffect(() => {
-    if (seedRef.current) {
+    if (seedRef.current || openRef.current) {
       searchParams.delete("seed");
+      searchParams.delete("chat");
       setSearchParams(searchParams, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -133,6 +133,14 @@ describe("daily insights ↔ Vault lessons", () => {
     }
   });
 
+  it("every Wisdom lesson has at least four voices on Home, each naming its teacher", () => {
+    const wisdom = DAILY_INSIGHTS.filter((i) => i.id.startsWith("wis-"));
+    for (const slug of WISDOM_SLUGS) {
+      expect(wisdom.filter((i) => i.lessonSlug === slug).length, slug).toBeGreaterThanOrEqual(4);
+    }
+    for (const i of wisdom) expect(i.source, i.id).toBeTruthy();
+  });
+
   it("insight ids are unique and texts are within card budget", () => {
     expect(new Set(DAILY_INSIGHTS.map((i) => i.id)).size).toBe(DAILY_INSIGHTS.length);
     for (const i of DAILY_INSIGHTS) {

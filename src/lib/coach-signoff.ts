@@ -12,7 +12,7 @@
  * already, so repeating the name inside a two-line preview only costs space.
  *
  * Lives here rather than inline in one component because both surfaces that
- * render a brief need it — CoachStrip on Home and CoachBriefHero on the Coach
+ * render a brief need it — CoachBriefHero on the Coach
  * page. The latter rendered the raw text, so old briefs showed the sign-off
  * there while Home quietly hid it.
  */

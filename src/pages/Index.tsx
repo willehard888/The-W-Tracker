@@ -2,7 +2,7 @@ import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { fmtDate } from "@/lib/format";
 import { fmtInt } from "@/lib/format";
-import { ChevronRight, Award, ArrowUp, Crown } from "lucide-react";
+import { ChevronRight, Award, ArrowUp, Sparkles } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import BadgeCard from "@/components/BadgeCard";
 import TrialExpirySheet from "@/components/TrialExpirySheet";
@@ -10,7 +10,6 @@ import { track, FUNNEL } from "@/lib/analytics";
 import TierRiskBanner from "@/components/TierRiskBanner";
 import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
-import CoachStrip from "@/components/home/CoachStrip";
 import TrainingZone from "@/components/coach/TrainingZone";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
@@ -32,7 +31,6 @@ import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
 import { useBackgroundHealthSync } from "@/hooks/use-background-health-sync";
-import { useLiveWhealthIndex } from "@/hooks/use-live-whealth-index";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import { hasHealthConsent } from "@/lib/health/health-consent";
 import { isNativePlatform } from "@/lib/platform";
@@ -69,7 +67,6 @@ const Index = () => {
   // Fill health_sync_snapshots + health_night_metrics daily, not only when
   // the check-in/Profile screens happen to open (data holes starved trends).
   useBackgroundHealthSync();
-  const { data: liveWhealth } = useLiveWhealthIndex();
 
   // The Apple Health card shows until Health is connected. Re-read on focus so
   // it disappears the moment the user returns from the iOS permission sheet,
@@ -101,10 +98,10 @@ const Index = () => {
   }, [profile?.user_id, profile?.trial_started_at]);
 
   // The `coach_nudges` and `weekly_briefings` queries that used to live here
-  // were removed: they ran on every Home mount for an Elite user and fed
-  // CoachStrip's `latestNudge`/`latestBriefing` props, which the component
-  // stopped reading long ago (nudges and briefings live inside /coach now).
-  // Two Supabase round trips per Home load, consumed by nothing.
+  // were removed: they ran on every Home mount for an Elite user and fed the
+  // old coach card's props, which it stopped reading long ago (nudges and
+  // briefings live inside /coach now; the card itself left Home when the
+  // coach door moved into the standing strip). Two round trips for nothing.
 
   const { data: userBadges } = useQuery({
     queryKey: ["user-badges", profile?.user_id],
@@ -332,11 +329,11 @@ const Index = () => {
         </div>
       )}
 
-      {/* ── STANDING — where you stand today. A quiet status line, not a metric
-             wall: one row, values inline, W-Index the single gold note. Demoted
-             below the act (ritual leads, standing follows) and hidden entirely
-             until there's something earned to show. Carries PROGRESSION_INTRO. ── */}
-      {(rankSane || liveWhealth?.overall != null || profile.level > 1) && (
+      {/* ── STANDING + THE COACH — where you stand today on the left, the
+             coach's door on the right. One quiet row, values inline, the coach
+             the single gold note (the W-Index keeps its seat on Profile and
+             Journey). Demoted below the act: ritual leads, standing follows.
+             Carries PROGRESSION_INTRO. ── */}
         <div
           ref={progressionTargetRef}
           className="home-rise home-rise-3 relative z-10 mb-6 surface-card surface-card-quiet flex items-center"
@@ -371,21 +368,18 @@ const Index = () => {
               <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta}
             </span>
           )}
-          {liveWhealth?.overall != null && (
-            <button
-              type="button"
-              aria-label="Open your Whealth Index"
-              onClick={() => navigate("/journey")}
-              className="shrink-0 flex flex-col items-end pr-4 pl-3 py-3 border-l border-border/40 active:opacity-70 transition-opacity"
-            >
-              <span className="text-[11px] font-bold text-gold/85 leading-none">W-Index</span>
-              <span className="font-display font-black text-[17px] tabular-nums leading-none text-gold glow-gold-text mt-1 inline-flex items-center gap-1">
-                <Crown size={13} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
-              </span>
-            </button>
-          )}
+          <button
+            type="button"
+            aria-label="Ask your AI Coach"
+            onClick={() => navigate("/coach?chat=1")}
+            className="shrink-0 flex flex-col items-end pr-4 pl-3 py-3 border-l border-border/40 active:opacity-70 transition-opacity"
+          >
+            <span className="text-[11px] font-bold text-gold/85 leading-none">AI Coach</span>
+            <span className="font-display font-black text-[17px] leading-none text-gold glow-gold-text mt-1 inline-flex items-center gap-1">
+              <Sparkles size={13} strokeWidth={2.8} aria-hidden /> Ask
+            </span>
+          </button>
         </div>
-      )}
 
       {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
              from the Vault) leading a clean shelf of what the membership
@@ -448,15 +442,6 @@ const Index = () => {
           </ErrorBoundary>
         </div>
       )}
-
-      {/* ── COACH — a whisper, not a card. The coach's one line in its own
-             voice; a low quiet band so it reads as a presence, never a second
-             button competing with the hero. ── */}
-      <div className="home-rise home-rise-5 mb-6 relative z-10">
-        <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-          <CoachStrip />
-        </ErrorBoundary>
-      </div>
 
       {/* SECONDARY — Today stays focused. Invite + badges one tap under "More". */}
       <MoreSection label="More" className="relative z-10 mt-1 mb-2">

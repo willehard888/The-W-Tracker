@@ -2,7 +2,7 @@
 // Contract: same item all day for everyone, rotates at local midnight, and
 // salts decorrelate independent surfaces so they don't move in lockstep.
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { pickDaily } from "@/lib/daily-rotation";
+import { localDayIndex, pickDaily } from "@/lib/daily-rotation";
 
 const ITEMS = Array.from({ length: 20 }, (_, i) => `item-${i}`);
 
@@ -39,5 +39,17 @@ describe("pickDaily", () => {
 
   it("single-item list always returns that item", () => {
     expect(pickDaily(["only"])).toBe("only");
+  });
+});
+
+describe("localDayIndex", () => {
+  it("is the same all day and steps by one across local midnight", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 16, 0, 5));
+    const morning = localDayIndex();
+    vi.setSystemTime(new Date(2026, 8, 16, 23, 55));
+    expect(localDayIndex()).toBe(morning);
+    vi.setSystemTime(new Date(2026, 8, 17, 0, 5));
+    expect(localDayIndex()).toBe(morning + 1);
   });
 });

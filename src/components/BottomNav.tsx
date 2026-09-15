@@ -6,7 +6,7 @@ import { hapticImpact } from "@/lib/haptics";
 
 // Four focused tabs: show up (Today) → belong (Squad: feed/tribes/friends) →
 // see where you stand (Ranks) → identity (Profile). Coach (the brain) is
-// reached from the Today coach card; Battles/Messages live inside
+// reached from the Today standing strip's coach door; Battles/Messages live inside
 // Ranks/Squad — no orphan routes, no crowded nav.
 const tabs = [
   { icon: Home, label: "Today", path: "/", color: "gold" },
@@ -62,7 +62,7 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   "/leaderboard": () => import("@/pages/Leaderboard"),
   "/profile": () => import("@/pages/Profile"),
 };
-// Note: /coach kept in prefetch — it's reached from the Today coach card.
+// Note: /coach kept in prefetch — it's reached from the Today strip's coach door.
 const prefetched = new Set<string>();
 const prefetchRoute = (path: string) => {
   if (prefetched.has(path)) return;

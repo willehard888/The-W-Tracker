@@ -1,22 +1,29 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { pickDaily } from "@/lib/daily-rotation";
+import { localDayIndex, pickDaily } from "@/lib/daily-rotation";
 import { DAILY_INSIGHTS } from "@/data/daily-insights";
 import { hapticImpact } from "@/lib/haptics";
 
 /**
- * One Inner Work insight per day — rendered as an editorial pull-quote, not a
+ * One Vault insight per day — rendered as an editorial pull-quote, not a
  * card: the day's thought to read, in the display face at reading size, leading
  * the Library zone below it. Deterministic rotation (salted off the header
  * quote), deep-links into the matching Vault lesson; shown to everyone, so a
  * non-premium tap lands on the paywall and the quote doubles as a teaser.
  *
+ * Two pools alternate by local day: the Wisdom course (the great books and
+ * teachers, named on the card) one day, Inner Work and Longevity the next —
+ * so the teachers surface every other day instead of one day in four.
+ *
  * Type-only (no surface, no gold tile) is deliberate: it breaks the stacked-
  * card silhouette and gives the "vault" its own voice above the shelf.
  */
+const WISDOM = DAILY_INSIGHTS.filter((i) => i.id.startsWith("wis-"));
+const REST = DAILY_INSIGHTS.filter((i) => !i.id.startsWith("wis-"));
+
 const DailyInsightCard = () => {
   const navigate = useNavigate();
-  const insight = pickDaily(DAILY_INSIGHTS, "insight");
+  const insight = pickDaily(localDayIndex() % 2 === 0 ? WISDOM : REST, "insight");
 
   return (
     <button
@@ -41,7 +48,7 @@ const DailyInsightCard = () => {
         {insight.text}
       </p>
       <p className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground mt-3">
-        From the Vault
+        From the Vault{insight.source ? ` · ${insight.source}` : ""}
         <ChevronRight aria-hidden size={12} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
       </p>
     </button>

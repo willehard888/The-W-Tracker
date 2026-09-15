@@ -66,6 +66,8 @@ export const FUNNEL = {
   purchaseCancelled: "purchase_cancelled",
   purchaseFailed: "purchase_failed",
   purchaseRestored: "purchase_restored",
+  /** The store as the app saw it when the paywall opened (ids, labels, errors). */
+  storeDiag: "store_diag",
   // Virality — feeds admin_virality() / k-factor
   inviteShared: "invite_shared",
   // Server-fired (notify-referral fn / revenuecat-webhook) — the viral loop:

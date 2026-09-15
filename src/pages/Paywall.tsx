@@ -2,6 +2,7 @@ import { Block } from "@/components/skeletons/PageSkeleton";
 import { fmtDate } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { getIosDebugState } from "@/lib/ios-debug";
 import { HARNESS_KEY, shouldForcePaywall } from "@/lib/paywall-harness";
 import { readSession, removeSession, writeSession } from "@/lib/storage";
 import { useRevenueCat } from "@/contexts/RevenueCatContext";
@@ -59,6 +60,17 @@ const Paywall = () => {
   // Top of the monetization funnel — record paywall exposure once per mount.
   useEffect(() => {
     track(FUNNEL.paywallViewed, { native: isNative });
+    // What the store handed the app, next to the view that showed it: product
+    // ids, package ids, labels, last errors. Seven failed purchases in
+    // production carried no diagnosable reason; this row is that reason.
+    if (isNative) {
+      const rc = getIosDebugState().revenuecat;
+      track(FUNNEL.storeDiag, {
+        loaded: rc.loadedProductIds, packages: rc.offeringPackageIds, products: rc.offeringProductIds,
+        monthly: rc.monthlyPriceLabel,
+        offeringError: rc.lastOfferingError, productError: rc.lastProductFetchError,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -177,7 +189,13 @@ const Paywall = () => {
       if (ok) {
         track(FUNNEL.purchaseCompleted, { plan, platform: "native", sandbox: outcome?.sandbox ?? null });
         hapticNotification("success");
-        // Effect above will navigate home when isPremium flips true
+        // The effect above navigates home when isPremium flips true. Under
+        // the harness it does not, so the button must not stay on
+        // "Confirming access…" — say it landed and return to the offer.
+        if (forced) {
+          setStatus("idle");
+          toast.success(outcome?.sandbox ? "Sandbox purchase confirmed." : "Membership confirmed.");
+        }
       } else {
         setStatus("error");
         setErrorMessage(

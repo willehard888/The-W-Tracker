@@ -673,6 +673,7 @@ const Profile = () => {
                   sandbox purchase can be driven on this device. Closes the
                   gate for this session only; never opens it. */}
               <SettingsRow icon={FlaskConical} label="Paywall test mode" sub="Open the offer screen as a tester" onClick={() => { writeSession(HARNESS_KEY, "1"); navigate("/paywall"); }} />
+              <SettingsRow icon={Gauge} label="Store diagnostics" sub="What RevenueCat and the App Store returned" onClick={() => navigate("/ios-debug")} />
             </SettingsGroup>
           )}
 

@@ -135,8 +135,13 @@ function productId(value: any): string | null {
   return value?.identifier ?? value?.productIdentifier ?? value?.id ?? null;
 }
 
+// The monthly product's ids only. This used to accept every id in
+// PRODUCT_IDS, so when the store did not return the monthly product the
+// "monthly" fallback picked the yearly one and a tap on 8,99 €/month bought
+// 89,99 €/year (2026-09-15, TestFlight). A plan buys its own product or fails.
+const MONTHLY_IDS: readonly string[] = ["WhealthFactory499", "com.app.WhealthFactory499"];
 function isKnownMonthlyId(id: string | null): boolean {
-  return !!id && PRODUCT_IDS.includes(id as (typeof PRODUCT_IDS)[number]);
+  return !!id && MONTHLY_IDS.includes(id);
 }
 
 /** Get a formatted price string. */
@@ -473,10 +478,10 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           .map((x: any) => productId(x))
           .filter((pid: string | null): pid is string => Boolean(pid));
 
-        const selectedProduct =
-          products?.find((p: any) => productId(p) === id) ??
-          products?.find((p: any) => isKnownMonthlyId(productId(p))) ??
-          null;
+        // Exactly the requested product — never a sibling. If the store did
+        // not return it, the honest outcome is the error below, not a
+        // different subscription.
+        const selectedProduct = products?.find((p: any) => productId(p) === id) ?? null;
 
         updateRevenueCatDebug({
           loadedProductIds,

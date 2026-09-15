@@ -157,6 +157,9 @@ Deno.serve(async (req) => {
         source: "revenuecat",
         app_user_id: appUserId,
         event_ts: eventTs,
+        event_type: String(event.type ?? ""),
+        product_id: productId ?? null,
+        environment,
       });
       if (dedupErr) {
         if ((dedupErr as { code?: string }).code === "23505") {

@@ -73,6 +73,19 @@ describe("IllustrationPlayer", () => {
     expect(container.querySelectorAll(".rep-phase-a")).toHaveLength(0);
   });
 
+  it("mounts a fresh frame pair when the movement changes — never the old bitmaps under the new", () => {
+    stubIntersectionObserver(true);
+    stubReducedMotion(false);
+    const a = ILLUSTRATED_EXERCISES[0];
+    const b = ILLUSTRATED_EXERCISES[1];
+    const { container, rerender } = render(<IllustrationPlayer ex={a} />);
+    rerender(<IllustrationPlayer ex={b} />);
+    const frames = Array.from(container.querySelectorAll("img[alt$='position']"));
+    expect(frames).toHaveLength(2);
+    for (const img of frames) expect(img.getAttribute("src")).toContain(b.idNum);
+    expect(container.querySelectorAll("img[alt$='position']").length).toBe(2);
+  });
+
   it("falls back to the static Start/Finish pair under reduced motion", () => {
     stubReducedMotion(true);
     const { container } = render(<IllustrationPlayer ex={ex} />);

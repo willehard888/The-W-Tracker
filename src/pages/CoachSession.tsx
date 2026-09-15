@@ -25,7 +25,7 @@ import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from 
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { resolveIllustration } from "@/lib/exercise-match";
-import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
+import { IllustrationPlayer, preloadIllustration } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
 import SessionSkeleton from "@/components/coach/session/SessionSkeleton";
@@ -329,6 +329,17 @@ const CoachSession = () => {
     finishRef.current().catch(() => { autoFinished.current = false; });
   }, [progress.isComplete, session, resumed]);
   const illustrated = useMemo(() => (current ? resolveIllustration(current.slug, current.name) : null), [current]);
+  // The next open exercise, by name, is the step the "Next" door offers — and
+  // its drawing is warmed now so the step lands on a drawn tile.
+  const nextExercise = useMemo(
+    () => plan.slice(progress.currentExerciseIndex + 1).find((ex) => !skipped.has(ex.slug) && setsDoneFor(ex, logged[ex.slug]) < ex.sets) ?? null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plan, progress.currentExerciseIndex, skipped, daySets],
+  );
+  useEffect(() => {
+    const next = nextExercise ? resolveIllustration(nextExercise.slug, nextExercise.name) : null;
+    if (next) preloadIllustration(next);
+  }, [nextExercise]);
 
   const { data: history } = useExerciseHistory(current?.slug ?? null);
 
@@ -517,9 +528,6 @@ const CoachSession = () => {
 
   // ── Active session ────────────────────────────────────────────────────────
   const nextSet = progress.currentSetIndex;
-  const nextExercise = plan
-    .slice(progress.currentExerciseIndex + 1)
-    .find((ex) => !skipped.has(ex.slug) && setsDoneFor(ex, logged[ex.slug]) < ex.sets) ?? null;
   const suggestion = suggestedLoad(history, nextSet, logged[current!.slug], current!.reps);
 
   const logCurrent = async (setIndex: number, weightStr: string, repsStr: string) => {

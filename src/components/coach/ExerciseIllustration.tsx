@@ -2,7 +2,72 @@ import { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { illustrationUrl, illustrationImg, illustrationThumb, type IllustratedExercise } from "@/data/exercises-illustrated";
+import { BUNDLED_FRAME_IDS } from "@/data/illustration-frame-ids";
 import { GOLD_LINES } from "./gold-lines";
+
+const STATES = ["relaxation", "tension"] as const;
+// The blur-up base. One `filter` value: a Tailwind blur class and an inline
+// gold filter both write `filter`, and the inline one won — the base was never
+// blurred, just a 112px thumb scaled up.
+const THUMB_WASH = `blur(6px) ${GOLD_LINES}`;
+type FrameState = (typeof STATES)[number];
+
+/**
+ * The technique frame. Every movement the coach can prescribe ships its two
+ * vectors in the app (offline, instant, crisp at any pixel density); the rest
+ * of the library draws the same vector from the CDN. The 480px raster proxy
+ * that used to sit in between was the lag: two network rasterisations per
+ * movement, on gym wifi, every time the exercise changed.
+ */
+export const illustrationFrame = (idNum: string, state: FrameState): string =>
+  BUNDLED_FRAME_IDS.has(idNum) ? `/illustrations/frames/${idNum}-${state}.svg` : illustrationUrl(idNum, state);
+
+/** Warm a movement's frames so a swap or the next exercise lands drawn. */
+export const preloadIllustration = (ex: IllustratedExercise): void => {
+  if (typeof Image !== "function") return;
+  for (const state of STATES) { const img = new Image(); img.src = illustrationFrame(ex.idNum, state); }
+};
+
+/**
+ * One movement's two frames. The player keys this by the movement, so a swap
+ * unmounts the old pair at once — the old bitmaps used to stay on screen
+ * under the new ones while they loaded — and the new pair fades in only once
+ * both frames have decoded. Until then the blurred thumb holds the tile.
+ */
+const Frames = ({ ex, running }: { ex: IllustratedExercise; running: boolean }) => {
+  const [ready, setReady] = useState(false);
+  const loaded = useRef(new Set<FrameState>());
+  const mark = (state: FrameState) => {
+    loaded.current.add(state);
+    if (loaded.current.size >= STATES.length) setReady(true);
+  };
+  return (
+    <div className={cn("absolute inset-0 transition-opacity duration-300 ease-out", ready ? "opacity-100" : "opacity-0")}>
+      {STATES.map((state) => (
+        <img
+          key={state}
+          // A cached frame can complete before React attaches onLoad.
+          ref={(img) => { if (img && img.complete && img.naturalWidth > 0) mark(state); }}
+          src={illustrationFrame(ex.idNum, state)}
+          alt={state === "relaxation" ? `${ex.title} — start position` : `${ex.title} — finish position`}
+          loading="eager"
+          decoding="async"
+          onLoad={() => mark(state)}
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationUrl(ex.idNum, state); }
+            else mark(state);
+          }}
+          className={cn(
+            "absolute inset-0 w-full h-full object-contain p-4",
+            running && (state === "relaxation" ? "rep-phase-a" : "rep-phase-b"),
+          )}
+          style={{ filter: GOLD_LINES, ...(running ? undefined : { opacity: state === "tension" ? 0 : 1 }) }}
+        />
+      ))}
+    </div>
+  );
+};
 
 /**
  * Everkinetic technique illustration, rendered in brand: the source SVGs are
@@ -92,39 +157,20 @@ export const IllustrationPlayer = ({ ex, className }: { ex: IllustratedExercise;
 
   return (
     <div ref={hostRef} className={cn("relative", className)}>
-      <div className="relative overflow-hidden rounded-2xl border border-gold/25 bg-black">
-        {/* Blur-up base from the bundled thumb, so the tile is never empty
-            while the two 480px states arrive over the network. */}
+      <div className="relative h-56 overflow-hidden rounded-2xl border border-gold/25 bg-black">
+        {/* Blur-up base from the bundled thumb: the tile is never empty in
+            the frame or two before the vectors have decoded. */}
         <img
+          key={`thumb-${ex.idNum}`}
           src={illustrationThumb(ex.idNum)}
           alt=""
           aria-hidden
           decoding="async"
-          className="absolute inset-0 w-full h-full object-contain p-4 blur-[6px] opacity-50"
-          style={{ filter: GOLD_LINES }}
+          className="absolute inset-0 w-full h-full object-contain p-4 opacity-50"
+          style={{ filter: THUMB_WASH }}
         />
 
-        {(["relaxation", "tension"] as const).map((state) => (
-          <img
-            key={state}
-            src={illustrationImg(ex.idNum, state, 480)}
-            alt={state === "relaxation" ? `${ex.title} — start position` : `${ex.title} — finish position`}
-            loading="eager"
-            decoding="async"
-            className={cn(
-              "w-full h-56 object-contain p-4",
-              // The first frame holds the box height; the second sits on top
-              // of it so the two cross-fade in place.
-              state === "tension" && "absolute inset-0",
-              running && (state === "relaxation" ? "rep-phase-a" : "rep-phase-b"),
-            )}
-            style={{ filter: GOLD_LINES, ...(running ? undefined : { opacity: state === "tension" ? 0 : 1 }) }}
-            onError={(e) => {
-              const img = e.currentTarget;
-              if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationUrl(ex.idNum, state); }
-            }}
-          />
-        ))}
+        <Frames key={`frames-${ex.idNum}`} ex={ex} running={running} />
 
         <div aria-hidden className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
 
@@ -151,17 +197,19 @@ export const IllustrationHero = ({ ex, className }: { ex: IllustratedExercise; c
     {(["relaxation", "tension"] as const).map((state, i) => (
       <div key={state} className="relative overflow-hidden rounded-2xl border border-gold/25 bg-black">
         {/* Instant blur-up base from the bundled thumb — no empty frame while
-            the sharp 480px network image arrives. */}
+            the vector decodes. */}
         <img
+          key={`thumb-${ex.idNum}`}
           src={illustrationThumb(ex.idNum)}
           alt=""
           aria-hidden
           decoding="async"
-          className="absolute inset-0 w-full h-full object-contain p-3 blur-[6px] opacity-60"
-          style={{ filter: GOLD_LINES }}
+          className="absolute inset-0 w-full h-full object-contain p-3 opacity-60"
+          style={{ filter: THUMB_WASH }}
         />
         <img
-          src={illustrationImg(ex.idNum, state, 480)}
+          key={`${ex.idNum}-${state}`}
+          src={illustrationFrame(ex.idNum, state)}
           alt={`${ex.title} — ${i === 0 ? "start" : "finish"} position`}
           loading="eager"
           decoding="async"

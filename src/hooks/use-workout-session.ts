@@ -61,6 +61,7 @@ export const useWorkoutSession = (programId?: string | null, week?: number, day?
     // completion state from their own queries.
     qc.invalidateQueries({ queryKey: ["coach-program-logs"] });
     qc.invalidateQueries({ queryKey: ["session-done-today"] });
+    qc.invalidateQueries({ queryKey: ["focus-session"] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qc, programId, week, day]);
 

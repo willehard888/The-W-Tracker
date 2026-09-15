@@ -1,6 +1,6 @@
 import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
 import { Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
   writeWorkoutToHealth,
 } from "@/lib/health/workout-write";
 import { useCoachProgram } from "@/hooks/use-coach-program";
+import { useProgramById } from "@/hooks/use-focus-session";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from "@/hooks/use-workout-log";
 import { useCommitPop } from "@/hooks/use-commit-pop";
@@ -226,7 +227,15 @@ const CoachSession = () => {
   const week = Number(params.week);
   const day = Number(params.day);
 
-  const { program, isLoading: programLoading } = useCoachProgram();
+  // `?p=<id>` opens a focus session (a one-day program row beside the active
+  // 4-week program); without it the runner reads the active program as before.
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("p");
+  const active = useCoachProgram();
+  const byId = useProgramById(sessionId);
+  const program = sessionId ? byId.program : active.program;
+  const programLoading = sessionId ? byId.isLoading : active.isLoading;
+  const isFocusSession = program?.status === "session";
   const { session, isLoading: sessionLoading, start, finish, isFinishing } = useWorkoutSession(program?.id, week, day);
   const { data: daySets } = useDaySets(program?.id, week, day);
   const { data: recent } = useRecentWorkoutLogs();
@@ -344,7 +353,7 @@ const CoachSession = () => {
 
   const focus = dayFocus(planDay);
   // The bar names the program slot; the beat names the day and the exercise.
-  const barTitle = `Week ${week} · ${planDay.day}`;
+  const barTitle = isFocusSession ? `Today · ${focus}` : `Week ${week} · ${planDay.day}`;
 
   // ── Summary ───────────────────────────────────────────────────────────────
   if (summaryShown) {
@@ -455,10 +464,10 @@ const CoachSession = () => {
               className="w-full mt-2"
               onClick={async () => {
                 try { if (!session?.completed) await finish(); } catch { /* sets are safe */ }
-                navigate("/coach/program");
+                navigate(isFocusSession ? "/coach" : "/coach/program");
               }}
             >
-              Back to program
+              {isFocusSession ? "Back to Coach" : "Back to program"}
             </Button>
           </div>
         </div>

@@ -85,6 +85,8 @@ export const FUNNEL = {
   nudgeSent: "nudge_sent",
   pushSent: "push_sent",
   pushOpened: "push_opened",
+  // Today's session by focus (coach-build-session): { focus, minutes, commit }.
+  sessionBuilt: "session_built",
   // Activation spine (Growth Engine): every step a user can drop from.
   onboardingViewed: "onboarding_viewed",
   onboardingStep: "onboarding_step",

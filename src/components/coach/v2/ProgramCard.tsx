@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, ChevronRight } from "lucide-react";
+import { Dumbbell, ChevronRight, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCoachProgram, todaySessionOf } from "@/hooks/use-coach-program";
+import { useTodayFocusSession } from "@/hooks/use-focus-session";
+import { dayFocus, daySummary } from "@/lib/training/session";
+import FocusSessionSheet from "@/components/coach/FocusSessionSheet";
 
 /**
  * The program door. No program yet: the two-minute build. Has one: today's
@@ -11,6 +15,47 @@ const ProgramCard = () => {
   const navigate = useNavigate();
   const { program, currentWeek, todayDayIndex, isLoading } = useCoachProgram();
   const today = todaySessionOf(program, currentWeek, todayDayIndex);
+  const { session } = useTodayFocusSession();
+  const [pickOpen, setPickOpen] = useState(false);
+  // The door into "train today by focus" — one quiet row under whichever
+  // card renders, and the sheet mounts only while open.
+  const focusDoor = (
+    <>
+      <button
+        type="button"
+        onClick={() => setPickOpen(true)}
+        className="press mt-2 w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
+      >
+        <Crosshair size={16} className="text-muted-foreground shrink-0" aria-hidden />
+        <span className="flex-1 min-w-0 text-[14px] font-bold leading-tight">Pick today's focus</span>
+        <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
+      </button>
+      {pickOpen && <FocusSessionSheet open onClose={() => setPickOpen(false)} />}
+    </>
+  );
+  // Today's focus session, when one exists, is the day's training — it leads.
+  if (session) {
+    const d = session.program.plan_json?.weeks?.[0]?.days?.[todayDayIndex];
+    const done = !!session.log?.completed;
+    const sub = done ? "Logged today" : session.log?.status === "in_progress" ? `In progress · ${daySummary(d)}` : daySummary(d);
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => navigate(`/coach/session/1/${todayDayIndex}?p=${session.program.id}`)}
+          className="press w-full text-left surface-card surface-card-quiet px-4 py-3.5 flex items-center gap-3"
+        >
+          <Dumbbell size={16} className="text-muted-foreground shrink-0" aria-hidden />
+          <span className="flex-1 min-w-0">
+            <span className="block text-[14px] font-bold leading-tight truncate">Today · {dayFocus(d)}</span>
+            <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>
+          </span>
+          <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
+        </button>
+        {focusDoor}
+      </>
+    );
+  }
 
   // Fetching. Without this the card renders its "no program" branch while the
   // query is still in flight, so anyone who HAS a program sees "Build my
@@ -37,6 +82,7 @@ const ProgramCard = () => {
         <Button variant="secondary" onClick={() => navigate("/coach/program")} className="w-full mt-3">
           Build my program
         </Button>
+        {focusDoor}
       </div>
     );
   }
@@ -49,6 +95,7 @@ const ProgramCard = () => {
       : [today.duration ? `${today.duration} min` : null, today.blocks ? `${today.blocks} blocks` : null].filter(Boolean).join(" · ") || "Open the program";
 
   return (
+    <>
     <button
       type="button"
       onClick={() => navigate("/coach/program")}
@@ -61,6 +108,8 @@ const ProgramCard = () => {
       </span>
       <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
     </button>
+    {focusDoor}
+    </>
   );
 };
 

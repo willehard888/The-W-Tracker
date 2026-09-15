@@ -6,6 +6,9 @@
 
 import type { InjuryTag } from "../_shared/program-safety.ts";
 export type { InjuryTag };
+// Moved to _shared/injuries.ts (the session builder reads it too); re-exported
+// so the generator's import path is unchanged.
+export { normalizeInjuries } from "../_shared/injuries.ts";
 
 export type Pattern =
   | "squat" | "hinge"
@@ -167,59 +170,12 @@ const EQUIPMENT_SYNONYMS: Record<string, EquipmentTag[]> = {
   combat_sport: ["bodyweight"], // bag/mat work — closest existing tag
 };
 
-// Matched at word START on lowercased text ("\bknee" hits "knee", "knees",
-// "kneecap"; not "whiplash" → hip), so Finnish stems cover their inflections.
-// MIRRORED in src/lib/training/injuries.ts — keep in sync (parity test).
-const INJURY_SYNONYMS: Record<string, InjuryTag[]> = {
-  back: ["lower_back"],
-  lumbar: ["lower_back"],
-  selkä: ["lower_back"],
-  alaselkä: ["lower_back"],
-  lanne: ["lower_back"],
-  knee: ["knee"],
-  polv: ["knee"],
-  shoulder: ["shoulder"],
-  rotator: ["shoulder"],
-  olkapä: ["shoulder"],
-  kiertäjäkalvosin: ["shoulder"],
-  elbow: ["elbow"],
-  kyynärpä: ["elbow"],
-  wrist: ["wrist"],
-  ranne: ["wrist"],
-  rante: ["wrist"],
-  hip: ["hip"],
-  lonk: ["hip"],
-  neck: ["neck"],
-  niska: ["neck"],
-  kaula: ["neck"],
-  ankle: ["ankle"],
-  nilk: ["ankle"],
-};
-
 export const normalizeEquipment = (raw: string[] | null | undefined): Set<EquipmentTag> => {
   const set = new Set<EquipmentTag>(["bodyweight"]); // bodyweight is always available
   for (const r of raw ?? []) {
     const key = String(r).trim().toLowerCase();
     const mapped = EQUIPMENT_SYNONYMS[key];
     if (mapped) mapped.forEach((t) => set.add(t));
-  }
-  return set;
-};
-
-/**
- * Free text → injury tags. Accepts the profile's text[] or one string, so
- * "Knee", "Left knee (ACL 2019)" and "polvivamma" all land on `knee`. The old
- * version needed the whole entry to equal a synonym, which the onboarding
- * chips satisfied and nothing typed by hand ever did.
- */
-export const normalizeInjuries = (raw: string | string[] | null | undefined): Set<InjuryTag> => {
-  const set = new Set<InjuryTag>();
-  const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
-  for (const item of items) {
-    const text = String(item).toLowerCase();
-    for (const [key, tags] of Object.entries(INJURY_SYNONYMS)) {
-      if (new RegExp(`\\b${key}`).test(text)) tags.forEach((t) => set.add(t));
-    }
   }
   return set;
 };

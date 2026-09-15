@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Crown, ChevronRight, Utensils } from "lucide-react";
+import { ChevronRight, Utensils } from "lucide-react";
+import VaultThumb from "@/components/vault/VaultThumb";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { RECIPE_COUNT } from "@/data/library-counts";
 import { GOLD_LINES } from "@/components/coach/gold-lines";
@@ -84,11 +85,11 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
       </div>
     );
   }
-  // Outline rather than gold-filled: this card is on the quiet tier, and a
-  // filled tile here was one of five competing for the same accent on Home.
+  // The Vault's own mark, drawn for this size — the crown-in-a-tinted-tile
+  // read as a sticker next to a photo and a drawing.
   return (
-    <div className="h-10 w-10 rounded-lg shrink-0 bg-gold/10 border border-gold/30 flex items-center justify-center">
-      <Crown aria-hidden size={16} className="text-gold" strokeWidth={2.6} />
+    <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-gold/25">
+      <VaultThumb className="h-full w-full" />
     </div>
   );
 };

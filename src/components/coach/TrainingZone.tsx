@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { hapticImpact } from "@/lib/haptics";
+import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { useCoachProgram } from "@/hooks/use-coach-program";
+import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
+import FocusSessionSheet from "@/components/coach/FocusSessionSheet";
 
 /**
  * Today's prescribed session, on the home screen.
@@ -31,9 +34,63 @@ const ROW = "surface-card surface-card-quiet flex items-center";
 const BODY = "flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity";
 const LABEL = "text-[11px] font-bold text-muted-foreground/75 mb-0.5";
 
+/**
+ * "Train today by focus" — the door under the row and the sheet it opens.
+ * Same silhouette as the row; mounted only while open so Home pays nothing.
+ */
+const FocusDoor = ({ label = "Pick a different focus" }: { label?: string }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => { hapticSelection(); setOpen(true); }}
+        className="press w-full min-h-11 flex items-center gap-1 px-4 text-[12px] font-bold text-muted-foreground"
+      >
+        {label} <ChevronRight aria-hidden size={13} />
+      </button>
+      {open && <FocusSessionSheet open onClose={() => setOpen(false)} />}
+    </>
+  );
+};
+
 const TrainingZone = () => {
   const navigate = useNavigate();
   const { program, logs, currentWeek, todayDayIndex, isLoading } = useCoachProgram();
+  const { session } = useTodayFocusSession();
+
+  // Today's focus session, when one exists, is the day's training and leads;
+  // the programmed day waits underneath the same door.
+  if (session) {
+    const d = session.program.plan_json?.weeks?.[0]?.days?.[todayDayIndex];
+    const done = !!session.log?.completed;
+    const inProgress = !done && session.log?.status === "in_progress";
+    const go = () => { hapticImpact("light"); navigate(`/coach/session/1/${todayDayIndex}?p=${session.program.id}`); };
+    return (
+      <div className={ROW.replace("flex items-center", "flex flex-col")}>
+        <div className="flex items-center">
+          <button type="button" onClick={go} aria-label="Open today's session" className={BODY}>
+            <p className={LABEL}>Training · Today</p>
+            <p className="text-[14px] font-bold leading-tight truncate">
+              {done && <Check aria-hidden size={13} className="inline mr-1 text-xp-green" />}
+              {dayFocus(d) || "Your session"}
+            </p>
+            <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+              {done ? "Logged today" : inProgress ? `In progress · ${daySummary(d)}` : daySummary(d)}
+            </p>
+          </button>
+          {!done && (
+            <div className="pr-2 shrink-0">
+              <Button variant="outline" size="sm" className="min-h-11" onClick={go}>
+                {inProgress ? "Continue" : "Start"}
+              </Button>
+            </div>
+          )}
+        </div>
+        <FocusDoor />
+      </div>
+    );
+  }
 
   // The row's own silhouette while the program loads — label, title line,
   // sub-line at the heights the real states render — so nothing shifts.
@@ -58,24 +115,27 @@ const TrainingZone = () => {
   // the first time most people hear the feature exists.
   if (!program) {
     return (
-      <div className={ROW}>
-        <button
-          type="button"
-          onClick={() => go("/coach/program")}
-          aria-label="Build your training program"
-          className={BODY}
-        >
-          <p className={LABEL}>Training</p>
-          <p className="text-[14px] font-bold leading-tight">No program yet</p>
-          <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
-            A few questions, then four weeks built around your week.
-          </p>
-        </button>
-        <div className="pr-2 shrink-0">
-          <Button variant="outline" size="sm" className="min-h-11" onClick={() => go("/coach/program")}>
-            Build
-          </Button>
+      <div className={ROW.replace("flex items-center", "flex flex-col")}>
+        <div className="flex items-center">
+          <button
+            type="button"
+            onClick={() => go("/coach/program")}
+            aria-label="Build your training program"
+            className={BODY}
+          >
+            <p className={LABEL}>Training</p>
+            <p className="text-[14px] font-bold leading-tight">No program yet</p>
+            <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+              Pick a focus for a session now, or build a 4-week program.
+            </p>
+          </button>
+          <div className="pr-2 shrink-0">
+            <Button variant="outline" size="sm" className="min-h-11" onClick={() => go("/coach/program")}>
+              Build
+            </Button>
+          </div>
         </div>
+        <FocusDoor label="Train today by focus" />
       </div>
     );
   }
@@ -92,7 +152,8 @@ const TrainingZone = () => {
   const startSession = () => go(`/coach/session/${currentWeek}/${todayDayIndex}`);
 
   return (
-    <div className={ROW}>
+    <div className={ROW.replace("flex items-center", "flex flex-col")}>
+    <div className="flex items-center">
       <button
         type="button"
         onClick={open}
@@ -134,6 +195,8 @@ const TrainingZone = () => {
           </Button>
         </div>
       )}
+    </div>
+    <FocusDoor />
     </div>
   );
 };

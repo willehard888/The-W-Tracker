@@ -14,6 +14,13 @@ const mockProgram = vi.fn();
 vi.mock("@/hooks/use-coach-program", () => ({
   useCoachProgram: () => mockProgram(),
 }));
+const mockSession = vi.fn<() => { session: unknown; isLoading: boolean }>(() => ({ session: null, isLoading: false }));
+vi.mock("@/hooks/use-focus-session", () => ({
+  useTodayFocusSession: () => mockSession(),
+  useBuildFocusSession: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useProgramById: () => ({ program: null, isLoading: false }),
+}));
+vi.mock("@/components/coach/FocusSessionSheet", () => ({ default: () => null }));
 
 const day = (focus: string, blocks: number, duration = 45) => ({
   day: "Mon",
@@ -92,6 +99,22 @@ describe("TrainingZone", () => {
     mockProgram.mockReturnValue(withProgram([day("Upper Body A", 0)]));
     renderZone();
     expect(screen.queryByRole("button", { name: "Start" })).not.toBeInTheDocument();
+  });
+
+  it("puts today's focus session ahead of the programmed day", () => {
+    mockProgram.mockReturnValue(withProgram([day("Upper Body A", 5, 52)]));
+    mockSession.mockReturnValueOnce({
+      isLoading: false,
+      session: {
+        program: { id: "s1", status: "session", plan_json: { weeks: [{ week: 1, theme: "Back & Biceps", days: [day("Back & Biceps", 6, 47)] }] } },
+        log: { completed: false, status: "in_progress", started_at: "2026-09-15T10:00:00Z" },
+      },
+    });
+    renderZone();
+    expect(screen.getByText("Back & Biceps")).toBeInTheDocument();
+    expect(screen.getByText("In progress · 47 min · 6 exercises")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
+    expect(screen.queryByText("Upper Body A")).not.toBeInTheDocument();
   });
 
   it("stays legible when today's slot is missing from the plan", () => {

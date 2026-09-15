@@ -225,9 +225,9 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
       <div className="rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-gradient-to-b from-[hsl(var(--gold)/0.06)] to-card/40 p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[11px] font-bold text-gold">From your athlete profile</p>
+          <p className="text-label font-bold text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
-            className="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition-colors">
+            className="text-label font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition-colors">
             <Settings2 aria-hidden size={11} /> Edit
           </button>
         </div>
@@ -247,7 +247,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
             <Chip key={m} active={sessionMin === m} onClick={() => setSessionLength(m)}>{m} min</Chip>
           ))}
         </div>
-        <p className="text-[11px] text-muted-foreground/75 mt-1.5">Every training day is planned to fit this.</p>
+        <p className="text-label text-muted-foreground/75 mt-1.5">Every training day is planned to fit this.</p>
       </Field>
 
       <div className="mt-5" />
@@ -268,7 +268,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
             rows={3}
             className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
           />
-          <p className="text-[11px] text-muted-foreground/75 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
+          <p className="text-label text-muted-foreground/75 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
         </Field>
       </div>
 
@@ -276,7 +276,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         // The coach's own gate, in the app's voice, with the screen that lifts it.
         <div className="mt-5 rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-[hsl(var(--gold)/0.06)] p-4">
           <p className="text-sm font-bold">Coach needs your athlete profile first</p>
-          <p className="text-[13px] text-muted-foreground leading-snug mt-1">
+          <p className="text-dense text-muted-foreground leading-snug mt-1">
             Goal, days, equipment. Two minutes, then this block builds.
           </p>
           <Button variant="outline" size="sm" className="mt-3 min-h-11" onClick={() => navigate("/coach/profile")}>
@@ -288,11 +288,11 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           <p className="text-sm font-bold text-destructive mb-1">
             Coach couldn't build this block
           </p>
-          <p className="text-[13px] text-foreground/90 leading-snug mb-1.5">
+          <p className="text-dense text-foreground/90 leading-snug mb-1.5">
             Try again. It's usually the model, not you.
           </p>
           {/* The raw reason still ships, just no longer as the headline. */}
-          <p className="text-[11px] text-muted-foreground leading-snug break-words font-mono">
+          <p className="text-label text-muted-foreground leading-snug break-words font-mono">
             {lastError}
           </p>
         </div>
@@ -301,7 +301,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       <Button variant="ember" size="lg" className="w-full mt-6" onClick={generate}>
         <Zap aria-hidden size={16} /> Design my block
       </Button>
-      <p className="text-[11px] text-muted-foreground/75 text-center mt-3">
+      <p className="text-label text-muted-foreground/75 text-center mt-3">
         Coach will use your profile, last 30 days of check-ins, and recent reflections to personalize every session.
       </p>
     </div>
@@ -310,7 +310,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
 const Row = ({ k, v, wide, extra }: { k: string; v: string; wide?: boolean; extra?: React.ReactNode }) => (
   <div className={cn("flex flex-col gap-0.5", wide && "col-span-2")}>
-    <dt className="text-[11px] font-bold text-muted-foreground">{k}</dt>
+    <dt className="text-label font-bold text-muted-foreground">{k}</dt>
     <dd className="text-foreground/90 font-medium flex items-center gap-2">{v}{extra}</dd>
   </div>
 );
@@ -319,7 +319,7 @@ const DayDots = ({ active }: { active: number[] }) => (
   <span className="inline-flex gap-0.5 ml-1">
     {DAY_LETTERS.map((l, i) => (
       <span key={i} className={cn(
-        "w-3.5 h-3.5 rounded-[5px] text-[10px] font-black flex items-center justify-center",
+        "w-3.5 h-3.5 rounded-[5px] text-micro font-black flex items-center justify-center",
         active.includes(i) ? "bg-[hsl(var(--gold)/0.8)] text-background" : "bg-card/60 text-muted-foreground/75",
       )}>{l}</span>
     ))}
@@ -329,7 +329,7 @@ const DayDots = ({ active }: { active: number[] }) => (
 const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
   ({ label, children }, ref) => (
     <div ref={ref}>
-      <label className="text-[11px] font-bold text-muted-foreground mb-2 block">{label}</label>
+      <label className="text-label font-bold text-muted-foreground mb-2 block">{label}</label>
       {children}
     </div>
   ),

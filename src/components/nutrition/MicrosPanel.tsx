@@ -24,7 +24,7 @@ const fmtValue = (v: number, unit: string) => {
  */
 const MicrosPanel = ({ rows, className }: { rows: MicroRow[]; className?: string }) => {
   if (rows.length === 0) {
-    return <p className="text-[12px] text-muted-foreground px-1 py-3">Log a meal to see micronutrients.</p>;
+    return <p className="text-meta text-muted-foreground px-1 py-3">Log a meal to see micronutrients.</p>;
   }
   return (
     <div className={cn("divide-y divide-border/35", className)}>
@@ -32,7 +32,7 @@ const MicrosPanel = ({ rows, className }: { rows: MicroRow[]; className?: string
         const pct = r.target && r.target > 0 && r.value != null ? Math.min(100, (r.value / r.target) * 100) : null;
         return (
           <div key={r.key} className="py-2.5">
-            <div className="flex items-baseline justify-between gap-3 text-[13px]">
+            <div className="flex items-baseline justify-between gap-3 text-dense">
               <span className="font-medium truncate">{r.label}</span>
               <span className="tabular-nums text-muted-foreground shrink-0">
                 <span className={cn("font-bold", r.value != null && "text-foreground")}>
@@ -54,7 +54,7 @@ const MicrosPanel = ({ rows, className }: { rows: MicroRow[]; className?: string
               </div>
             )}
             {r.value != null && (r.missingCount ?? 0) > 0 && (
-              <p className="text-[11px] text-muted-foreground/75 mt-0.5">
+              <p className="text-label text-muted-foreground/75 mt-0.5">
                 {r.missingCount} item{r.missingCount === 1 ? "" : "s"} without {r.label.toLowerCase()} data
               </p>
             )}

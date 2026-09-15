@@ -33,7 +33,7 @@ const LessonQuiz = ({
       <div className="flex items-center gap-2 mb-3">
         <HelpCircle aria-hidden size={13} style={{ color: accent }} strokeWidth={2.6} />
         <p
-          className="text-[11px] font-bold text-muted-foreground"
+          className="text-label font-bold text-muted-foreground"
           style={{ color: accent }}
         >
           Comprehension check
@@ -45,7 +45,7 @@ const LessonQuiz = ({
           const picked = answers[qi];
           return (
             <div key={qi}>
-              <p className="text-[12px] font-semibold leading-snug mb-2">
+              <p className="text-meta font-semibold leading-snug mb-2">
                 {qi + 1}. {q.q}
               </p>
               <div className="space-y-1.5">
@@ -59,7 +59,7 @@ const LessonQuiz = ({
                       type="button"
                       disabled={submitted}
                       onClick={() => setAnswers((p) => ({ ...p, [qi]: ci }))}
-                      className="press w-full text-left rounded-xl border px-3 py-2 text-[12px] flex items-start gap-2 transition-colors disabled:"
+                      className="press w-full text-left rounded-xl border px-3 py-2 text-meta flex items-start gap-2 transition-colors disabled:"
                       style={{
                         background: showState
                           ? isCorrect
@@ -97,7 +97,7 @@ const LessonQuiz = ({
                 })}
               </div>
               {submitted && (
-                <p className="mt-2 text-[12px] text-muted-foreground leading-snug pl-1">
+                <p className="mt-2 text-meta text-muted-foreground leading-snug pl-1">
                   <span className="font-black text-foreground/85">Why:</span> {q.explain}
                 </p>
               )}
@@ -114,7 +114,7 @@ const LessonQuiz = ({
             setSubmitted(true);
             onScore(score);
           }}
-          className="text-[11px] font-bold text-muted-foreground mt-4 w-full rounded-xl py-2.5 disabled:opacity-40 disabled:cursor-not-allowed transition-[color,opacity]"
+          className="text-label font-bold text-muted-foreground mt-4 w-full rounded-xl py-2.5 disabled:opacity-40 disabled:cursor-not-allowed transition-[color,opacity]"
           style={{
             background: accent,
             color: "hsl(var(--background))",
@@ -124,7 +124,7 @@ const LessonQuiz = ({
         </button>
       ) : (
         <div
-          className="mt-4 rounded-xl px-3 py-2.5 text-center text-[12px] font-black"
+          className="mt-4 rounded-xl px-3 py-2.5 text-center text-meta font-black"
           style={{
             background: `${accent}18`,
             border: `1px solid ${accent}55`,

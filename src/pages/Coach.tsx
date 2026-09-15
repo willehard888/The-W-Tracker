@@ -225,8 +225,8 @@ const CoachShell = ({
 
       <div className="px-4 pt-3 pb-6">
         <header className="home-rise">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h1>
-          <p className="mt-1.5 text-[11px] text-muted-foreground">{DISCLAIMER}</p>
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h1>
+          <p className="mt-1.5 text-label text-muted-foreground">{DISCLAIMER}</p>
         </header>
 
         {/* HERO: the coach's words and the gold readiness number. */}
@@ -318,7 +318,7 @@ const ThinkingIndicator = () => (
           />
         ))}
       </span>
-      <span className="text-[12px] font-bold text-muted-foreground">Coach is thinking…</span>
+      <span className="text-meta font-bold text-muted-foreground">Coach is thinking…</span>
     </div>
   </div>
 );
@@ -673,7 +673,7 @@ const ChatSheet = ({
     >
       {messages.length === 0 && (
         <div className="pt-1">
-          <p className="text-[12px] text-muted-foreground mb-3">
+          <p className="text-meta text-muted-foreground mb-3">
             Ask anything. Coach knows your program, your last 7 days and the playbook.
           </p>
           <div className="flex flex-col gap-2">
@@ -686,7 +686,7 @@ const ChatSheet = ({
             <button
               type="button"
               onClick={() => { hapticImpact("light"); setShowBrowser(true); }}
-              className="press mt-1 min-h-11 inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold text-muted-foreground"
+              className="press mt-1 min-h-11 inline-flex items-center justify-center gap-1.5 text-meta font-semibold text-muted-foreground"
             >
               <BookOpen size={12} aria-hidden /> Browse the playbook
             </button>
@@ -729,13 +729,13 @@ const ChatSheet = ({
                 )
               ) : m.content}
               {m.failed && (
-                <div className="mt-1.5 inline-flex items-center gap-1 text-[12px] text-destructive font-bold">
+                <div className="mt-1.5 inline-flex items-center gap-1 text-meta text-destructive font-bold">
                   <RotateCw aria-hidden size={11} /> Tap to retry
                 </div>
               )}
             </div>
             {m.isFaq && m.role === "assistant" && (
-              <p className="mt-1 ml-1 text-[11px] text-muted-foreground">
+              <p className="mt-1 ml-1 text-label text-muted-foreground">
                 From Coach Playbook · Ask a follow-up for more
               </p>
             )}
@@ -743,7 +743,7 @@ const ChatSheet = ({
               <button
                 type="button"
                 onClick={goDeeper}
-                className="press mt-0.5 ml-1 min-h-11 inline-flex items-center gap-1 text-[12px] font-semibold text-muted-foreground"
+                className="press mt-0.5 ml-1 min-h-11 inline-flex items-center gap-1 text-meta font-semibold text-muted-foreground"
               >
                 <Sparkles size={12} aria-hidden /> Go deeper
               </button>
@@ -756,7 +756,7 @@ const ChatSheet = ({
       {/* Seeded from today's feedback — one-tap follow-ups on improving. */}
       {seedChipsShown && !streaming && (
         <div className="flex flex-col gap-2 pt-1">
-          <p className="text-[12px] text-muted-foreground">Ask a follow-up</p>
+          <p className="text-meta text-muted-foreground">Ask a follow-up</p>
           {PERFORMANCE_FOLLOWUPS.map((q) => (
             <button key={q} type="button" onClick={() => send(q)} className={CHIP}>{q}</button>
           ))}

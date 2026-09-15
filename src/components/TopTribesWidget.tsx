@@ -53,13 +53,13 @@ const TopTribesWidget = () => {
         <div className="flex items-center gap-2 min-w-0">
           <Crown aria-hidden size={15} className="text-[hsl(var(--ember))] shrink-0" />
           <h2 className="font-display font-bold text-base tracking-tight truncate">Top Tribes</h2>
-          <span className="text-[10px] font-bold shrink-0 text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
+          <span className="text-micro font-bold shrink-0 text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
             Weekly
           </span>
         </div>
         <button
           onClick={() => navigate("/tribes/leaderboard")}
-          className="text-[11px] font-bold shrink-0 whitespace-nowrap text-muted-foreground hover:text-[hsl(var(--ember))] inline-flex items-center gap-0.5"
+          className="text-label font-bold shrink-0 whitespace-nowrap text-muted-foreground hover:text-[hsl(var(--ember))] inline-flex items-center gap-0.5"
         >
           Full board <ChevronRight aria-hidden size={12} />
         </button>
@@ -76,7 +76,7 @@ const TopTribesWidget = () => {
           </p>
           <button
             onClick={() => navigate(canCreate ? "/tribes/new" : "/squad?tab=tribes")}
-            className="text-[11px] font-bold text-[hsl(var(--ember))] inline-flex items-center gap-1"
+            className="text-label font-bold text-[hsl(var(--ember))] inline-flex items-center gap-1"
           >
             {canCreate ? "Found a tribe" : "Browse tribes"} <ChevronRight aria-hidden size={12} />
           </button>
@@ -109,18 +109,18 @@ const TopTribesWidget = () => {
                   {Icon ? (
                     <Icon size={14} style={{ color }} strokeWidth={2.4} />
                   ) : (
-                    <span className="text-[11px] font-black tabular-nums" style={{ color }}>
+                    <span className="text-label font-black tabular-nums" style={{ color }}>
                       {r.rank}
                     </span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-black truncate leading-tight">{r.name}</p>
-                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 text-label text-muted-foreground">
                     <Users aria-hidden size={11} /> {r.member_count}
                   </span>
                 </div>
-                <span className="inline-flex items-center gap-1 text-[12px] font-black tabular-nums" style={{ color }}>
+                <span className="inline-flex items-center gap-1 text-meta font-black tabular-nums" style={{ color }}>
                   <Zap aria-hidden size={11} fill="currentColor" strokeWidth={0} />
                   {formatScore(r.score)}
                 </span>

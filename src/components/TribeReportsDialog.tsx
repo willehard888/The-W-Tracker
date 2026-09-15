@@ -225,8 +225,8 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
             const busy = busyId === r.id;
             return (
               <div key={r.id} className="py-4">
-                <p className="text-[11px] font-bold text-destructive">{r.reason}</p>
-                <p className="text-[11px] text-muted-foreground mb-2">
+                <p className="text-label font-bold text-destructive">{r.reason}</p>
+                <p className="text-label text-muted-foreground mb-2">
                   Reported by @{r.reporter?.username ?? "user"} · {fmtRelative(r.created_at)}
                 </p>
 

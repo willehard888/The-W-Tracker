@@ -75,12 +75,12 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
     <div className="px-4 pt-4 pb-6">
       {/* The beat: the movement's name, and what it takes. */}
       <header className="home-rise">
-        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{ex.title}</h1>
-        <p className="mt-1.5 text-[13px] text-muted-foreground capitalize">
+        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{ex.title}</h1>
+        <p className="mt-1.5 text-dense text-muted-foreground capitalize">
           {[...ex.equipment, ex.type].filter(Boolean).join(" · ")}
         </p>
         {(ex.primary.length > 0 || ex.secondary.length > 0) && (
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-dense text-muted-foreground">
             Works <span className="capitalize">{[...ex.primary, ...ex.secondary].join(", ")}</span>
           </p>
         )}
@@ -93,11 +93,11 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
       </div>
 
       <section className="home-rise home-rise-2 mt-5">
-        <p className="text-[11px] font-bold text-muted-foreground mb-2">How to perform</p>
+        <p className="text-label font-bold text-muted-foreground mb-2">How to perform</p>
         <ol className="space-y-2.5">
           {ex.steps.map((step, i) => (
-            <li key={i} className="flex gap-2.5 text-[13px] text-foreground/85 leading-snug">
-              <span className="shrink-0 w-5 text-[11px] font-black text-muted-foreground tabular-nums mt-px">{i + 1}</span>
+            <li key={i} className="flex gap-2.5 text-dense text-foreground/85 leading-snug">
+              <span className="shrink-0 w-5 text-label font-black text-muted-foreground tabular-nums mt-px">{i + 1}</span>
               <span>{step}</span>
             </li>
           ))}
@@ -233,7 +233,7 @@ const Exercises = () => {
                     onClick={() => { hapticImpact("light"); setGroup(g); }}
                     className={cn(
                       // A 32 px pill; the invisible ::before lifts its target to the 44 pt floor.
-                      "press relative shrink-0 rounded-full px-3 py-1.5 text-[12px] font-black border transition-colors",
+                      "press relative shrink-0 rounded-full px-3 py-1.5 text-meta font-black border transition-colors",
                       "before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']",
                       active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
                     )}
@@ -255,8 +255,8 @@ const Exercises = () => {
                 >
                   <IllustrationThumb ex={ex} size={48} eager={i < 6} />
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[14px] font-semibold leading-tight truncate">{ex.title}</span>
-                    <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 capitalize truncate">
+                    <span className="block text-note font-semibold leading-tight truncate">{ex.title}</span>
+                    <span className="block text-meta text-muted-foreground leading-snug mt-0.5 capitalize truncate">
                       {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.join(", ")}` : ""}
                     </span>
                   </span>
@@ -269,7 +269,7 @@ const Exercises = () => {
             <button
               type="button"
               onClick={() => setLimit((n) => n + PAGE)}
-              className="press mt-3 w-full min-h-11 rounded-xl border border-border/60 bg-card/40 text-[13px] font-bold text-muted-foreground"
+              className="press mt-3 w-full min-h-11 rounded-xl border border-border/60 bg-card/40 text-dense font-bold text-muted-foreground"
             >
               Show {Math.min(PAGE, filtered.length - limit)} more · {filtered.length - limit} left
             </button>
@@ -279,7 +279,7 @@ const Exercises = () => {
           )}
 
           {/* CC BY-SA attribution — required by the illustration license. */}
-          <p className="mt-8 text-center text-[11px] text-muted-foreground/75">
+          <p className="mt-8 text-center text-label text-muted-foreground/75">
             Illustrations © Everkinetic · CC BY-SA 4.0
           </p>
         </div>

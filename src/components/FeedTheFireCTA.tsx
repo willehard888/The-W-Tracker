@@ -60,7 +60,7 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-bold text-muted-foreground" style={{ color: c }}>
+        <p className="text-label font-bold text-muted-foreground" style={{ color: c }}>
           Feed the fire
         </p>
         <p className="font-bold text-sm leading-tight truncate">

@@ -9,7 +9,7 @@ import { hapticSelection } from "@/lib/haptics";
 /** Settings section: eyebrow + surface-card list of rows. */
 export const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="home-rise home-rise-1">
-    <p className="text-[11px] font-bold text-muted-foreground px-1 mb-1.5">{title}</p>
+    <p className="text-label font-bold text-muted-foreground px-1 mb-1.5">{title}</p>
     <div className="surface-card overflow-hidden divide-y divide-border/30">{children}</div>
   </div>
 );
@@ -35,11 +35,11 @@ export const SettingsRow = ({
   >
     <Icon aria-hidden size={14} className="text-muted-foreground shrink-0" />
     <span className="flex-1 min-w-0">
-      <span className="block text-[13px] font-semibold truncate">{label}</span>
-      {sub && <span className="block text-[11px] text-muted-foreground truncate mt-0.5">{sub}</span>}
+      <span className="block text-dense font-semibold truncate">{label}</span>
+      {sub && <span className="block text-label text-muted-foreground truncate mt-0.5">{sub}</span>}
     </span>
     {badge != null && badge > 0 && (
-      <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-[11px] font-black tabular-nums">
+      <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-label font-black tabular-nums">
         {badge}
       </span>
     )}

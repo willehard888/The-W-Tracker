@@ -31,7 +31,7 @@ const MacroBars = ({
       const pct = target && target > 0 ? Math.min(100, Math.max(0, (value / target) * 100)) : null;
       return (
         <div key={r.key}>
-          <div className="flex items-baseline justify-between text-[12px]">
+          <div className="flex items-baseline justify-between text-meta">
             <span className="font-bold">{r.label}</span>
             <span className="tabular-nums text-muted-foreground">
               <span className={cn("font-black text-foreground", r.gold && "text-gold")}>{fmt(value)}</span>

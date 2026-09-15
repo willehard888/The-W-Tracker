@@ -14,7 +14,7 @@ interface MyTribe {
 
 /** The label above the rows. Plain 11 px, ember only when something is live. */
 const Label = ({ live }: { live: number }) => (
-  <h3 className="text-[11px] font-bold text-muted-foreground">
+  <h3 className="text-label font-bold text-muted-foreground">
     Tribe battles{live > 0 && <span className="text-[hsl(var(--ember))]"> · {live} live</span>}
   </h3>
 );

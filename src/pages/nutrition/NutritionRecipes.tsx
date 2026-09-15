@@ -65,7 +65,7 @@ const NutritionRecipes = () => {
         ) : (
           <>
             <div className="home-rise">
-              <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+              <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
                 {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"} ready to log.
               </h2>
             </div>
@@ -88,8 +88,8 @@ const NutritionRecipes = () => {
                     className="w-full min-h-14 py-3 flex items-center gap-3 text-left active:opacity-70 transition-opacity"
                   >
                     <span className="flex-1 min-w-0">
-                      <span className="block text-[15px] font-bold leading-tight truncate">{r.name}</span>
-                      <span className="block text-[12px] text-muted-foreground mt-0.5 tabular-nums truncate">
+                      <span className="block text-read font-bold leading-tight truncate">{r.name}</span>
+                      <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums truncate">
                         {fmtQty(r.servings)} {r.servings === 1 ? "serving" : "servings"} · per serving {stats}
                       </span>
                     </span>

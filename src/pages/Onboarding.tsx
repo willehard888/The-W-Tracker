@@ -199,7 +199,7 @@ const Onboarding = () => {
               ))}
             </div>
             {qIndex >= 0 && (
-              <span className="text-[11px] font-bold text-muted-foreground shrink-0">{qIndex + 1}/{QUESTION_STEPS.length}</span>
+              <span className="text-label font-bold text-muted-foreground shrink-0">{qIndex + 1}/{QUESTION_STEPS.length}</span>
             )}
             <Button
               variant="ghost"

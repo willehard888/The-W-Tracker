@@ -99,7 +99,7 @@ const SegmentBar = ({ pct, color }: { pct: number; color: string }) => (
 const COLD_ACCENT = "hsl(24 60% 58%)";
 const COLD_PLATE = "hsl(22 96% 54%)";
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
+const LABEL = "text-label font-bold text-muted-foreground";
 
 /**
  * The tribe's one cinematic hero — collective fire, identity, and actions in
@@ -267,7 +267,7 @@ const TribeHero = ({
                 reactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/50",
               )}
             />
-            <span className="text-[10px] font-bold text-muted-foreground/75">
+            <span className="text-micro font-bold text-muted-foreground/75">
               {reactor.connected ? "Live" : "…"}
             </span>
           </span>
@@ -324,7 +324,7 @@ const TribeHero = ({
           )}
           <h1 className="font-display font-black text-xl leading-tight">{tribe.name}</h1>
         </div>
-        <p className="text-[12px] text-muted-foreground/85 mt-1 tabular-nums">
+        <p className="text-meta text-muted-foreground/85 mt-1 tabular-nums">
           {memberCount} member{memberCount === 1 ? "" : "s"}
           {avg !== null && !isCold && (
             <> · avg <span className="font-black text-foreground/85">{avg}</span></>
@@ -335,7 +335,7 @@ const TribeHero = ({
         </p>
 
         {isCold && (
-          <p className="text-[12px] text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
+          <p className="text-meta text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
             The embers are waiting. <span className="font-black text-[var(--acc)]">{Math.max(0, 30 - total)} combined day{Math.max(0, 30 - total) === 1 ? "" : "s"}</span> of streaks to ignition.
           </p>
         )}
@@ -347,7 +347,7 @@ const TribeHero = ({
               <button
                 type="button"
                 onClick={() => onNavigateUser(founder.user_id)}
-                className="min-h-11 inline-flex items-center gap-1.5 px-2 text-[12px]"
+                className="min-h-11 inline-flex items-center gap-1.5 px-2 text-meta"
               >
                 <Crown size={11} className="text-gold" strokeWidth={2.8} fill="currentColor" aria-hidden />
                 <span className="font-bold text-muted-foreground">Founder</span>
@@ -390,7 +390,7 @@ const TribeHero = ({
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className={LABEL}>Ignition</span>
-            <span className="text-[11px] font-bold tabular-nums text-foreground/75">
+            <span className="text-label font-bold tabular-nums text-foreground/75">
               {total} / 30 days
             </span>
           </div>
@@ -403,7 +403,7 @@ const TribeHero = ({
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className={LABEL}>Next: {collectiveTierName(next)}</span>
-            <span className="text-[11px] font-bold tabular-nums text-foreground/75">
+            <span className="text-label font-bold tabular-nums text-foreground/75">
               {fmtInt(Math.max(0, next - total))} to go
             </span>
           </div>
@@ -411,7 +411,7 @@ const TribeHero = ({
         </div>
       )}
       {!isCold && atMax && (
-        <p className="mt-3 text-center text-[11px] font-bold text-[var(--acc)]">
+        <p className="mt-3 text-center text-label font-bold text-[var(--acc)]">
           Max tier reached — Legendary fire
         </p>
       )}

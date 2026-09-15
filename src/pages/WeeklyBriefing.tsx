@@ -183,10 +183,10 @@ const WeeklyBriefing = () => {
         {/* ── OPENING BEAT — the dateline, then the coach's own headline. ── */}
         <header className="home-rise">
           <p className="eyebrow">Week {isoWeek(briefing.week_start)} · {weekRange}</p>
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight mt-1.5">
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight mt-1.5">
             {briefing.headline}
           </h1>
-          <p className="mt-2 text-[15px] leading-snug">
+          <p className="mt-2 text-read leading-snug">
             <span className="text-gold glow-gold-text font-black tabular-nums">{fmtInt(stats.total_xp ?? 0)} XP</span>
             <span className="text-muted-foreground"> this week.</span>
           </p>
@@ -210,12 +210,12 @@ const WeeklyBriefing = () => {
         {/* ── WHAT STOOD OUT ── */}
         {briefing.key_insights?.length > 0 && (
           <section className="home-rise home-rise-3 mt-7">
-            <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">What stood out</h2>
+            <h2 className="font-display font-black text-lead leading-tight tracking-tight">What stood out</h2>
             <div className="mt-1 divide-y divide-border/35">
               {briefing.key_insights.map((insight, i) => (
                 <div key={i} className="py-3.5">
-                  <p className="text-[14px] font-bold leading-snug">{insight.title}</p>
-                  <p className="mt-0.5 text-[13px] text-muted-foreground leading-snug">{insight.detail}</p>
+                  <p className="text-note font-bold leading-snug">{insight.title}</p>
+                  <p className="mt-0.5 text-dense text-muted-foreground leading-snug">{insight.detail}</p>
                 </div>
               ))}
             </div>
@@ -225,14 +225,14 @@ const WeeklyBriefing = () => {
         {/* ── NEXT WEEK — numbered plainly. ── */}
         {briefing.next_week_protocol?.length > 0 && (
           <section className="home-rise home-rise-4 mt-7">
-            <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">Next week</h2>
+            <h2 className="font-display font-black text-lead leading-tight tracking-tight">Next week</h2>
             <ol className="mt-1 divide-y divide-border/35">
               {briefing.next_week_protocol.map((item, i) => (
                 <li key={i} className="py-3.5 flex gap-3">
-                  <span className="w-5 shrink-0 text-[14px] font-bold tabular-nums text-muted-foreground">{i + 1}</span>
+                  <span className="w-5 shrink-0 text-note font-bold tabular-nums text-muted-foreground">{i + 1}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-bold leading-snug">{item.action}</span>
-                    <span className="block mt-0.5 text-[13px] text-muted-foreground leading-snug">{item.why}</span>
+                    <span className="block text-note font-bold leading-snug">{item.action}</span>
+                    <span className="block mt-0.5 text-dense text-muted-foreground leading-snug">{item.why}</span>
                   </span>
                 </li>
               ))}

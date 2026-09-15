@@ -120,7 +120,7 @@ const Journey = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {isLoading || isError ? (
               "Your journey."
             ) : !hasAnyData ? (
@@ -132,7 +132,7 @@ const Journey = () => {
             )}
           </h2>
           {!isLoading && !isError && (
-            <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">
+            <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
               {!hasAnyData
                 ? "This is where you watch yourself become who you set out to be."
                 : bestStreak > 0
@@ -257,9 +257,9 @@ const Journey = () => {
         {!isLoading && !isError && hasAnyData && (
           <div className="home-rise home-rise-5 mt-6">
             <div className="flex items-baseline justify-between gap-3 mb-1">
-              <h3 className="text-[13px] font-bold">Your reflections</h3>
+              <h3 className="text-dense font-bold">Your reflections</h3>
               {reflections.length > 0 && (
-                <span className="text-[11px] font-bold text-muted-foreground tabular-nums">
+                <span className="text-label font-bold text-muted-foreground tabular-nums">
                   {reflections.length > 30 ? "last 30" : reflections.length}
                 </span>
               )}
@@ -290,11 +290,11 @@ const Journey = () => {
 const TrendRow = ({ title, sub, delta, good }: { title: string; sub: string; delta: string | null; good: boolean }) => (
   <div className="py-3 flex items-center gap-3">
     <span className="flex-1 min-w-0">
-      <span className="block text-[14px] font-semibold leading-tight">{title}</span>
-      <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{sub}</span>
+      <span className="block text-note font-semibold leading-tight">{title}</span>
+      <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{sub}</span>
     </span>
     {delta && (
-      <span className={cn("shrink-0 font-display text-[15px] font-black tabular-nums", good ? "text-xp-green" : "text-destructive")}>
+      <span className={cn("shrink-0 font-display text-read font-black tabular-nums", good ? "text-xp-green" : "text-destructive")}>
         {delta}
       </span>
     )}
@@ -317,21 +317,21 @@ const ReflectionRow = ({ r, lazy }: { r: JourneyReflection; lazy: boolean }) => 
   const friction = r.friction?.trim();
   return (
     <div className="py-3" style={lazy ? { contentVisibility: "auto", containIntrinsicSize: "auto 64px" } : undefined}>
-      <p className="text-[11px] font-bold text-muted-foreground">
+      <p className="text-label font-bold text-muted-foreground">
         {relDate(r.reflection_date)}{mood && ` · ${mood}`}
       </p>
       {!win && !friction ? (
-        <p className="text-[12px] text-muted-foreground/75 mt-0.5">Checked in.</p>
+        <p className="text-meta text-muted-foreground/75 mt-0.5">Checked in.</p>
       ) : (
         <div className="mt-1 space-y-1">
           {win && (
-            <p className="text-[13px] leading-snug">
+            <p className="text-dense leading-snug">
               <span className="font-bold">Win · </span>
               <span className="text-foreground/90">{win}</span>
             </p>
           )}
           {friction && (
-            <p className="text-[13px] leading-snug">
+            <p className="text-dense leading-snug">
               <span className="font-bold text-muted-foreground">Friction · </span>
               <span className="text-foreground/80">{friction}</span>
             </p>

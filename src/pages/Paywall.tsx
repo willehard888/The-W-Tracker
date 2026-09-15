@@ -28,7 +28,7 @@ const PREMIUM_MONTHLY_FALLBACK = "8,99 €";
 type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
 
 /** The quiet 44 pt text button the footer is made of. */
-const quiet = "press min-h-11 px-3 text-[12px] text-muted-foreground";
+const quiet = "press min-h-11 px-3 text-meta text-muted-foreground";
 
 const Paywall = () => {
   const { isElite, isPremium, checkSubscription, profile, subscriptionLoading } = useAuth();
@@ -116,8 +116,8 @@ const Paywall = () => {
       <div className="min-h-full">
         <PageBar onBack={() => backOr(navigate, "/")} />
         <div className="home-rise px-4 pt-3 pb-6">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">You're in.</h1>
-          <p className="mt-1.5 text-[13px] text-muted-foreground">
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">You're in.</h1>
+          <p className="mt-1.5 text-dense text-muted-foreground">
             Full access, new content every week. Your price stays locked.
           </p>
           {/* Subscriptions are App Store-only — same management page on
@@ -240,16 +240,16 @@ const Paywall = () => {
       <div className="px-4 pt-3 pb-6">
         {/* BEAT: what this buys, or how long it is already free. */}
         <header className="home-rise">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {creditsActive ? `Free until ${creditsUntilLabel}.` : "Everything the ritual unlocks."}
           </h1>
-          <p className="mt-1.5 text-[13px] text-muted-foreground">
+          <p className="mt-1.5 text-dense text-muted-foreground">
             {creditsActive
               ? "The app stays fully unlocked until then. Premium keeps it that way."
               : "Fuel, training, recovery, the coach and the climb. One membership."}
           </p>
           {subscriptionLoading && (
-            <p className="mt-2 flex items-center gap-2 text-[12px] text-muted-foreground">
+            <p className="mt-2 flex items-center gap-2 text-meta text-muted-foreground">
               <Loader2 size={14} className="animate-spin" aria-hidden />
               Verifying membership…
             </p>

@@ -96,12 +96,12 @@ const CoachProgramDetail = () => {
         {/* The reveal carries its own beat, so the page's stays out of its way. */}
         {!isLoading && !justGenerated && (
           <header className="home-rise">
-            <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
               {program
                 ? <>Week <span className="text-gold glow-gold-text tabular-nums">{currentWeek}</span> of {program.weeks}.</>
                 : "Tell me the goal. I build the week."}
             </h2>
-            <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">
+            <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
               {program
                 ? standingLine(weekState, program.weeks)
                 : hasAccess

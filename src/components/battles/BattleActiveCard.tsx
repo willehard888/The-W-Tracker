@@ -43,7 +43,7 @@ const BattleActiveCard = ({
   const gap = Math.abs(myScore - oppScore);
   const score = (n: number, felt: boolean) => (
     <p className={cn(
-      "font-display font-black text-[22px] tabular-nums leading-none shrink-0",
+      "font-display font-black text-title tabular-nums leading-none shrink-0",
       felt ? "text-gold glow-gold-text" : "text-foreground/75",
     )}>
       {fmtInt(n)}
@@ -53,9 +53,9 @@ const BattleActiveCard = ({
   return (
     <div className="surface-card p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-bold text-muted-foreground">{typeInfo.label} · {battle.duration_days} days</p>
+        <p className="text-label font-bold text-muted-foreground">{typeInfo.label} · {battle.duration_days} days</p>
         <div className="flex items-center gap-1">
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--streak-orange))]">
+          <span className="inline-flex items-center gap-1 text-label font-bold text-[hsl(var(--streak-orange))]">
             <Clock size={11} aria-hidden /> {daysLeft === 0 ? "Final day" : `${daysLeft}d left`}
           </span>
           {isAdmin && (
@@ -82,7 +82,7 @@ const BattleActiveCard = ({
 
       {/* Scoreboard — the leading score is the screen's one felt number. */}
       <div className="mt-4 flex items-end justify-between gap-3">
-        <p className="text-[13px] font-bold truncate">
+        <p className="text-dense font-bold truncate">
           @{profileUsername} <span className="text-muted-foreground font-medium">you</span>
         </p>
         {score(myScore, amWinning)}
@@ -92,10 +92,10 @@ const BattleActiveCard = ({
         <div className="h-full bg-foreground/25" style={{ width: `${100 - myPct}%` }} />
       </div>
       <div className="mt-2 flex items-end justify-between gap-3">
-        <p className="text-[13px] font-bold truncate">@{opp.username}</p>
+        <p className="text-dense font-bold truncate">@{opp.username}</p>
         {score(oppScore, !amWinning)}
       </div>
-      <p className={cn("mt-3 text-[12px] font-bold", amWinning ? "text-gold" : "text-[hsl(var(--ember))]")}>
+      <p className={cn("mt-3 text-meta font-bold", amWinning ? "text-gold" : "text-[hsl(var(--ember))]")}>
         {gap === 0 ? "Dead even." : amWinning ? `Ahead by ${fmtUnit(gap, typeInfo.unit)}.` : `Behind by ${fmtUnit(gap, typeInfo.unit)}.`}
       </p>
 
@@ -108,10 +108,10 @@ const BattleActiveCard = ({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold leading-tight">
+          <p className="text-dense font-bold leading-tight">
             {!myProof ? "Your proof is missing." : !oppProof ? "Your proof is in." : "Both proofs are in."}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-label text-muted-foreground mt-0.5">
             {!myProof ? "No photo by the end is a forfeit." : !oppProof ? `Waiting on @${opp.username}.` : "The score decides."}
           </p>
         </div>
@@ -134,10 +134,10 @@ export const BattleActiveRow = ({
     <div className="flex items-center gap-3 py-3 min-h-11">
       <TypeIcon size={15} className="text-muted-foreground shrink-0" aria-hidden />
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-semibold leading-tight truncate">@{opp.username}</p>
-        <p className="text-[12px] text-muted-foreground mt-0.5">{typeInfo.label} · {daysLeft === 0 ? "final day" : `${daysLeft}d left`}</p>
+        <p className="text-note font-semibold leading-tight truncate">@{opp.username}</p>
+        <p className="text-meta text-muted-foreground mt-0.5">{typeInfo.label} · {daysLeft === 0 ? "final day" : `${daysLeft}d left`}</p>
       </div>
-      <p className="text-[13px] tabular-nums shrink-0">
+      <p className="text-dense tabular-nums shrink-0">
         <span className={cn("font-black", myScore < oppScore && "text-muted-foreground")}>{fmtInt(myScore)}</span>
         <span className="text-muted-foreground/75">–</span>
         <span className={cn("font-black", myScore > oppScore && "text-muted-foreground")}>{fmtInt(oppScore)}</span>

@@ -103,12 +103,12 @@ const Stepper = ({
       value={value}
       aria-label={label}
       onChange={(e) => onChange(e.target.value)}
-      className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-[16px] font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50"
+      className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-copy font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50"
     />
     <Button variant="ghost" size="icon" aria-label={`Add ${stepLabel}`} onClick={() => onStep(1)}>
       <Plus size={16} aria-hidden />
     </Button>
-    <span className="w-8 text-[12px] font-semibold text-muted-foreground">{unit}</span>
+    <span className="w-8 text-meta font-semibold text-muted-foreground">{unit}</span>
   </div>
 );
 
@@ -146,7 +146,7 @@ const SetRow = ({
   const badge = (
     <span
       className={cn(
-        "shrink-0 h-8 w-8 rounded-full text-[12px] font-black flex items-center justify-center",
+        "shrink-0 h-8 w-8 rounded-full text-meta font-black flex items-center justify-center",
         done
           ? "bg-xp-green/15 text-xp-green"
           : isCurrent
@@ -165,13 +165,13 @@ const SetRow = ({
         {badge}
         {done ? (
           <>
-            <span className="flex-1 min-w-0 text-[15px] font-bold tabular-nums">{setLine(weight, reps)}</span>
+            <span className="flex-1 min-w-0 text-read font-bold tabular-nums">{setLine(weight, reps)}</span>
             <Button variant="ghost" size="sm" className="min-h-11 text-muted-foreground" onClick={() => setEditing(true)}>
               Edit
             </Button>
           </>
         ) : (
-          <span className="text-[15px] font-bold text-muted-foreground/75">—</span>
+          <span className="text-read font-bold text-muted-foreground/75">—</span>
         )}
       </div>
     );
@@ -373,8 +373,8 @@ const CoachSession = () => {
   if (!program || !planDay || plan.length === 0) {
     return (
       <div className="home-rise px-5 pt-10">
-        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Nothing to run here</h1>
-        <p className="mt-1.5 text-[13px] text-muted-foreground mb-5">
+        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Nothing to run here</h1>
+        <p className="mt-1.5 text-dense text-muted-foreground mb-5">
           This day has no exercises in your plan.
         </p>
         <Button variant="outline" onClick={() => navigate("/coach/program")}>
@@ -416,10 +416,10 @@ const CoachSession = () => {
           {/* Opening beat: the day, done. One standing line under it — the
               volume is the screen's one felt number. */}
           <div className="home-rise">
-            <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
               {focus || "Workout"} done.
             </h2>
-            <p className="mt-3 text-[15px] font-bold tabular-nums text-foreground/85">
+            <p className="mt-3 text-read font-bold tabular-nums text-foreground/85">
               {fmtInt(progress.doneSets)} {progress.doneSets === 1 ? "set" : "sets"}
               {volume > 0 && (
                 <>
@@ -437,7 +437,7 @@ const CoachSession = () => {
                 {prs.map((p) => (
                   <span
                     key={p.slug}
-                    className="inline-flex items-center gap-1.5 min-h-8 rounded-full border border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.08] px-3 text-[12px] font-bold text-[hsl(var(--teal))]"
+                    className="inline-flex items-center gap-1.5 min-h-8 rounded-full border border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.08] px-3 text-meta font-bold text-[hsl(var(--teal))]"
                   >
                     <TrendingUp size={13} aria-hidden />
                     <span className="sr-only">Personal record: </span>
@@ -448,7 +448,7 @@ const CoachSession = () => {
             </div>
           )}
 
-          <p className="home-rise home-rise-2 mt-4 text-[13px] text-muted-foreground leading-snug">
+          <p className="home-rise home-rise-2 mt-4 text-dense text-muted-foreground leading-snug">
             Weights saved. Today counts toward your check-in.
           </p>
 
@@ -575,12 +575,12 @@ const CoachSession = () => {
           <>
             {/* Opening beat: where you are, what is on stage, what it asks. */}
             <div className="home-rise">
-              <p className="text-[13px] font-semibold text-muted-foreground tabular-nums">
+              <p className="text-dense font-semibold text-muted-foreground tabular-nums">
                 Exercise {fmtInt(progress.currentExerciseIndex + 1)} of {fmtInt(progress.totalExercises)}
                 {focus ? ` · ${focus}` : ""}
               </p>
               <div className="flex items-start justify-between gap-3">
-                <h2 className="mt-1 font-display font-black text-[27px] leading-[1.04] tracking-tight">
+                <h2 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight">
                   {current.name}
                 </h2>
                 {/* A focus session is the athlete's own pick: any movement
@@ -612,13 +612,13 @@ const CoachSession = () => {
                   </Button>
                 )}
               </div>
-              <p className="mt-1.5 text-[13px] font-bold tabular-nums text-foreground/85">
+              <p className="mt-1.5 text-dense font-bold tabular-nums text-foreground/85">
                 {current.sets} × {current.reps || "—"}
                 {current.rpe ? ` · RPE ${current.rpe}` : ""}
               </p>
               {/* The first time someone meets this notation it means nothing.
                   One line, inline, where the number actually is. */}
-              <p className="mt-0.5 text-[12px] text-muted-foreground leading-snug">
+              <p className="mt-0.5 text-meta text-muted-foreground leading-snug">
                 {current.sets} sets of {current.reps || "your target"} reps
                 {current.rpe ? `, leaving about ${Math.max(0, 10 - current.rpe)} reps in reserve` : ""}.
               </p>
@@ -649,7 +649,7 @@ const CoachSession = () => {
             )}
 
             <div className="home-rise home-rise-3 mt-5" ref={loggingTargetRef}>
-              <p className="text-[11px] font-bold text-muted-foreground mb-2">Sets</p>
+              <p className="text-label font-bold text-muted-foreground mb-2">Sets</p>
               <div className="space-y-1">
                 {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
                   const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);

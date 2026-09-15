@@ -26,7 +26,7 @@ const DateBar = ({ date, onChange, className }: { date: string; onChange: (next:
         <ChevronLeft aria-hidden size={18} />
       </Button>
       <div className="relative min-h-11 min-w-[9rem] flex items-center justify-center">
-        <span className="font-display text-[15px] font-black tracking-tight" aria-hidden>
+        <span className="font-display text-read font-black tracking-tight" aria-hidden>
           {labelFor(d)}
         </span>
         <input

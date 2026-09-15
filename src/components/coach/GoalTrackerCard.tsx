@@ -81,7 +81,7 @@ const GoalTrackerCard = () => {
     );
     return (
       <div className="surface-card surface-card-quiet p-4 space-y-3">
-        <p className="font-display font-black text-[17px] tracking-tight leading-tight">New goal</p>
+        <p className="font-display font-black text-lead tracking-tight leading-tight">New goal</p>
         {field("Goal", <Input placeholder="Bench 100 kg" value={draft.title}
           onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />)}
         <div className="grid grid-cols-2 gap-2">
@@ -129,17 +129,17 @@ const GoalTrackerCard = () => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold text-gold flex items-center gap-1">
+          <p className="text-label font-bold text-gold flex items-center gap-1">
             <Target aria-hidden size={12} /> North Star
           </p>
           <h3 className="font-display text-base font-black mt-0.5 truncate">{activeGoal.title}</h3>
-          <p className="text-[12px] text-muted-foreground mt-0.5">
+          <p className="text-meta text-muted-foreground mt-0.5">
             {activeGoal.current_value ?? activeGoal.baseline_value ?? 0}{activeGoal.unit} → {activeGoal.target_value}{activeGoal.unit}
             {etaText && <span className="ml-2">· {etaText}</span>}
           </p>
         </div>
         <span className={cn(
-          "text-[11px] font-bold text-muted-foreground px-2 py-1 rounded-full",
+          "text-label font-bold text-muted-foreground px-2 py-1 rounded-full",
           onPace ? "bg-xp-green/15 text-xp-green" : "bg-rose-500/15 text-rose-300"
         )}>
           {onPace ? "On pace" : "Off pace"}
@@ -148,7 +148,7 @@ const GoalTrackerCard = () => {
 
       <div className="mt-3">
         <Progress value={pct} />
-        <p className="text-[11px] text-muted-foreground mt-1">{pct}% of the way</p>
+        <p className="text-label text-muted-foreground mt-1">{pct}% of the way</p>
       </div>
 
       <div className="mt-3 flex gap-2">
@@ -173,7 +173,7 @@ const GoalTrackerCard = () => {
       {goals.filter(g => g.id !== activeGoal.id && g.status === "active").length === 0 && (
         <button type="button"
           onClick={() => setAdding(true)}
-          className="mt-3 w-full text-[12px] text-muted-foreground/80 inline-flex items-center justify-center gap-1 hover:text-gold">
+          className="mt-3 w-full text-meta text-muted-foreground/80 inline-flex items-center justify-center gap-1 hover:text-gold">
           <Plus aria-hidden size={12} /> Add another goal
         </button>
       )}

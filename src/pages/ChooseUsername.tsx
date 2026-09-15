@@ -124,7 +124,7 @@ const ChooseUsername = () => {
     <div className="min-h-full gradient-dark flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <header className="home-rise text-center mb-8">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Claim your name.</h1>
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Claim your name.</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Your permanent @handle. On the leaderboard, in your tribe, under every W you post.
           </p>
@@ -152,13 +152,13 @@ const ChooseUsername = () => {
               />
             </div>
             {validationMessage ? (
-              <p className="text-[11px] text-destructive mt-1.5 font-bold">{validationMessage}</p>
+              <p className="text-label text-destructive mt-1.5 font-bold">{validationMessage}</p>
             ) : availability === "checking" ? (
-              <p className="text-[11px] text-muted-foreground mt-1.5">Checking availability…</p>
+              <p className="text-label text-muted-foreground mt-1.5">Checking availability…</p>
             ) : availability === "available" ? (
-              <p className="commit-pop origin-left text-[11px] text-xp-green mt-1.5 font-bold">@{username} is yours ✓</p>
+              <p className="commit-pop origin-left text-label text-xp-green mt-1.5 font-bold">@{username} is yours ✓</p>
             ) : (
-              <p className="text-[11px] text-muted-foreground mt-1.5">3–20 characters: a-z, 0-9 and _</p>
+              <p className="text-label text-muted-foreground mt-1.5">3–20 characters: a-z, 0-9 and _</p>
             )}
           </div>
 
@@ -172,7 +172,7 @@ const ChooseUsername = () => {
           >
             Claim it
           </Button>
-          <p className="text-center text-[12px] text-muted-foreground">
+          <p className="text-center text-meta text-muted-foreground">
             Locked permanently once set. Choose one that feels like you.
           </p>
         </form>

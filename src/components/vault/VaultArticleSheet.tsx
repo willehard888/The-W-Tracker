@@ -112,7 +112,7 @@ const VaultArticleSheet = ({
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
                   <span
-                    className="text-[10px] font-bold text-muted-foreground inline-flex items-center px-2 py-0.5 rounded-full"
+                    className="text-micro font-bold text-muted-foreground inline-flex items-center px-2 py-0.5 rounded-full"
                     style={{
                       background: `${accent}22`,
                       color: accent,
@@ -131,15 +131,15 @@ const VaultArticleSheet = ({
                 </span>
               </div>
 
-              <h2 className="font-display text-[22px] leading-[1.05] font-black tracking-tight pr-8">
+              <h2 className="font-display text-title leading-[1.05] font-black tracking-tight pr-8">
                 {article.title}
               </h2>
               {article.subtitle && (
-                <p className="text-[12px] mt-1.5 font-medium" style={{ color: accent }}>
+                <p className="text-meta mt-1.5 font-medium" style={{ color: accent }}>
                   {article.subtitle}
                 </p>
               )}
-              <p className="text-[12px] text-muted-foreground mt-2 leading-relaxed">
+              <p className="text-meta text-muted-foreground mt-2 leading-relaxed">
                 {article.summary}
               </p>
             </div>
@@ -161,7 +161,7 @@ const VaultArticleSheet = ({
                   }}
                 >
                   <SectionHeader Icon={Lightbulb} label="Why it matters" color={accent} />
-                  <p className="text-[12px] text-foreground/90 leading-relaxed">
+                  <p className="text-meta text-foreground/90 leading-relaxed">
                     {article.why_it_matters}
                   </p>
                 </section>
@@ -181,13 +181,13 @@ const VaultArticleSheet = ({
                   <div className="flex items-center gap-2 mb-3">
                     <Target aria-hidden size={13} style={{ color: accent }} strokeWidth={2.6} />
                     <p
-                      className="text-[11px] font-bold text-muted-foreground"
+                      className="text-label font-bold text-muted-foreground"
                       style={{ color: accent }}
                     >
                       Protocol
                     </p>
                   </div>
-                  <dl className="space-y-2 text-[12px]">
+                  <dl className="space-y-2 text-meta">
                     {article.protocol.duration && (
                       <ProtocolRow label="Duration" value={article.protocol.duration} />
                     )}
@@ -209,7 +209,7 @@ const VaultArticleSheet = ({
                   <SectionHeader Icon={CheckCircle2} label="Expected benefits" color="hsl(152 68% 50%)" />
                   <ul className="space-y-1.5">
                     {article.benefits.map((b, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12px]">
+                      <li key={i} className="flex items-start gap-2 text-meta">
                         <CheckCircle2 aria-hidden
                           size={13}
                           className="mt-[3px] shrink-0 text-xp-green"
@@ -227,7 +227,7 @@ const VaultArticleSheet = ({
                   <SectionHeader Icon={AlertTriangle} label="Risks & limits" color="hsl(35 90% 60%)" />
                   <ul className="space-y-1.5">
                     {article.risks.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12px]">
+                      <li key={i} className="flex items-start gap-2 text-meta">
                         <AlertTriangle aria-hidden
                           size={13}
                           className="mt-[3px] shrink-0 text-amber-400"
@@ -249,7 +249,7 @@ const VaultArticleSheet = ({
                     ))}
                   </div>
                 ) : (
-                  <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-[16px] prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-[14px] prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-[12px] prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
+                  <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-copy prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-note prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-meta prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
                     <ReactMarkdown>{article.body_md}</ReactMarkdown>
                   </article>
                 )}
@@ -266,9 +266,9 @@ const VaultArticleSheet = ({
                   <SectionHeader Icon={Zap} label="Try this today" color={accent} />
                   <ol className="space-y-2">
                     {article.try_today.map((step, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-[12px]">
+                      <li key={i} className="flex items-start gap-2.5 text-meta">
                         <span
-                          className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[11px] font-black"
+                          className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-label font-black"
                           style={{
                             background: `${accent}25`,
                             color: accent,
@@ -289,7 +289,7 @@ const VaultArticleSheet = ({
                   <SectionHeader Icon={ListChecks} label="Key takeaways" color={accent} />
                   <ul className="space-y-1.5">
                     {article.key_takeaways.map((k, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12px]">
+                      <li key={i} className="flex items-start gap-2 text-meta">
                         <span
                           className="mt-[7px] h-1.5 w-1.5 rounded-full shrink-0"
                           style={{ background: accent }}
@@ -307,10 +307,10 @@ const VaultArticleSheet = ({
 
               {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
-                  <p className="text-[11px] font-bold text-muted-foreground mb-2">
+                  <p className="text-label font-bold text-muted-foreground mb-2">
                     References
                   </p>
-                  <ol className="space-y-1.5 text-[12px] text-muted-foreground/90 list-decimal list-inside">
+                  <ol className="space-y-1.5 text-meta text-muted-foreground/90 list-decimal list-inside">
                     {article.references_json.map((r, i) => (
                       <li key={i} className="leading-snug">
                         <span className="text-foreground/85 font-semibold">{r.author}</span>
@@ -337,7 +337,7 @@ const VaultArticleSheet = ({
                 type="button"
                 onClick={handleComplete}
                 disabled={completeLesson.isPending || isCompleted}
-                className="press text-[11px] font-bold text-muted-foreground w-full rounded-2xl py-3 transition-[color,opacity] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="press text-label font-bold text-muted-foreground w-full rounded-2xl py-3 transition-[color,opacity] disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
                   background: isCompleted ? `${accent}20` : accent,
                   color: isCompleted ? accent : "hsl(var(--background))",
@@ -352,7 +352,7 @@ const VaultArticleSheet = ({
                     : "Mark lesson complete"}
               </button>
 
-              <p className="text-[11px] text-muted-foreground/75 text-center pt-1">
+              <p className="text-label text-muted-foreground/75 text-center pt-1">
                 Educational content — not a substitute for medical advice.
               </p>
             </div>
@@ -364,7 +364,7 @@ const VaultArticleSheet = ({
 
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col">
-    <dt className="text-[11px] font-bold text-muted-foreground/80">
+    <dt className="text-label font-bold text-muted-foreground/80">
       {label}
     </dt>
     <dd className="text-foreground/95 leading-snug">{value}</dd>
@@ -382,7 +382,7 @@ const SectionHeader = ({
 }) => (
   <div className="flex items-center gap-2 mb-2">
     <Icon size={13} style={{ color }} strokeWidth={2.6} />
-    <p className="text-[11px] font-bold text-muted-foreground" style={{ color }}>
+    <p className="text-label font-bold text-muted-foreground" style={{ color }}>
       {label}
     </p>
   </div>

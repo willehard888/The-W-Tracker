@@ -51,7 +51,7 @@ const Thumb = ({ slug, name }: { slug: string; name: string }) => {
       {ill ? (
         <img src={illustrationThumb(ill.idNum)} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain p-0.5" style={{ filter: GOLD_LINES }} />
       ) : (
-        <span className="text-[10px] font-black text-muted-foreground">{name.slice(0, 2).toUpperCase()}</span>
+        <span className="text-micro font-black text-muted-foreground">{name.slice(0, 2).toUpperCase()}</span>
       )}
     </div>
   );
@@ -149,7 +149,7 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
     >
       <div className="space-y-5 pb-2">
         <div>
-          <p className="text-[11px] font-bold text-muted-foreground mb-2">Focus · up to {MAX_PICK}</p>
+          <p className="text-label font-bold text-muted-foreground mb-2">Focus · up to {MAX_PICK}</p>
           <div className="flex flex-wrap gap-1.5">
             {FOCUS.map((f) => (
               <Button
@@ -181,7 +181,7 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
         </div>
 
         <div>
-          <p className="text-[11px] font-bold text-muted-foreground mb-2">Minutes</p>
+          <p className="text-label font-bold text-muted-foreground mb-2">Minutes</p>
           <div className={SEGMENT_TRACK}>
             {MINUTES.map((m) => (
               <button
@@ -190,7 +190,7 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
                 aria-pressed={minutes === m}
                 onClick={() => { hapticSelection(); setPreview(null); setMinutes(m); }}
                 className={cn(
-                  "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 rounded-lg text-[12px] font-black transition-colors tabular-nums",
+                  "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 rounded-lg text-meta font-black transition-colors tabular-nums",
                   minutes === m ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
@@ -209,8 +209,8 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
         {preview && (
           <div className="home-rise">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="font-display font-black text-[17px] tracking-tight leading-tight">{preview.focus}</p>
-              <p className="text-[12px] text-muted-foreground tabular-nums shrink-0">
+              <p className="font-display font-black text-lead tracking-tight leading-tight">{preview.focus}</p>
+              <p className="text-meta text-muted-foreground tabular-nums shrink-0">
                 {preview.duration_min} min · {preview.blocks.length} exercises
               </p>
             </div>
@@ -219,8 +219,8 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
                 <li key={b.slug} className={cn("flex items-center gap-3 py-2.5", i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${i * 45}ms` } : undefined}>
                   <Thumb slug={b.slug} name={b.name} />
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[14px] font-bold leading-tight truncate">{b.name}</span>
-                    <span className="block text-[12px] text-muted-foreground mt-0.5 tabular-nums">
+                    <span className="block text-note font-bold leading-tight truncate">{b.name}</span>
+                    <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums">
                       {b.sets} × {b.reps} · rest {formatRest(b.rest_sec)}
                     </span>
                   </span>

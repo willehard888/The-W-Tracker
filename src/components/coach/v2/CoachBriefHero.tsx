@@ -10,7 +10,7 @@ const Readiness = ({ score }: { score: number | null }) =>
   score == null ? null : (
     <p className="flex items-baseline gap-2">
       <span className="font-display font-black text-[40px] leading-none tabular-nums text-gold glow-gold-text">{score}</span>
-      <span className="text-[12px] text-muted-foreground">readiness</span>
+      <span className="text-meta text-muted-foreground">readiness</span>
     </p>
   );
 
@@ -39,7 +39,7 @@ const CoachBriefHero = ({
           <div className="h-3.5 w-[85%] rounded bg-foreground/[0.06] animate-pulse" />
           <div className="h-3.5 w-[60%] rounded bg-foreground/[0.06] animate-pulse" />
         </div>
-        <p className="text-[12px] text-muted-foreground mt-3">Coach is reading your week…</p>
+        <p className="text-meta text-muted-foreground mt-3">Coach is reading your week…</p>
       </div>
     );
   }
@@ -57,12 +57,12 @@ const CoachBriefHero = ({
         <>
           {/* The coach's words: the centrepiece. Sign-off stripped: briefs
               written before the prompt change end with "— W Coach". */}
-          <div className={cn("text-[14px] leading-relaxed text-foreground/90 [&_p]:mb-2 [&_strong]:font-black [&_strong]:text-foreground", readiness != null && "mt-3")}>
+          <div className={cn("text-note leading-relaxed text-foreground/90 [&_p]:mb-2 [&_strong]:font-black [&_strong]:text-foreground", readiness != null && "mt-3")}>
             <ReactMarkdown>{stripCoachSignoff(brief.brief_md)}</ReactMarkdown>
           </div>
 
           {brief.prescriptions?.length > 0 && (
-            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-muted-foreground">
+            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-meta text-muted-foreground">
               {brief.prescriptions.map((p, i) => (
                 <span key={i}>{p.label} <b className="font-black text-foreground tabular-nums">{p.value}</b></span>
               ))}
@@ -74,14 +74,14 @@ const CoachBriefHero = ({
               {brief.suggested_questions.slice(0, 3).map((q, i) => (
                 <button key={i} type="button" onClick={() => onAsk(q)} className="press w-full min-h-11 flex items-center gap-2.5 py-2.5 text-left">
                   <MessageCircle size={13} className="text-muted-foreground shrink-0" aria-hidden />
-                  <span className="text-[13px] font-semibold text-foreground/90 leading-snug">{q}</span>
+                  <span className="text-dense font-semibold text-foreground/90 leading-snug">{q}</span>
                 </button>
               ))}
             </div>
           )}
         </>
       ) : (
-        <p className={cn("text-[14px] font-bold leading-snug", readiness != null && "mt-3")}>
+        <p className={cn("text-note font-bold leading-snug", readiness != null && "mt-3")}>
           I'm your coach. Tell me how today's going and I'll build the next move around your data.
         </p>
       )}

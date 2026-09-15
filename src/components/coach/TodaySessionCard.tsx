@@ -16,7 +16,7 @@ import ExerciseRow from "@/components/coach/ExerciseRow";
 // session — truncating the easy end would store a harder session than happened.
 const RPE_SCALE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
+const LABEL = "text-label font-bold text-muted-foreground";
 
 interface Props {
   program: CoachProgram;
@@ -116,10 +116,10 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
 
   return (
     <div className="surface-card p-4">
-      <h2 className="font-display font-black text-[20px] leading-[1.1] tracking-tight">
+      <h2 className="font-display font-black text-head leading-[1.1] tracking-tight">
         {isRest ? "Rest day" : dayFocus(day) || "Today's session"}
       </h2>
-      <p className="mt-1 text-[13px] text-muted-foreground">
+      <p className="mt-1 text-dense text-muted-foreground">
         {nextUp ? `Next up: ${dayFocus(nextUp)} · ${nextUp.day}` : daySummary(day)}
       </p>
 
@@ -161,7 +161,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
               />
             ))}
             {day.conditioning && (
-              <li className="pt-1 text-[12px] text-foreground/85">
+              <li className="pt-1 text-meta text-foreground/85">
                 <span className={cn(LABEL, "mr-1.5")}>Conditioning</span>
                 {day.conditioning}
               </li>
@@ -178,7 +178,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           )}
         </div>
       ) : recovery ? (
-        <p className="mt-3 text-[13px] text-muted-foreground leading-snug">
+        <p className="mt-3 text-dense text-muted-foreground leading-snug">
           {recovery.mobility_min} min mobility · {recovery.breathwork} · sleep {recovery.sleep_target_h}h.
         </p>
       ) : null}
@@ -200,7 +200,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           answered. A rest day has no effort worth rating. */}
       {alreadyLogged && !isRest && todayLog?.perceived_rpe == null && (
         <div className="mt-4">
-          <p className="text-[13px] font-bold mb-2">How hard was it?</p>
+          <p className="text-dense font-bold mb-2">How hard was it?</p>
           {/* 5 across, so each target clears the 44pt floor — ten in one row
               would be ~35px wide on a phone. */}
           <div className="grid grid-cols-5 gap-1.5">
@@ -212,7 +212,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
                 onClick={() => { hapticImpact("light"); saveRpe(value); }}
                 aria-label={`Rate effort ${value} out of 10`}
                 className={cn(
-                  "h-11 rounded-lg border text-[13px] font-black tabular-nums",
+                  "h-11 rounded-lg border text-dense font-black tabular-nums",
                   "press transition-colors disabled:opacity-50",
                   "border-border/60 bg-secondary/40 text-muted-foreground",
                   "hover:border-gold/40 hover:text-gold",
@@ -223,7 +223,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground/75 mt-1.5 leading-snug">
+          <p className="text-label text-muted-foreground/75 mt-1.5 leading-snug">
             1 = easy · 10 = everything you had. This is what tomorrow's plan reads.
           </p>
         </div>
@@ -242,7 +242,7 @@ const CollapseRow = ({
   >
     <span className={cn(LABEL, "mt-0.5 shrink-0")}>{label}</span>
     <span className={cn(
-      "text-[12px] leading-snug flex-1",
+      "text-meta leading-snug flex-1",
       open ? "text-foreground/90" : "text-foreground/75 truncate",
     )}>
       {preview}

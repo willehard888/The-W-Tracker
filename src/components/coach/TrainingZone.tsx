@@ -32,7 +32,7 @@ import FocusSessionSheet from "@/components/coach/FocusSessionSheet";
 
 const ROW = "surface-card surface-card-quiet flex items-center";
 const BODY = "flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity";
-const LABEL = "text-[11px] font-bold text-muted-foreground/75 mb-0.5";
+const LABEL = "text-label font-bold text-muted-foreground/75 mb-0.5";
 
 /**
  * "Train today by focus" — the door under the row and the sheet it opens.
@@ -45,7 +45,7 @@ const FocusDoor = ({ label = "Pick a different focus" }: { label?: string }) => 
       <button
         type="button"
         onClick={() => { hapticSelection(); setOpen(true); }}
-        className="press w-full min-h-11 flex items-center gap-1 px-4 text-[12px] font-bold text-muted-foreground"
+        className="press w-full min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
       >
         {label} <ChevronRight aria-hidden size={13} />
       </button>
@@ -71,11 +71,11 @@ const TrainingZone = () => {
         <div className="flex items-center">
           <button type="button" onClick={go} aria-label="Open today's session" className={BODY}>
             <p className={LABEL}>Training · Today</p>
-            <p className="text-[14px] font-bold leading-tight truncate">
+            <p className="text-note font-bold leading-tight truncate">
               {done && <Check aria-hidden size={13} className="inline mr-1 text-xp-green" />}
               {dayFocus(d) || "Your session"}
             </p>
-            <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5">
               {done ? "Logged today" : inProgress ? `In progress · ${daySummary(d)}` : daySummary(d)}
             </p>
           </button>
@@ -124,8 +124,8 @@ const TrainingZone = () => {
             className={BODY}
           >
             <p className={LABEL}>Training</p>
-            <p className="text-[14px] font-bold leading-tight">No program yet</p>
-            <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+            <p className="text-note font-bold leading-tight">No program yet</p>
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5">
               Pick a focus for a session now, or build a 4-week program.
             </p>
           </button>
@@ -165,21 +165,21 @@ const TrainingZone = () => {
         {!day ? (
           // The plan exists but today's slot is missing — a truncated
           // generation. Say something true instead of rendering a blank row.
-          <p className="text-[14px] font-bold leading-tight">Your week is ready</p>
+          <p className="text-note font-bold leading-tight">Your week is ready</p>
         ) : isRestDay(day) ? (
           <>
-            <p className="text-[14px] font-bold leading-tight">Rest day</p>
-            <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+            <p className="text-note font-bold leading-tight">Rest day</p>
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5">
               Recovery is part of the program, not a gap in it.
             </p>
           </>
         ) : (
           <>
-            <p className="text-[14px] font-bold leading-tight truncate">
+            <p className="text-note font-bold leading-tight truncate">
               {done && <Check aria-hidden size={13} className="inline mr-1 text-xp-green" />}
               {dayFocus(day) || "Today's session"}
             </p>
-            <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5">
               {done ? "Logged today" : daySummary(day) || "Tap to see today's exercises"}
             </p>
           </>

@@ -34,9 +34,9 @@ const EvidenceChip = ({ tier, size = "sm" }: { tier: Tier; size?: "sm" | "md" })
   return (
     <span
       className={cn(
-        "text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1 rounded-full border",
+        "text-label font-bold text-muted-foreground inline-flex items-center gap-1 rounded-full border",
         m.classes,
-        size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-[11px]",
+        size === "sm" ? "px-1.5 py-0.5 text-micro" : "px-2 py-1 text-label",
       )}
     >
       <Icon size={size === "sm" ? 8 : 10} strokeWidth={3} />

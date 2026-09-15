@@ -36,8 +36,8 @@ const DiarySlot = ({
 }) => (
   <section aria-label={label} className={cn("pt-4", className)}>
     <div className="flex items-center gap-2 min-h-11">
-      <h2 className="text-[13px] font-bold">{label}</h2>
-      <span className="text-[12px] tabular-nums text-muted-foreground">
+      <h2 className="text-dense font-bold">{label}</h2>
+      <span className="text-meta tabular-nums text-muted-foreground">
         {hasItems ? `${Math.round(kcal)} kcal` : ""}
       </span>
       <div className="ml-auto flex items-center gap-1">
@@ -81,7 +81,7 @@ const DiarySlot = ({
       <button
         type="button"
         onClick={onAdd}
-        className="w-full min-h-11 text-left text-[13px] text-muted-foreground/80 active:opacity-70"
+        className="w-full min-h-11 text-left text-dense text-muted-foreground/80 active:opacity-70"
       >
         Nothing logged
       </button>

@@ -64,7 +64,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
               aria-pressed={active}
               onClick={() => pick(p)}
               className={cn(
-                "press shrink-0 min-h-11 px-4 rounded-full border text-[12px] font-bold transition-colors ",
+                "press shrink-0 min-h-11 px-4 rounded-full border text-meta font-bold transition-colors ",
                 active ? "border-gold/50 bg-gold/[0.08] text-gold" : "border-border bg-transparent text-foreground",
               )}
             >
@@ -86,26 +86,26 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
             aria-label="Amount"
             onChange={(e) => onChange({ ...value, qty: e.target.value })}
             className={cn(
-              "w-full surface-inset rounded-xl h-12 px-4 text-[20px] font-black tabular-nums outline-none focus:border-gold/50 transition-colors",
+              "w-full surface-inset rounded-xl h-12 px-4 text-head font-black tabular-nums outline-none focus:border-gold/50 transition-colors",
               !qtyValid && "border-destructive/60",
             )}
           />
         </label>
-        <span className="text-[13px] font-bold text-muted-foreground shrink-0 min-w-[3rem]">
+        <span className="text-dense font-bold text-muted-foreground shrink-0 min-w-[3rem]">
           {value.unit === "g" ? "g" : value.unit === "ml" ? "ml" : value.unit === "custom" ? "×" : qtyNumber === 1 ? "serving" : "servings"}
         </span>
       </div>
 
       {value.unit === "custom" && (
         <label className="flex items-center gap-3">
-          <span className="text-[12px] font-bold text-muted-foreground shrink-0">grams per unit</span>
+          <span className="text-meta font-bold text-muted-foreground shrink-0">grams per unit</span>
           <input
             type="text"
             inputMode="decimal"
             value={value.customGrams}
             aria-label="Grams per unit"
             onChange={(e) => onChange({ ...value, customGrams: e.target.value })}
-            className="flex-1 surface-inset rounded-xl h-11 px-3 text-[15px] font-bold tabular-nums outline-none focus:border-gold/50"
+            className="flex-1 surface-inset rounded-xl h-11 px-3 text-read font-bold tabular-nums outline-none focus:border-gold/50"
           />
         </label>
       )}
@@ -123,10 +123,10 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
                   hapticSelection();
                   onChange({ ...value, qty: String(q) });
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-[color,box-shadow] ", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-dense font-black tabular-nums transition-[color,box-shadow] ", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {massUnit ? q : fmtQty(q)}
-                {massUnit ? <span className="text-[10px] font-bold ml-0.5">{value.unit}</span> : "×"}
+                {massUnit ? <span className="text-micro font-bold ml-0.5">{value.unit}</span> : "×"}
               </button>
             );
           })}

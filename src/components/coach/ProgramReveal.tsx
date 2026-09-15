@@ -62,17 +62,17 @@ const ProgramReveal = ({
 
   return (
     <section>
-      <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{lead}</h2>
-      {rest && <p className="mt-2 text-[13px] text-foreground/85 leading-snug">{rest}</p>}
+      <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">{lead}</h2>
+      {rest && <p className="mt-2 text-dense text-foreground/85 leading-snug">{rest}</p>}
 
-      <p className="mt-2 text-[13px] text-muted-foreground">
+      <p className="mt-2 text-dense text-muted-foreground">
         <N>{fmtInt(n)}</N> {n === 1 ? "session" : "sessions"}
         {avgMin > 0 && <> · ~<N>{fmtInt(avgMin)}</N> min</>}
         {" · "}week <N>{fmtInt(currentWeek)}</N> of {fmtInt(program.weeks ?? 4)}
         {todayIsRest && firstDay && <> · first session {firstDay}</>}
       </p>
       {focusList.length > 0 && (
-        <p className="mt-1 text-[13px] text-muted-foreground">{focusList.join(" · ")}</p>
+        <p className="mt-1 text-dense text-muted-foreground">{focusList.join(" · ")}</p>
       )}
 
       <Button

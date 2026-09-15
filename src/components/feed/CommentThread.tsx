@@ -75,7 +75,7 @@ const CommentThread = memo(function CommentThread({
             className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-gold/30 via-gold/15 to-transparent"
           />
         )}
-        <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-[11px] font-black text-primary-foreground shrink-0 mt-0.5">
+        <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-label font-black text-primary-foreground shrink-0 mt-0.5">
           {username.charAt(0)?.toUpperCase() || "?"}
         </div>
         <div className="flex-1 min-w-0">
@@ -90,9 +90,9 @@ const CommentThread = memo(function CommentThread({
             )}
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-[12px] font-bold text-gold">@{username}</span>
+              <span className="text-meta font-bold text-gold">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-[10px] font-bold text-gold/70 italic">
+                <span className="text-micro font-bold text-gold/70 italic">
                   · edited
                 </span>
               )}
@@ -117,7 +117,7 @@ const CommentThread = memo(function CommentThread({
                     type="button"
                     onClick={cancelEdit}
                     disabled={saving}
-                    className="text-[11px] font-bold text-muted-foreground hover:text-foreground min-h-11 px-2 rounded-md transition-colors"
+                    className="text-label font-bold text-muted-foreground hover:text-foreground min-h-11 px-2 rounded-md transition-colors"
                   >
                     Cancel
                   </button>
@@ -125,7 +125,7 @@ const CommentThread = memo(function CommentThread({
                     type="button"
                     onClick={() => { hapticImpact("light"); saveEdit(); }}
                     disabled={saving || !draft.trim()}
-                    className="text-[11px] font-bold gradient-gold text-primary-foreground min-h-11 px-3 rounded-md disabled:opacity-50"
+                    className="text-label font-bold gradient-gold text-primary-foreground min-h-11 px-3 rounded-md disabled:opacity-50"
                   >
                     {saving ? "Saving…" : "Save"}
                   </button>
@@ -139,7 +139,7 @@ const CommentThread = memo(function CommentThread({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-[10px] text-muted-foreground/75">
+              <p className="text-micro text-muted-foreground/75">
                 {fmtRelative(node.created_at)}
               </p>
               {currentUserId && (
@@ -149,7 +149,7 @@ const CommentThread = memo(function CommentThread({
                     hapticSelection();
                     onReply(node.id, username, node.content || "");
                   }}
-                  className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
+                  className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
                 >
                   <Reply aria-hidden size={12} />
                   Reply
@@ -159,7 +159,7 @@ const CommentThread = memo(function CommentThread({
                 <button
                   type="button"
                   onClick={() => onReport(node.id, node.user_id)}
-                  className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
+                  className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
                 >
                   <Flag size={12} aria-hidden /> Report
                 </button>
@@ -173,21 +173,21 @@ const CommentThread = memo(function CommentThread({
                       setDraft(node.content || "");
                       setEditingId(node.id);
                     }}
-                    className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
+                    className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
-                    className="relative before:absolute before:-inset-2 before:content-[''] text-[10px] font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
+                    className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
                   >
                     Delete
                   </button>
                 </>
               )}
               {node.children.length > 0 && (
-                <span className="text-[10px] text-muted-foreground/75 tabular-nums">
+                <span className="text-micro text-muted-foreground/75 tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}

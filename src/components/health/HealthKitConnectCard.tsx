@@ -112,10 +112,10 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
     const reconnect = hasStaleHealthConsent();
     return (
       <div className="surface-card surface-card-quiet p-4">
-        <p className="text-[14px] font-bold leading-tight">
+        <p className="text-note font-bold leading-tight">
           {reconnect ? "Apple Health can give more now" : "Verify your check-ins automatically"}
         </p>
-        <p className="text-[12px] text-muted-foreground leading-snug mt-1">
+        <p className="text-meta text-muted-foreground leading-snug mt-1">
           {reconnect
             ? "This update reads workouts, steps, distance and body metrics on top of sleep — allow the new types once and every watch that syncs to Health (Garmin, Polar, Oura, Apple Watch) feeds your check-ins."
             : "Connect Apple Health and every workout, night of sleep and step count your watch records — Garmin, Polar, Oura, Apple Watch — confirms your check-in for you. Verified check-ins earn the \"Verified Performer\" badge."}
@@ -133,12 +133,12 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
       <div className="surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
         <WifiOff size={16} className="text-muted-foreground shrink-0" aria-hidden />
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold leading-tight">Nothing came through from Health</p>
-          <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+          <p className="text-dense font-bold leading-tight">Nothing came through from Health</p>
+          <p className="text-label text-muted-foreground leading-snug mt-0.5">
             Check Settings → Health → Data Access &amp; Devices → Whealth Factory, then sync.
           </p>
         </div>
-        <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-[12px]" loading={syncing} onClick={() => { void syncToday(); }}>
+        <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-meta" loading={syncing} onClick={() => { void syncToday(); }}>
           <Check aria-hidden size={11} /> Sync
         </Button>
       </div>
@@ -152,16 +152,16 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
     <div className="surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
       <ShieldCheck size={16} className="text-xp-green shrink-0" aria-hidden />
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold leading-tight truncate">
+        <p className="text-dense font-bold leading-tight truncate">
           {stats?.is_verified_performer ? "Verified Performer" : via}
         </p>
-        <p className="text-[11px] text-muted-foreground leading-snug mt-0.5 tabular-nums truncate">
+        <p className="text-label text-muted-foreground leading-snug mt-0.5 tabular-nums truncate">
           {stats?.is_verified_performer ? `${via} · ` : ""}
           {stats?.verified_count ?? 0}/{stats?.total_checkins ?? 0} verified in 14 days
           {stats?.is_verified_performer ? "" : " · 70% earns the badge"}
         </p>
       </div>
-      <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-[12px]" loading={syncing} onClick={() => { void syncToday(); }}>
+      <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-meta" loading={syncing} onClick={() => { void syncToday(); }}>
         <Check aria-hidden size={11} /> Sync
       </Button>
     </div>

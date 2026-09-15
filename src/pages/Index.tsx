@@ -308,7 +308,7 @@ const Index = () => {
              air instead of a stat strip crowding it. ── */}
       <header className="home-rise relative z-10 pt-0.5">
         <p className="eyebrow text-muted-foreground/75">{weekday} · {monthDay}</p>
-        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight mt-1.5">
+        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight mt-1.5">
           {ritualLine}
         </h1>
       </header>
@@ -349,25 +349,25 @@ const Index = () => {
           >
             {rankSane && (
               <span className="inline-flex items-baseline gap-1">
-                <span className="font-display font-black text-[17px] tabular-nums leading-none">
+                <span className="font-display font-black text-lead tabular-nums leading-none">
                   #<AnimatedNumber value={rankData!.rank} duration={700} />
                 </span>
                 {/* "by score" because the app has two boards: this is
                     `get_user_rank` (rank score, the ladder that decides your
                     tier) and the Ranks tab opens on this month's XP. The same
                     account read "#3 of 6" here and "#5 of 5" one tap away. */}
-                <span className="text-[11px] text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)} by score</span>
+                <span className="text-label text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)} by score</span>
               </span>
             )}
             <span className="inline-flex items-baseline gap-1">
-              <span className="font-display font-black text-[17px] tabular-nums leading-none">Lv {profile.level}</span>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="font-display font-black text-lead tabular-nums leading-none">Lv {profile.level}</span>
+              <span className="text-label text-muted-foreground">
                 <AnimatedNumber value={Math.max(0, xpToNext - profile.xp)} duration={900} /> XP to go
               </span>
             </span>
           </button>
           {pulse.hasSnapshot && pulse.rankDelta > 0 && (
-            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 mr-2 text-[11px] font-black text-teal">
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 mr-2 text-label font-black text-teal">
               <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta}
             </span>
           )}
@@ -378,8 +378,8 @@ const Index = () => {
               onClick={() => navigate("/journey")}
               className="shrink-0 flex flex-col items-end pr-4 pl-3 py-3 border-l border-border/40 active:opacity-70 transition-opacity"
             >
-              <span className="text-[11px] font-bold text-gold/85 leading-none">W-Index</span>
-              <span className="font-display font-black text-[17px] tabular-nums leading-none text-gold glow-gold-text mt-1 inline-flex items-center gap-1">
+              <span className="text-label font-bold text-gold/85 leading-none">W-Index</span>
+              <span className="font-display font-black text-lead tabular-nums leading-none text-gold glow-gold-text mt-1 inline-flex items-center gap-1">
                 <Crown size={13} strokeWidth={2.8} aria-hidden /> {liveWhealth.overall}
               </span>
             </button>
@@ -513,7 +513,7 @@ const Index = () => {
 
       {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
       <div className="mt-6 mb-2 text-center">
-        <p className="text-[11px] font-bold text-muted-foreground">
+        <p className="text-label font-bold text-muted-foreground">
           {tierConfig.message}
         </p>
       </div>

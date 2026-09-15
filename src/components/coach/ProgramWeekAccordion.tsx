@@ -13,7 +13,7 @@ interface Props {
   logs: ProgramLog[];
 }
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
+const LABEL = "text-label font-bold text-muted-foreground";
 
 const nutritionLine = (n: ProgramWeek["nutrition"]) =>
   [
@@ -55,7 +55,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
               onClick={() => setOpenWeek(open ? -1 : week.week)}
               className="press w-full min-h-11 flex items-center gap-3 py-3 text-left"
             >
-              <span className="flex-1 min-w-0 block text-[14px] font-semibold leading-tight truncate">
+              <span className="flex-1 min-w-0 block text-note font-semibold leading-tight truncate">
                 Week {week.week}{week.theme ? ` · ${week.theme}` : ""}
               </span>
               <ChevronDown
@@ -68,7 +68,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
             {open && (
               <div className="pb-3">
                 {week.progression_note && (
-                  <p className="mb-1 text-[12px] text-muted-foreground leading-snug">
+                  <p className="mb-1 text-meta text-muted-foreground leading-snug">
                     {week.progression_note}
                   </p>
                 )}
@@ -77,7 +77,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                     const dayKey = `${week.week}-${di}`;
                     if (isRestDay(day)) {
                       return (
-                        <li key={dayKey} className="py-2.5 flex items-center gap-3 text-[13px] text-muted-foreground">
+                        <li key={dayKey} className="py-2.5 flex items-center gap-3 text-dense text-muted-foreground">
                           <span className={cn(LABEL, "w-8 shrink-0")}>{day.day}</span>
                           Rest
                         </li>
@@ -95,8 +95,8 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                         >
                           <span className={cn(LABEL, "w-8 shrink-0")}>{day.day}</span>
                           <span className="flex-1 min-w-0">
-                            <span className="block text-[13px] font-semibold leading-tight truncate">{day.focus}</span>
-                            <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{daySummary(day)}</span>
+                            <span className="block text-dense font-semibold leading-tight truncate">{day.focus}</span>
+                            <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{daySummary(day)}</span>
                           </span>
                           {isLogged && <Check size={14} className="text-xp-green shrink-0" role="img" aria-label="Done" />}
                           <ChevronDown
@@ -118,7 +118,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                               />
                             ))}
                             {day.conditioning && (
-                              <li className="pt-1 text-[12px] text-foreground/80">
+                              <li className="pt-1 text-meta text-foreground/80">
                                 <span className={cn(LABEL, "mr-1.5")}>Conditioning</span>
                                 {day.conditioning}
                               </li>
@@ -142,7 +142,7 @@ const ProgramWeekAccordion = ({ program, currentWeek, logs }: Props) => {
                     <button
                       type="button"
                       onClick={() => setShowWeekDetails(v => !v)}
-                      className="press w-full min-h-11 inline-flex items-center justify-center gap-1 text-[12px] font-semibold text-muted-foreground"
+                      className="press w-full min-h-11 inline-flex items-center justify-center gap-1 text-meta font-semibold text-muted-foreground"
                     >
                       Week details
                       <ChevronDown size={12} className={cn("transition-transform", showWeekDetails && "rotate-180")} aria-hidden />

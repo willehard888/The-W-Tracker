@@ -74,21 +74,21 @@ const PortionPanel = ({
   return (
     <div className="space-y-5">
       <div>
-        <p className="font-display text-[20px] font-black tracking-tight leading-tight">{food.name}</p>
-        {food.brand && <p className="text-[13px] text-muted-foreground mt-0.5">{food.brand}</p>}
+        <p className="font-display text-head font-black tracking-tight leading-tight">{food.name}</p>
+        {food.brand && <p className="text-dense text-muted-foreground mt-0.5">{food.brand}</p>}
       </div>
 
       <ServingPicker food={food} value={portion} onChange={setPortion} />
 
       <NutrientPreview nutrition={preview} note={note} dim={!resolved.ok} />
       {reason && (
-        <p role="status" className="text-[12px] text-[hsl(var(--ember))] -mt-3">
+        <p role="status" className="text-meta text-[hsl(var(--ember))] -mt-3">
           {reason}
         </p>
       )}
 
       <div>
-        <p className="text-[11px] font-bold text-muted-foreground/80 mb-1.5">Meal</p>
+        <p className="text-label font-bold text-muted-foreground/80 mb-1.5">Meal</p>
         <div className={SEGMENT_TRACK} role="group" aria-label="Meal slot">
           {MEAL_SLOTS.map((s) => (
             <button
@@ -99,7 +99,7 @@ const PortionPanel = ({
                 hapticSelection();
                 onSlotChange(s.key);
               }}
-              className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+              className={cn("press flex-1 h-11 rounded-lg text-meta font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {s.label}
             </button>

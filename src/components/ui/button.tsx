@@ -226,7 +226,7 @@ const buttonVariants = cva(
          * gap-1 (both hops: root for asChild, inner span otherwise) keeps a
          * Reply · Edit · Delete meta row at its hand-rolled 4px density.
          */
-        xs: "h-7 min-h-7 px-2 rounded-md text-[11px] [&_svg]:size-3 gap-1 [&>span]:gap-1",
+        xs: "h-7 min-h-7 px-2 rounded-md text-label [&_svg]:size-3 gap-1 [&>span]:gap-1",
         lg: "h-12 min-h-12 px-8 rounded-lg text-base",
         xl: "h-14 min-h-14 px-10 rounded-lg text-lg tracking-[-0.01em] font-display",
         icon: "h-10 w-10 min-h-10 rounded-md",

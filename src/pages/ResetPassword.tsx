@@ -82,7 +82,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center home-rise">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">This link has expired.</h1>
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">This link has expired.</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             Reset links work once. Sign in and request a new one.
           </p>
@@ -98,7 +98,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center home-rise">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Password updated.</h1>
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Password updated.</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             You're signed in. Your streak is waiting.
           </p>
@@ -115,7 +115,7 @@ const ResetPassword = () => {
       <div className="w-full max-w-sm">
         <header className="home-rise flex flex-col items-center text-center mb-8">
           <BrandLogo size={48} priority className="rounded-xl mb-5" />
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Set a new password.</h1>
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Set a new password.</h1>
           <p className="mt-2 text-sm text-muted-foreground">Six characters or more.</p>
         </header>
 

@@ -19,7 +19,7 @@ const NutrientPreview = ({
 }) => (
   <div className={cn("transition-opacity", dim && "opacity-40", className)} aria-live="polite">
     <MacroRow nutrition={nutrition} />
-    {note && <p className="text-[11px] text-muted-foreground/80 mt-2 leading-snug">{note}</p>}
+    {note && <p className="text-label text-muted-foreground/80 mt-2 leading-snug">{note}</p>}
   </div>
 );
 

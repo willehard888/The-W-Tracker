@@ -408,7 +408,7 @@ const Profile = () => {
       {/* ── OPENING BEAT + the one action. Sign Out sits in this menu too:
              users kept missing it inside the Settings tab. ── */}
       <header className="home-rise flex items-center justify-between gap-3 mb-4">
-        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
           {best > 0 ? `Lv ${profile.level ?? 1}. ${best}-day best.` : "Recruit. Day one."}
         </h1>
         <DropdownMenu>
@@ -461,7 +461,7 @@ const Profile = () => {
             key={t}
             onClick={() => { void hapticSelection(); setProfileTab(t); }}
             className={cn(
-              "flex-1 min-h-11 rounded-lg text-[13px] font-black capitalize transition-colors",
+              "flex-1 min-h-11 rounded-lg text-dense font-black capitalize transition-colors",
               profileTab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -503,14 +503,14 @@ const Profile = () => {
             >
               <div className="shrink-0">
                 <p className="font-display font-black text-3xl leading-none tabular-nums">{latest.overall}</p>
-                <p className="text-[11px] font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
+                <p className="text-label font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
                 {/*
                   Home prints the LIVE index, recomputed on every open; this
                   one is the stored nightly score, on purpose (the live hook is
                   11 queries). Unlabelled, the two screens printed 64 and 66
                   minutes apart and read as a bug.
                 */}
-                <p className="text-[11px] text-muted-foreground/75 mt-0.5">{snapshotWhen(latest.snapshotDate)}</p>
+                <p className="text-label text-muted-foreground/75 mt-0.5">{snapshotWhen(latest.snapshotDate)}</p>
               </div>
               <svg viewBox="0 0 100 36" className="flex-1 h-9" preserveAspectRatio="none" aria-hidden>
                 <polyline
@@ -577,7 +577,7 @@ const Profile = () => {
                 {post.image_url && (
                   <AppImage src={post.image_url} width={600} alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
-                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-label text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart aria-hidden size={12} /> {post.likes_count}</span>
                   <span className="flex items-center gap-1"><Trophy aria-hidden size={12} /> {post.kudos_count}</span>
                   <span className="flex items-center gap-1"><MessageSquare aria-hidden size={12} /> {post.comments_count}</span>
@@ -623,10 +623,10 @@ const Profile = () => {
             <div className="home-rise surface-card surface-card-quiet px-4 py-3 flex items-center gap-3">
               <CreditCard aria-hidden size={14} className="text-xp-green shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold text-xp-green/90">
+                <p className="text-label font-bold text-xp-green/90">
                   Membership active
                 </p>
-                <p className="text-[12px] text-muted-foreground">
+                <p className="text-meta text-muted-foreground">
                   Member since {profile.created_at ? format(new Date(profile.created_at), "MMM yyyy") : "—"}
                 </p>
               </div>
@@ -753,8 +753,8 @@ const Profile = () => {
 /** One inline number + label of the standing line. */
 const Standing = ({ value, label }: { value: number; label: string }) => (
   <span className="inline-flex items-baseline gap-1">
-    <span className="font-display font-black text-[17px] tabular-nums leading-none">{fmtInt(value)}</span>
-    <span className="text-[11px] text-muted-foreground">{label}</span>
+    <span className="font-display font-black text-lead tabular-nums leading-none">{fmtInt(value)}</span>
+    <span className="text-label text-muted-foreground">{label}</span>
   </span>
 );
 

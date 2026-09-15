@@ -67,18 +67,18 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
   return (
     <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[14px] font-bold leading-snug text-foreground">{signal.headline}</p>
+        <p className="text-note font-bold leading-snug text-foreground">{signal.headline}</p>
         {profile?.streak && profile.streak > 0 ? (
-          <span className="shrink-0 text-[12px] text-muted-foreground tabular-nums">{profile.streak}d streak</span>
+          <span className="shrink-0 text-meta text-muted-foreground tabular-nums">{profile.streak}d streak</span>
         ) : null}
       </div>
       {signal.detail && (
-        <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{signal.detail}</p>
+        <p className="text-meta text-muted-foreground mt-1 leading-snug">{signal.detail}</p>
       )}
 
       {/* Signals inline: one quiet line, no tiles. */}
       {(signal.sleepAvg !== null || signal.hydrationAvg !== null) && (
-        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-muted-foreground tabular-nums">
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-meta text-muted-foreground tabular-nums">
           <span>Sleep <b className={cn("font-black", signal.sleepAvg !== null && signal.sleepAvg >= 7.5 ? "text-foreground" : "text-foreground/75")}>{signal.sleepAvg !== null ? `${signal.sleepAvg.toFixed(1)}h` : "—"}</b></span>
           <span>Water <b className={cn("font-black", signal.hydrationAvg !== null && signal.hydrationAvg >= 2.5 ? "text-foreground" : "text-foreground/75")}>{signal.hydrationAvg !== null ? `${signal.hydrationAvg.toFixed(1)}L` : "—"}</b></span>
           <span>Reflection <b className={cn("font-black", reflection ? "text-foreground" : "text-foreground/75")}>{reflection ? "logged" : "not yet"}</b></span>
@@ -93,8 +93,8 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
       >
         <span className="text-lg shrink-0" aria-hidden>{pillarMeta.emoji}</span>
         <span className="flex-1 min-w-0">
-          <span className={cn("block text-[13px] font-bold leading-tight", pillarMeta.tint.text)}>{pillarMeta.name} is the gap</span>
-          <span className="block text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-1">{pillarMeta.blurb}</span>
+          <span className={cn("block text-dense font-bold leading-tight", pillarMeta.tint.text)}>{pillarMeta.name} is the gap</span>
+          <span className="block text-label text-muted-foreground leading-snug mt-0.5 line-clamp-1">{pillarMeta.blurb}</span>
         </span>
         <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
       </button>

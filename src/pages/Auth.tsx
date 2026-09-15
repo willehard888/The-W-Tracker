@@ -150,7 +150,7 @@ const Auth = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm home-rise text-center">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Check your email.</h1>
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Check your email.</h1>
           <p className="text-sm text-muted-foreground mt-3">
             We sent a verification link to <span className="text-foreground font-semibold">{email}</span>. Click the link to activate your account.
           </p>
@@ -169,7 +169,7 @@ const Auth = () => {
                you are here. ── */}
         <header className="home-rise flex flex-col items-center text-center mb-8">
           <BrandLogo size={48} priority className="rounded-xl mb-5" />
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {mode === "login" ? "Welcome back." : "Earn your status."}
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
@@ -216,16 +216,16 @@ const Auth = () => {
                 />
               </div>
               {nameStatus === "taken" ? (
-                <p className="text-[11px] text-destructive mt-1.5 font-bold">@{username} is taken — pick another.</p>
+                <p className="text-label text-destructive mt-1.5 font-bold">@{username} is taken — pick another.</p>
               ) : nameStatus === "available" ? (
-                <p className="commit-pop origin-left text-[11px] text-xp-green mt-1.5 font-bold">@{username} is yours ✓</p>
+                <p className="commit-pop origin-left text-label text-xp-green mt-1.5 font-bold">@{username} is yours ✓</p>
               ) : nameStatus === "checking" ? (
-                <p className="text-[11px] text-muted-foreground mt-1.5">Checking availability…</p>
+                <p className="text-label text-muted-foreground mt-1.5">Checking availability…</p>
               ) : (
-                <p className="text-[11px] text-muted-foreground mt-1.5">Locked permanently once set.</p>
+                <p className="text-label text-muted-foreground mt-1.5">Locked permanently once set.</p>
               )}
               {/* The trial, one line. The only gold on the screen is the number. */}
-              <p className="text-[12px] text-muted-foreground mt-3 leading-snug">
+              <p className="text-meta text-muted-foreground mt-3 leading-snug">
                 {refCode && (invitedBy ? `@${invitedBy} invited you. ` : "You were invited. ")}
                 <span className="text-gold font-bold">14-day</span> free trial, full access. Cancel anytime.
                 {refCode && " Your referrer earns +50 XP when you verify."}

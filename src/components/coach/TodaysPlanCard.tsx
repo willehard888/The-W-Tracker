@@ -59,11 +59,11 @@ const MissionRow = ({
     >
       <Icon size={14} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
       <span className="min-w-0 flex-1">
-        <span className={cn("block text-[13px] font-bold leading-tight", isDone && "text-muted-foreground line-through")}>
+        <span className={cn("block text-dense font-bold leading-tight", isDone && "text-muted-foreground line-through")}>
           {mission.title}
         </span>
         {mission.detail && (
-          <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{mission.detail}</span>
+          <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{mission.detail}</span>
         )}
       </span>
       <span
@@ -163,8 +163,8 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
   if ((isLoading || generating) && !plan) {
     return (
       <div className="surface-card surface-card-quiet p-4">
-        <p className="text-[13px] font-bold">Building today's plan…</p>
-        <p className="text-[12px] text-muted-foreground mt-0.5">Reading your recent recovery, training and streak.</p>
+        <p className="text-dense font-bold">Building today's plan…</p>
+        <p className="text-meta text-muted-foreground mt-0.5">Reading your recent recovery, training and streak.</p>
       </div>
     );
   }
@@ -173,8 +173,8 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
   if (!plan && needsMembership) {
     return (
       <button type="button" onClick={() => navigate("/paywall")} className="press w-full min-h-11 text-left surface-card surface-card-quiet p-4">
-        <p className="text-[13px] font-bold">Your daily plan is a member feature</p>
-        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+        <p className="text-dense font-bold">Your daily plan is a member feature</p>
+        <p className="text-meta text-muted-foreground leading-snug mt-0.5">
           A readiness score + 3–5 missions fitted to how you're actually recovering —
           rebuilt for you every morning. Unlock full access.
         </p>
@@ -186,8 +186,8 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
   if (!plan) {
     return (
       <button type="button" onClick={regenerate} className="press w-full min-h-11 text-left surface-card surface-card-quiet p-4">
-        <p className="text-[13px] font-bold">Build today's plan</p>
-        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+        <p className="text-dense font-bold">Build today's plan</p>
+        <p className="text-meta text-muted-foreground leading-snug mt-0.5">
           Get a readiness read and 3–5 missions fitted to how you're actually recovering.
         </p>
       </button>
@@ -201,11 +201,11 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
     <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className={cn("text-[15px] font-black leading-tight", adjust.tone)}>{adjust.label}</p>
+          <p className={cn("text-read font-black leading-tight", adjust.tone)}>{adjust.label}</p>
           {plan.headline && (
-            <p className="text-[12px] text-foreground/85 leading-snug mt-0.5">{plan.headline}</p>
+            <p className="text-meta text-foreground/85 leading-snug mt-0.5">{plan.headline}</p>
           )}
-          <p className="text-[12px] text-muted-foreground leading-snug mt-1">{whyLine(plan)}</p>
+          <p className="text-meta text-muted-foreground leading-snug mt-1">{whyLine(plan)}</p>
         </div>
         <Button
           variant="ghost"
@@ -233,7 +233,7 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
       </div>
 
       {total > 0 && (
-        <p className={cn("mt-2 text-[12px] tabular-nums", complete ? "font-bold text-xp-green" : "text-muted-foreground")}>
+        <p className={cn("mt-2 text-meta tabular-nums", complete ? "font-bold text-xp-green" : "text-muted-foreground")}>
           {complete ? "Plan complete. You showed up." : `${done} of ${total} done`}
         </p>
       )}

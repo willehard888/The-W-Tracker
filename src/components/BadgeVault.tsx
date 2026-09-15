@@ -163,7 +163,7 @@ const BadgeVault = ({
             Badge Vault
             <Sparkles aria-hidden size={12} className="text-gold" />
           </h2>
-          <p className="text-[12px] text-muted-foreground tabular-nums">
+          <p className="text-meta text-muted-foreground tabular-nums">
             <span className="font-bold text-foreground">{totalEarned}</span>
             <span className="text-muted-foreground/75"> / {totalBadges}</span>
             <span className="ml-1.5 text-muted-foreground">collected · {overallPct}%</span>
@@ -179,7 +179,7 @@ const BadgeVault = ({
               <div
                 key={r}
                 className={cn(
-                  "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-black border tabular-nums",
+                  "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro font-black border tabular-nums",
                   meta.chip
                 )}
                 title={`${meta.label}: ${counts.earned}/${counts.total}`}
@@ -244,7 +244,7 @@ const BadgeVault = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Target aria-hidden size={12} className="text-gold" />
-                <span className="text-[10px] font-bold text-gold">
+                <span className="text-micro font-bold text-gold">
                   Next Drop
                 </span>
               </div>
@@ -256,7 +256,7 @@ const BadgeVault = ({
                     style={{ width: `${nextDrop.p?.percent ?? 0}%` }}
                   />
                 </div>
-                <span className="text-[11px] font-bold text-foreground tabular-nums shrink-0">
+                <span className="text-label font-bold text-foreground tabular-nums shrink-0">
                   {nextDrop.p?.current}/{nextDrop.p?.target}
                 </span>
               </div>
@@ -272,7 +272,7 @@ const BadgeVault = ({
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-[background-color,color,border-color] duration-200 border shrink-0",
+              "px-3 py-1.5 rounded-full text-meta font-bold whitespace-nowrap transition-[background-color,color,border-color] duration-200 border shrink-0",
               activeCategory === cat.id
                 ? "border-gold/45 bg-gold/12 text-gold shadow-[0_0_12px_hsl(var(--gold)/0.18)]"
                 : "border-border bg-card/60 text-muted-foreground hover:border-gold/25 hover:text-foreground"
@@ -326,7 +326,7 @@ const BadgeVault = ({
                         style={{ width: `${badgeProgress.percent}%` }}
                       />
                     </div>
-                    <p className="text-[10px] text-muted-foreground text-center mt-0.5 tabular-nums">
+                    <p className="text-micro text-muted-foreground text-center mt-0.5 tabular-nums">
                       {badgeProgress.current}/{badgeProgress.target}
                     </p>
                   </div>
@@ -338,7 +338,7 @@ const BadgeVault = ({
       </div>
 
       {onSetFeatured && (
-        <p className="text-[11px] text-muted-foreground text-center mt-4">
+        <p className="text-label text-muted-foreground text-center mt-4">
           Tap to inspect · Double-tap an earned badge to set it as your title
         </p>
       )}

@@ -41,7 +41,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search friends"
-              className="h-11 rounded-xl pl-9 pr-9 text-[13px]"
+              className="h-11 rounded-xl pl-9 pr-9 text-dense"
             />
           </div>
         </div>
@@ -51,10 +51,10 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
             <div className="h-16 rounded-xl bg-card/60 animate-pulse" />
           ) : list.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-[13px] font-bold text-foreground">
+              <p className="text-dense font-bold text-foreground">
                 {(friends ?? []).length === 0 ? "No friends yet" : "No one to pick"}
               </p>
-              <p className="text-[12px] text-muted-foreground mt-1 mb-4 leading-snug">
+              <p className="text-meta text-muted-foreground mt-1 mb-4 leading-snug">
                 {(friends ?? []).length === 0
                   ? "Add friends to invite them and challenge them."
                   : "Everyone's already here."}
@@ -62,7 +62,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
               {(friends ?? []).length === 0 && (
                 <button
                   onClick={() => { onOpenChange(false); navigate("/friends"); }}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-gold px-4 py-2.5 text-[12px] font-black text-primary-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gold px-4 py-2.5 text-meta font-black text-primary-foreground"
                 >
                   <UserPlus aria-hidden size={14} /> Add friends
                 </button>
@@ -76,7 +76,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 onClick={() => onPick(f)}
                 className="press w-full flex items-center gap-3 surface-card p-2.5 text-left transition-transform disabled:opacity-50"
               >
-                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center text-[13px] font-black text-gold shrink-0">
+                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center text-dense font-black text-gold shrink-0">
                   {f.avatar_url ? (
                     <img src={avatarUrl(f.avatar_url, 40)} alt="" loading="lazy" className="h-full w-full object-cover" />
                   ) : (
@@ -84,8 +84,8 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">@{f.username}</p>
-                  <p className="text-[11px] text-muted-foreground flex items-center gap-2">
+                  <p className="text-dense font-bold truncate">@{f.username}</p>
+                  <p className="text-label text-muted-foreground flex items-center gap-2">
                     <span>Lv {f.level ?? 1}</span>
                     {(f.streak ?? 0) > 0 && (
                       <span className="inline-flex items-center gap-0.5 text-[hsl(var(--streak-orange))]">
@@ -95,7 +95,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                   </p>
                 </div>
                 {busyId === f.user_id ? (
-                  <span className="text-[12px] text-muted-foreground">…</span>
+                  <span className="text-meta text-muted-foreground">…</span>
                 ) : (
                   <ChevronRight aria-hidden size={16} className={cn("text-gold/70 shrink-0")} />
                 )}

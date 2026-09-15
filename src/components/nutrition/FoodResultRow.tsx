@@ -47,13 +47,13 @@ const FoodResultRow = ({
         onClick={() => onPick(food)}
         className="flex-1 min-w-0 min-h-11 py-2.5 text-left active:opacity-70 transition-opacity"
       >
-        <p className="text-[15px] font-bold leading-tight truncate">{food.name}</p>
-        <p className="text-[12px] text-muted-foreground leading-snug truncate">
+        <p className="text-read font-bold leading-tight truncate">{food.name}</p>
+        <p className="text-meta text-muted-foreground leading-snug truncate">
           {food.brand ? `${food.brand} · ` : ""}
           {food.isRecipe ? "per serving" : "per 100 g"}
           {food.kcal != null && ` · ${Math.round(food.kcal)} kcal`}
           {food.protein != null && ` · P ${Math.round(food.protein)}`}
-          {tag && <span className="text-[10px] font-bold ml-1.5 text-muted-foreground/75">{tag}</span>}
+          {tag && <span className="text-micro font-bold ml-1.5 text-muted-foreground/75">{tag}</span>}
         </p>
       </button>
       {onToggleFavorite && (

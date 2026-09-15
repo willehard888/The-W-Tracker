@@ -130,7 +130,7 @@ const StatTile = ({
       format={fmt}
       className={cn("font-display text-xl font-black tracking-tight", accent && "text-gold")}
     />
-    <p className="text-[11px] font-bold text-muted-foreground mt-0.5">
+    <p className="text-label font-bold text-muted-foreground mt-0.5">
       {label}
     </p>
   </div>
@@ -142,7 +142,7 @@ const SectionHeader = ({ icon: Icon, title, sub }: { icon: typeof Users; title: 
       <Icon size={13} className="text-gold" />
     </div>
     <h2 className="font-display font-bold text-base tracking-tight">{title}</h2>
-    {sub && <span className="text-[11px] font-bold ml-auto text-muted-foreground">{sub}</span>}
+    {sub && <span className="text-label font-bold ml-auto text-muted-foreground">{sub}</span>}
   </div>
 );
 
@@ -158,8 +158,8 @@ const FunnelBars = ({ steps, byStep }: { steps: ReadonlyArray<readonly [string, 
         return (
           <div key={key}>
             <div className="flex items-baseline justify-between mb-1">
-              <span className="text-[12px] font-semibold text-foreground/85">{label}</span>
-              <span className="text-[12px] tabular-nums text-muted-foreground">
+              <span className="text-meta font-semibold text-foreground/85">{label}</span>
+              <span className="text-meta tabular-nums text-muted-foreground">
                 {fmtInt(v)}
                 {stepPct != null && (
                   <span className={cn("ml-1.5 font-bold", stepPct >= 50 ? "text-xp-green" : stepPct >= 20 ? "text-gold" : "text-destructive/80")}>
@@ -270,7 +270,7 @@ export default function AdminMetrics() {
         <button
           type="button"
           onClick={() => navigate("/admin/moderation")}
-          className="text-[11px] font-bold mt-3 inline-flex items-center gap-1.5 text-gold hover:underline"
+          className="text-label font-bold mt-3 inline-flex items-center gap-1.5 text-gold hover:underline"
         >
           → Moderation queue
         </button>
@@ -322,9 +322,9 @@ export default function AdminMetrics() {
         <p className="text-xs text-muted-foreground py-4 text-center">No cohorts yet.</p>
       ) : (
         <div className="surface-card overflow-hidden">
-          <table className="w-full text-[12px]">
+          <table className="w-full text-meta">
             <thead>
-              <tr className="text-[10px] font-bold border-b border-border/60 text-muted-foreground">
+              <tr className="text-micro font-bold border-b border-border/60 text-muted-foreground">
                 <th className="text-left font-semibold px-3 py-2">Week</th>
                 <th className="text-right font-semibold px-2 py-2">Users</th>
                 <th className="text-right font-semibold px-2 py-2">D1</th>
@@ -360,20 +360,20 @@ export default function AdminMetrics() {
       ) : (
         <div className="space-y-5">
           <div className="surface-card p-4">
-            <p className="text-[11px] font-bold text-muted-foreground mb-3">Activation</p>
+            <p className="text-label font-bold text-muted-foreground mb-3">Activation</p>
             <FunnelBars steps={ACTIVATION_STEPS} byStep={steps} />
             {num(steps?.checkin_failed) > 0 && (
-              <p className="mt-3 text-[11px] font-bold text-destructive">
+              <p className="mt-3 text-label font-bold text-destructive">
                 {num(steps?.checkin_failed)} {num(steps?.checkin_failed) === 1 ? "user" : "users"} hit a failed check-in — this was invisible before.
               </p>
             )}
           </div>
           <div className="surface-card p-4">
-            <p className="text-[11px] font-bold text-muted-foreground mb-3">Reach</p>
+            <p className="text-label font-bold text-muted-foreground mb-3">Reach</p>
             <FunnelBars steps={REACH_STEPS} byStep={steps} />
           </div>
           <div className="surface-card p-4">
-            <p className="text-[11px] font-bold text-muted-foreground mb-3">Monetization</p>
+            <p className="text-label font-bold text-muted-foreground mb-3">Monetization</p>
             <FunnelBars steps={MONETIZATION_STEPS} byStep={steps} />
           </div>
         </div>
@@ -415,7 +415,7 @@ export default function AdminMetrics() {
 
           {Object.keys(waitlist.goal_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="text-[11px] font-bold text-muted-foreground mb-3">Goals people chase</p>
+              <p className="text-label font-bold text-muted-foreground mb-3">Goals people chase</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.goal_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))
@@ -424,8 +424,8 @@ export default function AdminMetrics() {
                     return (
                       <div key={goal}>
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-[12px] font-semibold text-foreground/85">{GOAL_LABELS[goal] ?? goal}</span>
-                          <span className="text-[12px] tabular-nums text-muted-foreground">{num(n)}</span>
+                          <span className="text-meta font-semibold text-foreground/85">{GOAL_LABELS[goal] ?? goal}</span>
+                          <span className="text-meta tabular-nums text-muted-foreground">{num(n)}</span>
                         </div>
                         <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
                           <div
@@ -443,7 +443,7 @@ export default function AdminMetrics() {
           {/* Struggles — the "what's holding you back" answer, aggregated. */}
           {Object.keys(waitlist.struggle_counts ?? {}).length > 0 && (
             <div className="surface-card p-4">
-              <p className="text-[11px] font-bold text-muted-foreground mb-3">What holds them back</p>
+              <p className="text-label font-bold text-muted-foreground mb-3">What holds them back</p>
               <div className="space-y-2">
                 {Object.entries(waitlist.struggle_counts)
                   .sort(([, a], [, b]) => num(b) - num(a))
@@ -452,8 +452,8 @@ export default function AdminMetrics() {
                     return (
                       <div key={s}>
                         <div className="flex items-baseline justify-between mb-1">
-                          <span className="text-[12px] font-semibold text-foreground/85">{STRUGGLE_LABELS[s] ?? s}</span>
-                          <span className="text-[12px] tabular-nums text-muted-foreground">{num(n)}</span>
+                          <span className="text-meta font-semibold text-foreground/85">{STRUGGLE_LABELS[s] ?? s}</span>
+                          <span className="text-meta tabular-nums text-muted-foreground">{num(n)}</span>
                         </div>
                         <div className="h-2 rounded-full bg-secondary/60 overflow-hidden">
                           <div
@@ -483,11 +483,11 @@ export default function AdminMetrics() {
                 return (
                   <div key={r.email} className="surface-card p-3">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="text-[12px] font-bold truncate min-w-0">
+                      <p className="text-meta font-bold truncate min-w-0">
                         {r.welcomed && <span className="text-xp-green mr-1" title="Welcome email sent">✓</span>}
                         {r.email}
                       </p>
-                      <span className="text-[11px] tabular-nums text-muted-foreground shrink-0">
+                      <span className="text-label tabular-nums text-muted-foreground shrink-0">
                         {format(new Date(r.created_at), "MMM d")}
                       </span>
                     </div>
@@ -496,14 +496,14 @@ export default function AdminMetrics() {
                         {chips.map((c, i) => (
                           <span
                             key={i}
-                            className="text-[11px] font-semibold rounded-md px-1.5 py-0.5 bg-secondary/50 border border-border/50 text-muted-foreground"
+                            className="text-label font-semibold rounded-md px-1.5 py-0.5 bg-secondary/50 border border-border/50 text-muted-foreground"
                           >
                             {c}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-[11px] text-muted-foreground/75 mt-1.5">No quiz answers (email only)</p>
+                      <p className="text-label text-muted-foreground/75 mt-1.5">No quiz answers (email only)</p>
                     )}
                   </div>
                 );

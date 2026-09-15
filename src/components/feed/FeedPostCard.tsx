@@ -144,18 +144,18 @@ const FeedPostCard = memo(function FeedPostCard({
         <div className="flex items-center justify-between mb-3 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20">
           <div className="flex items-center gap-1.5">
             <AlertTriangle aria-hidden size={12} className="text-destructive" />
-            <span className="text-[11px] font-bold text-destructive">Reported</span>
+            <span className="text-label font-bold text-destructive">Reported</span>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => onUnreport(post.id)}
-              className="px-2 py-1 rounded text-[11px] font-bold bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] hover:bg-[hsl(var(--xp-green))]/25 transition-colors"
+              className="px-2 py-1 rounded text-label font-bold bg-[hsl(var(--xp-green))]/15 text-[hsl(var(--xp-green))] hover:bg-[hsl(var(--xp-green))]/25 transition-colors"
             >
               Approve
             </button>
             <button
               onClick={() => onAdminDelete(post.id)}
-              className="px-2 py-1 rounded text-[11px] font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors"
+              className="px-2 py-1 rounded text-label font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors"
             >
               Delete
             </button>
@@ -170,13 +170,13 @@ const FeedPostCard = memo(function FeedPostCard({
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => onNavigateUser(post.user_id)}
-              className="text-[14px] font-bold truncate hover:underline"
+              className="text-note font-bold truncate hover:underline"
             >
               <TierUsername
                 username={post.profile?.username}
                 tier={post.profile?.status_tier || "recruit"}
               />
-              {isOwn && <span className="ml-1 text-[11px] text-gold/70 font-medium">(you)</span>}
+              {isOwn && <span className="ml-1 text-label text-gold/70 font-medium">(you)</span>}
             </button>
             {post.profile?.status_tier === "elite" && (
               <Crown size={12} role="img" aria-label="Elite tier" className="text-gold shrink-0" />
@@ -187,7 +187,7 @@ const FeedPostCard = memo(function FeedPostCard({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-label text-muted-foreground">
             <span>{fmtRelative(post.created_at)}</span>
             {/* Author-only: server moderation hasn't approved yet (others can't
                 see the post until it does — usually seconds). */}
@@ -199,7 +199,7 @@ const FeedPostCard = memo(function FeedPostCard({
             {post.profile?.streak > 0 && (
               <>
                 <span>•</span>
-                <StreakFlameInline still streak={post.profile.streak} suffix="d" className="text-[11px]" />
+                <StreakFlameInline still streak={post.profile.streak} suffix="d" className="text-label" />
               </>
             )}
           </div>
@@ -250,7 +250,7 @@ const FeedPostCard = memo(function FeedPostCard({
 
       {/* Caption — reading size; a proof caption is copy, not metadata */}
       {post.content && (
-        <p className="mt-2.5 text-[15px] leading-relaxed overflow-wrap-break-word">{post.content}</p>
+        <p className="mt-2.5 text-read leading-relaxed overflow-wrap-break-word">{post.content}</p>
       )}
 
       {/* Media — the shared frame, full column width (no card gutter left) */}
@@ -338,10 +338,10 @@ const FeedPostCard = memo(function FeedPostCard({
       {isCommentsOpen && (
         <div className="mt-2 rounded-2xl bg-secondary/25 px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] font-bold text-muted-foreground">
+            <p className="text-label font-bold text-muted-foreground">
               Discussion
             </p>
-            <p className="text-[11px] text-muted-foreground/75 tabular-nums">
+            <p className="text-label text-muted-foreground/75 tabular-nums">
               {post.comments_count || 0} {post.comments_count === 1 ? "reply" : "replies"}
             </p>
           </div>
@@ -375,11 +375,11 @@ const FeedPostCard = memo(function FeedPostCard({
                 <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] p-2 animate-fade-in">
                   <div className="w-0.5 rounded-full bg-gold shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-bold flex items-center gap-1 text-gold">
+                    <div className="text-label font-bold flex items-center gap-1 text-gold">
                       <Reply aria-hidden size={12} />
                       Replying to @{replyTo.username}
                     </div>
-                    <p className="text-[12px] text-muted-foreground line-clamp-2 mt-0.5 break-words">
+                    <p className="text-meta text-muted-foreground line-clamp-2 mt-0.5 break-words">
                       {replyTo.snippet || "(no text)"}
                     </p>
                   </div>
@@ -395,7 +395,7 @@ const FeedPostCard = memo(function FeedPostCard({
               )}
 
               <div className="flex items-end gap-2">
-                <div className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[11px] font-black text-primary-foreground shrink-0">
+                <div className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-label font-black text-primary-foreground shrink-0">
                   {composerInitial}
                 </div>
                 <div className="flex-1 min-w-0 relative">
@@ -423,7 +423,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   {commentText.length > 0 && (
                     <span
                       className={cn(
-                        "absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums",
+                        "absolute right-12 top-1/2 -translate-y-1/2 text-micro font-semibold tabular-nums",
                         commentText.length > 270 ? "text-destructive" : "text-muted-foreground/75"
                       )}
                     >

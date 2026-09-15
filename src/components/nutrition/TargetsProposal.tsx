@@ -38,10 +38,10 @@ const TargetsProposal = ({
   if (!result.ok) {
     return (
       <div className="surface-card surface-card-quiet p-4">
-        <p className="text-[15px] font-bold">
+        <p className="text-read font-bold">
           {result.reason === "minor" ? "Calorie targets aren't set for under-18s" : "Add weight, height and age to get a proposal"}
         </p>
-        <p className="text-[13px] text-muted-foreground mt-1 leading-snug">
+        <p className="text-dense text-muted-foreground mt-1 leading-snug">
           {result.reason === "minor"
             ? "You can still log meals and see what you eat — the coach will not put numbers on it."
             : "The proposal uses your athlete profile. You can also type targets by hand below."}
@@ -61,16 +61,16 @@ const TargetsProposal = ({
   return (
     <div className="surface-card p-4 space-y-4">
       <div>
-        <p className="text-[11px] font-bold text-gold/85 mb-1">Proposed targets</p>
+        <p className="text-label font-bold text-gold/85 mb-1">Proposed targets</p>
         <p className="font-display text-[30px] font-black tracking-tight leading-none tabular-nums">
           {result.kcal.toLocaleString("en-US").replace(",", " ")}
-          <span className="text-[15px] text-muted-foreground font-bold"> kcal / day</span>
+          <span className="text-read text-muted-foreground font-bold"> kcal / day</span>
         </p>
       </div>
       <MacroRow nutrition={{ calories: result.kcal, protein: result.protein_g, carbs: result.carbs_g, fat: result.fat_g }} />
       <ul className="space-y-1.5">
         {notes.filter(Boolean).map((n) => (
-          <li key={n} className="text-[12px] text-muted-foreground leading-snug flex gap-1.5">
+          <li key={n} className="text-meta text-muted-foreground leading-snug flex gap-1.5">
             <span className="text-gold/70 shrink-0">•</span>
             {n}
           </li>

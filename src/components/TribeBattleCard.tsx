@@ -75,7 +75,7 @@ const sidesOf = (battle: TribeBattleLite, myTribeId: string, scores: { challenge
 };
 
 const scorePair = (mine: number, theirs: number) => (
-  <p className="text-[13px] tabular-nums shrink-0">
+  <p className="text-dense tabular-nums shrink-0">
     <span className={cn("font-black", mine < theirs && "text-muted-foreground")}>{fmtInt(mine)}</span>
     <span className="text-muted-foreground/75">–</span>
     <span className={cn("font-black", mine > theirs && "text-muted-foreground")}>{fmtInt(theirs)}</span>
@@ -124,15 +124,15 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] font-bold truncate">{s?.name ?? fallback}</p>
-            <p className="text-[11px] text-muted-foreground tabular-nums">
+            <p className="text-dense font-bold truncate">{s?.name ?? fallback}</p>
+            <p className="text-label text-muted-foreground tabular-nums">
               {fmtInt(members)} member{members === 1 ? "" : "s"} · {fmtInt(streak)}d collective
             </p>
           </div>
         </div>
         {scored && (
           <p className={cn(
-            "font-display font-black text-[22px] tabular-nums leading-none shrink-0",
+            "font-display font-black text-title tabular-nums leading-none shrink-0",
             felt ? "text-gold glow-gold-text" : "text-foreground/75",
           )}>
             {fmtInt(score)}
@@ -144,7 +144,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
 
   return (
     <div className="surface-card p-5">
-      <div className="flex items-center justify-between gap-3 text-[11px] font-bold">
+      <div className="flex items-center justify-between gap-3 text-label font-bold">
         <p className="text-muted-foreground">
           {battle.duration_days}-day battle
           {battle.status === "pending" && ` · sent ${fmtRelative(battle.created_at)}`}
@@ -170,7 +170,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
       </div>
 
       {live && (
-        <p className={cn("mt-3 text-[12px] font-bold", leading ? "text-gold" : "text-[hsl(var(--ember))]")}>
+        <p className={cn("mt-3 text-meta font-bold", leading ? "text-gold" : "text-[hsl(var(--ember))]")}>
           {gap === 0 ? "Dead even." : leading ? `Ahead by ${fmtUnit(gap, "XP")}.` : `Behind by ${fmtUnit(gap, "XP")}.`}
         </p>
       )}
@@ -186,7 +186,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             </Button>
           </div>
         ) : (
-          <p className="mt-4 pt-4 border-t border-border/35 text-[12px] text-muted-foreground">
+          <p className="mt-4 pt-4 border-t border-border/35 text-meta text-muted-foreground">
             Only the tribe owner can answer.
           </p>
         )
@@ -242,11 +242,11 @@ export const TribeBattleRow = ({
   const trailing =
     battle.status === "active" ? scorePair(myScore, theirScore)
     : battle.status === "completed" ? (
-      <span className={cn("text-[12px] shrink-0", iWon ? "font-black" : "font-bold text-muted-foreground")}>
+      <span className={cn("text-meta shrink-0", iWon ? "font-black" : "font-bold text-muted-foreground")}>
         {iWon ? "Won" : isDraw ? "Draw" : "Lost"}
       </span>
     ) : (
-      <span className="text-[11px] font-bold text-muted-foreground shrink-0">
+      <span className="text-label font-bold text-muted-foreground shrink-0">
         {battle.status === "pending" ? (myIsChallenger ? "Waiting" : "Unanswered") : battle.status === "declined" ? "Declined" : "Expired"}
       </span>
     );
@@ -255,8 +255,8 @@ export const TribeBattleRow = ({
     <>
       <Swords size={15} className="text-muted-foreground shrink-0" aria-hidden />
       <span className="flex-1 min-w-0">
-        <span className="block text-[14px] font-semibold leading-tight truncate">{name}</span>
-        <span className="block text-[12px] text-muted-foreground mt-0.5 tabular-nums">{sub}</span>
+        <span className="block text-note font-semibold leading-tight truncate">{name}</span>
+        <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums">{sub}</span>
       </span>
       {trailing}
     </>

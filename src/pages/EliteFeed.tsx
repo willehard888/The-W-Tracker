@@ -751,7 +751,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
           demote to two icon buttons that no longer out-shout the page. */}
       <header className="home-rise relative z-10 pt-0.5 mb-5">
         <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {(todayWins ?? 0) > 0 ? (
               <>
                 <span className="text-gold glow-gold-text tabular-nums">{todayWins}</span> locked in.
@@ -788,7 +788,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
               >
                 <ShieldCheck aria-hidden size={15} />
                 {unresolvedReportsCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-micro font-black flex items-center justify-center">
                     {unresolvedReportsCount}
                   </span>
                 )}
@@ -796,7 +796,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             </div>
           )}
         </div>
-        <p className="mt-2 text-[13px] text-muted-foreground leading-snug">
+        <p className="mt-2 text-dense text-muted-foreground leading-snug">
           {(todayWins ?? 0) > 0
             ? "In the last 24 hours. Add your proof."
             : "Discipline proof from the top. Be the first today."}
@@ -814,7 +814,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck aria-hidden size={16} className="text-[hsl(var(--purple))]" />
             <h2 className="font-display text-sm font-bold">Pending Reports</h2>
-            <span className="text-[11px] text-muted-foreground">({unresolvedReportsCount})</span>
+            <span className="text-label text-muted-foreground">({unresolvedReportsCount})</span>
           </div>
           {unresolvedReportsCount === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-4">No pending reports 🎉</p>
@@ -824,7 +824,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                 <div key={report.id} className="rounded-xl border border-border bg-secondary/30 p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-label text-muted-foreground">
                         Reported by <span className="font-semibold text-foreground">@{report.reporter?.username || "unknown"}</span>
                         {" · "}
                         {fmtRelative(report.created_at)}
@@ -896,7 +896,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                   aria-label="Share your W today"
                   rows={3}
                   maxLength={500}
-                  className="w-full bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/75 resize-none focus:outline-none leading-relaxed"
+                  className="w-full bg-transparent text-read text-foreground placeholder:text-muted-foreground/75 resize-none focus:outline-none leading-relaxed"
                 />
                 {/* Close only offers itself while there is nothing to lose. */}
                 {!hasDraft && (
@@ -968,10 +968,10 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
               onClick={() => { hapticSelection(); setComposerOpen(true); }}
               className="press w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform "
             >
-              <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-[11px] font-black text-primary-foreground shrink-0">
+              <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-label font-black text-primary-foreground shrink-0">
                 {composerInitial}
               </span>
-              <span className="flex-1 text-[14px] text-muted-foreground/80">Share your W today…</span>
+              <span className="flex-1 text-note text-muted-foreground/80">Share your W today…</span>
               <span className="flex items-center gap-2.5 text-muted-foreground/75 shrink-0">
                 <Image aria-hidden size={15} />
                 <Video aria-hidden size={15} />
@@ -995,8 +995,8 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
               <Lock aria-hidden size={14} className="text-muted-foreground" />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block text-[14px] font-bold leading-tight">Posting is for members</span>
-              <span className="block text-[12px] text-muted-foreground/80 leading-snug mt-0.5">
+              <span className="block text-note font-bold leading-tight">Posting is for members</span>
+              <span className="block text-meta text-muted-foreground/80 leading-snug mt-0.5">
                 Read, react and give kudos while you are on trial.
               </span>
             </span>

@@ -69,7 +69,7 @@ export const EmptyState = ({
       <p
         className={cn(
           "font-semibold text-foreground/90 tracking-tight",
-          isCompact ? "text-[13px]" : "text-sm",
+          isCompact ? "text-dense" : "text-sm",
         )}
       >
         {title}
@@ -78,7 +78,7 @@ export const EmptyState = ({
         <p
           className={cn(
             "text-muted-foreground/70 leading-relaxed max-w-[260px]",
-            isCompact ? "text-[12px]" : "text-xs",
+            isCompact ? "text-meta" : "text-xs",
           )}
         >
           {description}

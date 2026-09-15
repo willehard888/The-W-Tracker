@@ -38,10 +38,10 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
   return (
     <div className={cn("mb-4", className)}>
       <div className="flex items-center justify-between mb-2 px-1">
-        <h2 className="text-[11px] font-bold text-muted-foreground">
+        <h2 className="text-label font-bold text-muted-foreground">
           Who's feeding the fire
         </h2>
-        <span className="text-[11px] font-bold tabular-nums text-muted-foreground/75">
+        <span className="text-label font-bold tabular-nums text-muted-foreground/75">
           {members.length} member{members.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -71,7 +71,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
               {/* TOP STOKER ribbon above #1 */}
               {isTopStoker && (
                 <span
-                  className="text-[10px] font-bold text-muted-foreground absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full border whitespace-nowrap"
+                  className="text-micro font-bold text-muted-foreground absolute -top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-0.5 px-1.5 py-[1px] rounded-full border whitespace-nowrap"
                   style={{
                     color: accent,
                     background: `linear-gradient(180deg, ${withAlpha(accent, 0.18)} 0%, ${withAlpha(accent, 0.06)} 100%)`,
@@ -106,7 +106,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                   {m.avatar_url ? (
                     <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 56)} alt={m.username} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
+                    <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
                       {m.username.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -121,20 +121,20 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                   </div>
                 ) : streak > 0 ? (
                   <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-background/90 border border-border/60 flex items-center justify-center">
-                    <span className="text-[10px] font-black tabular-nums text-muted-foreground">{streak}</span>
+                    <span className="text-micro font-black tabular-nums text-muted-foreground">{streak}</span>
                   </div>
                 ) : null}
               </div>
               {/* Streak number — the contribution */}
               <span
-                className="text-[11px] font-black tabular-nums leading-none"
+                className="text-label font-black tabular-nums leading-none"
                 style={streak >= 30 ? { color: accent } : { color: "hsl(var(--muted-foreground))" }}
               >
                 {streak}d
               </span>
               <span
                 className={cn(
-                  "text-[10px] truncate w-full text-center",
+                  "text-micro truncate w-full text-center",
                   isTopStoker ? "font-black text-foreground/95" : "text-muted-foreground/80",
                 )}
               >

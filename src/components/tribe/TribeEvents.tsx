@@ -24,13 +24,13 @@ const ERR: Record<string, string> = {
 const errMsg = (e: any) =>
   ERR[e?.message?.match(/not_member|event_full|title_required|unauthorized|forbidden/)?.[0] ?? ""] ?? e?.message ?? "Something went wrong";
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
+const LABEL = "text-label font-bold text-muted-foreground";
 
 // Native datetime-local under house type: the picker stays the platform's,
 // the field is ours. Same shape as nutrition's DateBar.
 const DateTimeField = ({ value, onChange, label, className }: { value: string; onChange: (v: string) => void; label: string; className?: string }) => (
   <div className={cn("relative surface-inset h-11 rounded-xl px-3 flex items-center", className)}>
-    <span className={cn("text-[13px] font-medium", value ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
+    <span className={cn("text-dense font-medium", value ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
       {value ? format(new Date(value), "EEE d MMM · HH:mm") : "Pick date & time"}
     </span>
     <input
@@ -113,7 +113,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
   return (
     <div>
       <div className="flex items-center justify-between mb-1 px-0.5">
-        <h2 className="font-display font-black text-[15px] tracking-tight">Meetups</h2>
+        <h2 className="font-display font-black text-read tracking-tight">Meetups</h2>
         {isMember && (
           <Button
             variant="gold-outline"
@@ -237,19 +237,19 @@ const EventRow = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete 
       <DateStamp start={start} hot={isNext} />
       <div className="flex-1 min-w-0">
         {(ActIcon || rel) && (
-          <div className="flex items-center gap-2 text-[11px] font-bold">
+          <div className="flex items-center gap-2 text-label font-bold">
             {ActIcon && <span className="inline-flex items-center gap-1 text-muted-foreground"><ActIcon size={11} strokeWidth={2.6} aria-hidden /> {ev.activity}</span>}
             {rel && <span className={EMBER}>{rel}</span>}
           </div>
         )}
-        <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{ev.title}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-muted-foreground">
+        <p className="font-display font-black text-read tracking-tight truncate mt-0.5">{ev.title}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-meta text-muted-foreground">
           <span className="inline-flex items-center gap-1"><Clock size={11} aria-hidden /> {format(start, "HH:mm")} · {ev.duration_min}m</span>
           {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} aria-hidden /> {ev.place}</span>}
           {ev.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={11} aria-hidden /> Online</span>}
           <span className="inline-flex items-center gap-1 tabular-nums"><Users size={11} aria-hidden /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
         </div>
-        {ev.description && <p className="text-[12px] text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
+        {ev.description && <p className="text-meta text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
         {isMember && (
           <div className="mt-2 flex items-center gap-1.5">
             {/* Ember is reserved for the one thing you'd actually tap next
@@ -321,12 +321,12 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
       <div className="flex items-start gap-3">
         <DateStamp start={new Date(series.sessions[0].starts_at)} hot={isNext} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
+          <div className="flex items-center gap-2 text-label font-bold text-muted-foreground">
             <span className="inline-flex items-center gap-1"><Layers size={11} strokeWidth={2.6} aria-hidden /> {series.sessions.length}-part series</span>
             {series.activity && <span className="inline-flex items-center gap-1"><ActIcon size={11} strokeWidth={2.6} aria-hidden /> {series.activity}</span>}
           </div>
-          <p className="font-display font-black text-[15px] tracking-tight truncate mt-0.5">{series.title}</p>
-          <p className="text-[12px] text-muted-foreground mt-0.5 tabular-nums">
+          <p className="font-display font-black text-read tracking-tight truncate mt-0.5">{series.title}</p>
+          <p className="text-meta text-muted-foreground mt-0.5 tabular-nums">
             {series.sessions.length} sessions{isMember ? ` · you're in for ${goingCount}` : ""}
           </p>
         </div>
@@ -350,10 +350,10 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
           const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;
           return (
             <div key={s.id} className="flex items-center gap-2.5 py-2">
-              <span className="shrink-0 w-5 text-[11px] font-bold text-muted-foreground tabular-nums">{s.session_index ?? idx + 1}</span>
+              <span className="shrink-0 w-5 text-label font-bold text-muted-foreground tabular-nums">{s.session_index ?? idx + 1}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold truncate tabular-nums">{format(start, "EEE d MMM · HH:mm")}</p>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <p className="text-meta font-bold truncate tabular-nums">{format(start, "EEE d MMM · HH:mm")}</p>
+                <div className="flex items-center gap-2 text-label text-muted-foreground">
                   <span className="inline-flex items-center gap-1"><Clock size={11} aria-hidden /> {s.duration_min}m</span>
                   {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} aria-hidden /> {s.place}</span>}
                   {s.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={11} aria-hidden /> Online</span>}
@@ -471,8 +471,8 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
     setBusy(false);
   };
 
-  const field = "w-full surface-inset rounded-xl px-3 py-2.5 text-[13px] outline-none focus:border-gold/50";
-  const input = "h-11 rounded-xl text-[13px]";
+  const field = "w-full surface-inset rounded-xl px-3 py-2.5 text-dense outline-none focus:border-gold/50";
+  const input = "h-11 rounded-xl text-dense";
 
   const sessionCount = sessions.filter((s) => s.trim()).length;
 
@@ -508,7 +508,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           ))}
         </div>
         {kind === "series" && (
-          <p className="text-[11px] text-muted-foreground -mt-1 mb-2.5 leading-snug">
+          <p className="text-label text-muted-foreground -mt-1 mb-2.5 leading-snug">
             A multi-part run — a course, a workshop series, a program. Add every session date; place &amp; link below apply to them all.
           </p>
         )}
@@ -542,7 +542,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
               <label className={cn(LABEL, "block")}>Sessions</label>
               {sessions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="shrink-0 w-5 text-[11px] font-bold text-muted-foreground tabular-nums text-center">{i + 1}</span>
+                  <span className="shrink-0 w-5 text-label font-bold text-muted-foreground tabular-nums text-center">{i + 1}</span>
                   <DateTimeField value={s}
                     onChange={(v) => setSessions((prev) => prev.map((x, idx) => idx === i ? v : x))}
                     label={`Session ${i + 1} date and time`}

@@ -337,9 +337,9 @@ const NutritionPhotoReview = () => {
   );
   const barcodeLine =
     barcodeState === "checking" ? (
-      <p role="status" className="text-[12px] text-muted-foreground">Checking the barcode…</p>
+      <p role="status" className="text-meta text-muted-foreground">Checking the barcode…</p>
     ) : barcodeState === "miss" ? (
-      <p className="text-[12px] text-muted-foreground">Barcode {result?.barcode_seen} isn't in the catalog yet.</p>
+      <p className="text-meta text-muted-foreground">Barcode {result?.barcode_seen} isn't in the catalog yet.</p>
     ) : null;
 
   let body: ReactNode;
@@ -363,8 +363,8 @@ const NutritionPhotoReview = () => {
           />,
         )}
         <div role="status" aria-live="polite">
-          <p className="font-display font-black text-[22px] leading-tight tracking-tight">Looking at your plate…</p>
-          <p className="text-[13px] text-muted-foreground mt-1">Nothing is saved until you confirm.</p>
+          <p className="font-display font-black text-title leading-tight tracking-tight">Looking at your plate…</p>
+          <p className="text-dense text-muted-foreground mt-1">Nothing is saved until you confirm.</p>
         </div>
         <Button variant="outline" size="lg" className="w-full" onClick={leave}>
           Cancel
@@ -377,8 +377,8 @@ const NutritionPhotoReview = () => {
       <div className="home-rise space-y-4">
         {photo(<div className="absolute inset-0 bg-background/55" aria-hidden />)}
         <div role="alert">
-          <p className="font-display font-black text-[22px] leading-tight tracking-tight">{copy.title}</p>
-          <p className="text-[13px] text-muted-foreground mt-1">{copy.body}</p>
+          <p className="font-display font-black text-title leading-tight tracking-tight">{copy.title}</p>
+          <p className="text-dense text-muted-foreground mt-1">{copy.body}</p>
         </div>
         {failure.retryable && (
           <input
@@ -387,7 +387,7 @@ const NutritionPhotoReview = () => {
             onChange={(e) => setHint(e.target.value)}
             placeholder="What is it? e.g. salmon and potatoes"
             aria-label="Hint for the scanner"
-            className="w-full surface-inset rounded-xl h-11 px-3 text-[15px] outline-none focus:border-gold/50"
+            className="w-full surface-inset rounded-xl h-11 px-3 text-read outline-none focus:border-gold/50"
           />
         )}
         <div className="space-y-2">
@@ -411,13 +411,13 @@ const NutritionPhotoReview = () => {
       <div className="home-rise space-y-4">
         {photo()}
         <div role="status">
-          <p className="font-display font-black text-[22px] leading-tight tracking-tight">Read from the label — nothing saved yet.</p>
-          {(label.product_name || label.brand) && <p className="text-[13px] font-bold mt-1">{[label.product_name, label.brand].filter(Boolean).join(" · ")}</p>}
-          {result.scene_notes && <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{result.scene_notes}</p>}
+          <p className="font-display font-black text-title leading-tight tracking-tight">Read from the label — nothing saved yet.</p>
+          {(label.product_name || label.brand) && <p className="text-dense font-bold mt-1">{[label.product_name, label.brand].filter(Boolean).join(" · ")}</p>}
+          {result.scene_notes && <p className="text-meta text-muted-foreground mt-1 leading-snug">{result.scene_notes}</p>}
         </div>
         <div className="surface-inset rounded-xl px-3 py-2.5">
-          <p className="text-[11px] font-bold text-muted-foreground">{basis}</p>
-          <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-[13px] tabular-nums">
+          <p className="text-label font-bold text-muted-foreground">{basis}</p>
+          <dl className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-dense tabular-nums">
             {rows.map(([n, v]) => (
               <div key={n} className="flex justify-between gap-2">
                 <dt className="text-muted-foreground">{n}</dt>
@@ -425,7 +425,7 @@ const NutritionPhotoReview = () => {
               </div>
             ))}
           </dl>
-          {label.kcal_mismatch && <p className="text-[12px] text-muted-foreground mt-2 leading-snug">The kcal and the macros on this label disagree — check both before saving.</p>}
+          {label.kcal_mismatch && <p className="text-meta text-muted-foreground mt-2 leading-snug">The kcal and the macros on this label disagree — check both before saving.</p>}
         </div>
         {barcodeLine}
         <div className="space-y-2">
@@ -444,9 +444,9 @@ const NutritionPhotoReview = () => {
       <div className="home-rise space-y-4">
         {photo(<div className="absolute inset-0 bg-background/55" aria-hidden />)}
         <div role="status">
-          <p className="font-display font-black text-[22px] leading-tight tracking-tight">No food found in this photo.</p>
-          <p className="text-[13px] text-muted-foreground mt-1">Nothing was invented.</p>
-          {result.scene_notes && <p className="text-[12px] text-muted-foreground mt-1 leading-snug">{result.scene_notes}</p>}
+          <p className="font-display font-black text-title leading-tight tracking-tight">No food found in this photo.</p>
+          <p className="text-dense text-muted-foreground mt-1">Nothing was invented.</p>
+          {result.scene_notes && <p className="text-meta text-muted-foreground mt-1 leading-snug">{result.scene_notes}</p>}
         </div>
         {barcodeLine}
         <div className="space-y-2">
@@ -467,15 +467,15 @@ const NutritionPhotoReview = () => {
               Estimated · {pct} % confident
             </span>,
           )}
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight mt-4">
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight mt-4">
             {items.length === 0 ? "Nothing left to add." : unresolved > 0 ? `${unresolved} ${unresolved === 1 ? "item needs" : "items need"} a match.` : `${items.length} ${items.length === 1 ? "item" : "items"}, ready when you are.`}
           </h2>
           {result.low_confidence && (
-            <p role="status" className="mt-2 text-[13px] leading-snug text-[hsl(var(--ember))]">
+            <p role="status" className="mt-2 text-dense leading-snug text-[hsl(var(--ember))]">
               Some of this is a guess. Check the marked items before adding.
             </p>
           )}
-          {result.scene_notes && <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{result.scene_notes}</p>}
+          {result.scene_notes && <p className="mt-1 text-meta leading-snug text-muted-foreground">{result.scene_notes}</p>}
         </div>
 
         <div className="home-rise home-rise-1">
@@ -490,13 +490,13 @@ const NutritionPhotoReview = () => {
         </div>
 
         <div className="home-rise home-rise-2">
-          <p className="text-[12px] font-bold text-muted-foreground mb-2">This meal</p>
+          <p className="text-meta font-bold text-muted-foreground mb-2">This meal</p>
           <NutrientPreview nutrition={totals} dim={items.length === 0} note={unresolved > 0 ? "Totals leave out items without a match." : null} />
         </div>
 
         <div className="home-rise home-rise-3 space-y-4">
           <div>
-            <p className="text-[12px] font-bold text-muted-foreground mb-1.5">Meal</p>
+            <p className="text-meta font-bold text-muted-foreground mb-1.5">Meal</p>
             <div className={SEGMENT_TRACK} role="group" aria-label="Meal slot">
               {MEAL_SLOTS.map((s) => (
                 <button
@@ -507,7 +507,7 @@ const NutritionPhotoReview = () => {
                     hapticSelection();
                     setSlot(s.key);
                   }}
-                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-meta font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>
@@ -516,8 +516,8 @@ const NutritionPhotoReview = () => {
           </div>
           <div className="flex items-center gap-3 min-h-11">
             <span className="flex-1 min-w-0">
-              <span className="block text-[13px] font-semibold">Keep the photo</span>
-              <span className="block text-[11px] text-muted-foreground mt-0.5">Off by default. Stored privately with the meal.</span>
+              <span className="block text-dense font-semibold">Keep the photo</span>
+              <span className="block text-label text-muted-foreground mt-0.5">Off by default. Stored privately with the meal.</span>
             </span>
             <Switch checked={keepPhoto} onCheckedChange={setKeepPhoto} aria-label="Keep the photo" />
           </div>
@@ -531,18 +531,18 @@ const NutritionPhotoReview = () => {
     body = (
       <div className="home-rise space-y-4">
         {photo()}
-        <p className="text-[12px] text-muted-foreground leading-snug">A fork or your hand next to the plate, shot from about 45°, makes the portions far more accurate.</p>
+        <p className="text-meta text-muted-foreground leading-snug">A fork or your hand next to the plate, shot from about 45°, makes the portions far more accurate.</p>
         <input
           type="text"
           value={hint}
           onChange={(e) => setHint(e.target.value)}
           placeholder="What is it? e.g. salmon and potatoes"
           aria-label="Hint for the scanner"
-          className="w-full surface-inset rounded-xl h-11 px-3 text-[15px] outline-none focus:border-gold/50"
+          className="w-full surface-inset rounded-xl h-11 px-3 text-read outline-none focus:border-gold/50"
         />
-        <p className="text-[12px] text-muted-foreground leading-snug">Optional. A word or two helps the scanner tell salmon from trout.</p>
+        <p className="text-meta text-muted-foreground leading-snug">Optional. A word or two helps the scanner tell salmon from trout.</p>
         <div>
-          <p className="text-[12px] font-bold text-muted-foreground mb-1.5">Your plate</p>
+          <p className="text-meta font-bold text-muted-foreground mb-1.5">Your plate</p>
           <div className={SEGMENT_TRACK} role="group" aria-label="Plate size">
             {PLATE_OPTIONS.map((cm) => (
               <button
@@ -550,7 +550,7 @@ const NutritionPhotoReview = () => {
                 type="button"
                 aria-pressed={plateCm === cm}
                 onClick={() => void choosePlate(cm)}
-                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-[color,box-shadow] ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-meta font-black tabular-nums transition-[color,box-shadow] ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {PLATE_LABEL[cm]} {cm}
               </button>

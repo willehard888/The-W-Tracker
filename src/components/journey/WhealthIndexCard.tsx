@@ -54,7 +54,7 @@ const Gauge = ({ value }: { value: number }) => {
         <span className="font-display text-[34px] font-black leading-none tabular-nums glow-gold-text">
           {value}
         </span>
-        <span className="text-[11px] font-bold text-muted-foreground mt-0.5">of 100</span>
+        <span className="text-label font-bold text-muted-foreground mt-0.5">of 100</span>
       </div>
     </div>
   );
@@ -85,8 +85,8 @@ const WhealthIndexCard = ({ overall, priorOverall, priorDate, live, history, onS
       <div className="rounded-[15px] bg-card/80 p-4">
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="min-w-0">
-            <p className="text-[13px] font-bold leading-tight">Whealth Index</p>
-            <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">Computed from all your data</p>
+            <p className="text-dense font-bold leading-tight">Whealth Index</p>
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5">Computed from all your data</p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {live && (
@@ -111,17 +111,17 @@ const WhealthIndexCard = ({ overall, priorOverall, priorDate, live, history, onS
           <Gauge value={overall} />
           <div className="flex-1 min-w-0">
             {delta != null && delta !== 0 && (
-              <p className={cn("text-[12px] font-bold tabular-nums mb-1", delta > 0 ? "text-teal" : "text-destructive")}>
+              <p className={cn("text-meta font-bold tabular-nums mb-1", delta > 0 ? "text-teal" : "text-destructive")}>
                 {delta > 0 ? "+" : ""}{delta} since {priorDate ?? "the start"}
               </p>
             )}
             {history && history.length >= 2 ? (
               <>
                 <Sparkline values={history} className="w-full h-8 text-gold" />
-                <p className="text-[11px] font-bold text-muted-foreground/75 mt-1">28-day trend</p>
+                <p className="text-label font-bold text-muted-foreground/75 mt-1">28-day trend</p>
               </>
             ) : (
-              <p className="text-[12px] text-muted-foreground leading-snug">
+              <p className="text-meta text-muted-foreground leading-snug">
                 Your trend line starts tonight. One point per day.
               </p>
             )}

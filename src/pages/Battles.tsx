@@ -27,7 +27,7 @@ import { daysLeft, daysLeftLine } from "@/components/battles/battle-time";
 /** A quiet zone of the ledger: an 11 px label over hairline rows. */
 const Ledger = ({ label, children }: { label: string; children: ReactNode }) => (
   <section className="mt-6">
-    <h3 className="text-[11px] font-bold text-muted-foreground">{label}</h3>
+    <h3 className="text-label font-bold text-muted-foreground">{label}</h3>
     <div className="mt-1 divide-y divide-border/35">{children}</div>
   </section>
 );
@@ -433,7 +433,7 @@ const Battles = () => {
         ) : (
           <>
             {/* Opening beat — who's coming for you, stated once. */}
-            <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h2>
+            <h2 className="home-rise font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h2>
 
             {/* The hero — the one live battle that matters most. */}
             {hero && (() => {
@@ -464,7 +464,7 @@ const Battles = () => {
             {/* Incoming — needs an answer, so it sits above the door. */}
             {pendingBattles.length > 0 && (
               <section className="home-rise home-rise-2 mt-6">
-                <h3 className="text-[11px] font-bold text-[hsl(var(--ember))]">Incoming</h3>
+                <h3 className="text-label font-bold text-[hsl(var(--ember))]">Incoming</h3>
                 <div className="mt-1 -mx-3 divide-y divide-border/35">
                   {pendingBattles.map((battle: any) => (
                     <BattleIncomingCard
@@ -540,10 +540,10 @@ const Battles = () => {
                       return (
                         <div key={battle.id} className="flex items-center gap-3 py-3 min-h-11">
                           <div className="flex-1 min-w-0">
-                            <p className="text-[14px] font-semibold leading-tight truncate">@{getOpponent(battle).username}</p>
-                            <p className="text-[12px] text-muted-foreground mt-0.5">{getBattleTypeInfo(battle.battle_type).label} · the community is voting</p>
+                            <p className="text-note font-semibold leading-tight truncate">@{getOpponent(battle).username}</p>
+                            <p className="text-meta text-muted-foreground mt-0.5">{getBattleTypeInfo(battle.battle_type).label} · the community is voting</p>
                           </div>
-                          <p className="text-[13px] font-black tabular-nums shrink-0">{mine}<span className="text-muted-foreground/75">–</span>{theirs}</p>
+                          <p className="text-dense font-black tabular-nums shrink-0">{mine}<span className="text-muted-foreground/75">–</span>{theirs}</p>
                         </div>
                       );
                     })}

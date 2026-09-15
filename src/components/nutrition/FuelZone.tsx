@@ -83,20 +83,20 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
   const headline = (() => {
     if (loading) return <span className="text-muted-foreground/75">—</span>;
     if (state === "no_targets" || left === null) {
-      return <span className="font-display font-black text-[17px] leading-none">{beatFor(state, kcal, targetKcal)}</span>;
+      return <span className="font-display font-black text-lead leading-none">{beatFor(state, kcal, targetKcal)}</span>;
     }
     if (state === "complete") {
       return (
-        <span className="inline-flex items-center gap-1.5 font-display font-black text-[22px] leading-none">
+        <span className="inline-flex items-center gap-1.5 font-display font-black text-title leading-none">
           <Check size={18} aria-hidden strokeWidth={3} />
           Fueled.
         </span>
       );
     }
     return (
-      <span className={cn("font-display font-black text-[22px] leading-none tabular-nums", left.over && "text-destructive")}>
+      <span className={cn("font-display font-black text-title leading-none tabular-nums", left.over && "text-destructive")}>
         <AnimatedNumber value={left.value} format={fmtKcal} />
-        <span className="text-[13px] font-bold text-muted-foreground ml-1.5">{left.over ? "kcal over" : "kcal left"}</span>
+        <span className="text-dense font-bold text-muted-foreground ml-1.5">{left.over ? "kcal over" : "kcal left"}</span>
       </span>
     );
   })();
@@ -115,9 +115,9 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
 
       <div className="relative pointer-events-none px-4 py-3.5">
         <div className="flex items-center gap-2">
-          <p className="text-[11px] font-bold text-muted-foreground/75">Fuel</p>
+          <p className="text-label font-bold text-muted-foreground/75">Fuel</p>
           {mealCount > 0 && (
-            <span className="ml-auto text-[11px] font-bold text-muted-foreground/75 tabular-nums">
+            <span className="ml-auto text-label font-bold text-muted-foreground/75 tabular-nums">
               {fmtInt(mealCount)} {mealCount === 1 ? "meal" : "meals"}
             </span>
           )}
@@ -169,7 +169,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
         {/* The macros, once there is something to break down. An untouched
             day would read "0/160 · 0/260 · 0/80" — noise where a sentence
             says the same thing better. */}
-        <p className="mt-2 text-[11px] text-muted-foreground/75 tabular-nums truncate">
+        <p className="mt-2 text-label text-muted-foreground/75 tabular-nums truncate">
           {targets && !loading && kcal > 0 ? (
             <>
               Protein <span className="font-bold text-foreground">{fmtInt(Math.round(totals?.protein ?? 0))}</span>/{fmtInt(Math.round(targets.protein))} ·{" "}
@@ -185,8 +185,8 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
       </div>
 
       <NutritionSheet open={tipOpen} onClose={() => setTipOpen(false)} title="Before you shoot" label="Photo tip">
-        <p className="text-[15px] leading-snug">Put a fork or your hand next to the plate. Shoot from about 45°.</p>
-        <p className="text-[12px] text-muted-foreground mt-2 leading-snug">A size reference is what turns a guess into a portion.</p>
+        <p className="text-read leading-snug">Put a fork or your hand next to the plate. Shoot from about 45°.</p>
+        <p className="text-meta text-muted-foreground mt-2 leading-snug">A size reference is what turns a guess into a portion.</p>
         <Button
           size="lg"
           className="w-full mt-5"

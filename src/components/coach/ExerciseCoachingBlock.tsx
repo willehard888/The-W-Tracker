@@ -21,7 +21,7 @@ import { coachingFor, type ExerciseCoaching } from "@/data/exercise-coaching";
  */
 
 const Label = ({ children }: { children: ReactNode }) => (
-  <p className="text-[11px] font-bold text-muted-foreground mb-2">{children}</p>
+  <p className="text-label font-bold text-muted-foreground mb-2">{children}</p>
 );
 
 /** Tempo and breathing: the two things a still picture cannot show. */
@@ -38,11 +38,11 @@ const Rhythm = ({ c, compact }: { c: ExerciseCoaching; compact?: boolean }) => (
  */
 const Mistake = ({ m }: { m: ExerciseCoaching["mistakes"][number] }) => (
   <li className="py-2.5">
-    <p className="flex gap-2 text-[13px] font-semibold leading-snug">
+    <p className="flex gap-2 text-dense font-semibold leading-snug">
       <AlertTriangle size={13} className="shrink-0 mt-px text-ember-light" aria-hidden />
       {m.error}
     </p>
-    <p className="mt-1 pl-[21px] text-[13px] text-muted-foreground leading-snug">{m.fix}</p>
+    <p className="mt-1 pl-[21px] text-dense text-muted-foreground leading-snug">{m.fix}</p>
   </li>
 );
 
@@ -65,7 +65,7 @@ export const ExerciseCoachingBlock = ({
         <Label>Set up</Label>
         <ul className="space-y-1.5">
           {c.setup.map((s, i) => (
-            <li key={i} className="flex gap-2.5 text-[13px] text-foreground/85 leading-snug">
+            <li key={i} className="flex gap-2.5 text-dense text-foreground/85 leading-snug">
               <span className="shrink-0 h-1.5 w-1.5 rounded-full bg-muted-foreground/50 mt-[7px]" aria-hidden />
               <span>{s}</span>
             </li>
@@ -77,8 +77,8 @@ export const ExerciseCoachingBlock = ({
         <Label>Key cues</Label>
         <ol className="space-y-1.5">
           {c.cues.map((s, i) => (
-            <li key={i} className="flex gap-2.5 text-[13px] text-foreground/85 leading-snug">
-              <span className="shrink-0 h-5 w-5 rounded-full bg-gold/15 text-gold text-[11px] font-black flex items-center justify-center mt-px">
+            <li key={i} className="flex gap-2.5 text-dense text-foreground/85 leading-snug">
+              <span className="shrink-0 h-5 w-5 rounded-full bg-gold/15 text-gold text-label font-black flex items-center justify-center mt-px">
                 {i + 1}
               </span>
               <span className={cn(i === 0 && "text-foreground font-semibold")}>{s}</span>
@@ -115,7 +115,7 @@ export const ExerciseCoachingCompact = ({ slug }: { slug?: string | null }) => {
       <Rhythm c={c} compact />
       {c.cues[0] && (
         <p className="flex gap-2 text-[12.5px] text-foreground/90 leading-snug">
-          <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-[10px] font-black flex items-center justify-center mt-px" aria-hidden>
+          <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-micro font-black flex items-center justify-center mt-px" aria-hidden>
             !
           </span>
           <span className="font-semibold">{c.cues[0]}</span>

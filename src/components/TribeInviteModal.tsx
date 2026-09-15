@@ -113,21 +113,21 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                   {u.avatar_url ? (
                     <img loading="lazy" decoding="async" src={avatarUrl(u.avatar_url, 48)} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
+                    <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
                       {u.username.slice(0, 2).toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold truncate">@{u.username}</p>
+                  <p className="text-dense font-bold truncate">@{u.username}</p>
                   {u.status_tier && (
-                    <p className="text-[11px] text-muted-foreground capitalize">
+                    <p className="text-label text-muted-foreground capitalize">
                       {u.status_tier.replace("_", " ")}
                     </p>
                   )}
                 </div>
                 {isMember ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 text-label font-bold text-muted-foreground">
                     <Users size={12} aria-hidden /> Member
                   </span>
                 ) : (
@@ -148,7 +148,7 @@ const InviteAction = ({ invited, sending, onInvite }: { invited: boolean; sendin
   const pop = useCommitPop(invited);
   if (invited) {
     return (
-      <span className={cn("inline-flex items-center gap-1 text-[11px] font-bold text-[hsl(var(--ember))]", pop && "commit-pop")}>
+      <span className={cn("inline-flex items-center gap-1 text-label font-bold text-[hsl(var(--ember))]", pop && "commit-pop")}>
         <Check size={12} aria-hidden /> Invited
       </span>
     );

@@ -80,14 +80,14 @@ const FeaturedBadgeHero = ({ name, icon, rarity }: FeaturedBadgeHeroProps) => {
       <div className="flex flex-col items-start leading-none">
         <span
           className={cn(
-            "text-[10px] font-bold text-muted-foreground flex items-center gap-1",
+            "text-micro font-bold text-muted-foreground flex items-center gap-1",
             cfg.text
           )}
         >
           <Icon size={11} strokeWidth={2.5} />
           {cfg.label}
         </span>
-        <span className={cn("text-[12px] font-black mt-0.5 leading-none", cfg.text)}>
+        <span className={cn("text-meta font-black mt-0.5 leading-none", cfg.text)}>
           {name}
         </span>
       </div>

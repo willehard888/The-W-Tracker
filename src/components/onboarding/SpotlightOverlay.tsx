@@ -196,12 +196,12 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
               <Icon size={17} strokeWidth={2.4} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold mb-0.5 text-gold">
+              <p className="text-micro font-bold mb-0.5 text-gold">
                 <span aria-hidden className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-gold align-middle" />
                 AI Coach
               </p>
-              <h3 className="font-display text-[15px] font-black tracking-tight leading-tight">{def.title}</h3>
-              <p className="mt-1 text-[13px] leading-snug text-muted-foreground">{def.body}</p>
+              <h3 className="font-display text-read font-black tracking-tight leading-tight">{def.title}</h3>
+              <p className="mt-1 text-dense leading-snug text-muted-foreground">{def.body}</p>
             </div>
           </div>
           <Button

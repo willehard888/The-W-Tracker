@@ -39,27 +39,27 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
     <section className="surface-card surface-card-quiet p-4" aria-label="Head to head">
       <div className="flex items-center gap-3">
         <StatusAvatar src={me.avatarUrl} name={me.username} tier={me.tier || "recruit"} size="md" animated={false} />
-        <p className={cn("flex-1 min-w-0 font-display font-black text-[15px] truncate", lead === "me" ? "text-gold" : "text-foreground/85")}>
+        <p className={cn("flex-1 min-w-0 font-display font-black text-read truncate", lead === "me" ? "text-gold" : "text-foreground/85")}>
           @{me.username}
         </p>
-        <span className="font-display font-black text-[11px] text-muted-foreground/75 shrink-0">VS</span>
-        <p className={cn("flex-1 min-w-0 font-display font-black text-[15px] truncate text-right", lead === "them" ? "text-gold" : "text-foreground/85")}>
+        <span className="font-display font-black text-label text-muted-foreground/75 shrink-0">VS</span>
+        <p className={cn("flex-1 min-w-0 font-display font-black text-read truncate text-right", lead === "them" ? "text-gold" : "text-foreground/85")}>
           @{them.username}
         </p>
         <StatusAvatar src={them.avatarUrl} name={them.username} tier={them.tier || "recruit"} size="md" animated={false} />
       </div>
-      <p className="mt-2 text-center text-[11px] font-bold text-muted-foreground">{leadLine}</p>
+      <p className="mt-2 text-center text-label font-bold text-muted-foreground">{leadLine}</p>
 
       <div className="mt-3 divide-y divide-border/35 border-t border-border/35">
         {ROWS.map((r, i) => {
           const d = deltas[i];
           return (
             <div key={r.key} className="py-2.5 flex items-center gap-3">
-              <span className={cn("flex-1 text-right font-display font-black text-[15px] tabular-nums tracking-tight", d > 0 ? "text-gold" : d < 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
+              <span className={cn("flex-1 text-right font-display font-black text-read tabular-nums tracking-tight", d > 0 ? "text-gold" : d < 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
                 {r.format(me[r.key])}
               </span>
-              <span className="w-[5.5rem] shrink-0 text-center text-[11px] font-bold text-muted-foreground">{r.label}</span>
-              <span className={cn("flex-1 text-left font-display font-black text-[15px] tabular-nums tracking-tight", d < 0 ? "text-gold" : d > 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
+              <span className="w-[5.5rem] shrink-0 text-center text-label font-bold text-muted-foreground">{r.label}</span>
+              <span className={cn("flex-1 text-left font-display font-black text-read tabular-nums tracking-tight", d < 0 ? "text-gold" : d > 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
                 {r.format(them[r.key])}
               </span>
             </div>

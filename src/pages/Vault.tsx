@@ -183,7 +183,7 @@ const Vault = () => {
           {isLoading ? (
             <div className="h-7 w-3/4 rounded-lg bg-card/40 skeleton-block" />
           ) : (
-            <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
               {read > 0 ? (
                 <>
                   <span className="text-gold glow-gold-text tabular-nums">{fmtInt(read)}</span> read.{" "}
@@ -196,7 +196,7 @@ const Vault = () => {
               )}
             </h2>
           )}
-          <p className="text-[12px] text-muted-foreground leading-relaxed mt-2">
+          <p className="text-meta text-muted-foreground leading-relaxed mt-2">
             Every piece is graded by evidence tier and cites its research. New protocols ship regularly.
           </p>
         </header>
@@ -219,7 +219,7 @@ const Vault = () => {
 
         {/* No hardcoded price — a US/UK member paid a different number than the
             euro list price, and the store price is the only truth. */}
-        <p className="mt-8 text-center text-[11px] text-muted-foreground/75">Premium member</p>
+        <p className="mt-8 text-center text-label text-muted-foreground/75">Premium member</p>
 
         <VaultArticleSheet
           article={openArticle?.article ?? null}
@@ -266,12 +266,12 @@ const VaultCategoryBlock = ({
       >
         <VaultCover id={category.id} accent={category.accent} />
         {articles.length > 0 && (
-          <p className="absolute top-3 right-3 z-10 text-[11px] font-bold tabular-nums text-white/80">
+          <p className="absolute top-3 right-3 z-10 text-label font-bold tabular-nums text-white/80">
             {readCount} of {articles.length} read
           </p>
         )}
         <div className="absolute inset-x-0 bottom-0 z-10 p-4 pr-10">
-          <p className="flex items-center gap-1.5 text-[11px] font-semibold mb-1" style={{ color: category.accent }}>
+          <p className="flex items-center gap-1.5 text-label font-semibold mb-1" style={{ color: category.accent }}>
             <Icon size={12} strokeWidth={2.6} aria-hidden />
             {category.tagline}
           </p>
@@ -288,7 +288,7 @@ const VaultCategoryBlock = ({
 
       {expanded && (
         <div className="px-1 divide-y divide-border/35">
-          <p className="py-3 text-[12px] text-muted-foreground leading-snug">{category.description}</p>
+          <p className="py-3 text-meta text-muted-foreground leading-snug">{category.description}</p>
 
           {/* Recipes category → the full meal-prep recipe collection (poster
               style + batch scaler). A quiet row leading the pieces. */}
@@ -296,8 +296,8 @@ const VaultCategoryBlock = ({
             <button type="button" onClick={() => navigate("/recipes")} className="w-full flex items-center gap-3 py-3 text-left">
               <Utensils size={16} className="text-muted-foreground shrink-0" aria-hidden />
               <span className="flex-1 min-w-0">
-                <span className="block text-[13px] font-bold leading-tight">Meal-prep recipes</span>
-                <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">
+                <span className="block text-dense font-bold leading-tight">Meal-prep recipes</span>
+                <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
                   {RECIPE_COUNT} high-protein recipes · scale 1×–5× · storage &amp; reheat
                 </span>
               </span>
@@ -332,18 +332,18 @@ const VaultCategoryBlock = ({
                 >
                   {a.lesson_number != null && (
                     <span
-                      className="w-5 shrink-0 font-display text-[13px] font-black tabular-nums leading-tight"
+                      className="w-5 shrink-0 font-display text-dense font-black tabular-nums leading-tight"
                       style={{ color: category.accent }}
                     >
                       {a.lesson_number}
                     </span>
                   )}
                   <span className="flex-1 min-w-0">
-                    <span className="block font-display text-[13px] font-black tracking-tight leading-tight">{a.title}</span>
+                    <span className="block font-display text-dense font-black tracking-tight leading-tight">{a.title}</span>
                     {a.subtitle && (
-                      <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{a.subtitle}</span>
+                      <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{a.subtitle}</span>
                     )}
-                    <span className="text-[10px] font-bold text-muted-foreground block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
+                    <span className="text-micro font-bold text-muted-foreground block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
                       {EVIDENCE_LABEL[a.evidence_tier]} · {a.read_time_min} min
                     </span>
                   </span>

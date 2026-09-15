@@ -14,14 +14,14 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
   return (
     <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-baseline justify-between gap-3 mb-2">
-        <p className="text-[13px] font-bold">What your coach sees</p>
-        <span className="text-[11px] font-bold text-muted-foreground tabular-nums">{fmtDate(snapshot.snapshotDate + "T00:00:00")}</span>
+        <p className="text-dense font-bold">What your coach sees</p>
+        <span className="text-label font-bold text-muted-foreground tabular-nums">{fmtDate(snapshot.snapshotDate + "T00:00:00")}</span>
       </div>
 
       {snapshot.observations.length > 0 && (
         <ul className="space-y-1.5">
           {snapshot.observations.map((o, i) => (
-            <li key={i} className="flex gap-2 text-[13px] text-foreground/90 leading-snug">
+            <li key={i} className="flex gap-2 text-dense text-foreground/90 leading-snug">
               <span className="h-1 w-1 rounded-full bg-muted-foreground/50 shrink-0 mt-2" aria-hidden />
               {o}
             </li>
@@ -32,7 +32,7 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
       {snapshot.patterns.length > 0 && (
         <div className="mt-2.5 space-y-1">
           {snapshot.patterns.slice(0, 2).map((p) => (
-            <p key={p.key} className="text-[12px] text-muted-foreground leading-snug">
+            <p key={p.key} className="text-meta text-muted-foreground leading-snug">
               <span className="text-foreground/85 font-semibold">Your pattern:</span>{" "}
               {p.metric} {p.avgA}{p.unit} {p.aLabel} vs {p.avgB}{p.unit} {p.bLabel}
               <span className="text-muted-foreground/75"> (n={p.nA}/{p.nB})</span>
@@ -44,7 +44,7 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
       {snapshot.focus && (
         <div className="flex items-start gap-2 mt-3 pt-2.5 border-t border-border/35">
           <Target size={13} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
-          <p className="text-[13px] font-semibold text-foreground/95 leading-snug">{snapshot.focus}</p>
+          <p className="text-dense font-semibold text-foreground/95 leading-snug">{snapshot.focus}</p>
         </div>
       )}
     </div>

@@ -88,7 +88,7 @@ const NO_POSTS: TribePostCardPost[] = [];
 const NO_MILESTONES: Milestone[] = [];
 const NO_MEMBERS: Member[] = [];
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
+const LABEL = "text-label font-bold text-muted-foreground";
 
 const TribeDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -701,7 +701,7 @@ const TribeDetail = () => {
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--acc-b)_0%,transparent_60%)] animate-[fire-flash-bloom_1200ms_cubic-bezier(.2,.8,.2,1)_forwards]" />
           <div className="relative px-8 py-5 rounded-2xl border-2 border-[var(--acc)] bg-[linear-gradient(135deg,var(--acc-a),hsl(var(--background)/0.92))] shadow-[0_0_60px_var(--acc-d),inset_0_1px_0_hsl(0_0%_100%/0.15)] animate-[ember-rise-chip_4000ms_cubic-bezier(.2,.8,.2,1)_forwards]">
-            <p className="text-[11px] font-bold text-center mb-1 text-[var(--acc)]">Tribe Fire promoted</p>
+            <p className="text-label font-bold text-center mb-1 text-[var(--acc)]">Tribe Fire promoted</p>
             <p className="font-display font-black text-3xl text-center uppercase text-[var(--acc)] [text-shadow:0_0_28px_var(--acc-d)]">
               {tierUp.name}
             </p>
@@ -762,12 +762,12 @@ const TribeDetail = () => {
             <span className={LABEL}>Today</span>
             <span className="flex items-center gap-3">
               {todayPulse && todayPulse.total > 0 && (
-                <span className="text-[12px] font-bold tabular-nums text-[hsl(var(--ember))]">
+                <span className="text-meta font-bold tabular-nums text-[hsl(var(--ember))]">
                   {todayPulse.checked}/{todayPulse.total} lit today
                 </span>
               )}
               {isOwner && (tribe.weekly_xp ?? 0) > 0 && (
-                <span className="inline-flex items-center gap-1 text-[12px] font-bold tabular-nums text-gold">
+                <span className="inline-flex items-center gap-1 text-meta font-bold tabular-nums text-gold">
                   <Zap size={12} fill="currentColor" aria-hidden /> +{fmtInt(tribe.weekly_xp ?? 0)} XP
                 </span>
               )}
@@ -791,10 +791,10 @@ const TribeDetail = () => {
             return (
               <div className={cn("surface-card surface-card-quiet p-3.5", done && "border-gold/40")}>
                 <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-[13px] font-bold tabular-nums">
+                  <span className="text-dense font-bold tabular-nums">
                     {challenge.progress}/{challenge.target} check-ins together
                   </span>
-                  <span className="text-[12px] tabular-nums text-muted-foreground">
+                  <span className="text-meta tabular-nums text-muted-foreground">
                     {done ? "Crushed · +25 XP each" : failed ? "last week missed" : `${daysLeft}d left · ${pct}%`}
                   </span>
                 </div>
@@ -888,8 +888,8 @@ const TribeDetail = () => {
             return (
               <div key={ms.id} className="flex items-center gap-2.5 px-1 py-1.5">
                 <Icon size={14} className="text-muted-foreground shrink-0" aria-hidden />
-                <p className="text-[12px] font-semibold text-foreground/80 flex-1 min-w-0 truncate">{text}</p>
-                <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">{fmtDate(ms.created_at)}</span>
+                <p className="text-meta font-semibold text-foreground/80 flex-1 min-w-0 truncate">{text}</p>
+                <span className="text-label text-muted-foreground tabular-nums shrink-0">{fmtDate(ms.created_at)}</span>
               </div>
             );
           })
@@ -913,8 +913,8 @@ const TribeDetail = () => {
           <div className="fixed left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-[var(--z-top)] px-4 pointer-events-none">
             <div className="max-w-md mx-auto pointer-events-auto rounded-2xl border border-[hsl(var(--ember))]/45 bg-[hsl(var(--background)/0.96)] shadow-[var(--shadow-3)] p-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-black truncate">{tribe.name}</p>
-                <p className="text-[11px] text-muted-foreground truncate tabular-nums">
+                <p className="text-dense font-black truncate">{tribe.name}</p>
+                <p className="text-label text-muted-foreground truncate tabular-nums">
                   {tribe.member_count} member{tribe.member_count === 1 ? "" : "s"}
                   {collectiveStreak > 0 ? ` · ${collectiveStreak}d collective fire` : ""}
                 </p>

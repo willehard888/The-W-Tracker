@@ -88,16 +88,16 @@ const HabitToggle = ({
   >
     {/* Emoji tile */}
     <span className={cn(
-      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[22px] transition-colors",
+      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-title transition-colors",
       active ? "bg-gold/15" : "bg-secondary",
     )}>
       {habit.emoji}
     </span>
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <p className={cn("font-bold text-[15px] leading-tight", active ? "text-gold" : "text-foreground")}>{habit.label}</p>
+        <p className={cn("font-bold text-read leading-tight", active ? "text-gold" : "text-foreground")}>{habit.label}</p>
         {detected && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/12 px-1.5 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/12 px-1.5 py-0.5 rounded-full">
             <ShieldCheck aria-hidden size={12} /> Detected
           </span>
         )}
@@ -105,7 +105,7 @@ const HabitToggle = ({
       {/* Two lines: the notes are full sentences ("Anchors your circadian
           rhythm within 30 minutes of waking") and a one-line clamp cut four of
           them mid-word. Only rows whose note needs it grow. */}
-      <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2 mt-0.5">
+      <p className="text-meta text-muted-foreground leading-snug line-clamp-2 mt-0.5">
         {active ? `+${fmtUnit(habit.xp, "XP")}` : (habit.note || `+${fmtUnit(habit.xp, "XP")}`)}
       </p>
     </div>
@@ -850,7 +850,7 @@ const DailyCheckin = () => {
       <div className="px-4 pb-6">
         {/* ── OPENING BEAT — one line of type; the streak is its only gold. ── */}
         <div className="home-rise pt-2">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {lastCheckin ? (
               <>Day <span className="text-gold glow-gold-text tabular-nums">{fmtInt(streak + 1)}</span>. Lock it in.</>
             ) : (
@@ -864,8 +864,8 @@ const DailyCheckin = () => {
         <div className="home-rise home-rise-1 mt-4 surface-card surface-card-quiet overflow-hidden">
           {why && (
             <div className="px-4 pt-3 pb-2.5 border-b border-border/40">
-              <p className="text-[12px] text-muted-foreground leading-snug">Today's discipline is for</p>
-              <p className="text-[13px] font-bold leading-snug text-foreground/90 mt-0.5">{why}</p>
+              <p className="text-meta text-muted-foreground leading-snug">Today's discipline is for</p>
+              <p className="text-dense font-bold leading-snug text-foreground/90 mt-0.5">{why}</p>
             </div>
           )}
           {/* Sick today — recovery mode. Logging still banks the day. */}
@@ -878,7 +878,7 @@ const DailyCheckin = () => {
             <Thermometer size={18} className={cn("shrink-0", sickToday ? "text-teal" : "text-muted-foreground")} aria-hidden />
             <span className="min-w-0 flex-1">
               <span className={cn("block text-sm font-bold", sickToday && "text-teal")}>Sick today</span>
-              <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">
+              <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
                 {sickToday
                   ? "Recovery mode on — rest counts. The coach won't push training today, and missed habits don't count against you."
                   : "Feeling ill? Logging still keeps your streak — the coach switches to recovery mode."}
@@ -915,7 +915,7 @@ const DailyCheckin = () => {
             <Button variant="outline" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
               <SlidersHorizontal aria-hidden size={16} /> Choose my habits
             </Button>
-            <button onClick={dismissOnboard} className="mt-1 min-h-11 w-full text-[12px] font-semibold text-muted-foreground">
+            <button onClick={dismissOnboard} className="mt-1 min-h-11 w-full text-meta font-semibold text-muted-foreground">
               Use the defaults for now
             </button>
           </div>
@@ -953,7 +953,7 @@ const DailyCheckin = () => {
               )}><Moon aria-hidden size={20} /></div>
               <div>
                 <p className="font-semibold text-sm flex items-center gap-1.5">
-                  Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
+                  Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
               </div>
@@ -962,13 +962,13 @@ const DailyCheckin = () => {
                   "block text-2xl font-bold font-display tabular-nums leading-none",
                   isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground",
                 )}>{sleep}h</span>
-                <span className="block text-[11px] font-semibold text-muted-foreground mt-1">{sleepWord}</span>
+                <span className="block text-label font-semibold text-muted-foreground mt-1">{sleepWord}</span>
               </span>
             </div>
             <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="range-gold w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x", ["--range-fill" as string]: `${rangeFill(sleep, 4, 12)}%` }} />
-            {sleepPenaltyLabel && <p className="text-[11px] text-destructive mt-1 font-semibold">{sleepPenaltyLabel}</p>}
+            {sleepPenaltyLabel && <p className="text-label text-destructive mt-1 font-semibold">{sleepPenaltyLabel}</p>}
             {isChronicOversleep && sleep >= 10 && (
-              <p className="text-[11px] text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
+              <p className="text-label text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
             )}
           </div>
         </div>
@@ -987,7 +987,7 @@ const DailyCheckin = () => {
               <div className="flex-1 min-w-0">
                 <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
                   {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
-                  {detected.workout && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
+                  {detected.workout && <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {isRestDay
@@ -997,7 +997,7 @@ const DailyCheckin = () => {
                     : detected.workout ? "Health saw a workout — pick your sport" : "Did you train today?"}
                 </p>
               </div>
-              {workout && <span className="text-[11px] font-bold tabular-nums text-muted-foreground">+{fmtUnit(selectedSport.xp, "XP")}</span>}
+              {workout && <span className="text-label font-bold tabular-nums text-muted-foreground">+{fmtUnit(selectedSport.xp, "XP")}</span>}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <button
@@ -1032,7 +1032,7 @@ const DailyCheckin = () => {
                   so the 24-sport catalog stays collapsed below. */}
               {forYou.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-bold text-muted-foreground px-4 pt-3 pb-1.5">For you</p>
+                  <p className="text-label font-bold text-muted-foreground px-4 pt-3 pb-1.5">For you</p>
                   {forYou.map((sport) => (
                     <button
                       key={`fy-${sport.id}`}
@@ -1047,7 +1047,7 @@ const DailyCheckin = () => {
                       <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
                         {sport.label}
                         {detectedSportId === sport.id && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
+                          <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
                         )}
                       </span>
                       {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
@@ -1065,7 +1065,7 @@ const DailyCheckin = () => {
                   onChange={(e) => setSportQuery(e.target.value)}
                   placeholder="Search sports…"
                   aria-label="Search sports"
-                  className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-[13px] outline-none focus:border-gold/50 transition-colors"
+                  className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-dense outline-none focus:border-gold/50 transition-colors"
                 />
                 {sportQuery && (
                   <button
@@ -1113,7 +1113,7 @@ const DailyCheckin = () => {
                         onClick={() => setOpenGroup((g) => (g === group ? null : group))}
                         className="flex items-center justify-between w-full min-h-11 px-4 pt-3 pb-1.5 text-left"
                       >
-                        <span className="text-[11px] font-bold">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
+                        <span className="text-label font-bold">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
                         {forYou.length > 0 && (
                           <ChevronDown aria-hidden size={12} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
                         )}
@@ -1174,7 +1174,7 @@ const DailyCheckin = () => {
           if (!habits?.length) return null;
           return (
             <div key={pillar} className="home-rise home-rise-4 mt-5">
-              <p className="text-[11px] font-bold text-muted-foreground mb-2">{PILLAR_LABEL[pillar]}</p>
+              <p className="text-label font-bold text-muted-foreground mb-2">{PILLAR_LABEL[pillar]}</p>
               <div className="space-y-2">
                 {habits.map((h) => (
                   <HabitToggle key={h.key} habit={h} active={done(h.key)} onToggle={() => toggle(h.key)} detected={isDetected(h)} />
@@ -1195,7 +1195,7 @@ const DailyCheckin = () => {
             <span className="text-sm font-semibold flex items-center gap-2">
               <Plus aria-hidden size={16} className="text-muted-foreground" />
               Bonus quests &amp; proof photo
-              {questBonusXp > 0 && <span className="text-[11px] font-bold tabular-nums text-muted-foreground">+{fmtUnit(questBonusXp, "XP")}</span>}
+              {questBonusXp > 0 && <span className="text-label font-bold tabular-nums text-muted-foreground">+{fmtUnit(questBonusXp, "XP")}</span>}
             </span>
             <ChevronDown aria-hidden size={16} className={cn("text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
           </button>
@@ -1230,7 +1230,7 @@ const DailyCheckin = () => {
                   <p className="font-semibold text-sm">Add proof photo</p>
                   <p className="text-xs text-muted-foreground">Posted to the Elite Feed · earns <span className="font-bold text-foreground/80">+30 bonus XP</span></p>
                 </div>
-                {proofFile && <span className="text-[11px] font-bold tabular-nums text-muted-foreground">+30 XP</span>}
+                {proofFile && <span className="text-label font-bold tabular-nums text-muted-foreground">+30 XP</span>}
                 {/* No `capture` attr: iOS then offers Take Photo AND Photo Library
                     in the native sheet (founder decision — gallery proofs allowed,
                     so the old 5-minute freshness gate is gone too). */}
@@ -1255,7 +1255,7 @@ const DailyCheckin = () => {
                Lock CTA share the screen's one full-weight card; "Yes" lights
                the same ember the button below is made of. ── */}
         <div className="home-rise home-rise-5 mt-6 surface-card p-4">
-          <p className="font-bold text-[15px]">Were you honest?</p>
+          <p className="font-bold text-read">Were you honest?</p>
           <p className="text-xs text-muted-foreground mt-1 mb-3">
             Answer truthfully — <span className="text-foreground/80 font-semibold">you can't grind with lies.</span>
           </p>
@@ -1301,7 +1301,7 @@ const DailyCheckin = () => {
               </span>
             )}
           </Button>
-          <p className="mt-2.5 text-center text-[12px] text-muted-foreground tabular-nums">
+          <p className="mt-2.5 text-center text-meta text-muted-foreground tabular-nums">
             {honest === null && !submitting
               ? "Answer above to lock the day"
               : `${fmtInt(completedCount)} of ${fmtInt(maxCount)} logged`}

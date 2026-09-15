@@ -105,8 +105,8 @@ const LibraryHub = () => {
         {/* Header — text only (the gold tile is gone; gold is the hero's now),
             a quiet value statement above the shelf, not a button. */}
         <div className="px-4 pt-3.5 pb-3">
-          <p className="text-[11px] font-bold text-muted-foreground">The Library</p>
-          <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
+          <p className="text-label font-bold text-muted-foreground">The Library</p>
+          <p className="text-meta text-muted-foreground leading-tight mt-0.5">
             Everything your membership unlocks
           </p>
         </div>
@@ -121,10 +121,10 @@ const LibraryHub = () => {
             <RowThumb id={row.key} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-[13px] font-bold leading-tight truncate">{row.title}</p>
+                <p className="text-dense font-bold leading-tight truncate">{row.title}</p>
                 <span
                   className={cn(
-                    "text-[11px] font-black rounded-full px-1.5 py-0.5 tabular-nums shrink-0 border",
+                    "text-label font-black rounded-full px-1.5 py-0.5 tabular-nums shrink-0 border",
                     row.chipGold
                       ? "text-gold bg-gold/10 border-gold/30"
                       : "text-muted-foreground bg-secondary/60 border-border",
@@ -133,7 +133,7 @@ const LibraryHub = () => {
                   {row.chip}
                 </span>
               </div>
-              <p className="text-[12px] text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
+              <p className="text-meta text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
             </div>
             <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
           </button>

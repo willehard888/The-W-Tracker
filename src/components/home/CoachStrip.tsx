@@ -82,12 +82,12 @@ const CoachStrip = (_props: CoachStripProps) => {
       <div className="relative">
         <div className="flex items-center gap-1.5 mb-1.5">
           <Sparkles aria-hidden size={13} className="text-gold shrink-0" strokeWidth={2.4} />
-          <p className="text-[11px] font-bold text-muted-foreground">AI Coach</p>
+          <p className="text-label font-bold text-muted-foreground">AI Coach</p>
           {/* Mission progress rides the eyebrow row — no extra height. */}
           {hasPlan && (
             <span
               className={cn(
-                "ml-auto text-[11px] font-black tabular-nums leading-none shrink-0",
+                "ml-auto text-label font-black tabular-nums leading-none shrink-0",
                 planDone ? "text-gold" : "text-muted-foreground",
               )}
             >
@@ -97,13 +97,13 @@ const CoachStrip = (_props: CoachStripProps) => {
         </div>
 
         {/* The voice — the coach speaking, at reading size. */}
-        <p className="text-[15px] italic text-foreground/90 leading-snug line-clamp-2">
+        <p className="text-read italic text-foreground/90 leading-snug line-clamp-2">
           {line}
         </p>
 
         {/* Context + the tap, quiet: the plan name (or the open invitation)
             with an inline chevron, so nothing looks like a second CTA. */}
-        <p className="flex items-center gap-1 text-[12px] text-muted-foreground mt-1.5">
+        <p className="flex items-center gap-1 text-meta text-muted-foreground mt-1.5">
           {hasPlan
             ? headline
               ? shortHeadline(headline)

@@ -70,9 +70,9 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
 
       <div className="px-4 pb-6 -mt-6 relative">
         <header className="home-rise">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{recipe.title}</h1>
-          <p className="mt-2 text-[13px] text-muted-foreground leading-snug">{recipe.blurb}</p>
-          <p className="mt-2 text-[12px] font-bold text-muted-foreground tabular-nums">
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{recipe.title}</h1>
+          <p className="mt-2 text-dense text-muted-foreground leading-snug">{recipe.blurb}</p>
+          <p className="mt-2 text-meta font-bold text-muted-foreground tabular-nums">
             {[...recipe.tags, `${totalMin} min`].join(" · ")}
           </p>
         </header>
@@ -82,7 +82,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </div>
 
         <div className="home-rise home-rise-2 mt-5">
-          <p className="text-[11px] font-bold text-muted-foreground mb-2">Cook in batch</p>
+          <p className="text-label font-bold text-muted-foreground mb-2">Cook in batch</p>
           <div className={SEGMENT_TRACK}>
             {BATCH_OPTIONS.map((b) => (
               <button
@@ -90,7 +90,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                 onClick={() => { hapticSelection(); setBatch(b); setTouched(true); }}
                 aria-pressed={batch === b}
                 className={cn(
-                  "flex-1 h-11 rounded-lg text-[13px] font-black tabular-nums transition-colors",
+                  "flex-1 h-11 rounded-lg text-dense font-black tabular-nums transition-colors",
                   batch === b ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
@@ -98,7 +98,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
               </button>
             ))}
           </div>
-          <p key={batch} className={cn("origin-left mt-2 text-[12px] text-muted-foreground leading-snug", touched && "commit-pop")}>
+          <p key={batch} className={cn("origin-left mt-2 text-meta text-muted-foreground leading-snug", touched && "commit-pop")}>
             {batch === 1
               ? "Quantities below are for one serving."
               : `Scaled for ${batch} meals — cook once, eat all week.`}
@@ -106,13 +106,13 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </div>
 
         <section className="home-rise home-rise-3 mt-7">
-          <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">Ingredients</h2>
+          <h2 className="font-display font-black text-lead leading-tight tracking-tight">Ingredients</h2>
           {recipe.groups.map((g) => (
             <div key={g.title} className="mt-3.5">
-              <p className="text-[11px] font-bold text-muted-foreground mb-1.5">{g.title}</p>
+              <p className="text-label font-bold text-muted-foreground mb-1.5">{g.title}</p>
               <ul className="divide-y divide-border/35 border-t border-border/35">
                 {g.items.map((it, i) => (
-                  <li key={i} className="flex items-baseline gap-3 py-2 text-[14px] leading-snug">
+                  <li key={i} className="flex items-baseline gap-3 py-2 text-note leading-snug">
                     <span className="w-16 shrink-0 font-semibold tabular-nums">
                       {it.qty != null ? `${fmtQty(it.qty, batch)}${it.unit ? ` ${it.unit}` : ""}` : ""}
                     </span>
@@ -128,16 +128,16 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </section>
 
         <section className="home-rise home-rise-4 mt-7">
-          <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">Method</h2>
+          <h2 className="font-display font-black text-lead leading-tight tracking-tight">Method</h2>
           <div className="mt-1 divide-y divide-border/35">
             {recipe.method.map((phase, pi) => (
               <div key={phase.title} className="py-3.5 flex gap-3">
-                <span className="w-5 shrink-0 text-[14px] font-bold tabular-nums text-muted-foreground">{pi + 1}</span>
+                <span className="w-5 shrink-0 text-note font-bold tabular-nums text-muted-foreground">{pi + 1}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[14px] font-bold leading-snug">{phase.title}</p>
+                  <p className="text-note font-bold leading-snug">{phase.title}</p>
                   <ol className="mt-1.5 space-y-1.5">
                     {phase.steps.map((s, i) => (
-                      <li key={i} className="text-[14px] leading-relaxed text-muted-foreground">{s}</li>
+                      <li key={i} className="text-note leading-relaxed text-muted-foreground">{s}</li>
                     ))}
                   </ol>
                 </div>
@@ -147,7 +147,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </section>
 
         <section className="home-rise home-rise-5 mt-7">
-          <h2 className="font-display font-black text-[17px] leading-tight tracking-tight">Keeps</h2>
+          <h2 className="font-display font-black text-lead leading-tight tracking-tight">Keeps</h2>
           <div className="mt-1 divide-y divide-border/35">
             <FactRow k="Fridge" v={`${recipe.mealPrep.fridgeDays} ${recipe.mealPrep.fridgeDays === 1 ? "day" : "days"}`} />
             {recipe.mealPrep.freezerWeeks != null && (
@@ -189,8 +189,8 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">What to cook tonight.</h2>
-          <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">What to cook tonight.</h2>
+          <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             Every recipe scales to a week of meals. Search by what's in the fridge.
           </p>
         </header>
@@ -205,7 +205,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search recipes or ingredients"
               aria-label="Search recipes or ingredients"
-              className="h-11 rounded-xl pl-9 pr-9 text-[14px]"
+              className="h-11 rounded-xl pl-9 pr-9 text-note"
             />
             {query && (
               <button
@@ -235,7 +235,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
         </div>
 
         <div className="home-rise home-rise-2 mt-5">
-          <p className="text-[11px] font-bold text-muted-foreground tabular-nums">
+          <p className="text-label font-bold text-muted-foreground tabular-nums">
             {results.length} {results.length === 1 ? "recipe" : "recipes"}
           </p>
 
@@ -257,8 +257,8 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
                   >
                     <RecipePhoto id={r.id} variant="tile" className="h-14 w-14 shrink-0 rounded-xl" />
                     <span className="min-w-0 flex-1">
-                      <span className="block font-display text-[15px] font-black leading-tight truncate">{r.title}</span>
-                      <span className="block mt-0.5 text-[12px] text-muted-foreground tabular-nums">
+                      <span className="block font-display text-read font-black leading-tight truncate">{r.title}</span>
+                      <span className="block mt-0.5 text-meta text-muted-foreground tabular-nums">
                         {r.nutrition.protein}g protein · {r.prepMin + r.cookMin} min
                       </span>
                     </span>

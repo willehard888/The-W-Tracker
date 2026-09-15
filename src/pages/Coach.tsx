@@ -190,7 +190,15 @@ const CoachShell = ({
   // ?chat=1 → open the chat with no seed: Home's coach door lands here.
   const openRef = useRef(searchParams.get("chat") === "1");
   const [seedAssistant] = useState<string | null>(() => seedRef.current);
-  const [chatOpen, setChatOpen] = useState(!!seedRef.current || openRef.current);
+  // Deep-linked chat opens after the page's first paint, not inside it: a
+  // sheet rising while a lazy page mounts, with the keyboard summoned at the
+  // same time, landed half off screen on iOS.
+  const [chatOpen, setChatOpen] = useState(false);
+  useEffect(() => {
+    if (!seedRef.current && !openRef.current) return;
+    const id = requestAnimationFrame(() => setChatOpen(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
   const [chatPrompt, setChatPrompt] = useState<string | null>(null);
   // The page's single daily-plan subscription: the hero shows its readiness
   // number, the plan card its missions. (Two calls would open two channels.)
@@ -357,6 +365,14 @@ const ChatSheet = ({
   // Performance follow-up chips shown until the user asks their first question.
   const [seedChipsShown, setSeedChipsShown] = useState(!!(seedAssistant && seedAssistant.trim()));
   const [input, setInput] = useState("");
+  // Focus once the sheet has finished rising (the spring settles in ~400 ms);
+  // autoFocus during the entrance made iOS scroll the layout viewport.
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 420);
+    return () => clearTimeout(t);
+  }, [open]);
   const [streaming, setStreaming] = useState(false);
   const [showBrowser, setShowBrowser] = useState(false);
   // Index of the bubble the user just sent: it gets the commit-pop.
@@ -658,7 +674,7 @@ const ChatSheet = ({
             enterKeyHint="send"
             disabled={streaming}
             className="h-11 rounded-xl"
-            autoFocus
+            ref={inputRef}
           />
           <Button
             variant="ember"

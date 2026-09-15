@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from "react";
+import { useEffect, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { ChevronLeft, X } from "lucide-react";
@@ -13,7 +13,35 @@ import { cn } from "@/lib/utils";
  * bottom, drag handle, and one header row: back · title/subtitle · close.
  * Pass no `title` to keep a custom hero as content — the close button then
  * floats top-right. The shell scroller is locked while open (useScrollLock).
+ *
+ * The overlay is sized to the VISUAL viewport, not the layout viewport. There
+ * is no keyboard plugin (its native sources kept breaking Xcode Cloud), so on
+ * iOS the WebView does not shrink for the keyboard: it scrolls the layout
+ * viewport to reveal the focused field, dragging every fixed overlay up with
+ * it — the coach chat opened with its header off the top of the screen and
+ * the input under the keys. Following visualViewport's height and offset
+ * keeps the sheet on screen and the footer above the keyboard.
  */
+const useVisualViewport = () => {
+  const read = () => {
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    return {
+      height: vv?.height ?? (typeof window !== "undefined" ? window.innerHeight : 800),
+      offsetTop: vv?.offsetTop ?? 0,
+    };
+  };
+  const [box, setBox] = useState(read);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const sync = () => setBox(read());
+    vv.addEventListener("resize", sync);
+    vv.addEventListener("scroll", sync);
+    return () => { vv.removeEventListener("resize", sync); vv.removeEventListener("scroll", sync); };
+  }, []);
+  return box;
+};
+
 export const BottomSheet = ({
   open,
   onClose,
@@ -49,6 +77,7 @@ export const BottomSheet = ({
 }) => {
   useScrollLock(open);
   const reduced = useReducedMotion();
+  const viewport = useVisualViewport();
   const rise = reduced
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.18 } }
     : { initial: { y: "100%" }, animate: { y: 0 }, exit: { y: "100%" }, transition: { type: "spring" as const, stiffness: 380, damping: 38 } };
@@ -60,7 +89,8 @@ export const BottomSheet = ({
           role="dialog"
           aria-modal="true"
           aria-label={label}
-          className="fixed inset-0 z-[var(--z-celebration)] flex flex-col"
+          className="fixed inset-x-0 z-[var(--z-celebration)] flex flex-col"
+          style={{ top: viewport.offsetTop, height: viewport.height }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -71,10 +101,16 @@ export const BottomSheet = ({
           <m.div
             className={cn(
               "relative mt-auto flex flex-col w-full rounded-t-[28px] border-t border-white/10 bg-[hsl(255_14%_7%)] shadow-[0_-20px_60px_-12px_hsl(0_0%_0%/0.7)] overflow-hidden",
-              height === "tall" ? "h-[90dvh]" : "max-h-[93vh]",
             )}
             {...rise}
-            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+            style={{
+              paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+              // 90 % / 93 % of what is actually visible — with the keyboard
+              // up that is the space above it, not the whole screen.
+              ...(height === "tall"
+                ? { height: Math.round(viewport.height * 0.9) }
+                : { maxHeight: Math.round(viewport.height * 0.93) }),
+            }}
           >
             <div className="flex justify-center pt-2.5 pb-1 shrink-0">
               <div className="h-1 w-10 rounded-full bg-white/15" />

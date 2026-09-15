@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Shuffle } from "lucide-react";
+import { ArrowLeftRight, Loader2, Shuffle } from "lucide-react";
 import { toast } from "sonner";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { resolveIllustration } from "@/lib/exercise-match";
 import { illustrationThumb } from "@/data/exercises-illustrated";
 import { GOLD_LINES } from "@/components/coach/gold-lines";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import { useBuildFocusSession, type BuiltSession, type Focus } from "@/hooks/use-focus-session";
+import { sessionMinutes, useBuildFocusSession, useSwapExercise, type BuiltSession, type Focus } from "@/hooks/use-focus-session";
 
 /**
  * Train today — pick the muscles, get the session. Builds in a moment from
@@ -37,8 +37,10 @@ const PRESETS: { label: string; focus: Focus[] }[] = [
   { label: "Pull", focus: ["back", "biceps"] },
   { label: "Full body", focus: ["chest", "back", "legs"] },
 ];
-const MINUTES = [30, 45, 60] as const;
+const MINUTES = [30, 45, 60, 75, 90] as const;
 const MAX_PICK = 3;
+const nearestMinutes = (m: number) =>
+  MINUTES.reduce((best, x) => (Math.abs(x - m) < Math.abs(best - m) ? x : best), 45 as number);
 
 const sameSet = (a: Focus[], b: Focus[]) => a.length === b.length && a.every((f) => b.includes(f));
 
@@ -61,14 +63,16 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
   const navigate = useNavigate();
   const { profile } = useAthleteProfile();
   const build = useBuildFocusSession();
+  const swap = useSwapExercise();
   const [focus, setFocus] = useState<Focus[]>([]);
   const [minutes, setMinutes] = useState<number>(() => {
     const m = Number(profile?.preferred_session_length_min);
-    return MINUTES.includes(m as (typeof MINUTES)[number]) ? m : 45;
+    return m > 0 ? nearestMinutes(m) : 45;
   });
   const [seed, setSeed] = useState(1);
   const [preview, setPreview] = useState<BuiltSession | null>(null);
   const [dayIndex, setDayIndex] = useState(0);
+  const [swapping, setSwapping] = useState<string | null>(null);
 
   const toggle = (f: Focus) => {
     hapticSelection();
@@ -102,10 +106,29 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
   };
   const shuffle = () => { const n = seed + 1; setSeed(n); void buildPreview(n); };
 
+  // One row for another of the same pattern; the rest of the session stays.
+  const swapRow = async (slug: string) => {
+    if (!preview || swapping) return;
+    hapticImpact("light");
+    setSwapping(slug);
+    try {
+      const cur = preview.blocks.find((b) => b.slug === slug);
+      const res = await swap.mutateAsync({ focus, minutes, seed: seedKey(seed), slug, sets: cur?.sets, exclude: preview.blocks.map((b) => b.slug) });
+      setPreview((cur) => {
+        if (!cur) return cur;
+        const blocks = cur.blocks.map((b) => (b.slug === slug ? res.block : b));
+        return { ...cur, blocks, duration_min: sessionMinutes(blocks) };
+      });
+    } catch (e) {
+      toast.error(friendlyError(e, "No other movement fits there."));
+    } finally { setSwapping(null); }
+  };
+
   const start = async () => {
     hapticImpact("medium");
     try {
-      const res = await build.mutateAsync({ focus, minutes, seed: seedKey(seed), commit: true });
+      const slugs = preview?.blocks.map((b) => b.slug);
+      const res = await build.mutateAsync({ focus, minutes, seed: seedKey(seed), commit: true, slugs });
       if (!res.program) throw new Error("No session came back");
       hapticNotification("success");
       onClose();
@@ -201,6 +224,17 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
                       {b.sets} × {b.reps} · rest {formatRest(b.rest_sec)}
                     </span>
                   </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-muted-foreground"
+                    aria-label={`Swap ${b.name}`}
+                    disabled={busy || !!swapping}
+                    onClick={() => swapRow(b.slug)}
+                  >
+                    {swapping === b.slug ? <Loader2 aria-hidden size={15} className="animate-spin" /> : <ArrowLeftRight aria-hidden size={15} />}
+                  </Button>
                 </li>
               ))}
             </ul>

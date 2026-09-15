@@ -6,6 +6,7 @@ import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { createBeginnerProgram, nextBeginnerBlock } from "@/lib/beginner-program";
@@ -37,9 +38,11 @@ const loadDraft = (): any | null => {
 // isn't onboarded. That answer deserves a door, not a stack trace.
 const isProfileGate = (msg: string) => /athlete profile/i.test(msg);
 
+const SESSION_MINUTES = [30, 45, 60, 75, 90] as const;
+
 const ProgramOnboarding = ({ onGenerated }: Props) => {
   const navigate = useNavigate();
-  const { profile, isLoading } = useAthleteProfile();
+  const { profile, isLoading, upsert } = useAthleteProfile();
   const [generating, setGenerating] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>(() => loadDraft() ?? { bodyFocus: [] as string[], notes: "" });
@@ -58,6 +61,14 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
   const equipment = (profile?.equipment ?? []).join(", ") || "Bodyweight";
   const injuries = profile?.injuries ?? [];
   const horizon = profile?.target_horizon_weeks ?? 12;
+
+  // Saved to the athlete profile at once: the generator reads it from there,
+  // and so does the focus-session sheet's default.
+  const setSessionLength = (m: number) => {
+    if (m === sessionMin) return;
+    hapticImpact("light");
+    upsert({ preferred_session_length_min: m }).catch((e) => toast.error(friendlyError(e, "Couldn't save the session length")));
+  };
 
   const generate = async () => {
     setGenerating(true);
@@ -230,6 +241,16 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         </dl>
       </div>
 
+      <Field label="Session length">
+        <div className="flex flex-wrap gap-1.5">
+          {SESSION_MINUTES.map((m) => (
+            <Chip key={m} active={sessionMin === m} onClick={() => setSessionLength(m)}>{m} min</Chip>
+          ))}
+        </div>
+        <p className="text-[11px] text-muted-foreground/75 mt-1.5">Every training day is planned to fit this.</p>
+      </Field>
+
+      <div className="mt-5" />
       <Field label="Body emphasis (optional)">
         <div className="flex flex-wrap gap-1.5">
           {FOCUS.map(f => (

@@ -2,9 +2,11 @@
 // built in a moment from the same safe, drawable pool the 4-week generator
 // uses. No model call. `commit: false` previews; `commit: true` stores a
 // one-day program row (status "session") the runner can open. The active
-// 4-week program is never touched.
+// 4-week program is never touched. `action: "swap"` trades one movement for
+// another of the same pattern — in a preview (returns the block) or in a
+// stored session (`program_id`: rewrites today's blocks, returns the program).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { buildSession, sessionPlan, FOCUSES, type Focus } from "../_shared/session-builder.ts";
+import { buildSession, prescribeSlugs, sessionMinutes, sessionPlan, swapBlock, FOCUSES, type Focus } from "../_shared/session-builder.ts";
 import { normalizeInjuries } from "../_shared/injuries.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
 
@@ -62,7 +64,7 @@ Deno.serve(async (req) => {
     const seed = `${String(body?.seed ?? today).slice(0, 64)}:${userId}`;
     const injuries = normalizeInjuries(profile.injuries);
 
-    const day = buildSession({
+    const input = {
       focus,
       minutes,
       goal: profile.primary_goal,
@@ -70,19 +72,72 @@ Deno.serve(async (req) => {
       equipment: Array.isArray(profile.equipment) ? profile.equipment : [],
       injuries,
       seed,
+    };
+    const strs = (v: unknown, cap: number) =>
+      (Array.isArray(v) ? v : []).filter((x): x is string => typeof x === "string").slice(0, cap);
+
+    if (!SERVICE_KEY) return json({ error: "Server not configured" }, 500);
+    // Service role for writes: the table's INSERT policy predates the trial
+    // and the athlete has already passed has_active_access above. Every
+    // read/write below is still scoped to `user_id = userId`.
+    const service = createClient(SUPABASE_URL, SERVICE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
+
+    if (body?.action === "swap") {
+      const current = String(body?.slug ?? "");
+      const programId = typeof body?.program_id === "string" ? body.program_id : null;
+      let exclude = strs(body?.exclude, 12);
+      let sets = Number(body?.sets) || undefined;
+      let stored: { plan_json: { weeks?: { days?: { blocks?: { slug: string; sets: number }[] }[] }[] } } | null = null;
+      if (programId) {
+        const { data } = await service
+          .from("coach_programs")
+          .select("plan_json")
+          .eq("id", programId)
+          .eq("user_id", userId)
+          .eq("status", "session")
+          .maybeSingle();
+        if (!data) return json({ error: "Session not found" }, 404);
+        stored = data as typeof stored;
+        const todays = stored!.plan_json?.weeks?.[0]?.days?.[dayIndex]?.blocks ?? [];
+        exclude = todays.map((b) => b.slug);
+        sets = todays.find((b) => b.slug === current)?.sets;
+      }
+      const block = swapBlock({ ...input, current, exclude, sets });
+      if (!block) return json({ error: "No other movement fits here — try shuffling the session" }, 422);
+      if (!programId || !stored) return json({ block, dayIndex });
+
+      const plan = stored.plan_json;
+      const blocks = plan.weeks?.[0]?.days?.[dayIndex]?.blocks ?? [];
+      const at = blocks.findIndex((b) => b.slug === current);
+      if (at < 0) return json({ error: "That movement is not in today's session" }, 409);
+      blocks[at] = block;
+      const { data: program, error: updErr } = await service
+        .from("coach_programs")
+        .update({ plan_json: plan })
+        .eq("id", programId)
+        .eq("user_id", userId)
+        .select("id, user_id, status, goal, experience, days_per_week, equipment, body_focus, constraints, weeks, plan_json, ai_summary, started_on, created_at")
+        .single();
+      if (updErr) return json({ error: updErr.message }, 500);
+      return json({ block, program, dayIndex });
+    }
+
+    let day = buildSession(input);
+    // A committed session may carry the athlete's swaps from the preview:
+    // re-prescribe the chosen slugs from the same safe pool (anything the
+    // pool refuses is dropped, so a hand-edited list can never smuggle a lift).
+    const slugs = strs(body?.slugs, 12);
+    if (body?.commit && slugs.length) {
+      const blocks = prescribeSlugs(slugs, input);
+      day = { ...day, blocks, duration_min: sessionMinutes(blocks) };
+    }
     if (day.blocks.length < 2) {
       return json({ error: "Not enough safe movements for that pick — try another muscle group or more equipment" }, 422);
     }
 
     if (!body?.commit) return json({ day, dayIndex });
-
-    if (!SERVICE_KEY) return json({ error: "Server not configured" }, 500);
-    // Service role for the insert: the table's INSERT policy predates the
-    // trial and the athlete has already passed has_active_access above.
-    const service = createClient(SUPABASE_URL, SERVICE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    });
     const { data: program, error: insErr } = await service
       .from("coach_programs")
       .insert({

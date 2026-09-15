@@ -84,38 +84,69 @@ export const useTodayFocusSession = () => {
   return { session: q.data ?? null, isLoading: q.isLoading };
 };
 
-interface BuildArgs { focus: Focus[]; minutes: number; seed?: string; commit: boolean }
-interface BuildResult { day?: BuiltSession; program?: CoachProgram; dayIndex: number }
+export type SessionBlock = BuiltSession["blocks"][number];
 
-/** The one call: preview (`commit: false`) or store (`commit: true`). */
+/** Duration under the builder's own model — the preview recomputes it after a swap. */
+export const sessionMinutes = (blocks: { sets: number; rest_sec: number }[]) =>
+  Math.round(10 + blocks.reduce((t, b) => t + (b.sets * (45 + b.rest_sec)) / 60, 0));
+
+interface BuildArgs { focus: Focus[]; minutes: number; seed?: string; commit: boolean; slugs?: string[] }
+interface BuildResult { day?: BuiltSession; program?: CoachProgram; dayIndex: number }
+interface SwapArgs { focus: Focus[]; minutes: number; seed?: string; slug: string; sets?: number; exclude?: string[]; program_id?: string }
+interface SwapResult { block: SessionBlock; program?: CoachProgram; dayIndex: number }
+
+const call = async <T,>(body: object): Promise<T> => {
+  const { data, error } = await supabase.functions.invoke("coach-build-session", {
+    body: { ...body, tz_offset_minutes: new Date().getTimezoneOffset() },
+  });
+  if (error) {
+    // supabase-js hides the body behind "non-2xx"; the function's reason
+    // and status are what the sheet routes on (403 paywall, 400 profile).
+    let reason = error.message;
+    let status = 0;
+    const ctx = (error as { context?: Response }).context;
+    if (ctx && typeof ctx.text === "function") {
+      status = ctx.status;
+      try {
+        const raw = (await ctx.text())?.trim();
+        if (raw) { try { reason = JSON.parse(raw)?.error || raw; } catch { reason = raw.slice(0, 200); } }
+      } catch { /* keep generic */ }
+    }
+    throw Object.assign(new Error(reason), { status });
+  }
+  if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+  return data as T;
+};
+
+/** The one call: preview (`commit: false`) or store (`commit: true`, with the preview's slugs after swaps). */
 export const useBuildFocusSession = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: BuildArgs): Promise<BuildResult> => {
-      const { data, error } = await supabase.functions.invoke("coach-build-session", {
-        body: { ...args, tz_offset_minutes: new Date().getTimezoneOffset() },
-      });
-      if (error) {
-        // supabase-js hides the body behind "non-2xx"; the function's reason
-        // and status are what the sheet routes on (403 paywall, 400 profile).
-        let reason = error.message;
-        let status = 0;
-        const ctx = (error as { context?: Response }).context;
-        if (ctx && typeof ctx.text === "function") {
-          status = ctx.status;
-          try {
-            const raw = (await ctx.text())?.trim();
-            if (raw) { try { reason = JSON.parse(raw)?.error || raw; } catch { reason = raw.slice(0, 200); } }
-          } catch { /* keep generic */ }
-        }
-        throw Object.assign(new Error(reason), { status });
-      }
-      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+      const res = await call<BuildResult>(args);
       void track(FUNNEL.sessionBuilt, { focus: args.focus, minutes: args.minutes, commit: args.commit });
-      return data as BuildResult;
+      return res;
     },
     onSuccess: (res) => {
       if (res.program) void qc.invalidateQueries({ queryKey: ["focus-session"] });
+    },
+  });
+};
+
+/**
+ * One movement for another of the same pattern. In the preview it returns
+ * the block; with `program_id` it rewrites the stored session and hands the
+ * runner the updated program without a refetch.
+ */
+export const useSwapExercise = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (args: SwapArgs) => call<SwapResult>({ ...args, action: "swap" }),
+    onSuccess: (res) => {
+      if (res.program) {
+        qc.setQueryData(["coach-program", "by-id", res.program.id], res.program);
+        void qc.invalidateQueries({ queryKey: ["focus-session"] });
+      }
     },
   });
 };

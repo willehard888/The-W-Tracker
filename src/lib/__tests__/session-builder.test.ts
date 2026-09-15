@@ -3,7 +3,9 @@ import {
   SESSION_POOL,
   DROPPED_FROM_POOL,
   buildSession,
+  prescribeSlugs,
   sessionPlan,
+  swapBlock,
   type Focus,
 } from "../../../supabase/functions/_shared/session-builder";
 import { PRIORITY_SLUGS } from "../../../supabase/functions/_shared/illustrated-catalog";
@@ -67,12 +69,40 @@ describe("session builder", () => {
     }
   });
 
-  it("fits the minutes asked for", () => {
-    for (const minutes of [30, 45, 60]) {
+  it("fits the minutes asked for, and a long session grows in sets before movements", () => {
+    let prevSets = 0;
+    for (const minutes of [30, 45, 60, 75, 90]) {
       const day = build(["legs"], { minutes });
       expect(Math.abs(day.duration_min - minutes), `${minutes} min`).toBeLessThanOrEqual(5);
       expect(day.blocks.length).toBeGreaterThanOrEqual(3);
+      const sets = day.blocks.reduce((t, b) => t + b.sets, 0);
+      expect(sets, `${minutes} min sets`).toBeGreaterThan(prevSets);
+      prevSets = sets;
     }
+    const long = build(["chest", "back", "legs"], { minutes: 90 });
+    expect(long.blocks.length).toBeLessThanOrEqual(10);
+    expect(long.blocks.filter((b) => SESSION_POOL[b.slug].tier === 1).length).toBeLessThanOrEqual(3);
+  });
+
+  it("swaps a movement for a sibling of the same pattern that is not already in the session", () => {
+    const day = build(["back", "biceps"]);
+    const exclude = day.blocks.map((b) => b.slug);
+    const first = day.blocks[0];
+    const alt = swapBlock({ ...base, focus: ["back", "biceps"], current: first.slug, exclude });
+    expect(alt).not.toBeNull();
+    expect(exclude).not.toContain(alt!.slug);
+    expect(patternOf(alt!.slug)).toBe(patternOf(first.slug));
+    expect(alt!.sets).toBeGreaterThanOrEqual(2);
+    // a grown session hands its sets to the replacement, within the cap
+    const grown = swapBlock({ ...base, focus: ["back", "biceps"], current: first.slug, exclude, sets: 5 });
+    expect(grown!.sets).toBe(Math.min(5, alt!.sets + 2));
+    expect(swapBlock({ ...base, focus: ["back"], current: "Not_A_Movement", exclude: [] })).toBeNull();
+  });
+
+  it("re-prescribes a slug list the way it built it, and drops what the pool refuses", () => {
+    const day = build(["legs"], { minutes: 75 });
+    const again = prescribeSlugs([...day.blocks.map((b) => b.slug), "Not_A_Movement"], { ...base, minutes: 75, focus: ["legs"] });
+    expect(again).toEqual(day.blocks);
   });
 
   it("is stable for a seed and different for another", () => {

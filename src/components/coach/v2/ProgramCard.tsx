@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, ChevronRight, Crosshair } from "lucide-react";
+import { CalendarDays, Dumbbell, ChevronRight, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCoachProgram, todaySessionOf } from "@/hooks/use-coach-program";
 import { useTodayFocusSession } from "@/hooks/use-focus-session";
@@ -53,6 +53,22 @@ const ProgramCard = () => {
           <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
         </button>
         {focusDoor}
+        {/* The 4-week program keeps its door on a focus-session day — the
+            session leads, the block is still one tap away. */}
+        {program && (
+          <button
+            type="button"
+            onClick={() => navigate("/coach/program")}
+            className="press mt-2 w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
+          >
+            <CalendarDays size={16} className="text-muted-foreground shrink-0" aria-hidden />
+            <span className="flex-1 min-w-0">
+              <span className="block text-[14px] font-bold leading-tight truncate">Your 4-week program</span>
+              <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">Week {currentWeek}</span>
+            </span>
+            <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
+          </button>
+        )}
       </>
     );
   }

@@ -227,8 +227,10 @@ const ORDER: Pattern[] = [
 ];
 const NOVICE_EQUIP = new Set(["machine", "cable", "dumbbell", "bodyweight"]);
 // Short-rest schemes fit many blocks into the minutes; a session is still a
-// handful of movements done well, not a circuit of eight.
-const maxBlocks = (minutes: number) => (minutes <= 30 ? 5 : minutes <= 45 ? 6 : 8);
+// handful of movements done well, not a circuit. Past the hour the session
+// grows in sets before it grows in movements (see the densify pass).
+const maxBlocks = (minutes: number) => (minutes <= 30 ? 5 : minutes <= 45 ? 6 : minutes <= 60 ? 8 : minutes <= 75 ? 9 : 10);
+const maxLeads = (minutes: number) => (minutes >= 75 ? 3 : 2);
 
 /** FNV-1a — the tie-break that makes a seed reproducible and a shuffle different. */
 const fnv = (s: string): number => {
@@ -245,19 +247,78 @@ export const blockMinutes = (b: { sets: number; rest_sec: number }): number => (
 
 type PoolItem = CatalogItem & PoolEntry;
 
-export function buildSession(o: BuildInput): BuiltSession {
+/** Sets / reps / RPE / rest for one movement, from the goal and the athlete. */
+const prescribe = (e: PoolItem, o: Pick<BuildInput, "goal" | "experience" | "minutes">): SessionBlock => {
+  const scheme = SCHEMES[o.goal ?? "all"] ?? SCHEMES.all;
+  const novice = o.experience === "never_trained";
+  const rpeAdj = novice ? -1 : o.experience === "under_6_months" ? -0.5 : 0;
+  const r = e.tier < 3 ? scheme.compound : scheme.isolation;
+  const drop = e.tier < 3 ? (o.minutes < 40 ? 1 : 0) + (novice ? 1 : 0) : 0;
+  return { slug: e.slug, name: e.name, sets: Math.max(2, r.sets - drop), reps: r.reps, rpe: r.rpe + rpeAdj, rest_sec: r.rest_sec };
+};
+
+/** The athlete's safe, drawable, equipment-matched pool for the picked muscles. */
+const poolFor = (o: Pick<BuildInput, "focus" | "experience" | "equipment" | "injuries">): PoolItem[] => {
   const focus = [...new Set(o.focus)];
   const novice = o.experience === "never_trained";
   const banned = bannedSlugs(EXERCISE_CATALOG, o.injuries, o.experience ?? null);
   const only = new Set(Object.keys(SESSION_POOL));
-
   // `only` is dropped by filterCatalog below MIN_POOL; unclassified slugs never
   // survive the join, so a thin home gym shrinks the session rather than
   // inventing a lift the app cannot draw.
-  const items: PoolItem[] = filterCatalog(o.equipment, 999, { exclude: banned, only })
+  return filterCatalog(o.equipment, 999, { exclude: banned, only })
     .flatMap((e) => { const p = SESSION_POOL[e.slug]; return p ? [{ ...e, ...p }] : []; })
     .filter((e) => e.focus.some((f) => focus.includes(f)))
     .filter((e) => !(novice && e.tier < 3 && !NOVICE_EQUIP.has(e.equipment)));
+};
+
+/**
+ * One movement for another: same pattern first (the row stays a row), then
+ * the same primary muscle in any pattern; never one already in the session,
+ * never one the athlete's profile bans. Null when the pool has nothing else.
+ */
+export function swapBlock(o: BuildInput & { current: string; exclude: string[]; sets?: number }): SessionBlock | null {
+  const cur = SESSION_POOL[o.current];
+  if (!cur) return null;
+  const taken = new Set([...o.exclude, o.current]);
+  const items = poolFor(o).filter((e) => !taken.has(e.slug));
+  const order = (a: PoolItem, b: PoolItem) => fnv(o.seed + a.slug) - fnv(o.seed + b.slug);
+  const same = items.filter((e) => e.pattern === cur.pattern && e.focus[0] === cur.focus[0]).sort(order);
+  const pattern = items.filter((e) => e.pattern === cur.pattern).sort(order);
+  const muscle = items.filter((e) => e.focus[0] === cur.focus[0]).sort(order);
+  const pick = same[0] ?? pattern[0] ?? muscle[0];
+  if (!pick) return null;
+  const block = prescribe(pick, o);
+  // A long session has grown its sets; the replacement inherits them when it
+  // is the same kind of movement (compound for compound), within the cap.
+  const sameKind = (pick.tier < 3) === (cur.tier < 3);
+  const cap = block.sets + (pick.tier < 3 ? 2 : 1);
+  if (sameKind && o.sets && o.sets > block.sets) block.sets = Math.min(cap, Math.floor(o.sets));
+  return block;
+}
+
+/** Duration of a block list under the same model the builder fits with. */
+export const sessionMinutes = (blocks: { sets: number; rest_sec: number }[]): number =>
+  Math.round(10 + blocks.reduce((t, b) => t + blockMinutes(b), 0));
+
+/**
+ * Re-prescribe a client-chosen slug list (the preview after swaps) — only
+ * pool movements survive, and the list grows in sets exactly as a built one.
+ */
+export function prescribeSlugs(slugs: string[], o: BuildInput): SessionBlock[] {
+  const bySlug = new Map(poolFor(o).map((e) => [e.slug, e]));
+  const out: SessionBlock[] = [];
+  for (const slug of [...new Set(slugs)]) {
+    const e = bySlug.get(slug);
+    if (e) out.push(prescribe(e, o));
+  }
+  densify(out, o.minutes);
+  return out;
+}
+
+export function buildSession(o: BuildInput): BuiltSession {
+  const focus = [...new Set(o.focus)];
+  const items = poolFor(o);
 
   const key = (e: PoolItem) => ORDER.indexOf(e.pattern) * 2 ** 32 + fnv(o.seed + e.slug);
   const byKey = (a: PoolItem, b: PoolItem) => key(a) - key(b);
@@ -274,13 +335,7 @@ export function buildSession(o: BuildInput): BuiltSession {
   // (a deadlift for "back") — never interleaved ahead of a real row.
   const ranked = [1, 2, 3].flatMap((t) => [...interleave(focus.map((f) => list(t, f))), ...list(t)]);
 
-  const scheme = SCHEMES[o.goal ?? "all"] ?? SCHEMES.all;
-  const rpeAdj = novice ? -1 : o.experience === "under_6_months" ? -0.5 : 0;
-  const rx = (e: PoolItem): SessionBlock => {
-    const r = e.tier < 3 ? scheme.compound : scheme.isolation;
-    const drop = e.tier < 3 ? (o.minutes < 40 ? 1 : 0) + (novice ? 1 : 0) : 0;
-    return { slug: e.slug, name: e.name, sets: Math.max(2, r.sets - drop), reps: r.reps, rpe: r.rpe + rpeAdj, rest_sec: r.rest_sec };
-  };
+  const rx = (e: PoolItem): SessionBlock => prescribe(e, o);
 
   const blocks: SessionBlock[] = [];
   const used = new Set<string>();
@@ -294,9 +349,9 @@ export function buildSession(o: BuildInput): BuiltSession {
     for (const e of ranked) {
       if (blocks.length >= maxBlocks(o.minutes)) break;
       if (used.has(e.slug)) continue;
-      const patternCap = pass === 1 ? 1 : focus.length === 1 || e.tier === 3 ? 2 : 1;
+      const patternCap = pass === 1 ? 1 : focus.length === 1 || e.tier === 3 || o.minutes >= 60 ? 2 : 1;
       if ((seen.get(e.pattern) ?? 0) >= patternCap) continue;
-      if (e.tier === 1 && leads >= 2) continue;
+      if (e.tier === 1 && leads >= maxLeads(o.minutes)) continue;
       const b = rx(e);
       const cost = blockMinutes(b);
       if (total + cost > o.minutes + 5) continue;
@@ -308,7 +363,30 @@ export function buildSession(o: BuildInput): BuiltSession {
     }
   }
 
-  return { focus: focusLabel(focus), duration_min: Math.round(total), blocks };
+  densify(blocks, o.minutes);
+  return { focus: focusLabel(focus), duration_min: sessionMinutes(blocks), blocks };
+}
+
+// A long session at the gym is more sets on the same movements before it is
+// more movements. One set at a time in session order, up to two extra on
+// compounds and one on isolation, while the minutes allow.
+function densify(blocks: SessionBlock[], minutes: number): void {
+  let total = 10 + blocks.reduce((t, b) => t + blockMinutes(b), 0);
+  const extra = new Map<string, number>();
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const b of blocks) {
+      const capExtra = (SESSION_POOL[b.slug]?.tier ?? 3) < 3 ? 2 : 1;
+      if ((extra.get(b.slug) ?? 0) >= capExtra) continue;
+      const cost = (45 + b.rest_sec) / 60;
+      if (total + cost > minutes + 3) continue;
+      b.sets += 1;
+      total += cost;
+      extra.set(b.slug, (extra.get(b.slug) ?? 0) + 1);
+      grew = true;
+    }
+  }
 }
 
 export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];

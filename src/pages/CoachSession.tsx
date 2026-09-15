@@ -2,8 +2,9 @@ import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
-import { Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, Check, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { ActionRow } from "@/components/ActionRow";
@@ -18,7 +19,7 @@ import {
   writeWorkoutToHealth,
 } from "@/lib/health/workout-write";
 import { useCoachProgram } from "@/hooks/use-coach-program";
-import { useProgramById } from "@/hooks/use-focus-session";
+import { useProgramById, useSwapExercise, type Focus } from "@/hooks/use-focus-session";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from "@/hooks/use-workout-log";
 import { useCommitPop } from "@/hooks/use-commit-pop";
@@ -236,6 +237,7 @@ const CoachSession = () => {
   const program = sessionId ? byId.program : active.program;
   const programLoading = sessionId ? byId.isLoading : active.isLoading;
   const isFocusSession = program?.status === "session";
+  const swap = useSwapExercise();
   const { session, isLoading: sessionLoading, start, finish, isFinishing } = useWorkoutSession(program?.id, week, day);
   const { data: daySets } = useDaySets(program?.id, week, day);
   const { data: recent } = useRecentWorkoutLogs();
@@ -528,9 +530,39 @@ const CoachSession = () => {
                 Exercise {fmtInt(progress.currentExerciseIndex + 1)} of {fmtInt(progress.totalExercises)}
                 {focus ? ` · ${focus}` : ""}
               </p>
-              <h2 className="mt-1 font-display font-black text-[27px] leading-[1.04] tracking-tight">
-                {current.name}
-              </h2>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="mt-1 font-display font-black text-[27px] leading-[1.04] tracking-tight">
+                  {current.name}
+                </h2>
+                {/* A focus session is the athlete's own pick: any movement
+                    with nothing logged yet can be traded for its sibling. */}
+                {isFocusSession && sessionId && (logged[current.slug] ?? []).length === 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 mt-1 text-muted-foreground"
+                    disabled={swap.isPending}
+                    onClick={async () => {
+                      hapticImpact("light");
+                      try {
+                        await swap.mutateAsync({
+                          focus: (program?.body_focus ?? []) as Focus[],
+                          minutes: planDay?.duration_min || 45,
+                          slug: current.slug,
+                          program_id: sessionId,
+                        });
+                        hapticNotification("success");
+                      } catch (e) {
+                        toast.error(friendlyError(e, "No other movement fits here."));
+                      }
+                    }}
+                  >
+                    {swap.isPending ? <Loader2 aria-hidden size={14} className="animate-spin" /> : <ArrowLeftRight aria-hidden size={14} />}
+                    Swap
+                  </Button>
+                )}
+              </div>
               <p className="mt-1.5 text-[13px] font-bold tabular-nums text-foreground/85">
                 {current.sets} × {current.reps || "—"}
                 {current.rpe ? ` · RPE ${current.rpe}` : ""}

@@ -92,13 +92,41 @@ echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 cd "$ROOT_DIR"
 
 # ---------------------------------------------------------------------------
-# Node.js
+# Node.js — official tarball first, Homebrew only as a fallback
 # ---------------------------------------------------------------------------
+# Xcode Cloud hands out both Apple Silicon and Intel machines. Homebrew has no
+# node bottles for Intel macOS 26 (Tier 3) and its from-source build dies on
+# "C compiler cannot create executables" (run 1181, 2026-09-16). The nodejs.org
+# tarball needs no compiler and exists for both arches, so it is the primary
+# path; brew stays as the fallback it used to be.
+NODE_MAJOR="24"   # same major as the founder's Mac; ci.yml runs the web tests on 20
+install_node_tarball() {
+  local arch tgz dir="$HOME/.node-ci"
+  case "$(uname -m)" in
+    arm64)  arch="arm64" ;;
+    x86_64) arch="x64" ;;
+    *) echo "⚠️ unknown arch $(uname -m)"; return 1 ;;
+  esac
+  # awk (reads to EOF) instead of head — see the SIGPIPE note above.
+  tgz=$(curl -fsSL "https://nodejs.org/dist/latest-v${NODE_MAJOR}.x/SHASUMS256.txt" \
+        | grep -oE "node-v${NODE_MAJOR}[0-9.]*-darwin-${arch}\.tar\.gz" | awk 'NR==1{print}')
+  [[ -n "$tgz" ]] || { echo "⚠️ no node ${NODE_MAJOR}.x tarball listed for darwin-${arch}"; return 1; }
+  echo "📥 Downloading ${tgz}..."
+  rm -rf "$dir" && mkdir -p "$dir"
+  curl -fsSL "https://nodejs.org/dist/latest-v${NODE_MAJOR}.x/${tgz}" \
+    | tar -xz -C "$dir" --strip-components=1 || return 1
+  export PATH="$dir/bin:$PATH"
+  command -v node &>/dev/null
+}
+
 if ! command -v node &>/dev/null; then
-  echo "📥 Node.js not found – installing via Homebrew..."
-  if ! brew install node; then
-    echo "❌ Failed to install Node.js via Homebrew"
-    exit 1
+  echo "📥 Node.js not found – fetching the official tarball..."
+  if ! install_node_tarball; then
+    echo "⚠️ Tarball install failed — falling back to Homebrew..."
+    if ! brew install node; then
+      echo "❌ Failed to install Node.js (tarball and Homebrew)"
+      exit 1
+    fi
   fi
 fi
 

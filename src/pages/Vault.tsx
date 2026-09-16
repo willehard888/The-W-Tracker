@@ -48,76 +48,76 @@ interface VaultCategory {
 
 const CATEGORIES: VaultCategory[] = [
   {
-    id: "recipes",
-    title: "Performance Nutrition",
-    tagline: "Fuel · macros · meal prep",
+    id: "wisdom",
+    title: "Wisdom",
+    tagline: "Twenty-one thinkers, one loop",
     description:
-      "Macro-balanced, evidence-led nutrition: protein dosing, workout fueling, the Mediterranean pattern, and caffeine timing — drawn from peer-reviewed sports nutrition, not diet trends.",
-    icon: Utensils,
-    accent: "hsl(152 68% 50%)",
+      "The ideas that changed how people live, each with a private reflection, a short practice and a question afterwards. The nine-source course, then Frankl, the Stoics, Aristotle, Campbell, Nietzsche, Greene, Goggins, Thich Nhat Hanh, Kabat-Zinn, Attia, Robbins and two Jung pieces. The chip rates the practice, never the worldview.",
+    icon: BookOpen,
+    accent: "hsl(350 60% 64%)",
   },
   {
-    id: "training",
-    title: "Strength & Conditioning",
-    tagline: "Lifts · zone 2 · VO₂max",
+    id: "inner-work",
+    title: "Inner Work",
+    tagline: "Identity, energy, self-talk",
     description:
-      "Programming principles that hold across decades of S&C research: progressive overload, Zone 2 base, the Norwegian 4×4, and proper deload periodisation.",
-    icon: Dumbbell,
-    accent: "hsl(var(--ember))",
+      "The honest version of manifestation, energy and self-image work: what research supports (mental contrasting, imagery, self-talk), what is speculative, and how to use both to become who you are training to be.",
+    icon: Sparkles,
+    accent: "hsl(45 90% 58%)",
   },
   {
     id: "longevity",
     title: "Longevity",
-    tagline: "Healthspan · VO₂max · the long game",
+    tagline: "Healthspan, the long game",
     description:
-      "The 100-Year Athlete: healthspan over lifespan, ranked by mortality evidence — VO₂max, strength, protein, sleep, metabolic health and connection, with an honest walk through the supplement graveyard.",
+      "The 100-Year Athlete: healthspan over lifespan, ranked by mortality evidence. Aerobic fitness, strength, protein, sleep, metabolic health and connection, with an honest walk through the supplement graveyard.",
     icon: Hourglass,
     accent: "hsl(168 70% 45%)",
   },
   {
     id: "recovery",
-    title: "Recovery & Sleep",
-    tagline: "Sleep · light · cold",
+    title: "Recovery and Sleep",
+    tagline: "Sleep, light, cold, heat",
     description:
-      "What actually works for recovery and sleep architecture: 7–9 h dose, morning light anchor, caffeine cut-off, and cold exposure timing without sabotaging strength gains.",
+      "What recovery is made of: the sleep window, the morning light that times it, the caffeine cut-off that protects it, and cold and heat used at the right hour.",
     icon: Moon,
     accent: "hsl(220 80% 65%)",
   },
   {
-    id: "mind",
-    title: "Mind & Emotional Skill",
-    tagline: "Breath · CBT · MBSR",
+    id: "training",
+    title: "Strength and Conditioning",
+    tagline: "Lifts, zone 2, VO₂max",
     description:
-      "Practical, well-evidenced cognitive and breath tools: box breathing, the physiological sigh, mindfulness, and CBT-style cognitive reframing.",
+      "Programming principles that hold across decades of research: progressive overload, a zone 2 base, the 4×4 interval, planned deloads, the daily step floor and eight minutes of mobility.",
+    icon: Dumbbell,
+    accent: "hsl(var(--ember))",
+  },
+  {
+    id: "mind",
+    title: "Mind and Emotional Skill",
+    tagline: "Breath, reframing, focus",
+    description:
+      "Practical, well-evidenced tools for the mind: the physiological sigh, box breathing, mindfulness, cognitive reframing, deep work and a five-minute journal.",
     icon: Brain,
     accent: "hsl(280 70% 65%)",
   },
   {
     id: "nervous-system",
-    title: "Nervous System Regulation",
-    tagline: "Polyvagal · NSDR · HRV",
+    title: "Nervous System",
+    tagline: "Polyvagal, NSDR, HRV",
     description:
-      "Down-regulate a chronically activated nervous system: polyvagal toolkit, NSDR/Yoga Nidra, coherent breathing at the resonance frequency, and the mammalian dive reflex.",
+      "Down-regulate a nervous system that runs hot: the polyvagal map, NSDR, coherent breathing at the resonance frequency, the dive reflex, and four self-hypnosis scripts.",
     icon: WindIcon,
     accent: "hsl(190 80% 60%)",
   },
   {
-    id: "inner-work",
-    title: "Inner Work",
-    tagline: "Identity · energy · manifestation",
+    id: "recipes",
+    title: "Nutrition",
+    tagline: "Protein, fuel, timing",
     description:
-      "The honest version of manifestation, energy and self-image work: what research supports (mental contrasting, imagery, self-talk), what is speculative — and how to use both to become who you're training to be.",
-    icon: Sparkles,
-    accent: "hsl(45 90% 58%)",
-  },
-  {
-    id: "wisdom",
-    title: "Wisdom",
-    tagline: "Twenty thinkers · one loop · six paths",
-    description:
-      "The eleven-lesson course on nine sources, and one piece each from the thinkers behind the map: Frankl, the Stoics, Aristotle, Campbell, Nietzsche, Greene, Goggins, Thich Nhat Hanh, Kabat-Zinn, Attia and a second Jung. Every piece runs the loop: understand, reflect, practise, integrate.",
-    icon: BookOpen,
-    accent: "hsl(350 60% 64%)",
+      "Evidence-led performance nutrition: protein dosing, fuelling around training, the Mediterranean pattern, caffeine timing, hydration and the gut. The meal-prep recipes live one row down.",
+    icon: Utensils,
+    accent: "hsl(152 68% 50%)",
   },
 ];
 

@@ -215,6 +215,15 @@ export const VAULT_MASTERS: VaultMaster[] = [
     works: [{ title: "The Greatest Secret", year: 2020 }],
   },
   {
+    slug: "robbins",
+    name: "Tony Robbins",
+    lived: "Coaching since 1978",
+    tradition: "Peak performance",
+    kind: "practice",
+    lens: "Find who has your result, and copy the belief, the sequence and the body.",
+    works: [{ title: "Unlimited Power", year: 1986 }],
+  },
+  {
     slug: "sharma",
     name: "Robin Sharma",
     lived: "Writing since 1994",

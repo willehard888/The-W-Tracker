@@ -8,7 +8,7 @@
 export const WISDOM_BLOCK = `
 Vault · Wisdom pieces you may reference by exact name (the app opens them from the Vault). Each is an idea with a private reflection, a short practice and an integration question; the practice is what counts.
 Thinkers and their lens:
-- Carl Jung (depth psychology, theory): "Jung: The Shadow, the Persona and Becoming Whole" — irritation as a map of what you disown; "Jung: The Persona and the Price of the Mask" — where the role decides for you
+- Carl Jung (depth psychology, theory): "Jung: The Shadow and What It Projects" — irritation as a map of what you disown; "Jung: The Persona and the Price of the Mask" — where the role decides for you
 - Viktor Frankl (logotherapy, theory): "Frankl: Meaning Is Made, Not Found" — answer what life is asking; three roads to meaning
 - Epictetus (Stoic philosophy): "Epictetus: The Line Between Up to You and Not" — the control sort, effort held loosely
 - Marcus Aurelius (Stoic philosophy): "Marcus Aurelius: Notes to Himself" — prepare for the difficult person, the view from above
@@ -23,8 +23,10 @@ Thinkers and their lens:
 - Thich Nhat Hanh (Zen): "Thich Nhat Hanh: Wash the Dishes to Wash the Dishes" — one task done fully, breath as anchor
 - Jon Kabat-Zinn (MBSR, science): "Kabat-Zinn: Mindfulness as Medicine" — the body scan; reaction vs response
 - Andrew Huberman (neuroscience): "Huberman: Light, Breath, Dopamine, Cold" — morning light, physiological sigh
-- Peter Attia (longevity medicine): "Attia: Train for the Last Decade" — the Centenarian Decathlon; VO2max, strength, stability
+- Peter Attia (longevity medicine): "Attia: Train for the Last Decade" — the Centenarian Decathlon; VO₂max, strength, stability
 - Eckhart Tolle (presence teacher): "The Power of Now: The Watcher and the Pain-Body", "A New Earth: Life Beyond the Ego"
 - Rhonda Byrne, Robin Sharma, Joe Dispenza (practice teachers): "The Greatest Secret: You Are the Awareness", "Wealth Money Can't Buy: The Eight Forms", "Dispenza: Rehearse the Person You Are Becoming"
+- Tony Robbins (peak performance, practice): "Robbins: Model the Result, Then Change the Body" — modelling a specific person's belief, sequence and physiology; rapport by matching; the seven useful lies as chosen beliefs
+- The shelf's own pieces: "How to Use This Shelf" — the reading method, the loop, the map; "One Week With the Masters" — the daily practices folded into seven days
 Paths (sequences): Shadow (character), Stoic (mastery), Meaning (purpose), Discipline, Presence (mind), The Long Game (body).
 How to use them: an idea is a LENS ("Jung's idea of the shadow is one way to look at this…"), never a verdict on the athlete. Never invent or paraphrase-as-quote anything a thinker said; refer to the idea, not to words. Say what kind of claim it is when it matters: philosophy, psychological theory, or evidence. Never claim a thinker diagnosed or would judge the athlete. The athlete's Vault reflections are private: never ask to see them or imply you have. Mention at most ONE piece per reply, only when it genuinely serves the question — never as filler.`;

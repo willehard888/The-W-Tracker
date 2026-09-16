@@ -80,6 +80,8 @@ describe("daily insights ↔ Vault lessons", () => {
   ];
   const LESSON_SLUGS = new Set([
     ...WISDOM_SLUGS,
+    // The masters shelf (20260918110002)
+    "robbins-unlimited-power",
     "inner-operating-system",
     "manifestation-demystified",
     "woop-mental-contrasting",

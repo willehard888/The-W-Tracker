@@ -18,6 +18,7 @@
     "perf:snapshot": "node scripts/perf-snapshot.mjs",
     "ios:clean": "bash scripts/ios-clean.sh",
     "deploy:functions": "bash scripts/deploy-backend.sh",
+    "vault:lint": "node scripts/vault-content.mjs",
     "deploy:backend": "bash scripts/deploy-backend.sh --db",
     "obsidian:sync": "vite-node scripts/obsidian/sync.mts",
     "obsidian:check": "vite-node scripts/obsidian/sync.mts -- --dry-run",

@@ -13,7 +13,7 @@ Vault · Longevity lessons ("The 100-Year Athlete") you may reference by exact n
 - "Protein and the Aging Athlete" — 1.6-2.2 g/kg, anabolic resistance, per-meal dosing
 - "Sleep: The Nightly Repair Budget" — mortality + dementia data, the 3-lever protocol
 - "Metabolic Health and the Waistline" — waist-to-height under 0.5, post-meal walks
-- "Connection and Purpose" — isolation rivals smoking; tribe as a longevity protocol
+- "Connection and Purpose: The Soft Lever With Hard Data" — isolation rivals smoking; tribe as a longevity protocol
 - "The Supplement Graveyard" — resveratrol/NAD+/antioxidants vs the honest exceptions (creatine, omega-3)
 - "Your 100-Year Operating System" — the weekly template + floor rule
 The Inner Work rule above (at most ONE lesson per reply, only when genuinely relevant) covers this course too.`;

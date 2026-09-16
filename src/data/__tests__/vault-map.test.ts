@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { VAULT_MASTERS, MASTER_BY_SLUG } from "../vault-masters";
 import { VAULT_PATHS, PATH_BY_SLUG, pathOfArticle, DIMENSION_LABEL } from "../vault-paths";
+import { buildEffectiveLibrary } from "../../../scripts/vault-content.mjs";
 
 /**
  * The map (masters, paths) is static TS; the pieces it points at ship via
@@ -58,11 +59,12 @@ describe("Vault map ↔ seeded pieces", () => {
     expect(Object.keys(PATH_BY_SLUG)).toHaveLength(VAULT_PATHS.length);
   });
 
-  it("every master has at least one seeded piece, and every seeded master is on the map", () => {
+  it("every master has at least one piece in the effective library, and every master on a piece is on the map", () => {
+    for (const [slug] of masterOf) expect(seededSlugs.has(slug), slug).toBe(true);
+    // The effective library = seeds + the rewrite migrations (Robbins arrives by UPDATE-shaped INSERT).
     const byMaster = new Map<string, number>();
-    for (const [slug, master] of masterOf) {
-      expect(seededSlugs.has(slug), slug).toBe(true);
-      if (master) byMaster.set(master, (byMaster.get(master) ?? 0) + 1);
+    for (const p of buildEffectiveLibrary()) {
+      if (p.master_slug) byMaster.set(p.master_slug, (byMaster.get(p.master_slug) ?? 0) + 1);
     }
     for (const m of VAULT_MASTERS) {
       expect(byMaster.get(m.slug) ?? 0, `${m.name} has no piece`).toBeGreaterThanOrEqual(1);

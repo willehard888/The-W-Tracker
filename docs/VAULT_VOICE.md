@@ -19,7 +19,9 @@ not claiming inside the prose, not in a box.
 - `summary`: opens with one short sentence (under 140 characters); Home uses
   it as a headline when the piece has no master. Then two or three sentences.
 - `body_md`: 350 to 600 words for an idea, 250 to 450 for a protocol. Sections
-  are `**Bold lines**` (no `##`, no tables, no code fences, no diagrams).
+  are `**Bold lines**` on their own line, followed by a single newline and
+  the paragraph (no `##`, no tables, no code fences, no diagrams); the sheet
+  keeps newlines inside a paragraph, so the heading sits on its own line.
   Bold only when a term is defined. Numbers carry units. Every "Name (year)"
   in the body has a row in `references_json`.
 - `why_it_matters`: names the member's own data (check-in, streak, session,

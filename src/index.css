@@ -2889,3 +2889,13 @@ p, span.selectable, input, textarea, [contenteditable] {
 @media (prefers-reduced-motion: reduce) {
   [style*="onboarding-float"], [style*="pulseRing"], [style*="flameDance"] { animation: none !important; }
 }
+
+/* Vault — a lesson body's bold heading sits on its own line followed by one
+   newline (docs/VAULT_VOICE.md). CommonMark treats that newline as a space, so
+   the paragraph keeps it; the typography plugin is not registered, so this is
+   plain CSS rather than a prose-p: variant. */
+.vault-body p { white-space: pre-line; }
+.vault-body p + p, .vault-body p + ol, .vault-body p + ul, .vault-body ol + p, .vault-body ul + p { margin-top: 0.75rem; }
+.vault-body ol { list-style: decimal; padding-left: 1.25rem; }
+.vault-body ul { list-style: disc; padding-left: 1.25rem; }
+.vault-body li + li { margin-top: 0.25rem; }

@@ -292,7 +292,7 @@ const VaultArticleSheet = ({
                     ))}
                   </div>
                 ) : (
-                  <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-copy prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-note prose-p:my-2 prose-p:leading-relaxed prose-li:my-0.5 prose-strong:text-foreground prose-table:text-meta prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
+                  <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-copy prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-note prose-p:my-2 prose-p:leading-relaxed vault-body prose-li:my-0.5 prose-strong:text-foreground prose-table:text-meta prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
                     <ReactMarkdown>{article.body_md}</ReactMarkdown>
                   </article>
                 )}

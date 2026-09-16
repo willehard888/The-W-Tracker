@@ -46,13 +46,22 @@ Both ASC scripts take `--key <p8> --key-id <id> --issuer <uuid>` or the
    `webhook_events` row for the user, `profiles.is_premium = true`, one
    `purchase_completed` with `props.environment = 'SANDBOX'` from the webhook and one with
    `props.sandbox = true` from the client.
-5. **Renewals**: sandbox renews a month every 5 minutes; `RENEWAL` webhooks arrive,
-   `is_premium` stays true.
-6. **Yearly**: from the forced paywall, Subscribe again. Apple allows both to run because
-   the two products sit in different subscription groups (see below).
+5. **Renewals**: a sandbox tester renews a month every 5 minutes; a TestFlight purchase on
+   the device's own Apple ID renewed on a ~1 day clock instead (RevenueCat: "renews in
+   9 hours"). `RENEWAL` webhooks arrive as the periods end, `is_premium` stays true.
+6. **Yearly**: from the forced paywall, Subscribe to the yearly. With an active monthly in
+   the same group Apple treats it as a plan change that takes effect at the next renewal:
+   the sheet completes, RevenueCat sends `PRODUCT_CHANGE` (the ledger records the chosen
+   product), and the yearly's own `RENEWAL` arrives when the monthly period ends. Tapping the
+   monthly again while it is active completes instantly with no new transaction.
 7. **Restore**: Paywall → Restore → `purchase_restored`.
-8. **Expiry**: after the sixth renewal (~35 min for monthly) `EXPIRATION` sets
-   `is_premium / is_elite = false`. The QA account keeps access through its credits.
+8. **Expiry**: after the sixth renewal `EXPIRATION` sets `is_premium / is_elite = false`
+   (~35 min for a sandbox tester's monthly, days on the TestFlight clock). The QA account
+   keeps access through its credits.
+
+Proven 2026-09-15/16 on willehard: monthly `INITIAL_PURCHASE`, then monthly → yearly
+`PRODUCT_CHANGE` to `WhealthFactoryYearly`, both `SANDBOX`, flags true. Still unobserved:
+`RENEWAL`, `EXPIRATION`, restore.
 
 Read-only checks (aggregates, never per-user rows in a shared log):
 

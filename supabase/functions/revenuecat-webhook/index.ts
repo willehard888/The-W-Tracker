@@ -67,7 +67,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const productId: string | undefined = event.product_id;
+    // PRODUCT_CHANGE names the product being left in product_id and the one
+    // chosen in new_product_id; the ledger and the flags follow the choice.
+    const productId: string | undefined = event.new_product_id ?? event.product_id;
     const entitlementIds: string[] = Array.isArray(event.entitlement_ids)
       ? event.entitlement_ids
       : [];

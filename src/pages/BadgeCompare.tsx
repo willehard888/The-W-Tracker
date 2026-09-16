@@ -111,9 +111,9 @@ const BadgeCompare = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h2>
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h2>
           {ready && (
-            <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug tabular-nums">
+            <p className="mt-1.5 text-dense text-muted-foreground leading-snug tabular-nums">
               {mine.size} badge{mine.size === 1 ? "" : "s"} to @{selectedUser!.username}'s {theirs.size}.
             </p>
           )}
@@ -175,7 +175,7 @@ const BadgeCompare = () => {
               />
             ) : (
               <>
-                <div className="flex items-center gap-3 pb-1 text-[11px] font-bold text-muted-foreground">
+                <div className="flex items-center gap-3 pb-1 text-label font-bold text-muted-foreground">
                   <span className="flex-1" />
                   <span className="w-8 text-center">You</span>
                   <span className="w-8 text-center truncate">Them</span>
@@ -185,8 +185,8 @@ const BadgeCompare = () => {
                     <li key={b.id} className={cn("flex items-center gap-3 py-2.5", !me && !them && "text-muted-foreground")}>
                       <span className="w-8 shrink-0 text-center text-lg leading-none" aria-hidden>{b.icon}</span>
                       <span className="flex-1 min-w-0">
-                        <span className="block text-[13px] font-bold leading-tight truncate">{b.name}</span>
-                        <span className="block text-[12px] text-muted-foreground leading-snug capitalize">{b.rarity}</span>
+                        <span className="block text-dense font-bold leading-tight truncate">{b.name}</span>
+                        <span className="block text-meta text-muted-foreground leading-snug capitalize">{b.rarity}</span>
                       </span>
                       <Has yes={me} mine />
                       <Has yes={them} />

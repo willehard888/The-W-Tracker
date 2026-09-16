@@ -45,23 +45,23 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
                 size={16}
                 suffix="d"
                 className="leading-none"
-                countClassName="text-[12px] font-black text-white"
+                countClassName="text-meta font-black text-white"
               />
               <span className="h-3.5 w-px bg-gold/25" />
             </>
           )}
-          <span className="inline-flex items-center gap-0.5 font-display text-[14px] font-black text-gold leading-none tabular-nums glow-gold-text">
+          <span className="inline-flex items-center gap-0.5 font-display text-note font-black text-gold leading-none tabular-nums glow-gold-text">
             <Zap aria-hidden size={12} strokeWidth={2.8} className="drop-shadow-[0_0_8px_hsl(var(--gold)/0.7)]" />
             +{stats.xp_earned} XP
           </span>
           {stats.habits_done > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[12px] font-bold text-white/85 leading-none tabular-nums">
+            <span className="inline-flex items-center gap-0.5 text-meta font-bold text-white/85 leading-none tabular-nums">
               <CheckCheck aria-hidden size={11} strokeWidth={2.8} className="text-white/75" />
               {stats.habits_done}
             </span>
           )}
           {stats.verified && (
-            <span className="text-[10px] font-bold inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-teal leading-none">
+            <span className="text-micro font-bold inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-teal leading-none">
               <ShieldCheck aria-hidden size={11} strokeWidth={2.8} />
               Verified
             </span>

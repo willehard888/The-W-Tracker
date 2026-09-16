@@ -76,12 +76,12 @@ const ImageLightbox = ({
         <StatusAvatar src={avatarUrl ?? undefined} name={username} tier={tier} size="sm" animated={false} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-foreground truncate">@{username || "unknown"}</p>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-label text-muted-foreground">
             {typeof level === "number" && level > 0 && <span>Lv.{level}</span>}
             {showMetric(streak) && (
               <>
                 <span>•</span>
-                <StreakFlameInline streak={streak ?? 0} suffix="d" className="text-[11px]" />
+                <StreakFlameInline streak={streak ?? 0} suffix="d" className="text-label" />
               </>
             )}
           </div>
@@ -131,7 +131,7 @@ const ImageLightbox = ({
               {caption}
             </p>
           )}
-          <div className="flex items-center gap-3 text-[12px] font-semibold">
+          <div className="flex items-center gap-3 text-meta font-semibold">
             {showMetric(likes) && (
               <span className="flex items-center gap-1 text-gold">
                 <Heart aria-hidden size={12} fill="currentColor" /> {likes}
@@ -148,7 +148,7 @@ const ImageLightbox = ({
               </span>
             )}
             {!showMetric(likes) && !showMetric(comments) && !showMetric(kudos) && (
-              <span className="text-[11px] font-bold text-muted-foreground/75">
+              <span className="text-label font-bold text-muted-foreground/75">
                 Be the first to react
               </span>
             )}

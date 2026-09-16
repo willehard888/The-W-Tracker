@@ -23,7 +23,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
         <Button variant="ghost" size="icon" aria-label="Back" onClick={() => { hapticImpact("light"); onClose(); }}>
           <ChevronLeft aria-hidden size={18} />
         </Button>
-        <p className="font-display text-[15px] font-black tracking-tight">Coach Playbook</p>
+        <p className="font-display text-read font-black tracking-tight">Coach Playbook</p>
       </div>
 
       <div className="shrink-0 px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">
@@ -33,7 +33,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
             type="button"
             onClick={() => setActive(c)}
             className={cn(
-              "press shrink-0 min-h-11 text-[12px] font-bold px-3 rounded-full border transition-colors",
+              "press shrink-0 min-h-11 text-meta font-bold px-3 rounded-full border transition-colors",
               active === c ? "border-gold/60 bg-gold/15 text-gold" : "border-border/40 text-muted-foreground",
             )}
           >
@@ -50,7 +50,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
             onClick={() => { hapticImpact("light"); onSelect(f); }}
             className="press w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
           >
-            <p className="text-[11px] text-muted-foreground mb-0.5">{f.category}</p>
+            <p className="text-label text-muted-foreground mb-0.5">{f.category}</p>
             <p className="text-sm text-foreground">{f.question}</p>
           </button>
         ))}

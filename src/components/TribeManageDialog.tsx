@@ -42,7 +42,7 @@ interface Props {
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const MAX_COVER_SIZE_MB = 8;
 
-const LABEL = "text-[11px] font-bold text-muted-foreground";
+const LABEL = "text-label font-bold text-muted-foreground";
 
 const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, currentUserId, onChanged }: Props) => {
   const { user } = useAuth();
@@ -277,8 +277,8 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-gold hover:bg-gold/5 transition-colors disabled:opacity-40"
             >
               <ImageIcon size={22} aria-hidden />
-              <span className="text-[12px] font-bold">Add cover photo</span>
-              <span className="text-[11px] text-muted-foreground/75">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
+              <span className="text-meta font-bold">Add cover photo</span>
+              <span className="text-label text-muted-foreground/75">JPG, PNG, WEBP · max {MAX_COVER_SIZE_MB}MB</span>
             </button>
           )}
           <input
@@ -314,7 +314,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
           <div className="space-y-3">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[11px] text-muted-foreground/75 mb-1.5">{group.label}</p>
+                <p className="text-label text-muted-foreground/75 mb-1.5">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <Button
@@ -333,7 +333,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-label text-muted-foreground mt-1">
             Shown on the browse list — how new members find you.
           </p>
         </div>
@@ -361,7 +361,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     <OIcon size={12} className={active ? "text-gold" : "text-muted-foreground"} aria-hidden />
                     <p className={cn("text-xs font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-snug">{opt.sub}</p>
+                  <p className="text-label text-muted-foreground leading-snug">{opt.sub}</p>
                 </button>
               );
             })}
@@ -373,7 +373,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       <div className="border-t border-border/35 pt-4">
         <div className="flex items-center justify-between mb-1">
           <h3 className={LABEL}>Members & roles</h3>
-          <span className="text-[11px] text-muted-foreground tabular-nums">{adminCount}/2 admins</span>
+          <span className="text-label text-muted-foreground tabular-nums">{adminCount}/2 admins</span>
         </div>
 
         {otherMembers.length === 0 ? (
@@ -390,7 +390,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     {m.avatar_url ? (
                       <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-[11px] font-black text-muted-foreground">
+                      <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
                         {m.username.slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -398,7 +398,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold truncate">{m.username}</p>
                     {isAdmin && (
-                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-gold">
+                      <span className="inline-flex items-center gap-0.5 text-micro font-bold text-gold">
                         <Crown size={10} aria-hidden /> Admin
                       </span>
                     )}

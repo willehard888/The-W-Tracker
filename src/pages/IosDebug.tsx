@@ -101,10 +101,10 @@ const IosDebug = () => {
           <div className="space-y-2">
             {logs.map((log, index) => (
               <div key={`${log.at}-${index}`} className="rounded-lg border border-border p-2">
-                <p className="text-[12px] text-muted-foreground">{log.at} • {log.source}</p>
+                <p className="text-meta text-muted-foreground">{log.at} • {log.source}</p>
                 <p className="text-xs font-medium break-words">{log.message}</p>
                 {log.payload ? (
-                  <pre className="mt-1 text-[12px] whitespace-pre-wrap break-all text-muted-foreground font-mono">
+                  <pre className="mt-1 text-meta whitespace-pre-wrap break-all text-muted-foreground font-mono">
                     {log.payload}
                   </pre>
                 ) : null}

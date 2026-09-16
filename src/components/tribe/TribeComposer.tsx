@@ -100,7 +100,7 @@ const TribeComposer = ({
         >
           <VideoIcon aria-hidden size={16} />
         </Button>
-        <span className="text-[11px] text-muted-foreground ml-1">{value.length}/500</span>
+        <span className="text-label text-muted-foreground ml-1">{value.length}/500</span>
       </div>
       {/* This className used to repaint the button with a flat left-to-right
           gradient, overriding PRIMARY_EMBER's machined bezel on the one shared

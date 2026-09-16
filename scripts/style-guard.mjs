@@ -54,6 +54,13 @@ const RULES = [
   // variant's own min-h-9 (cn is twMerge), so these land under even 36 pt.
   { re: /<Button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-[3-8]|w-[3-8])\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt <Button> — an explicit h-7/h-8 beats the variant's min-h-9 (cn is twMerge) and outgrows its before:-inset-1; add min-h-11 or a wider before:-inset",
     exempt: [UI, "src/pages/ButtonGallery.tsx"] },
+  // Type scale: 0–27px belongs to the named ladder in tailwind.config.ts.
+  // 28px and up is display territory — hero, celebration and share-image
+  // sizes are one-offs and stay arbitrary, so the rule stops at 27. The two
+  // exemptions render their text into an image that is then scaled down,
+  // which is why they may sit below the ladder's floor.
+  { re: /text-\[(?:\d|1\d|2[0-7])(?:\.\d+)?px\]/, msg: "hand-written text size — use a rung (text-micro/label/meta/dense/note/read/copy/lead/subhead/head/title/major/beat)",
+    exempt: ["src/components/StoryShareModal.tsx", "src/components/feed/DayStatsSticker.tsx"] },
 ];
 
 /**

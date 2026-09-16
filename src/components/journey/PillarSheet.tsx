@@ -39,13 +39,13 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
       subtitle={score == null ? "No data yet" : `${score} of 100`}
     >
       <div className="pt-2 pb-2">
-        <p className="text-[11px] font-bold text-muted-foreground mb-2">What drives it</p>
+        <p className="text-label font-bold text-muted-foreground mb-2">What drives it</p>
         <div className="space-y-2.5 mb-5">
           {parts.map((p) => (
             <div key={p.key} className="flex items-center gap-2.5">
-              <p className="w-[128px] shrink-0 text-[12px] font-bold text-foreground/85 leading-tight">
+              <p className="w-[128px] shrink-0 text-meta font-bold text-foreground/85 leading-tight">
                 {p.label}
-                <span className="block text-[10px] font-medium text-muted-foreground/75">
+                <span className="block text-micro font-medium text-muted-foreground/75">
                   weight {p.weight}%
                 </span>
               </p>
@@ -54,16 +54,16 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
                   <div className="h-full rounded-full bg-gold/70" style={{ width: `${p.score}%` }} />
                 )}
               </div>
-              <p className="w-14 shrink-0 text-right text-[12px] font-black tabular-nums">
+              <p className="w-14 shrink-0 text-right text-meta font-black tabular-nums">
                 {p.score == null
-                  ? <span className="text-[10px] font-bold text-muted-foreground/75">no data yet</span>
+                  ? <span className="text-micro font-bold text-muted-foreground/75">no data yet</span>
                   : p.score}
               </p>
             </div>
           ))}
         </div>
 
-        <p className="text-[11px] font-bold text-muted-foreground">Your biggest levers</p>
+        <p className="text-label font-bold text-muted-foreground">Your biggest levers</p>
         <div className="divide-y divide-border/35 border-t border-border/35 mt-1">
           {levers.map((l) => (
             <DoorRow

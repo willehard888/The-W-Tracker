@@ -321,7 +321,7 @@ const StatusNameplate = ({
 
       <div className="relative flex flex-col items-center text-center gap-1.5">
         {/* Tiny label */}
-        <p className="text-[11px] font-bold text-muted-foreground/75">
+        <p className="text-label font-bold text-muted-foreground/75">
           Status
         </p>
 
@@ -361,7 +361,7 @@ const StatusNameplate = ({
         <div className="flex items-center gap-2 mt-1">
           <span
             className={cn(
-              "text-[11px] font-bold px-2.5 py-1 rounded-full border",
+              "text-label font-bold px-2.5 py-1 rounded-full border",
               isLegend && "border-[hsl(280_70%_60%)]/40 text-[hsl(280_70%_80%)] bg-[hsl(280_70%_55%)]/10",
               isApex && "border-[hsl(var(--ember))]/45 text-[hsl(18_95%_70%)] bg-[hsl(var(--ember))]/10",
               isElite && "border-gold/45 text-gold bg-gold/10",
@@ -374,7 +374,7 @@ const StatusNameplate = ({
             {percentLabel}
           </span>
           {showRank && (
-            <span className="text-[11px] font-bold text-muted-foreground/80">
+            <span className="text-label font-bold text-muted-foreground/80">
               #{fmtInt(rank!)}
               <span className="text-muted-foreground/75 font-bold">
                 {" / "}

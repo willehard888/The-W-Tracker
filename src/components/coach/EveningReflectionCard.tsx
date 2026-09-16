@@ -21,8 +21,8 @@ const Scale = ({
 }) => (
   <div className="space-y-1.5">
     <div className="flex items-center justify-between">
-      <span className="text-[11px] font-bold text-muted-foreground">{label}</span>
-      {value != null && <span className="text-[12px] font-black text-gold">{value}/{max}</span>}
+      <span className="text-label font-bold text-muted-foreground">{label}</span>
+      {value != null && <span className="text-meta font-black text-gold">{value}/{max}</span>}
     </div>
     <div className="flex gap-1">
       {Array.from({ length: max }, (_, i) => i + 1).map((n) => {
@@ -33,7 +33,7 @@ const Scale = ({
             type="button"
             onClick={() => { hapticImpact("light"); onChange(n); }}
             className={cn(
-              "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 h-9 rounded-lg text-[12px] font-black transition-[background-color,border-color,color] border",
+              "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 h-9 rounded-lg text-meta font-black transition-[background-color,border-color,color] border",
               active
                 ? "bg-gradient-to-b from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] text-[hsl(260_18%_4%)] border-[hsl(42_78%_48%)] shadow-[0_2px_8px_-2px_hsl(var(--gold)/0.6)]"
                 : "bg-card/40 border-border/40 text-muted-foreground/75 hover:border-border/80",
@@ -45,7 +45,7 @@ const Scale = ({
       })}
     </div>
     {hints && (
-      <div className="flex justify-between text-[10px] text-muted-foreground/75">
+      <div className="flex justify-between text-micro text-muted-foreground/75">
         <span>{hints[0]}</span><span>{hints[1]}</span>
       </div>
     )}
@@ -111,10 +111,10 @@ const EveningReflectionCard = () => {
             {done ? <Check aria-hidden size={16} /> : <Moon aria-hidden size={16} />}
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] font-black tracking-tight">
+            <p className="text-dense font-black tracking-tight">
               {done ? "Tonight's reflection logged" : "Evening reflection"}
             </p>
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-label text-muted-foreground truncate">
               {done ? "Tomorrow's plan will adapt to it." : "30 seconds — feeds tomorrow's plan."}
             </p>
           </div>
@@ -138,7 +138,7 @@ const EveningReflectionCard = () => {
               <Scale label="Session RPE" value={rpe} onChange={setRpe} max={10} hints={["easy", "max"]} />
 
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold text-muted-foreground">One win</span>
+                <span className="text-label font-bold text-muted-foreground">One win</span>
                 <input
                   value={win}
                   onChange={(e) => setWin(e.target.value.slice(0, 200))}
@@ -147,7 +147,7 @@ const EveningReflectionCard = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold text-muted-foreground">One friction</span>
+                <span className="text-label font-bold text-muted-foreground">One friction</span>
                 <input
                   value={friction}
                   onChange={(e) => setFriction(e.target.value.slice(0, 200))}

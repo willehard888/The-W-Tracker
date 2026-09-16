@@ -17,8 +17,8 @@ const CoachGoal = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-[22px] leading-[1.06] tracking-tight">One goal. A number and a date.</h2>
-          <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">
+          <h2 className="font-display font-black text-title leading-[1.06] tracking-tight">One goal. A number and a date.</h2>
+          <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             The Coach checks weekly that your training, sleep and nutrition are pulling toward it.
           </p>
         </header>
@@ -32,7 +32,7 @@ const CoachGoal = () => {
           <FactRow k="Target" v="Where you want to be." />
           <FactRow k="Deadline" v="A date that creates urgency. Update the current value weekly and the pace badge follows." />
         </div>
-        <p className="mt-4 text-[12px] text-muted-foreground leading-snug">
+        <p className="mt-4 text-meta text-muted-foreground leading-snug">
           Examples: bench 100 kg by 1 August, run 10 km under 50 min by October, 12% body fat by year-end, 8 h of sleep for 30 days straight.
         </p>
       </div>

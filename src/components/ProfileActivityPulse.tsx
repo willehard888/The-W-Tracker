@@ -29,7 +29,7 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border/50 bg-secondary/30">
         <Circle aria-hidden size={6} className="text-muted-foreground/75 fill-muted-foreground/50" />
-        <span className="text-[11px] font-bold text-muted-foreground tracking-wide">No activity yet</span>
+        <span className="text-label font-bold text-muted-foreground tracking-wide">No activity yet</span>
       </div>
     );
   }
@@ -57,7 +57,7 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
         <Activity aria-hidden size={11} className={cn(isWarm ? "text-amber-400" : "text-muted-foreground/75")} />
       )}
       <span className={cn(
-        "text-[11px] font-bold tracking-wide",
+        "text-label font-bold tracking-wide",
         isActive && "text-xp-green",
         !isActive && isWarm && "text-amber-400",
         !isWarm && "text-muted-foreground",

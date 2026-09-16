@@ -212,7 +212,7 @@ const UserFoodEditor = () => {
         noValidate
       >
         <div className="home-rise space-y-3">
-          {fromLabel && <p className="text-[12px] text-muted-foreground leading-snug">Read from a label photo — check every number before saving.</p>}
+          {fromLabel && <p className="text-meta text-muted-foreground leading-snug">Read from a label photo — check every number before saving.</p>}
           <label className="block">
             <span className="sr-only">Food name</span>
             <input
@@ -228,30 +228,30 @@ const UserFoodEditor = () => {
                 if (errors.name) setErrors((er) => ({ ...er, name: undefined }));
               }}
               className={cn(
-                "w-full bg-transparent border-b border-border/60 py-2 font-display text-[24px] font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
+                "w-full bg-transparent border-b border-border/60 py-2 font-display text-major font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
                 errors.name && "border-destructive/60",
               )}
             />
             {errors.name && (
-              <span role="alert" className="block text-[11px] text-[hsl(var(--ember))] mt-1">
+              <span role="alert" className="block text-label text-[hsl(var(--ember))] mt-1">
                 {errors.name}
               </span>
             )}
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-[12px] font-bold text-muted-foreground">Brand</span>
-              <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Optional" className="mt-1 w-full surface-inset rounded-xl h-11 px-3 text-[15px] font-bold outline-none focus:border-gold/50" />
+              <span className="text-meta font-bold text-muted-foreground">Brand</span>
+              <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Optional" className="mt-1 w-full surface-inset rounded-xl h-11 px-3 text-read font-bold outline-none focus:border-gold/50" />
             </label>
             <NumField label="Barcode" mode="numeric" value={barcode} onChange={setBarcode} placeholder="Optional" />
           </div>
         </div>
 
         <div className="home-rise home-rise-1">
-          <p className="text-[12px] font-bold text-muted-foreground mb-2">Per 100 g</p>
+          <p className="text-meta font-bold text-muted-foreground mb-2">Per 100 g</p>
           <MacroRow nutrition={{ calories: kcal, protein: n0(nutrients.protein_g), carbs: n0(nutrients.carbs_g), fat: n0(nutrients.fat_g) }} />
           {sanity && (
-            <p role="status" className="text-[12px] text-[hsl(var(--ember))] mt-2 leading-snug">
+            <p role="status" className="text-meta text-[hsl(var(--ember))] mt-2 leading-snug">
               Check the label — the macros add up to about {fmtKcal(macroKcal)} kcal.
             </p>
           )}
@@ -275,33 +275,33 @@ const UserFoodEditor = () => {
                 return <NumField key={k} label={def?.name_en ?? titleCase(k)} unit={unitOf(k, def?.unit)} value={nutrients[k] ?? ""} onChange={(v) => setNutrient(k, v)} error={errors.nutrients[k]} />;
               })}
             </div>
-            <p className="text-[11px] text-muted-foreground/80 mt-3 leading-snug">Blank means unknown. The diary shows a dash, never a zero.</p>
+            <p className="text-label text-muted-foreground/80 mt-3 leading-snug">Blank means unknown. The diary shows a dash, never a zero.</p>
           </MoreSection>
         </div>
 
         <div className="home-rise home-rise-3">
           <div className="flex items-center justify-between gap-3 mb-1">
-            <p className="text-[12px] font-bold text-muted-foreground">Servings</p>
+            <p className="text-meta font-bold text-muted-foreground">Servings</p>
             <Button type="button" variant="ghost" size="xs" onClick={() => setServings((r) => [...r, newServing()])}>
               <Plus aria-hidden /> Add serving
             </Button>
           </div>
           {servings.length === 0 ? (
-            <p className="text-[12px] text-muted-foreground leading-snug">Optional. “1 slice · 30 g” makes logging one tap.</p>
+            <p className="text-meta text-muted-foreground leading-snug">Optional. “1 slice · 30 g” makes logging one tap.</p>
           ) : (
             <div className="divide-y divide-border/35">
               {servings.map((s) => (
                 <div key={s.key} className="py-2.5">
                   <div className="flex items-end gap-2">
                     <label className="flex-1 min-w-0 block">
-                      <span className="text-[11px] font-bold text-muted-foreground">Label</span>
+                      <span className="text-label font-bold text-muted-foreground">Label</span>
                       <input
                         type="text"
                         value={s.label}
                         placeholder="1 slice"
                         aria-label="Serving label"
                         onChange={(e) => updateServing(s.key, { label: e.target.value })}
-                        className="mt-1 w-full surface-inset rounded-xl h-11 px-3 text-[15px] font-bold outline-none focus:border-gold/50"
+                        className="mt-1 w-full surface-inset rounded-xl h-11 px-3 text-read font-bold outline-none focus:border-gold/50"
                       />
                     </label>
                     <NumField label="Grams" className="w-24" value={s.grams} onChange={(v) => updateServing(s.key, { grams: v })} />
@@ -327,7 +327,7 @@ const UserFoodEditor = () => {
                     </button>
                   </div>
                   {errors.servings[s.key] && (
-                    <p role="alert" className="text-[11px] text-[hsl(var(--ember))] mt-1">
+                    <p role="alert" className="text-label text-[hsl(var(--ember))] mt-1">
                       {errors.servings[s.key]}
                     </p>
                   )}

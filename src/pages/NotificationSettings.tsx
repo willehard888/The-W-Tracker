@@ -60,8 +60,8 @@ const ToggleRow = ({
     <div className="flex items-center gap-3 py-3 min-h-11">
       <Icon aria-hidden size={14} className="text-muted-foreground shrink-0" />
       <span className="flex-1 min-w-0">
-        <span className="block text-[14px] font-semibold leading-tight">{label}</span>
-        <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{sub}</span>
+        <span className="block text-note font-semibold leading-tight">{label}</span>
+        <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{sub}</span>
       </span>
       <span className={cn("inline-flex", pop && "commit-pop")} onAnimationEnd={() => setPop(false)}>
         <Switch checked={checked} onCheckedChange={(v) => { setPop(true); onChange(v); }} aria-label={label} />
@@ -183,8 +183,8 @@ const NotificationSettings = () => {
           </header>
         ) : (
           <header className="home-rise">
-            <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h2>
-            <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">{standing}</p>
+            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h2>
+            <p className="mt-1.5 text-dense text-muted-foreground leading-snug">{standing}</p>
           </header>
         )}
 
@@ -202,19 +202,19 @@ const NotificationSettings = () => {
           >
             <div className="flex items-center gap-2">
               <div className="h-[22px] w-[22px] rounded-[6px] gradient-gold flex items-center justify-center shrink-0">
-                <span className="font-display text-[12px] font-black text-primary-foreground leading-none">W</span>
+                <span className="font-display text-meta font-black text-primary-foreground leading-none">W</span>
               </div>
-              <span className="flex-1 text-[11px] font-semibold text-foreground/75">
+              <span className="flex-1 text-label font-semibold text-foreground/75">
                 The W Tracker
               </span>
-              <span className="text-[11px] tabular-nums text-foreground/75">
+              <span className="text-label tabular-nums text-foreground/75">
                 {prefs.streak_guard ? previewTime : "muted"}
               </span>
             </div>
-            <p className="mt-1.5 text-[13px] font-bold leading-snug">{copy.title(previewStreak)}</p>
-            <p className="mt-0.5 text-[12px] text-foreground/75 leading-snug">{copy.body}</p>
+            <p className="mt-1.5 text-dense font-bold leading-snug">{copy.title(previewStreak)}</p>
+            <p className="mt-0.5 text-meta text-foreground/75 leading-snug">{copy.body}</p>
           </div>
-          <p className="mt-1.5 text-center text-[11px] text-muted-foreground/75">
+          <p className="mt-1.5 text-center text-label text-muted-foreground/75">
             Your streak guard, in your coach's voice — exactly as it lands.
           </p>
         </div>
@@ -233,7 +233,7 @@ const NotificationSettings = () => {
         )}
         {perm === "granted" && tokenFailed && (
           <div className="home-rise home-rise-2 mt-4 flex items-center gap-3">
-            <p className="flex-1 text-[13px] text-muted-foreground leading-snug">
+            <p className="flex-1 text-dense text-muted-foreground leading-snug">
               This device never finished registering, so nothing can reach it yet.
             </p>
             <Button variant="outline" size="sm" onClick={() => { void retryRegistration(); }}>
@@ -256,7 +256,7 @@ const NotificationSettings = () => {
 
         {/* ── Streak guard ── */}
         <div className="home-rise home-rise-3 mt-6">
-          <p className="text-[11px] font-bold text-muted-foreground mb-1">Streak guard</p>
+          <p className="text-label font-bold text-muted-foreground mb-1">Streak guard</p>
           <div className="divide-y divide-border/35 border-t border-border/35">
             <ToggleRow
               icon={Flame}
@@ -267,8 +267,8 @@ const NotificationSettings = () => {
             />
             <div className={cn("flex items-center gap-3 py-3 min-h-11 transition-opacity", !prefs.streak_guard && "opacity-40 pointer-events-none")}>
               <span className="flex-1 min-w-0">
-                <span className="block text-[14px] font-semibold leading-tight">Warning time</span>
-                <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">
+                <span className="block text-note font-semibold leading-tight">Warning time</span>
+                <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
                   Late enough to matter, early enough to act
                 </span>
               </span>
@@ -301,7 +301,7 @@ const NotificationSettings = () => {
 
         {/* ── Everything else ── */}
         <div className="home-rise home-rise-4 mt-6">
-          <p className="text-[11px] font-bold text-muted-foreground mb-1">From the app</p>
+          <p className="text-label font-bold text-muted-foreground mb-1">From the app</p>
           <div className="divide-y divide-border/35 border-t border-border/35">
             <ToggleRow icon={Brain} label="Coach" sub="Morning cue & timely course-corrections" checked={prefs.coach} onChange={setCategory("coach")} />
             <ToggleRow icon={Users} label="Social" sub="Friends, messages & recruits" checked={prefs.social} onChange={setCategory("social")} />
@@ -309,7 +309,7 @@ const NotificationSettings = () => {
             <ToggleRow icon={BarChart3} label="Weekly briefing" sub="Your week, analyzed — Sundays" checked={prefs.briefing} onChange={setCategory("briefing")} />
             <ToggleRow icon={RotateCcw} label="Comeback nudges" sub="A hand back up if you drift away" checked={prefs.winback} onChange={setCategory("winback")} />
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground/80 leading-relaxed">
+          <p className="mt-2 text-label text-muted-foreground/80 leading-relaxed">
             Switching a category off silences its banners — everything still waits for you inside the app.
           </p>
         </div>

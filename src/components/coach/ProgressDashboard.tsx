@@ -81,13 +81,13 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       {/* Compliance */}
       <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.08] to-card p-4">
         <div className="flex items-baseline justify-between mb-2">
-          <p className="text-[11px] font-bold text-gold">
+          <p className="text-label font-bold text-gold">
             Week {currentWeek} compliance
           </p>
           <p className="font-display text-3xl font-black text-gold leading-none">{compliance}%</p>
         </div>
         <Progress value={compliance} />
-        <p className="text-[12px] text-muted-foreground mt-2">
+        <p className="text-meta text-muted-foreground mt-2">
           {weekLogs} of {activeTargetDays} planned sessions logged.
         </p>
       </div>
@@ -115,7 +115,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp aria-hidden size={14} className="text-gold" />
-          <p className="text-[11px] font-bold text-muted-foreground">
+          <p className="text-label font-bold text-muted-foreground">
             XP last 28 days
           </p>
         </div>
@@ -128,7 +128,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       {/* Coach read */}
       <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] font-bold text-gold">
+          <p className="text-label font-bold text-gold">
             Coach's read
           </p>
           <Button variant="ghost" size="sm" aria-label="Refresh the coach's read" onClick={fetchRead} disabled={loading} className="h-7 px-2 before:absolute before:-inset-2 before:content-['']">
@@ -136,19 +136,19 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
           </Button>
         </div>
         {loading && !read ? (
-          <p className="text-[12px] text-muted-foreground">Reading your last 7 days…</p>
+          <p className="text-meta text-muted-foreground">Reading your last 7 days…</p>
         ) : read ? (
-          <div className="text-[13px] prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-strong:text-gold">
+          <div className="text-dense prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-strong:text-gold">
             <ReactMarkdown>{read}</ReactMarkdown>
           </div>
         ) : (
-          <p className="text-[12px] text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             Tap refresh to get a fresh read on your progress.
           </p>
         )}
       </div>
 
-      <p className="text-[11px] text-muted-foreground/75 text-center italic">
+      <p className="text-label text-muted-foreground/75 text-center italic">
         Educational guidance — not medical advice.
       </p>
     </div>
@@ -159,9 +159,9 @@ const Tile = ({ label, value, target }: { label: string; value: string; target: 
   <div className="rounded-xl border border-border/60 bg-card/60 p-3 text-center">
     <p className="font-display text-xl font-black text-gold leading-none">
       {value}
-      <span className="text-[11px] font-bold text-muted-foreground">{target}</span>
+      <span className="text-label font-bold text-muted-foreground">{target}</span>
     </p>
-    <p className="text-[10px] font-bold text-muted-foreground mt-1">{label}</p>
+    <p className="text-micro font-bold text-muted-foreground mt-1">{label}</p>
   </div>
 );
 

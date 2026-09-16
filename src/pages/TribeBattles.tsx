@@ -234,7 +234,7 @@ const TribeBattles = () => {
       <PageBar title={tribe.name} onBack={() => backOr(navigate, `/tribes/${id}`)} />
       <div className="px-4 pt-4 pb-6">
         {/* Opening beat — who's coming for the tribe, stated once. */}
-        <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h2>
+        <h2 className="home-rise font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h2>
 
         {hero ? (
           <div className="home-rise home-rise-1 mt-5">
@@ -259,7 +259,7 @@ const TribeBattles = () => {
                 <Flame aria-hidden size={16} className="text-muted-foreground/75" strokeWidth={1.6} />
               )}
             </div>
-            <p className="text-[13px] text-muted-foreground leading-snug">
+            <p className="text-dense text-muted-foreground leading-snug">
               Collective streak <span className="font-bold text-foreground tabular-nums">{fmtInt(collectiveStreak)}d</span> · {collectiveTierName(collectiveStreak)}.
             </p>
           </div>

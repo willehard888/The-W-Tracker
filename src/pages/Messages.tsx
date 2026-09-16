@@ -114,7 +114,7 @@ const Messages = () => {
   const rows: { key: string; node: ReactNode }[] = [
     ...friendConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} isFriend /> })),
     ...friendsWithoutConvo.map((f) => ({ key: f.user_id, node: <PersonRow profile={f} subtitle="Start a conversation" onClick={() => navigate(`/chat/${f.user_id}`)} /> })),
-    ...(friendIds.size > 0 && otherConvos.length > 0 ? [{ key: "others", node: <p className="text-[11px] font-bold text-muted-foreground pt-4 pb-1">Others</p> }] : []),
+    ...(friendIds.size > 0 && otherConvos.length > 0 ? [{ key: "others", node: <p className="text-label font-bold text-muted-foreground pt-4 pb-1">Others</p> }] : []),
     ...otherConvos.map((c) => ({ key: c.partnerId, node: <ConversationRow conv={c} userId={user?.id} navigate={navigate} /> })),
   ];
 
@@ -134,7 +134,7 @@ const Messages = () => {
           >
             <Users aria-hidden size={18} />
             {pending > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[10px] font-black flex items-center justify-center tabular-nums">
+              <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-micro font-black flex items-center justify-center tabular-nums">
                 {pending > 99 ? "99+" : pending}
               </span>
             )}
@@ -148,7 +148,7 @@ const Messages = () => {
       {/* OPENING BEAT — who is waiting on you. Hidden, not absent, while the
           count loads so the search box never jumps. */}
       <header className="home-rise mb-4">
-        <h2 className={cn("font-display font-black text-[27px] leading-[1.04] tracking-tight transition-opacity duration-300", isLoading && "opacity-0")}>
+        <h2 className={cn("font-display font-black text-beat leading-[1.04] tracking-tight transition-opacity duration-300", isLoading && "opacity-0")}>
           {unread > 0 ? <><span className="text-gold glow-gold-text tabular-nums">{fmtInt(unread)}</span> unread.</> : "Quiet. Start one."}
         </h2>
       </header>
@@ -156,7 +156,7 @@ const Messages = () => {
       {/* Search is a mode: while typing, results take the list's place. */}
       <div className="home-rise home-rise-1 mb-4 relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/75" aria-hidden />
-        <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search users…" className="h-11 rounded-xl pl-9 pr-11 text-[13px]" />
+        <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search users…" className="h-11 rounded-xl pl-9 pr-11 text-dense" />
         {searchQuery && (
           <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground/75 hover:text-foreground">
             <X size={14} />
@@ -246,7 +246,7 @@ const ConversationRow = ({ conv, userId, navigate }: { conv: Thread; userId?: st
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <TierUsername as="p" username={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} className={cn("text-sm truncate", unread ? "font-bold" : "font-semibold")} />
-          <span className={cn("text-[11px] tabular-nums shrink-0", unread ? "text-foreground/75" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
+          <span className={cn("text-label tabular-nums shrink-0", unread ? "text-foreground/75" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
         </div>
         <p className={cn("text-xs truncate mt-0.5", unread ? "text-foreground/85 font-medium" : "text-muted-foreground")}>
           {conv.lastMessage.sender_id === userId && "You: "}

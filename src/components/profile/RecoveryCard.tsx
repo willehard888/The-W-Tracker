@@ -40,9 +40,9 @@ const RecoveryCard = () => {
       >
         <div className="flex items-center gap-2 mb-1">
           <HeartPulse aria-hidden size={13} className="text-[hsl(var(--ember))]" />
-          <p className="text-[11px] font-bold text-muted-foreground/80">Recovery</p>
+          <p className="text-label font-bold text-muted-foreground/80">Recovery</p>
         </div>
-        <p className="text-[12px] text-muted-foreground leading-snug">
+        <p className="text-meta text-muted-foreground leading-snug">
           Allow Apple Health (sleep, heart rate) to see last night's recovery and let the coach explain why you slept the way you did.
         </p>
       </button>
@@ -116,8 +116,8 @@ const RecoveryCard = () => {
     <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-center gap-2 mb-2.5">
         <HeartPulse aria-hidden size={13} className={statusColor} />
-        <p className="text-[11px] font-bold text-muted-foreground/80">Recovery · last night</p>
-        <span className={cn("text-[11px] font-bold ml-auto", statusColor)}>{status}</span>
+        <p className="text-label font-bold text-muted-foreground/80">Recovery · last night</p>
+        <span className={cn("text-label font-bold ml-auto", statusColor)}>{status}</span>
       </div>
 
       {last!.sleep_total_min != null && (
@@ -128,7 +128,7 @@ const RecoveryCard = () => {
             <span style={{ width: `${(core / span) * 100}%` }} className="bg-[hsl(200_65%_50%)]" />
             <span style={{ width: `${(awake / span) * 100}%` }} className="bg-muted-foreground/40" />
           </div>
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2.5">
+          <div className="flex items-center gap-3 text-label text-muted-foreground mb-2.5">
             <span className="inline-flex items-center gap-1"><Moon aria-hidden size={12} /> {hm(last!.sleep_total_min)} asleep</span>
             {deep > 0 && <span>deep {hm(deep)}</span>}
             {rem > 0 && <span>REM {hm(rem)}</span>}
@@ -140,10 +140,10 @@ const RecoveryCard = () => {
         {last!.resting_hr != null && (
           <div className="flex items-center gap-1.5">
             <HeartPulse aria-hidden size={13} className="text-muted-foreground/75" />
-            <span className="text-[13px] font-black tabular-nums">{Math.round(last!.resting_hr)}</span>
-            <span className="text-[11px] text-muted-foreground">rhr</span>
+            <span className="text-dense font-black tabular-nums">{Math.round(last!.resting_hr)}</span>
+            <span className="text-label text-muted-foreground">rhr</span>
             {rhrDelta != null && Math.abs(rhrDelta) >= 1 && (
-              <span className={cn("text-[11px] font-black tabular-nums", rhrDelta > 0 ? "text-[hsl(var(--ember))]" : "text-xp-green")}>
+              <span className={cn("text-label font-black tabular-nums", rhrDelta > 0 ? "text-[hsl(var(--ember))]" : "text-xp-green")}>
                 {rhrDelta > 0 ? "+" : ""}{Math.round(rhrDelta)}
               </span>
             )}
@@ -152,8 +152,8 @@ const RecoveryCard = () => {
         {last!.respiratory_rate != null && (
           <div className="flex items-center gap-1.5">
             <Wind aria-hidden size={13} className="text-muted-foreground/75" />
-            <span className="text-[13px] font-black tabular-nums">{last!.respiratory_rate}</span>
-            <span className="text-[11px] text-muted-foreground">br/min</span>
+            <span className="text-dense font-black tabular-nums">{last!.respiratory_rate}</span>
+            <span className="text-label text-muted-foreground">br/min</span>
           </div>
         )}
       </div>
@@ -163,11 +163,11 @@ const RecoveryCard = () => {
       {rhrTrend.length >= 5 && (
         <div className="mb-3 surface-inset rounded-xl px-3 py-2">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-bold text-muted-foreground/75">
+            <p className="text-micro font-bold text-muted-foreground/75">
               Resting HR · {rhrTrend.length} nights
             </p>
             {trendDelta != null && Math.abs(trendDelta) >= 1 && (
-              <span className={cn("text-[11px] font-black tabular-nums", trendDelta < 0 ? "text-xp-green" : "text-[hsl(var(--ember))]")}>
+              <span className={cn("text-label font-black tabular-nums", trendDelta < 0 ? "text-xp-green" : "text-[hsl(var(--ember))]")}>
                 {trendDelta < 0 ? "↓" : "↑"} {Math.abs(Math.round(trendDelta))} bpm
                 <span className="text-muted-foreground/75 font-bold"> {trendDelta < 0 ? "· fitter" : ""}</span>
               </span>
@@ -178,10 +178,10 @@ const RecoveryCard = () => {
       )}
 
       {/* Causal read — the "why", stated plainly */}
-      <p className="text-[12px] text-foreground/85 leading-snug mb-3">{cause}</p>
+      <p className="text-meta text-foreground/85 leading-snug mb-3">{cause}</p>
 
       {/* What happened last night? — ground truth for the coach's causal read */}
-      <p className="text-[11px] font-bold text-muted-foreground/75 mb-1.5">What happened last night?</p>
+      <p className="text-label font-bold text-muted-foreground/75 mb-1.5">What happened last night?</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {NIGHT_FACTORS.map((f) => {
           const on = active.has(f);
@@ -191,7 +191,7 @@ const RecoveryCard = () => {
               type="button"
               onClick={() => toggleFactor(f)}
               className={cn(
-                "relative min-h-9 rounded-full px-3 text-[11px] font-bold border transition-colors capitalize before:absolute before:-inset-1 before:content-['']",
+                "relative min-h-9 rounded-full px-3 text-label font-bold border transition-colors capitalize before:absolute before:-inset-1 before:content-['']",
                 on ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
               )}
             >
@@ -204,7 +204,7 @@ const RecoveryCard = () => {
       <button
         type="button"
         onClick={() => navigate("/coach")}
-        className="text-[11px] font-bold w-full min-h-11 inline-flex items-center justify-center gap-1 surface-inset rounded-xl text-foreground/85"
+        className="text-label font-bold w-full min-h-11 inline-flex items-center justify-center gap-1 surface-inset rounded-xl text-foreground/85"
       >
         Ask coach why <ChevronRight aria-hidden size={13} />
       </button>

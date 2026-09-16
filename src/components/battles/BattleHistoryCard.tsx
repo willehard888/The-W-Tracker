@@ -24,12 +24,12 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
     <div className="flex items-center gap-3 py-3 min-h-11">
       <Icon size={15} className={cn("shrink-0", won ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-semibold leading-tight truncate">@{opponentName}</p>
-        <p className="text-[12px] text-muted-foreground mt-0.5">
+        <p className="text-note font-semibold leading-tight truncate">@{opponentName}</p>
+        <p className="text-meta text-muted-foreground mt-0.5">
           {battle.duration_days}-day {typeInfo.label}{battle.ended_at ? ` · ended ${fmtRelative(battle.ended_at)}` : ""}
         </p>
       </div>
-      <span className={cn("inline-flex items-center gap-1 text-[12px] shrink-0", won ? "font-black" : "font-bold text-muted-foreground")}>
+      <span className={cn("inline-flex items-center gap-1 text-meta shrink-0", won ? "font-black" : "font-bold text-muted-foreground")}>
         {won && battle.winner_verified === true && (
           <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" aria-label="HealthKit-verified win" />
         )}

@@ -29,8 +29,8 @@ export const ActionRow = ({
   <div className="flex items-center gap-3 px-3 py-2">
     <div className="shrink-0">{leading}</div>
     <div className="flex-1 min-w-0">
-      <p className="text-[13px] font-bold truncate">{title}</p>
-      {subtitle && <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>}
+      <p className="text-dense font-bold truncate">{title}</p>
+      {subtitle && <p className="text-label text-muted-foreground truncate">{subtitle}</p>}
     </div>
     <Button size="sm" variant="ember" className="min-h-11" disabled={busy} onClick={onAccept}>
       <Check size={13} aria-hidden /> {acceptLabel}

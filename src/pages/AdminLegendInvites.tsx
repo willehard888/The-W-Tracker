@@ -161,7 +161,7 @@ export default function AdminLegendInvites() {
         </Button>
       </div>
 
-      <h3 className="text-[11px] font-bold text-muted-foreground mb-3">
+      <h3 className="text-label font-bold text-muted-foreground mb-3">
         All invites ({invites?.length ?? 0})
       </h3>
 
@@ -189,17 +189,17 @@ export default function AdminLegendInvites() {
                       {inv.code}
                     </code>
                     {isUsed && (
-                      <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground inline-flex items-center gap-1">
+                      <span className="text-label uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground inline-flex items-center gap-1">
                         <CheckCircle2 aria-hidden size={12} /> Redeemed
                       </span>
                     )}
                     {!isUsed && isExpired && (
-                      <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">
+                      <span className="text-label uppercase font-bold px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">
                         Expired
                       </span>
                     )}
                     {!isUsed && !isExpired && (
-                      <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded bg-gold/20 text-gold">
+                      <span className="text-label uppercase font-bold px-1.5 py-0.5 rounded bg-gold/20 text-gold">
                         Active
                       </span>
                     )}
@@ -207,7 +207,7 @@ export default function AdminLegendInvites() {
                   {inv.note && (
                     <p className="text-xs text-muted-foreground mt-1 truncate">{inv.note}</p>
                   )}
-                  <p className="text-[11px] text-muted-foreground mt-1 inline-flex items-center gap-1">
+                  <p className="text-label text-muted-foreground mt-1 inline-flex items-center gap-1">
                     <Clock aria-hidden size={12} />
                     Created {fmtRelative(inv.created_at)}
                     {inv.expires_at && ` · expires ${fmtRelative(inv.expires_at)}`}

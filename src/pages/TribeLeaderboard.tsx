@@ -104,7 +104,7 @@ const TribeLeaderboard = () => {
     if (tier < 0) return null; // cold tribes carry no flame — honest
     return (
       <span
-        className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums"
+        className="inline-flex items-center gap-1 text-label font-bold tabular-nums"
         style={{ color: collectiveAccent(streak) }}
       >
         <Flame size={12} fill="currentColor" strokeWidth={0} aria-hidden />
@@ -119,10 +119,10 @@ const TribeLeaderboard = () => {
       {/* pb-32 clears this page's fixed "your tribe" footer. */}
       <div className="px-4 pt-3 pb-32">
       <header className="home-rise">
-        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
           {myBest ? <>Your tribe is <span className="text-gold glow-gold-text tabular-nums">#{myBest.rank}</span> {span}.</> : "Every tribe, ranked."}
         </h1>
-        <p className="mt-1.5 text-[13px] text-muted-foreground">
+        <p className="mt-1.5 text-dense text-muted-foreground">
           {period === "weekly" ? "By XP earned this week" : "By all-time XP"}
         </p>
       </header>
@@ -135,7 +135,7 @@ const TribeLeaderboard = () => {
             type="button"
             onClick={() => setPeriod(p)}
             className={cn(
-              "flex-1 min-h-11 rounded-lg text-[12px] font-bold transition-colors",
+              "flex-1 min-h-11 rounded-lg text-meta font-bold transition-colors",
               period === p ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -193,20 +193,20 @@ const TribeLeaderboard = () => {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="font-bold text-[15px] truncate leading-tight">{r.name}</p>
+                    <p className="font-bold text-read truncate leading-tight">{r.name}</p>
                     {r.visibility === "private" && (
                       <Lock size={12} className="text-muted-foreground shrink-0" aria-label="Private tribe" />
                     )}
-                    {mine && <span className="text-[10px] font-bold text-muted-foreground shrink-0">Mine</span>}
+                    {mine && <span className="text-micro font-bold text-muted-foreground shrink-0">Mine</span>}
                   </div>
                   <div className="flex items-center gap-2.5 mt-0.5 flex-wrap">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold tabular-nums text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-label font-bold tabular-nums text-muted-foreground">
                       <Users size={11} aria-hidden /> {r.member_count}
                     </span>
                     {fireChip(r.tribe_id)}
                   </div>
                 </div>
-                <span className="inline-flex items-center gap-1 text-[13px] font-black tabular-nums shrink-0 text-foreground/85">
+                <span className="inline-flex items-center gap-1 text-dense font-black tabular-nums shrink-0 text-foreground/85">
                   <Zap size={11} fill="currentColor" strokeWidth={0} aria-hidden />
                   {fmtInt(r.score)}
                 </span>
@@ -226,11 +226,11 @@ const TribeLeaderboard = () => {
               onClick={() => navigate(`/tribes/${myBest.tribe_id}`)}
               className="w-full min-h-11 rounded-xl px-3 py-2.5 border border-gold/40 bg-[hsl(var(--background)/0.96)] shadow-[var(--shadow-3)] flex items-center gap-3"
             >
-              <span className={"text-[11px] font-bold text-muted-foreground/75 shrink-0"}>Your tribe</span>
+              <span className={"text-label font-bold text-muted-foreground/75 shrink-0"}>Your tribe</span>
               <span className="font-bold text-sm truncate flex-1 text-left tabular-nums">
                 #{myBest.rank} · {myBest.name}
               </span>
-              <span className="inline-flex items-center gap-1 text-[13px] font-black tabular-nums text-foreground/85 shrink-0">
+              <span className="inline-flex items-center gap-1 text-dense font-black tabular-nums text-foreground/85 shrink-0">
                 <Zap size={11} fill="currentColor" strokeWidth={0} aria-hidden />
                 {fmtInt(myBest.score)}
               </span>

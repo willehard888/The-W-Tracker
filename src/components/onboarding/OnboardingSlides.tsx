@@ -65,7 +65,7 @@ export const CoreLoopSlide = ({ struggle, onNext }: { struggle?: string; onNext:
   return (
     <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
       <FlameHero />
-      <h1 className="font-display text-[26px] leading-tight font-black tracking-tight text-center mt-5 mb-1.5">
+      <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mt-5 mb-1.5">
         {promise.title}
       </h1>
       <p className="text-sm text-muted-foreground text-center mb-7 max-w-[300px]">{promise.sub}</p>
@@ -85,8 +85,8 @@ export const CoreLoopSlide = ({ struggle, onNext }: { struggle?: string; onNext:
               <b.icon size={14} className="text-[hsl(var(--ember))]" aria-hidden />
             </span>
             <span className="min-w-0 pt-1">
-              <span className="block text-[15px] font-bold leading-tight text-foreground">{b.label}</span>
-              <span className="block text-[12px] text-muted-foreground mt-0.5">{b.sub}</span>
+              <span className="block text-read font-bold leading-tight text-foreground">{b.label}</span>
+              <span className="block text-meta text-muted-foreground mt-0.5">{b.sub}</span>
             </span>
           </li>
         ))}
@@ -104,7 +104,7 @@ const LADDER_PREVIEW = ["recruit", "performer", "elite", "legend"] as const;
 
 export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-    <h1 className="font-display text-[26px] leading-tight font-black tracking-tight text-center mb-1.5">
+    <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
       Every check-in climbs the ladder.
     </h1>
     <p className="text-sm text-muted-foreground text-center mb-6 max-w-[300px]">
@@ -126,8 +126,8 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
             <span className={cn("flex h-5 w-5 items-center justify-center", cfg.textClass)} aria-hidden>
               <span className={cn("rounded-full bg-current", top ? "h-3 w-3 shadow-[0_0_10px_currentColor]" : "h-2.5 w-2.5")} />
             </span>
-            <span className={cn("font-display font-black tracking-tight", top ? "text-[17px]" : "text-[15px]", cfg.textClass)}>{cfg.label}</span>
-            <span className="text-[11px] font-bold ml-auto text-muted-foreground/75 tabular-nums">
+            <span className={cn("font-display font-black tracking-tight", top ? "text-lead" : "text-read", cfg.textClass)}>{cfg.label}</span>
+            <span className="text-label font-bold ml-auto text-muted-foreground/75 tabular-nums">
               {cfg.percentile}
             </span>
           </li>
@@ -137,7 +137,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
 
     <div className="w-full flex items-center justify-center gap-4 text-muted-foreground mb-8">
       {[{ icon: Bot, label: "AI Coach" }, { icon: BookOpen, label: "Library" }, { icon: Users, label: "Tribes" }].map((f) => (
-        <span key={f.label} className="flex items-center gap-1.5 text-[12px] font-bold">
+        <span key={f.label} className="flex items-center gap-1.5 text-meta font-bold">
           <f.icon size={13} aria-hidden />
           {f.label}
         </span>
@@ -153,7 +153,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
 /* ── 7. Commitment: free trial ── */
 export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-    <p className="text-[11px] font-bold text-muted-foreground mb-2">Your free trial</p>
+    <p className="text-label font-bold text-muted-foreground mb-2">Your free trial</p>
     <h1 className="font-display text-[28px] leading-tight font-black tracking-tight text-center mb-1.5">
       Fourteen days, all in.
     </h1>
@@ -197,7 +197,7 @@ export const PushSlide = ({ onEnable, onSkip, busy }: { onEnable: () => void; on
         <Bell aria-hidden size={34} className="text-primary-foreground" />
       </div>
     </div>
-    <h1 className="font-display text-[26px] leading-tight font-black tracking-tight mb-1.5">
+    <h1 className="font-display text-beat leading-tight font-black tracking-tight mb-1.5">
       Guard your streak?
     </h1>
     <p className="text-sm text-muted-foreground mb-9 max-w-[280px]">

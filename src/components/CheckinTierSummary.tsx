@@ -132,7 +132,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         >
           <span
             className={cn(
-              "text-[10px] font-bold text-muted-foreground inline-flex items-center gap-1 px-2.5 py-1 rounded-full ring-1",
+              "text-micro font-bold text-muted-foreground inline-flex items-center gap-1 px-2.5 py-1 rounded-full ring-1",
               accent.ring,
               cfg.rank >= 5
                 ? "bg-background/60 text-foreground"
@@ -170,7 +170,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12 }}
-          className="font-display text-[26px] font-black tracking-tight uppercase leading-none mb-1"
+          className="font-display text-beat font-black tracking-tight uppercase leading-none mb-1"
         >
           {headline}
         </m.h1>
@@ -200,14 +200,14 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           {/* No idle shimmer here: the XP count-up IS this screen's spectacle,
               and an infinite background-position loop kept painting minutes
               after the celebration ended. */}
-          <p className="relative text-[11px] font-bold text-gold/80 mb-1">
+          <p className="relative text-label font-bold text-gold/80 mb-1">
             Experience earned
           </p>
           <div ref={xpTargetRef} className="relative flex items-baseline justify-center gap-1">
             <span className="text-gold font-display text-5xl font-black glow-gold-text">+</span>
             <XpCounter value={summary.xpEarned} className="text-gold font-display text-5xl font-black glow-gold-text" />
           </div>
-          <p className="relative text-[12px] text-muted-foreground mt-2">
+          <p className="relative text-meta text-muted-foreground mt-2">
             <span className="font-bold text-foreground/80 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/75")}>{perfPct}%</span> output
           </p>
         </m.div>
@@ -230,14 +230,14 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Trophy aria-hidden size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
-              <p className="text-[10px] font-bold text-muted-foreground">Level</p>
+              <p className="text-micro font-bold text-muted-foreground">Level</p>
               {leveledUp && (
                 <m.span
                   animate={{ y: [0, -2, 0] }}
                   // Three bounces, then rest — an infinite main-thread loop
                   // kept running long after the moment passed.
                   transition={{ duration: 1.4, repeat: 2 }}
-                  className="ml-auto flex items-center gap-0.5 text-[10px] font-black text-gold"
+                  className="ml-auto flex items-center gap-0.5 text-micro font-black text-gold"
                 >
                   <ArrowUp aria-hidden size={12} strokeWidth={3} />UP
                 </m.span>
@@ -258,7 +258,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                 className={cn("absolute inset-0 rounded-full", leveledUp ? "bg-gradient-to-r from-gold to-gold-light" : "bg-foreground/40")}
               />
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1 tabular-nums font-bold">
+            <p className="text-micro text-muted-foreground mt-1 tabular-nums font-bold">
               {summary.xpToNextLevel} XP to next
             </p>
           </div>
@@ -290,7 +290,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                     : "text-streak-orange"
                 }
               />
-              <p className="text-[10px] font-bold text-muted-foreground">Streak</p>
+              <p className="text-micro font-bold text-muted-foreground">Streak</p>
             </div>
             <p
               className={cn(
@@ -310,7 +310,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             {/* Demoted from a tracked-uppercase eyebrow: seven of those on one
                 screen made the reward read as a dashboard of labels. Matches
                 the sibling card's "XP to next" line. */}
-            <p className="text-[10px] text-muted-foreground mt-2 font-semibold">
+            <p className="text-micro text-muted-foreground mt-2 font-semibold">
               {summary.streakBroken
                 ? "Reset · Day 1"
                 : summary.newStreak >= 30
@@ -332,7 +332,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             cfg.rank >= 5 ? "border-gold/30" : "border-border",
           )}
         >
-          <span className="text-[11px] font-bold flex items-center gap-1.5 text-muted-foreground">
+          <span className="text-label font-bold flex items-center gap-1.5 text-muted-foreground">
             <Target aria-hidden size={11} strokeWidth={3} />
             Total XP
           </span>
@@ -377,7 +377,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.54 }}
-            className="text-[11px] font-bold mt-4 flex items-center justify-center gap-1.5 text-gold"
+            className="text-label font-bold mt-4 flex items-center justify-center gap-1.5 text-gold"
           >
             <Crown aria-hidden size={11} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle standard" : "Apex doesn't skip days"}
@@ -442,7 +442,7 @@ const PostCheckinCoachLine = ({
         />
       </m.div>
       {canContinue && (
-        <p className="text-[11px] font-bold text-xp-green/80 pl-3.5 flex items-center gap-1">
+        <p className="text-label font-bold text-xp-green/80 pl-3.5 flex items-center gap-1">
           Tap to ask the Coach how to improve →
         </p>
       )}

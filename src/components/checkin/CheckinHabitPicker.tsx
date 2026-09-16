@@ -96,7 +96,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                 if (!habits?.length) return null;
                 return (
                   <div key={pillar}>
-                    <p className="text-[11px] font-bold mb-2 text-gold/70">
+                    <p className="text-label font-bold mb-2 text-gold/70">
                       {PILLAR_LABEL[pillar]}
                     </p>
                     <div className="space-y-2">
@@ -116,13 +116,13 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                             <span className="text-2xl w-9 text-center shrink-0">{h.emoji}</span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <p className={cn("font-bold text-[15px] truncate", on && "text-gold")}>{h.label}</p>
+                                <p className={cn("font-bold text-read truncate", on && "text-gold")}>{h.label}</p>
                                 {h.verify && <ShieldCheck aria-hidden size={13} className="text-teal shrink-0" />}
                               </div>
-                              {h.note && <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
+                              {h.note && <p className="text-meta text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
                             </div>
                             {h.core ? (
-                              <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-muted-foreground/75 uppercase tracking-wide">
+                              <span className="shrink-0 inline-flex items-center gap-1 text-micro font-bold text-muted-foreground/75 uppercase tracking-wide">
                                 <Lock aria-hidden size={11} /> Core
                               </span>
                             ) : (
@@ -140,7 +140,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                   </div>
                 );
               })}
-              <p className="text-[12px] text-muted-foreground text-center pt-1 pb-2">
+              <p className="text-meta text-muted-foreground text-center pt-1 pb-2">
                 <ShieldCheck aria-hidden size={12} className="inline text-teal mr-1" />
                 marked habits can be auto-verified by Apple Health.
               </p>

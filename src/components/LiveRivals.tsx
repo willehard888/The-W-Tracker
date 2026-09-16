@@ -31,13 +31,13 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
       className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}
     >
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[11px] font-bold font-display text-muted-foreground">
+        <p className="text-label font-bold font-display text-muted-foreground">
           Live Rivals
         </p>
         <button
           type="button"
           onClick={() => navigate("/leaderboard")}
-          className="text-[11px] text-gold/70 font-bold hover:text-gold transition-colors"
+          className="text-label text-gold/70 font-bold hover:text-gold transition-colors"
         >
           Leaderboard →
         </button>
@@ -64,7 +64,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
                 tier={data.above.status_tier}
                 className="font-bold text-sm truncate"
               />
-              <p className="text-[11px] font-bold text-muted-foreground">Ahead of you</p>
+              <p className="text-label font-bold text-muted-foreground">Ahead of you</p>
             </div>
             <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
               <ArrowUp aria-hidden size={12} className="text-xp-green" />
@@ -100,7 +100,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
               />
               <p
                 className={cn(
-                  "text-[11px] font-bold text-muted-foreground flex items-center gap-1",
+                  "text-label font-bold text-muted-foreground flex items-center gap-1",
                   heatBelow ? "text-destructive font-black" : "text-muted-foreground",
                 )}
               >

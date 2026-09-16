@@ -34,19 +34,19 @@ const MealItemRow = ({ item, onPress }: { item: MealItemView; onPress: (item: Me
     )}
   >
     <div className="min-w-0 flex-1">
-      <p className="text-[15px] font-bold leading-tight truncate">{item.name}</p>
-      <p className="text-[12px] text-muted-foreground leading-snug truncate">
+      <p className="text-read font-bold leading-tight truncate">{item.name}</p>
+      <p className="text-meta text-muted-foreground leading-snug truncate">
         {item.brand ? `${item.brand} · ` : ""}
         {item.qtyLabel}
       </p>
     </div>
     <div className="shrink-0 text-right">
-      <p className="text-[15px] font-black tabular-nums leading-tight flex items-center justify-end gap-1.5">
+      <p className="text-read font-black tabular-nums leading-tight flex items-center justify-end gap-1.5">
         {item.pending && <CloudOff size={12} aria-label="Waiting to sync" className="text-muted-foreground" />}
         {r(item.kcal)}
-        <span className="text-[11px] font-bold text-muted-foreground">kcal</span>
+        <span className="text-label font-bold text-muted-foreground">kcal</span>
       </p>
-      <p className="text-[11px] tabular-nums text-muted-foreground leading-snug">
+      <p className="text-label tabular-nums text-muted-foreground leading-snug">
         P {r(item.protein)} · C {r(item.carbs)} · F {r(item.fat)}
       </p>
     </div>

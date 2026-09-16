@@ -39,8 +39,8 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
             <div className="w-full h-full flex items-center justify-center text-muted-foreground/75"><Image size={22} aria-hidden /></div>
           )}
         </div>
-        <p className="mt-2 text-[13px] font-bold truncate">@{name || "?"}</p>
-        <p className="text-[11px] text-muted-foreground tabular-nums">{votes} {votes === 1 ? "vote" : "votes"}</p>
+        <p className="mt-2 text-dense font-bold truncate">@{name || "?"}</p>
+        <p className="text-label text-muted-foreground tabular-nums">{votes} {votes === 1 ? "vote" : "votes"}</p>
         <Button
           variant={mine ? "gold-outline" : "outline"}
           size="sm"
@@ -56,7 +56,7 @@ const BattleVoteCard = ({ battle, typeInfo, myVote, counts, onVote }: Props) => 
 
   return (
     <div className="py-4">
-      <p className="text-[12px] font-bold text-muted-foreground">
+      <p className="text-meta font-bold text-muted-foreground">
         {typeInfo.label} tie · {totalVotes} {totalVotes === 1 ? "vote" : "votes"} so far
       </p>
       <div className="mt-3 flex gap-3">

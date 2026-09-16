@@ -49,8 +49,8 @@ interface MediaPost {
 /** One inline number + label of the standing line. */
 const Standing = ({ value, label, gold }: { value: string; label: string; gold?: boolean }) => (
   <span className="inline-flex items-baseline gap-1">
-    <span className={`font-display font-black text-[17px] tabular-nums leading-none${gold ? " text-gold glow-gold-text" : ""}`}>{value}</span>
-    <span className="text-[11px] text-muted-foreground">{label}</span>
+    <span className={`font-display font-black text-lead tabular-nums leading-none${gold ? " text-gold glow-gold-text" : ""}`}>{value}</span>
+    <span className="text-label text-muted-foreground">{label}</span>
   </span>
 );
 
@@ -156,10 +156,10 @@ const PublicProfile = () => {
       <div className="px-4 pt-3 pb-6">
         {/* ── OPENING BEAT — the rung and the proof, stated once ── */}
         <div className="home-rise mb-5">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {best > 0 ? `${formatTier(tierKey, profile.tier_division)}. ${best}-day best.` : `${tier.label}. Day one.`}
           </h2>
-          {profile.display_name && <p className="text-[13px] text-muted-foreground mt-1">{profile.display_name}</p>}
+          {profile.display_name && <p className="text-dense text-muted-foreground mt-1">{profile.display_name}</p>}
         </div>
 
         {/* ── HERO — the athlete and the tier they hold ── */}
@@ -170,7 +170,7 @@ const PublicProfile = () => {
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {isApexSubscriber && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/40 bg-gold/10 text-[10px] font-bold text-gold">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/40 bg-gold/10 text-micro font-bold text-gold">
                 <Crown size={11} aria-hidden /> Day-One
               </span>
             )}
@@ -180,12 +180,12 @@ const PublicProfile = () => {
               <ApexBadge tier="legend" size="sm" />
             ) : null}
             {profile.champion_wins > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-[10px] font-bold text-muted-foreground">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-micro font-bold text-muted-foreground">
                 <Trophy size={11} aria-hidden /> {profile.champion_wins > 1 ? `${profile.champion_wins}× ` : ""}Season Champion
               </span>
             )}
           </div>
-          <p className="text-[13px] text-muted-foreground/80 italic mt-3 max-w-[280px] leading-snug">{tier.message}</p>
+          <p className="text-dense text-muted-foreground/80 italic mt-3 max-w-[280px] leading-snug">{tier.message}</p>
         </div>
 
         {/* ── STANDING — the numbers as one line, XP the felt one ── */}
@@ -196,9 +196,9 @@ const PublicProfile = () => {
               streak={streak}
               suffix="d"
               still
-              countClassName="font-display font-black text-[17px] tabular-nums leading-none text-foreground"
+              countClassName="font-display font-black text-lead tabular-nums leading-none text-foreground"
             />
-            <span className="text-[11px] text-muted-foreground">streak</span>
+            <span className="text-label text-muted-foreground">streak</span>
           </span>
           <Standing value={fmtInt(profile.level ?? 1)} label="level" />
         </div>
@@ -216,7 +216,7 @@ const PublicProfile = () => {
         {/* ── PROOF — the media grid, edge to edge ── */}
         {mediaPosts && (
           <div className="home-rise home-rise-4 mt-7">
-            <p className="text-[11px] font-bold text-muted-foreground mb-2">
+            <p className="text-label font-bold text-muted-foreground mb-2">
               Posts{mediaPosts.length > 0 ? ` · ${mediaPosts.length}` : ""}
             </p>
             {mediaPosts.length > 0 ? (
@@ -234,11 +234,11 @@ const PublicProfile = () => {
                       <GridMedia src={src} isVideo={isVideo} alt={`@${profile.username} post`} />
                       {/* Hover overlay with metrics — desktop nicety */}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                        <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <span className="flex items-center gap-1 text-meta font-black text-foreground">
                           <Heart size={12} fill="currentColor" aria-hidden />
                           {p.likes_count ?? 0}
                         </span>
-                        <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                        <span className="flex items-center gap-1 text-meta font-black text-foreground">
                           <MessageCircle size={12} fill="currentColor" aria-hidden />
                           {p.comments_count ?? 0}
                         </span>
@@ -260,12 +260,12 @@ const PublicProfile = () => {
         {/* ── BADGES — a quiet grid ── */}
         {badges.length > 0 && (
           <div className="home-rise home-rise-5 mt-7">
-            <p className="text-[11px] font-bold text-muted-foreground mb-2">Badges · {badges.length}</p>
+            <p className="text-label font-bold text-muted-foreground mb-2">Badges · {badges.length}</p>
             <div className="grid grid-cols-4 gap-2">
               {badges.map((b) => (
                 <div key={b.badge_id} className="aspect-square rounded-xl border border-border/50 bg-card/40 flex flex-col items-center justify-center">
                   <span className="text-2xl" aria-hidden>{b.badges?.icon}</span>
-                  <span className="text-[10px] font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
+                  <span className="text-micro font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
                     {b.badges?.name}
                   </span>
                 </div>

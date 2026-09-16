@@ -27,7 +27,7 @@ const ProgramCard = () => {
         className="press mt-2 w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
       >
         <Crosshair size={16} className="text-muted-foreground shrink-0" aria-hidden />
-        <span className="flex-1 min-w-0 text-[14px] font-bold leading-tight">Pick today's focus</span>
+        <span className="flex-1 min-w-0 text-note font-bold leading-tight">Pick today's focus</span>
         <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
       </button>
       {pickOpen && <FocusSessionSheet open onClose={() => setPickOpen(false)} />}
@@ -47,8 +47,8 @@ const ProgramCard = () => {
         >
           <Dumbbell size={16} className="text-muted-foreground shrink-0" aria-hidden />
           <span className="flex-1 min-w-0">
-            <span className="block text-[14px] font-bold leading-tight truncate">Today · {dayFocus(d)}</span>
-            <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>
+            <span className="block text-note font-bold leading-tight truncate">Today · {dayFocus(d)}</span>
+            <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>
           </span>
           <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
         </button>
@@ -63,8 +63,8 @@ const ProgramCard = () => {
           >
             <CalendarDays size={16} className="text-muted-foreground shrink-0" aria-hidden />
             <span className="flex-1 min-w-0">
-              <span className="block text-[14px] font-bold leading-tight truncate">Your 4-week program</span>
-              <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">Week {currentWeek}</span>
+              <span className="block text-note font-bold leading-tight truncate">Your 4-week program</span>
+              <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">Week {currentWeek}</span>
             </span>
             <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
           </button>
@@ -91,8 +91,8 @@ const ProgramCard = () => {
   if (!program) {
     return (
       <div className="surface-card surface-card-quiet p-4">
-        <p className="text-[14px] font-bold leading-snug">Generate your 4-week training program</p>
-        <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+        <p className="text-note font-bold leading-snug">Generate your 4-week training program</p>
+        <p className="text-meta text-muted-foreground leading-snug mt-0.5">
           Two-minute setup. The plan adapts each week from your logs.
         </p>
         <Button variant="secondary" onClick={() => navigate("/coach/program")} className="w-full mt-3">
@@ -119,8 +119,8 @@ const ProgramCard = () => {
     >
       <Dumbbell size={16} className="text-muted-foreground shrink-0" aria-hidden />
       <span className="flex-1 min-w-0">
-        <span className="block text-[14px] font-bold leading-tight truncate">{title}</span>
-        <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>
+        <span className="block text-note font-bold leading-tight truncate">{title}</span>
+        <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>
       </span>
       <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
     </button>

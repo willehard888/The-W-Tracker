@@ -110,8 +110,8 @@ const TribeNew = () => {
 
       <div className="px-4 pt-3 pb-6">
       <header className="home-rise">
-        <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">Light a new fire.</h1>
-        <p className="mt-1.5 text-[13px] text-muted-foreground">Name it, say what it's about, choose who can join.</p>
+        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Light a new fire.</h1>
+        <p className="mt-1.5 text-dense text-muted-foreground">Name it, say what it's about, choose who can join.</p>
       </header>
 
       {/* Live preview — the tribe takes shape as you type */}
@@ -134,7 +134,7 @@ const TribeNew = () => {
               {visibility === "public" ? <><Globe size={11} aria-hidden /> Open to anyone</> : <><Lock size={11} aria-hidden /> Approval to join</>}
             </p>
             {description.trim() && (
-              <p className="text-[12px] text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
+              <p className="text-meta text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
             )}
           </div>
         </div>
@@ -168,15 +168,15 @@ const TribeNew = () => {
             </div>
           </div>
           <div className="flex items-center justify-between mt-1">
-            <p className="text-[11px] text-muted-foreground tabular-nums">{name.length}/40</p>
+            <p className="text-label text-muted-foreground tabular-nums">{name.length}/40</p>
             {nameStatus === "available" && (
-              <p className="text-[11px] font-bold text-xp-green">Available</p>
+              <p className="text-label font-bold text-xp-green">Available</p>
             )}
             {nameStatus === "taken" && (
-              <p className="text-[11px] font-bold text-destructive">Already taken</p>
+              <p className="text-label font-bold text-destructive">Already taken</p>
             )}
             {nameStatus === "invalid" && name.trim().length > 0 && (
-              <p className="text-[11px] font-bold text-muted-foreground">3–40 chars</p>
+              <p className="text-label font-bold text-muted-foreground">3–40 chars</p>
             )}
           </div>
         </div>
@@ -186,7 +186,7 @@ const TribeNew = () => {
           <div className="space-y-3">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
-                <p className="text-[11px] text-muted-foreground/75 mb-1.5">{group.label}</p>
+                <p className="text-label text-muted-foreground/75 mb-1.5">{group.label}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {group.items.map(({ name, icon: Icon }) => (
                     <Button
@@ -204,11 +204,11 @@ const TribeNew = () => {
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-2">From training to meditation, workshops to book clubs — helps people discover your tribe.</p>
+          <p className="text-label text-muted-foreground mt-2">From training to meditation, workshops to book clubs — helps people discover your tribe.</p>
           {isCreatorActivity && (
             <div className="mt-2 surface-card surface-card-quiet px-3 py-2.5">
               <p className={LABEL}>Built for creators</p>
-              <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">
+              <p className="text-meta text-muted-foreground leading-snug mt-0.5">
                 Host workshops and courses with event series: up to 24 sessions with
                 meeting links, RSVPs and reminders, right inside your tribe.
               </p>
@@ -225,7 +225,7 @@ const TribeNew = () => {
             rows={3}
             placeholder="What does your tribe stand for?"
           />
-          <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">
+          <p className="text-label text-muted-foreground mt-1 tabular-nums">
             {description.length}/200
           </p>
         </div>
@@ -249,8 +249,8 @@ const TribeNew = () => {
               >
                 {visibility === o.v && <Check size={13} className="absolute right-2.5 top-2.5 text-foreground" aria-hidden />}
                 <o.icon size={15} className={visibility === o.v ? "text-foreground" : "text-muted-foreground"} aria-hidden />
-                <p className={cn("text-[12px] font-black mt-1.5", visibility === o.v ? "text-foreground" : "text-muted-foreground")}>{o.t}</p>
-                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{o.d}</p>
+                <p className={cn("text-meta font-black mt-1.5", visibility === o.v ? "text-foreground" : "text-muted-foreground")}>{o.t}</p>
+                <p className="text-label text-muted-foreground leading-snug mt-0.5">{o.d}</p>
               </button>
             ))}
           </div>

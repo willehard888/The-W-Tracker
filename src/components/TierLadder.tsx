@@ -70,10 +70,10 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
         onClick={() => { setExpanded(nextKey ?? null); setOpen(true); }}
         className="w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
       >
-        <TierMark rank={currentRank} className="h-10 w-10 text-[11px]">{current.shortLabel}</TierMark>
+        <TierMark rank={currentRank} className="h-10 w-10 text-label">{current.shortLabel}</TierMark>
         <span className="flex-1 min-w-0">
-          <span className="block text-[13px] font-semibold truncate">Ladder</span>
-          <span className="block text-[11px] text-muted-foreground truncate mt-0.5">
+          <span className="block text-dense font-semibold truncate">Ladder</span>
+          <span className="block text-label text-muted-foreground truncate mt-0.5">
             {next ? `${current.label}. Next rung ${next.label}, ${next.percentile.toLowerCase()}.` : `${current.label}. The top of the ladder.`}
           </span>
         </span>
@@ -95,14 +95,14 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
         {/* HERO — the rung you stand on, and the one after it */}
         <div className="surface-card p-4 mt-1">
           <div className="flex items-center gap-3">
-            <TierMark rank={currentRank} className="h-14 w-14 text-[15px]">{current.shortLabel}</TierMark>
+            <TierMark rank={currentRank} className="h-14 w-14 text-read">{current.shortLabel}</TierMark>
             <div className="flex-1 min-w-0">
-              <p className="font-display font-black text-[24px] leading-none tracking-tight">{current.label}</p>
-              <p className="text-[12px] text-muted-foreground mt-1.5">{current.percentile}</p>
+              <p className="font-display font-black text-major leading-none tracking-tight">{current.label}</p>
+              <p className="text-meta text-muted-foreground mt-1.5">{current.percentile}</p>
             </div>
           </div>
-          <p className="mt-3 text-[13px] italic text-foreground/75 leading-snug">“{current.message}”</p>
-          <p className="mt-3 text-[13px] text-muted-foreground leading-snug">
+          <p className="mt-3 text-dense italic text-foreground/75 leading-snug">“{current.message}”</p>
+          <p className="mt-3 text-dense text-muted-foreground leading-snug">
             {next ? (
               <>
                 <span className="font-bold text-foreground">Next rung: {next.label}.</span>{" "}
@@ -132,14 +132,14 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
                   onClick={() => setExpanded(isOpen ? null : key)}
                   className="w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
-                  <TierMark rank={cfg.rank} className={cn("h-9 w-9 text-[10px]", !held && !isCurrent && "opacity-70")}>
+                  <TierMark rank={cfg.rank} className={cn("h-9 w-9 text-micro", !held && !isCurrent && "opacity-70")}>
                     {held ? <Check size={15} strokeWidth={3} aria-hidden /> : isLegend && !isCurrent ? <Crown size={14} aria-hidden /> : cfg.shortLabel}
                   </TierMark>
                   <span className="flex-1 min-w-0">
-                    <span className={cn("block text-[14px] font-semibold leading-tight truncate", !held && !isCurrent && "text-foreground/85")}>{cfg.label}</span>
-                    <span className="block text-[12px] text-muted-foreground mt-0.5">{cfg.percentile}</span>
+                    <span className={cn("block text-note font-semibold leading-tight truncate", !held && !isCurrent && "text-foreground/85")}>{cfg.label}</span>
+                    <span className="block text-meta text-muted-foreground mt-0.5">{cfg.percentile}</span>
                   </span>
-                  <span className={cn("text-[11px] font-bold shrink-0", isCurrent ? "text-foreground" : "text-muted-foreground")}>{status}</span>
+                  <span className={cn("text-label font-bold shrink-0", isCurrent ? "text-foreground" : "text-muted-foreground")}>{status}</span>
                   {status === "Locked" ? (
                     <Lock aria-hidden size={12} className="text-muted-foreground/75 shrink-0" />
                   ) : (
@@ -147,7 +147,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
                   )}
                 </button>
                 {isOpen && (
-                  <div className="pb-4 pl-12 space-y-2 text-[13px] leading-snug">
+                  <div className="pb-4 pl-12 space-y-2 text-dense leading-snug">
                     {isLegend ? (
                       <p className="text-muted-foreground">
                         <span className="font-bold text-foreground">Invite only.</span> The Founders Circle is not earned through XP or streaks.

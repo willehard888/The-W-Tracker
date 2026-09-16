@@ -71,7 +71,7 @@ const AppleSignInButton = forwardRef<HTMLButtonElement, AppleSignInButtonProps>(
         "flex items-center justify-center gap-2",
         // SF font stack — uses SF Pro on iOS automatically
         "font-[-apple-system,BlinkMacSystemFont,'SF_Pro_Text','Helvetica_Neue',sans-serif]",
-        "text-[17px] font-medium tracking-[-0.01em]",
+        "text-lead font-medium tracking-[-0.01em]",
         "active:opacity-90",
         "disabled:opacity-60 disabled:cursor-not-allowed",
         "shadow-[0_1px_2px_rgba(0,0,0,0.4)]",

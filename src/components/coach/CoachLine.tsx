@@ -88,7 +88,7 @@ const CoachLine = ({
       aria-label={onClick ? "Open AI Coach" : undefined}
     >
       <span className={cn("shrink-0 mt-0.5", styles.iconColor)}>{resolvedIcon}</span>
-      <p className="text-[12px] italic leading-snug text-foreground/90">
+      <p className="text-meta italic leading-snug text-foreground/90">
         {withPrefix && (
           <span className={cn("not-italic font-black mr-1.5", styles.iconColor)}>Coach:</span>
         )}

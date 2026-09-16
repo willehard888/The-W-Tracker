@@ -63,14 +63,14 @@ const TrialExpirySheet = () => {
         <Crown size={22} className="text-background" strokeWidth={2.4} aria-hidden />
       </div>
 
-      <h2 className="text-center font-display text-[22px] leading-[1.06] font-black tracking-tight">
+      <h2 className="text-center font-display text-title leading-[1.06] font-black tracking-tight">
         Your 14 days built something real.
       </h2>
       {/* The value recap as one standing line — what THEY earned, not tiles. */}
-      <p className="mt-2 text-center text-[13px] text-muted-foreground">
+      <p className="mt-2 text-center text-dense text-muted-foreground">
         <N>{fmtInt(streak)}</N>-day streak · <N>{fmtInt(xp)}</N> XP · level <N>{fmtInt(level)}</N>
       </p>
-      <p className="mt-1 text-center text-[13px] text-muted-foreground leading-snug">
+      <p className="mt-1 text-center text-dense text-muted-foreground leading-snug">
         Keep the coach, the plan and the climb.
       </p>
 

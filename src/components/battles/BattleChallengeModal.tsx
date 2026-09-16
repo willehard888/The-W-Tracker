@@ -66,15 +66,15 @@ const BattleChallengeModal = ({
             >
               <bt.icon size={16} className={cn("shrink-0", selected ? "text-gold" : "text-muted-foreground")} aria-hidden />
               <span className="min-w-0">
-                <span className={cn("block text-[13px] font-bold leading-tight", selected && "text-gold")}>{bt.label}</span>
-                <span className="block text-[11px] text-muted-foreground leading-snug mt-0.5">{bt.description}</span>
+                <span className={cn("block text-dense font-bold leading-tight", selected && "text-gold")}>{bt.label}</span>
+                <span className="block text-label text-muted-foreground leading-snug mt-0.5">{bt.description}</span>
               </span>
             </button>
           );
         })}
       </div>
 
-      <p className="text-[11px] font-bold text-muted-foreground mb-2 flex items-center gap-1"><Clock size={11} aria-hidden /> Duration</p>
+      <p className="text-label font-bold text-muted-foreground mb-2 flex items-center gap-1"><Clock size={11} aria-hidden /> Duration</p>
       <div className="flex gap-2">
         {BATTLE_DURATIONS.map((d) => (
           <button
@@ -83,7 +83,7 @@ const BattleChallengeModal = ({
             onClick={() => setDuration(d)}
             aria-pressed={duration === d}
             className={cn(
-              "press flex-1 rounded-xl border min-h-11 text-[13px] font-bold transition-[border-color,color]",
+              "press flex-1 rounded-xl border min-h-11 text-dense font-bold transition-[border-color,color]",
               duration === d ? "border-gold text-gold" : "border-border text-muted-foreground",
             )}
           >

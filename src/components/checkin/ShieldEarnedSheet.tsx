@@ -49,7 +49,7 @@ const ShieldEarnedSheet = ({ shieldsBanked, onClose }: ShieldEarnedSheetProps) =
         {ROWS.map((row, i) => (
           <li key={i} className="flex items-center gap-3 py-3 text-left">
             <row.icon size={16} className="text-gold shrink-0" aria-hidden />
-            <p className="text-[13px] leading-snug text-foreground/90">{row.text}</p>
+            <p className="text-dense leading-snug text-foreground/90">{row.text}</p>
           </li>
         ))}
       </ul>

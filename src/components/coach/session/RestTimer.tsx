@@ -111,10 +111,10 @@ const RestTimer = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-semibold text-muted-foreground mb-0.5">
+        <p className="text-meta font-semibold text-muted-foreground mb-0.5">
           {over ? "Rest is up" : "Resting"}
         </p>
-        <p className="text-[17px] font-black tabular-nums leading-none text-foreground">
+        <p className="text-lead font-black tabular-nums leading-none text-foreground">
           {formatRest(remaining)}
         </p>
       </div>
@@ -123,7 +123,7 @@ const RestTimer = ({
         type="button"
         onClick={() => { hapticImpact("light"); onExtend(30_000); }}
         aria-label="Add 30 seconds"
-        className="min-h-11 min-w-11 rounded-xl border border-border/50 inline-flex items-center justify-center text-[12px] font-bold text-foreground/85"
+        className="min-h-11 min-w-11 rounded-xl border border-border/50 inline-flex items-center justify-center text-meta font-bold text-foreground/85"
       >
         <Plus size={13} aria-hidden />30s
       </button>

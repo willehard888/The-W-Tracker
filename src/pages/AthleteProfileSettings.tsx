@@ -33,7 +33,7 @@ const EXPERIENCE_BEAT: Record<string, string> = {
 
 const Group = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section>
-    <h2 className="text-[11px] font-bold text-muted-foreground mb-1">{title}</h2>
+    <h2 className="text-label font-bold text-muted-foreground mb-1">{title}</h2>
     <div className="divide-y divide-border/35 border-t border-border/35">{children}</div>
   </section>
 );
@@ -87,10 +87,10 @@ const AthleteProfileSettings = () => {
 
       <div className="px-4 pt-3 pb-6">
         <header className="home-rise">
-          <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{beat}</h1>
-          <p className="mt-1.5 text-[13px] text-muted-foreground">What the coach is coaching.</p>
+          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h1>
+          <p className="mt-1.5 text-dense text-muted-foreground">What the coach is coaching.</p>
           {profile.i_am && (
-            <blockquote className="mt-4 font-display text-[17px] font-bold leading-snug tracking-tight">
+            <blockquote className="mt-4 font-display text-lead font-bold leading-snug tracking-tight">
               “{profile.i_am}”
             </blockquote>
           )}

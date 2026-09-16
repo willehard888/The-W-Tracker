@@ -42,17 +42,17 @@ const CoachProgress = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-[22px] leading-[1.06] tracking-tight">
+          <h2 className="font-display font-black text-title leading-[1.06] tracking-tight">
             {recent ? `${checkinsThisWeek} of 7 days locked in.` : "Your last seven days."}
           </h2>
         </header>
 
         {/* Standing: one quiet row, the Core 4 rate the single gold note. */}
         <div className="home-rise home-rise-1 mt-4 surface-card surface-card-quiet px-4 py-3 flex items-baseline gap-x-4 gap-y-1 flex-wrap tabular-nums">
-          <span className="text-[12px] text-muted-foreground">Streak <b className="text-[15px] font-display font-black text-foreground">{profile?.streak ? `${profile.streak}d` : "—"}</b></span>
-          <span className="text-[12px] text-muted-foreground">Sleep <b className="text-[15px] font-display font-black text-foreground">{sleepAvg}h</b></span>
-          <span className="text-[12px] text-muted-foreground">Workouts <b className="text-[15px] font-display font-black text-foreground">{workoutsThisWeek}/7</b></span>
-          <span className="text-[12px] text-muted-foreground ml-auto">Core 4 <b className="text-[15px] font-display font-black text-gold glow-gold-text">{coreHitRate == null ? "—" : `${coreHitRate}%`}</b></span>
+          <span className="text-meta text-muted-foreground">Streak <b className="text-read font-display font-black text-foreground">{profile?.streak ? `${profile.streak}d` : "—"}</b></span>
+          <span className="text-meta text-muted-foreground">Sleep <b className="text-read font-display font-black text-foreground">{sleepAvg}h</b></span>
+          <span className="text-meta text-muted-foreground">Workouts <b className="text-read font-display font-black text-foreground">{workoutsThisWeek}/7</b></span>
+          <span className="text-meta text-muted-foreground ml-auto">Core 4 <b className="text-read font-display font-black text-gold glow-gold-text">{coreHitRate == null ? "—" : `${coreHitRate}%`}</b></span>
         </div>
 
         <div className="home-rise home-rise-2 mt-4">

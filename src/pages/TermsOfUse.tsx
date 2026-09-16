@@ -12,52 +12,52 @@ const TermsOfUse = () => {
       <div className="home-rise px-4 pt-3 pb-6">
       <header className="mb-6">
         <p className="eyebrow">Last updated: March 23, 2026</p>
-        <h1 className="mt-1.5 font-display font-black text-[27px] leading-[1.04] tracking-tight">Terms of Use</h1>
+        <h1 className="mt-1.5 font-display font-black text-beat leading-[1.04] tracking-tight">Terms of Use</h1>
       </header>
 
       <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">1. Acceptance of Terms</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">1. Acceptance of Terms</h2>
           <p>By using Whealth Factory, you agree to these Terms of Use. If you do not agree, please do not use the app.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">2. Account Registration</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">2. Account Registration</h2>
           <p>You must provide accurate information when creating an account. You are responsible for maintaining the security of your account credentials.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">3. Subscriptions</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">3. Subscriptions</h2>
           <p>Elite subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period. Payment is charged to your Apple ID account or payment method on file. You can manage and cancel subscriptions in your device's Settings → Subscriptions (iOS) or through your account settings (web).</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">4. User Conduct</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">4. User Conduct</h2>
           <p>There is zero tolerance for objectionable content or abusive behavior. You agree not to post content that is offensive, harmful, harassing, or otherwise inappropriate, and not to harass or abuse other users. You can report objectionable content and block abusive users from within the app. We review reports and act on them — typically within 24 hours — by removing violating content and ejecting the users responsible. We reserve the right to remove any content and suspend or terminate accounts that violate these terms.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">5. Intellectual Property</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">5. Intellectual Property</h2>
           <p>All content, branding, and features of Whealth Factory are owned by us. You retain ownership of content you create (check-in data, posts, photos).</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">6. Limitation of Liability</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">6. Limitation of Liability</h2>
           <p>Whealth Factory is provided "as is" without warranties. We are not liable for any damages arising from use of the app. The app does not provide medical or health advice.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">7. Termination</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">7. Termination</h2>
           <p>We may terminate or suspend your account at any time for violation of these terms. You may delete your account at any time from your profile settings.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">8. Changes to Terms</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">8. Changes to Terms</h2>
           <p>We may update these terms from time to time. Continued use of the app constitutes acceptance of the updated terms.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-[17px] tracking-tight leading-tight text-foreground mb-2">9. Contact</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">9. Contact</h2>
           <p>For questions about these Terms, contact us at support@wtracker.app.</p>
         </section>
       </div>

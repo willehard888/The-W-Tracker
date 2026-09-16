@@ -71,14 +71,14 @@ const PlanRow = ({
         {selected && <Check aria-hidden size={12} strokeWidth={3} />}
       </span>
       <span className="flex-1 min-w-0">
-        <span className="block text-[14px] font-semibold leading-tight">{label}</span>
-        {sub && <span className={cn("block text-[12px] leading-snug mt-0.5", selected ? "text-gold" : "text-muted-foreground")}>{sub}</span>}
+        <span className="block text-note font-semibold leading-tight">{label}</span>
+        {sub && <span className={cn("block text-meta leading-snug mt-0.5", selected ? "text-gold" : "text-muted-foreground")}>{sub}</span>}
       </span>
       <span className="shrink-0 text-right">
-        <span className={cn("font-display font-black text-[22px] leading-none tabular-nums", selected && "text-gold glow-gold-text")}>
+        <span className={cn("font-display font-black text-title leading-none tabular-nums", selected && "text-gold glow-gold-text")}>
           {price}
         </span>
-        <span className="block text-[11px] text-muted-foreground mt-0.5">{cadence}</span>
+        <span className="block text-label text-muted-foreground mt-0.5">{cadence}</span>
       </span>
     </button>
   );
@@ -146,13 +146,13 @@ const PremiumHero = ({
 
         {status === "error" && errorMessage && (
           <div role="alert" className="mt-3 rounded-xl border border-destructive/50 bg-destructive/10 px-3.5 py-2.5">
-            <p className="text-[13px] font-bold text-destructive">Purchase failed</p>
-            <p className="text-[12px] text-foreground/90 leading-snug mt-0.5">{errorMessage}</p>
+            <p className="text-dense font-bold text-destructive">Purchase failed</p>
+            <p className="text-meta text-foreground/90 leading-snug mt-0.5">{errorMessage}</p>
             {onDismissError && (
               <button
                 type="button"
                 onClick={onDismissError}
-                className="min-h-11 text-[12px] font-bold text-destructive underline underline-offset-2"
+                className="min-h-11 text-meta font-bold text-destructive underline underline-offset-2"
               >
                 Dismiss
               </button>
@@ -170,7 +170,7 @@ const PremiumHero = ({
           {busy && <Loader2 aria-hidden size={20} className="animate-spin" />}
           {ctaLabel}
         </Button>
-        <p className="mt-2.5 text-center text-[11px] text-muted-foreground">{footnote}</p>
+        <p className="mt-2.5 text-center text-label text-muted-foreground">{footnote}</p>
       </div>
 
       {/* WHAT IT UNLOCKS: hairline rows, one icon each. */}
@@ -179,13 +179,13 @@ const PremiumHero = ({
           <li key={title} className="py-3 flex gap-3">
             <Icon size={15} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
             <span className="min-w-0">
-              <span className="block text-[13px] font-bold leading-tight">{title}</span>
-              <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{text}</span>
+              <span className="block text-dense font-bold leading-tight">{title}</span>
+              <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{text}</span>
             </span>
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[12px] text-muted-foreground leading-snug">
+      <p className="mt-3 text-meta text-muted-foreground leading-snug">
         Apex status (top 10% by rank, activity and streak) is earned, never bought. Premium unlocks the full app;
         your streak and data stay yours either way.
       </p>

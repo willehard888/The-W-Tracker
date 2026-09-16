@@ -43,8 +43,8 @@ const CoachMemoryScreen = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-[22px] leading-[1.06] tracking-tight">What the Coach knows about you.</h2>
-          <p className="mt-1.5 text-[13px] text-muted-foreground leading-snug">
+          <h2 className="font-display font-black text-title leading-[1.06] tracking-tight">What the Coach knows about you.</h2>
+          <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             Capped at 30. Add anything it should know; forget anything it shouldn't.
           </p>
         </header>
@@ -93,8 +93,8 @@ const CoachMemoryScreen = () => {
                     className="py-3 flex items-start gap-3"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] leading-relaxed">{m.fact}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-note leading-relaxed">{m.fact}</p>
+                      <p className="text-label text-muted-foreground mt-0.5">
                         {SOURCE_LABEL[m.source] ?? m.source} · {fmtDate(m.created_at)}
                       </p>
                     </div>

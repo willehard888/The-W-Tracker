@@ -24,12 +24,12 @@ const ProgressionSummaryCard = () => {
     >
       <div className="flex items-center gap-2 mb-2">
         <TrendingUp aria-hidden size={13} className="text-muted-foreground" />
-        <p className="text-[11px] font-bold text-muted-foreground">Strength progress</p>
-        <span className="ml-auto text-[11px] font-bold text-muted-foreground">This week</span>
+        <p className="text-label font-bold text-muted-foreground">Strength progress</p>
+        <span className="ml-auto text-label font-bold text-muted-foreground">This week</span>
       </div>
 
       {empty ? (
-        <p className="text-[12px] text-muted-foreground leading-snug">
+        <p className="text-meta text-muted-foreground leading-snug">
           Log your lifts (weight × reps) in your program to track PRs and progression here.
         </p>
       ) : (
@@ -43,7 +43,7 @@ const ProgressionSummaryCard = () => {
           {data!.movers.length > 0 ? (
             <div className="space-y-1">
               {data!.movers.map((m) => (
-                <div key={m.name} className="flex items-center gap-2 text-[12px]">
+                <div key={m.name} className="flex items-center gap-2 text-meta">
                   <span className="flex-1 truncate font-bold text-foreground/90">{m.name}</span>
                   <span className="tabular-nums text-muted-foreground">{m.latestWeight}kg</span>
                   <span className="tabular-nums font-black text-xp-green">+{Math.round(m.deltaKg * 10) / 10}kg</span>
@@ -52,12 +52,12 @@ const ProgressionSummaryCard = () => {
               ))}
             </div>
           ) : (
-            <p className="text-[12px] text-muted-foreground">Keep logging — your climbers show up here.</p>
+            <p className="text-meta text-muted-foreground">Keep logging — your climbers show up here.</p>
           )}
         </>
       )}
 
-      <div className="text-[11px] font-bold text-muted-foreground flex items-center justify-end mt-2">
+      <div className="text-label font-bold text-muted-foreground flex items-center justify-end mt-2">
         Open program <ChevronRight aria-hidden size={12} />
       </div>
     </button>
@@ -68,7 +68,7 @@ const Stat = ({ icon, value, label, highlight }: { icon: React.ReactNode; value:
   <div className="flex items-center gap-1.5">
     {icon}
     <span className={highlight ? "font-black tabular-nums text-xp-green" : "font-black tabular-nums text-foreground"}>{value}</span>
-    <span className="text-[12px] text-muted-foreground">{label}</span>
+    <span className="text-meta text-muted-foreground">{label}</span>
   </div>
 );
 

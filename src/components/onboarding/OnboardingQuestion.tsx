@@ -63,7 +63,7 @@ const OnboardingQuestion = (props: Props) => {
 
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col min-h-0 flex-1">
-      <h1 className="font-display text-[26px] leading-tight font-black tracking-tight text-center mb-1.5">
+      <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
         {title}
       </h1>
       {sub && <p className="text-sm text-muted-foreground text-center mb-5">{sub}</p>}
@@ -83,7 +83,7 @@ const OnboardingQuestion = (props: Props) => {
             className={cn(
               "press text-left transition-[border-color,background-color,box-shadow] ",
               dense
-                ? "rounded-full px-3.5 py-2 text-[13px] font-bold border inline-flex items-center gap-1.5"
+                ? "rounded-full px-3.5 py-2 text-dense font-bold border inline-flex items-center gap-1.5"
                 : "w-full rounded-2xl border p-4 flex items-start gap-3",
               selected(o.v)
                 ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)] shadow-[0_0_24px_-8px_hsl(var(--gold)/0.6)]"
@@ -92,7 +92,7 @@ const OnboardingQuestion = (props: Props) => {
           >
             {o.emoji && <span className={dense ? "text-sm" : "text-xl leading-none mt-0.5"}>{o.emoji}</span>}
             <span className="min-w-0">
-              <span className={cn("block font-bold text-foreground", dense ? "text-[13px]" : "text-[15px]")}>
+              <span className={cn("block font-bold text-foreground", dense ? "text-dense" : "text-read")}>
                 {o.label}
               </span>
               {!dense && o.desc && (

@@ -171,7 +171,7 @@ const Notifications = () => {
 
       <div className="px-4 pt-4 pb-6">
         {/* Opening beat — what is waiting, stated once. */}
-        <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">
+        <h2 className="home-rise font-display font-black text-beat leading-[1.04] tracking-tight">
           {waiting > 0 ? `${fmtInt(waiting)} waiting on you.` : "All caught up."}
         </h2>
 
@@ -262,11 +262,11 @@ const Notifications = () => {
                     <button type="button" onClick={() => openNotification(n)} className="w-full flex items-start gap-3 py-3 text-left">
                       <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
                       <span className="flex-1 min-w-0">
-                        <span className={cn("block text-[13px] leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
+                        <span className={cn("block text-dense leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
                           {n.title}
                         </span>
-                        {n.body && <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
-                        <span className="block text-[11px] text-muted-foreground/75 mt-1">{fmtRelative(n.created_at)}</span>
+                        {n.body && <span className="block text-meta text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
+                        <span className="block text-label text-muted-foreground/75 mt-1">{fmtRelative(n.created_at)}</span>
                       </span>
                       {isUnread && <span className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
                     </button>
@@ -286,7 +286,7 @@ const Notifications = () => {
             className="w-full surface-card surface-card-quiet px-4 py-3 flex items-center gap-3 text-left"
           >
             <UserPlus size={16} className="text-muted-foreground shrink-0" aria-hidden />
-            <span className="flex-1 min-w-0 text-[13px] font-bold">Find friends</span>
+            <span className="flex-1 min-w-0 text-dense font-bold">Find friends</span>
             <ChevronRight size={14} className="text-muted-foreground shrink-0" aria-hidden />
           </button>
         </div>

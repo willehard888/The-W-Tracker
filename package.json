@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "style-guard": "node scripts/style-guard.mjs",
     "type-debt": "node scripts/type-debt.mjs",
     "type-debt:update": "node scripts/type-debt.mjs --update",
     "perf:snapshot": "node scripts/perf-snapshot.mjs",

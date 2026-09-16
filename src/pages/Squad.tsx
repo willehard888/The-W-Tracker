@@ -61,7 +61,7 @@ const Squad = () => {
               key={s.key}
               onClick={() => { hapticSelection(); setTab(s.key); }}
               className={cn(
-                "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-black transition-colors",
+                "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-meta font-black transition-colors",
                 tab === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
               )}
             >
@@ -79,7 +79,7 @@ const Squad = () => {
         >
           <MessageCircle aria-hidden size={18} />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-[10px] font-black flex items-center justify-center tabular-nums">
+            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-micro font-black flex items-center justify-center tabular-nums">
               {unread > 99 ? "99+" : unread}
             </span>
           )}

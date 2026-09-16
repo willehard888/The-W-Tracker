@@ -280,7 +280,7 @@ const Leaderboard = () => {
           <BeatSkeleton />
         ) : (
           <>
-            <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+            <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
               {hasRank && rank ? (
                 <>
                   <span className="text-gold tabular-nums">#{fmtInt(displayRank!)}</span> of {fmtInt(boardTotal)}.
@@ -296,7 +296,7 @@ const Leaderboard = () => {
                 "Your first check-in puts you on the board."
               )}
             </h1>
-            <p className="text-[11px] font-bold text-muted-foreground mt-2">
+            <p className="text-label font-bold text-muted-foreground mt-2">
               {mode === "season" ? (
                 <>
                   {activeSeason?.name || "Season"} · season XP
@@ -320,7 +320,7 @@ const Leaderboard = () => {
               role="tab"
               aria-selected={mode === m}
               onClick={() => { void hapticSelection(); setMode(m); }}
-              className={cn("text-[11px] font-bold text-muted-foreground flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+              className={cn("text-label font-bold text-muted-foreground flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {m === "season" ? "Season" : "All time"}
             </button>
@@ -412,11 +412,11 @@ const Leaderboard = () => {
                           <ShieldCheck aria-hidden size={12} strokeWidth={2.6} />
                         </span>
                       )}
-                      {isMe && <span className="shrink-0 text-[10px] text-muted-foreground font-medium">(you)</span>}
+                      {isMe && <span className="shrink-0 text-micro text-muted-foreground font-medium">(you)</span>}
                     </span>
-                    <span className="flex items-center gap-2 mt-0.5 text-[12px] text-muted-foreground">
+                    <span className="flex items-center gap-2 mt-0.5 text-meta text-muted-foreground">
                       <span>Lv {user.level}</span>
-                      {user.streak > 0 && <StreakFlameInline streak={user.streak} suffix="d" className="text-[11px]" still />}
+                      {user.streak > 0 && <StreakFlameInline streak={user.streak} suffix="d" className="text-label" still />}
                       {wins > 0 && (
                         <span className="inline-flex items-center gap-0.5">
                           <Medal aria-hidden size={11} /> {wins}×
@@ -524,7 +524,7 @@ const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCar
       )}
     >
       {isFirst && <Crown aria-hidden size={22} className="absolute -top-3 left-1/2 -translate-x-1/2 text-gold" />}
-      <span className={cn("text-[10px] font-bold text-muted-foreground absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
+      <span className={cn("text-micro font-bold text-muted-foreground absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
         {mark?.tied ? `=${ORDINAL[mark.position] ?? mark.position}` : PODIUM[rank].label}
       </span>
       <StatusAvatar
@@ -539,14 +539,14 @@ const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCar
         tier={user.status_tier || "recruit"}
         className="font-display font-bold text-xs mt-2 truncate max-w-full px-1"
       />
-      {isMe && <span className="text-[10px] text-muted-foreground font-medium">(you)</span>}
+      {isMe && <span className="text-micro text-muted-foreground font-medium">(you)</span>}
       <p className={cn("font-display font-black tabular-nums mt-1", isFirst ? "text-gold text-lg" : "text-sm")}>
         {fmtUnit(points, "XP")}
       </p>
       {(user.streak > 0 || wins > 0) && (
-        <span className="flex items-center gap-2 mt-1.5 text-[11px]">
+        <span className="flex items-center gap-2 mt-1.5 text-label">
           {user.streak > 0 && (
-            <StreakFlameInline streak={user.streak} suffix="d" className={isFirst ? "text-[12px]" : "text-[11px]"} />
+            <StreakFlameInline streak={user.streak} suffix="d" className={isFirst ? "text-meta" : "text-label"} />
           )}
           {wins > 0 && (
             <span className="inline-flex items-center gap-0.5 text-muted-foreground">

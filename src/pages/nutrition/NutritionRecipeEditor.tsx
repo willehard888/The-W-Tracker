@@ -222,12 +222,12 @@ const NutritionRecipeEditor = () => {
                 if (errors.name) setErrors((er) => ({ ...er, name: undefined }));
               }}
               className={cn(
-                "w-full bg-transparent border-b border-border/60 py-2 font-display text-[24px] font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
+                "w-full bg-transparent border-b border-border/60 py-2 font-display text-major font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
                 errors.name && "border-destructive/60",
               )}
             />
             {errors.name && (
-              <span role="alert" className="block text-[11px] text-[hsl(var(--ember))] mt-1">
+              <span role="alert" className="block text-label text-[hsl(var(--ember))] mt-1">
                 {errors.name}
               </span>
             )}
@@ -239,19 +239,19 @@ const NutritionRecipeEditor = () => {
         </div>
 
         <div className="home-rise home-rise-1">
-          <p className="text-[12px] font-bold text-muted-foreground mb-2">Per serving</p>
+          <p className="text-meta font-bold text-muted-foreground mb-2">Per serving</p>
           <NutrientPreview nutrition={preview.per} dim={!servingsOk || preview.rows.length === 0} />
         </div>
 
         <div className="home-rise home-rise-2">
           <div className="flex items-center justify-between gap-3 mb-1">
-            <p className="text-[12px] font-bold text-muted-foreground">Ingredients</p>
+            <p className="text-meta font-bold text-muted-foreground">Ingredients</p>
             <Button type="button" variant="ghost" size="xs" onClick={() => setPickerOpen(true)}>
               <Plus aria-hidden /> Add ingredient
             </Button>
           </div>
           {items.length === 0 ? (
-            <p className="text-[12px] text-muted-foreground leading-snug">Search the catalog for each ingredient and give it a weight.</p>
+            <p className="text-meta text-muted-foreground leading-snug">Search the catalog for each ingredient and give it a weight.</p>
           ) : (
             <div className="divide-y divide-border/35">
               {items.map((it) => {
@@ -259,8 +259,8 @@ const NutritionRecipeEditor = () => {
                 return (
                   <div key={it.key} className="py-2 flex items-center gap-2">
                     <span className="flex-1 min-w-0">
-                      <span className="block text-[15px] font-bold leading-tight truncate">{f?.name ?? it.name ?? "…"}</span>
-                      {f?.brand && <span className="block text-[12px] text-muted-foreground truncate">{f.brand}</span>}
+                      <span className="block text-read font-bold leading-tight truncate">{f?.name ?? it.name ?? "…"}</span>
+                      {f?.brand && <span className="block text-meta text-muted-foreground truncate">{f.brand}</span>}
                     </span>
                     <label className="shrink-0 flex items-center gap-1.5">
                       <span className="sr-only">Grams for {f?.name ?? it.name}</span>
@@ -270,9 +270,9 @@ const NutritionRecipeEditor = () => {
                         value={it.grams}
                         aria-label={`Grams for ${f?.name ?? it.name}`}
                         onChange={(e) => setItems((rows) => rows.map((r) => (r.key === it.key ? { ...r, grams: e.target.value } : r)))}
-                        className="w-20 surface-inset rounded-xl h-11 px-3 text-[15px] font-black tabular-nums outline-none focus:border-gold/50"
+                        className="w-20 surface-inset rounded-xl h-11 px-3 text-read font-black tabular-nums outline-none focus:border-gold/50"
                       />
-                      <span className="text-[12px] font-bold text-muted-foreground">g</span>
+                      <span className="text-meta font-bold text-muted-foreground">g</span>
                     </label>
                     <button
                       type="button"
@@ -288,7 +288,7 @@ const NutritionRecipeEditor = () => {
             </div>
           )}
           {errors.items && (
-            <p role="alert" className="text-[11px] text-[hsl(var(--ember))] mt-1">
+            <p role="alert" className="text-label text-[hsl(var(--ember))] mt-1">
               {errors.items}
             </p>
           )}
@@ -322,7 +322,7 @@ const NutritionRecipeEditor = () => {
         <div className="space-y-5 pt-1">
           <NumField label="Servings" value={logQty} onChange={setLogQty} error={(num(logQty) ?? 0) > 0 ? null : "Enter an amount"} />
           <div>
-            <p className="text-[12px] font-bold text-muted-foreground mb-1.5">Meal</p>
+            <p className="text-meta font-bold text-muted-foreground mb-1.5">Meal</p>
             <div className={SEGMENT_TRACK} role="group" aria-label="Meal slot">
               {MEAL_SLOTS.map((s) => (
                 <button
@@ -333,7 +333,7 @@ const NutritionRecipeEditor = () => {
                     hapticSelection();
                     setLogSlot(s.key);
                   }}
-                  className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black transition-[color,box-shadow] ", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("press flex-1 h-11 rounded-lg text-meta font-black transition-[color,box-shadow] ", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>

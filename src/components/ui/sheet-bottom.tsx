@@ -125,8 +125,8 @@ export const BottomSheet = ({
                   <span className="w-11" aria-hidden />
                 ))}
                 <div className="flex-1 min-w-0 text-center">
-                  <div className="font-display text-[15px] font-black tracking-tight truncate">{title}</div>
-                  {subtitle && <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>}
+                  <div className="font-display text-read font-black tracking-tight truncate">{title}</div>
+                  {subtitle && <p className="text-label text-muted-foreground truncate">{subtitle}</p>}
                 </div>
                 <Button variant="ghost" size="icon" aria-label="Close" className="min-h-11 min-w-11" onClick={onClose}>
                   <X size={20} />

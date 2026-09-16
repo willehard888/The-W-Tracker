@@ -80,7 +80,7 @@ const FoodSearchPanel = ({
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder="Search foods or brands"
           aria-label="Search foods"
-          className="w-full surface-inset rounded-xl h-11 pl-9 pr-24 text-[15px] outline-none focus:border-gold/50 transition-colors"
+          className="w-full surface-inset rounded-xl h-11 pl-9 pr-24 text-read outline-none focus:border-gold/50 transition-colors"
         />
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
           {query && (
@@ -127,7 +127,7 @@ const FoodSearchPanel = ({
 
       {localResults.length > 0 && (
         <section aria-label={searching ? "From your foods" : "Recent and favorites"}>
-          {!searching && <p className="text-[11px] font-bold text-muted-foreground/80 mb-1">Recent · favorites</p>}
+          {!searching && <p className="text-label font-bold text-muted-foreground/80 mb-1">Recent · favorites</p>}
           <div className="divide-y divide-border/35">
             {localResults.map((f) => (
               <FoodResultRow key={f.id} food={f} onPick={onPick} onToggleFavorite={onToggleFavorite} />
@@ -140,7 +140,7 @@ const FoodSearchPanel = ({
         <section aria-label="Search results" aria-busy={loading}>
           <div className="flex items-center gap-2 mt-1 mb-1">
             <span className="h-px flex-1 bg-border/50" aria-hidden />
-            <span className="text-[10px] font-bold text-muted-foreground/75">
+            <span className="text-micro font-bold text-muted-foreground/75">
               {loading ? "Searching" : `${serverOnly.length} result${serverOnly.length === 1 ? "" : "s"}`}
             </span>
             {loading && <Loader2 size={12} className="animate-spin text-muted-foreground" aria-hidden />}
@@ -155,8 +155,8 @@ const FoodSearchPanel = ({
           )}
           {nothing && (
             <div className="py-6 text-center">
-              <p className="text-[14px] font-bold">No match for “{q}”</p>
-              <p className="text-[12px] text-muted-foreground mt-1">Try fewer words, search the online databases, or add it yourself.</p>
+              <p className="text-note font-bold">No match for “{q}”</p>
+              <p className="text-meta text-muted-foreground mt-1">Try fewer words, search the online databases, or add it yourself.</p>
             </div>
           )}
           {(nothing || (!loading && serverOnly.length < 5)) && (
@@ -173,9 +173,9 @@ const FoodSearchPanel = ({
                 </Button>
               )}
               {onlineState === "rate_limited" && (
-                <p className="text-[12px] text-muted-foreground text-center">The online databases are busy — try again in a minute.</p>
+                <p className="text-meta text-muted-foreground text-center">The online databases are busy — try again in a minute.</p>
               )}
-              {onlineState === "error" && <p className="text-[12px] text-muted-foreground text-center">Online search didn't answer. Nothing was invented.</p>}
+              {onlineState === "error" && <p className="text-meta text-muted-foreground text-center">Online search didn't answer. Nothing was invented.</p>}
               <Button variant="ember-outline" className="w-full" onClick={onCreateFood}>
                 Create “{q.length > 24 ? `${q.slice(0, 24)}…` : q}” as a food
               </Button>
@@ -185,7 +185,7 @@ const FoodSearchPanel = ({
       )}
 
       {!searching && localResults.length === 0 && (
-        <p className="text-[13px] text-muted-foreground text-center py-8">Type a food or brand — or scan a barcode.</p>
+        <p className="text-dense text-muted-foreground text-center py-8">Type a food or brand — or scan a barcode.</p>
       )}
     </div>
   );

@@ -49,7 +49,7 @@ const RequirementRow = ({
         </span>
         <span
           className={cn(
-            "ml-auto text-[12px] tabular-nums font-bold",
+            "ml-auto text-meta tabular-nums font-bold",
             met ? "text-xp-green" : "text-muted-foreground",
           )}
         >
@@ -106,7 +106,7 @@ const NextTierProgress = ({ className, ladder, fallback }: { className?: string;
               <h3 className="font-display font-black text-base tracking-tight leading-none">
                 Road to {r.next.label}
               </h3>
-              <p className="text-[11px] text-muted-foreground mt-1">
+              <p className="text-label text-muted-foreground mt-1">
                 {r.pathCount === 2 ? "Either path earns it" : "Every line has to land"}
               </p>
             </div>
@@ -116,7 +116,7 @@ const NextTierProgress = ({ className, ladder, fallback }: { className?: string;
               {r.overallPercent}
               <span className="text-sm text-muted-foreground">%</span>
             </p>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1">
+            <p className="text-micro font-bold text-muted-foreground mt-1">
               {r.metCount}/{r.pathCount} {r.pathCount === 1 ? "path" : "paths"} met
             </p>
           </div>
@@ -156,7 +156,7 @@ const NextTierProgress = ({ className, ladder, fallback }: { className?: string;
 
         {/* Footer — the rule in the ladder's own words. */}
         <div className="mt-4 pt-3 border-t border-border/35">
-          <p className="text-[12px] text-center text-muted-foreground italic font-medium">
+          <p className="text-meta text-center text-muted-foreground italic font-medium">
             {tierRequirementSentence(r.next.key)}.
           </p>
         </div>

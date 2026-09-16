@@ -261,7 +261,7 @@ const UserProfile = () => {
       <div className="px-4 pt-3 pb-6">
         {/* ── OPENING BEAT — the rung and the proof, stated once ── */}
         <div className="home-rise mb-5">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {best > 0 ? `${formatTier(tierKey, profile.tier_division)}. ${best}-day best.` : `${tier.label}. Day one.`}
           </h2>
         </div>
@@ -418,7 +418,7 @@ const UserProfile = () => {
         {/* ── PROOF — the media grid, edge to edge ── */}
         {mediaPosts && mediaPosts.length > 0 && (
           <div className="home-rise home-rise-4 mt-7">
-            <p className="text-[11px] font-bold text-muted-foreground mb-2">Posts · {mediaPosts.length}</p>
+            <p className="text-label font-bold text-muted-foreground mb-2">Posts · {mediaPosts.length}</p>
             <div className="-mx-4 grid grid-cols-3 gap-[2px]">
               {mediaPosts.map((p: any) => {
                 const isVideo = !!p.video_url;
@@ -435,11 +435,11 @@ const UserProfile = () => {
                   >
                     <GridMedia src={src} isVideo={isVideo} alt={`@${profile.username} post`} />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/45 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                      <span className="flex items-center gap-1 text-meta font-black text-foreground">
                         <Heart size={12} fill="currentColor" aria-hidden />
                         {p.likes_count ?? 0}
                       </span>
-                      <span className="flex items-center gap-1 text-[12px] font-black text-foreground">
+                      <span className="flex items-center gap-1 text-meta font-black text-foreground">
                         <MessageSquare size={12} fill="currentColor" aria-hidden />
                         {p.comments_count ?? 0}
                       </span>
@@ -456,12 +456,12 @@ const UserProfile = () => {
           <div className="mt-7 surface-card surface-card-quiet px-4 py-3">
             <div className="flex items-center gap-2">
               <Medal size={14} className="text-muted-foreground shrink-0" aria-hidden />
-              <h2 className="flex-1 text-[13px] font-bold">Season Champion</h2>
-              <span className="font-display font-black text-[17px] tabular-nums leading-none">{championHistory.wins}×</span>
+              <h2 className="flex-1 text-dense font-bold">Season Champion</h2>
+              <span className="font-display font-black text-lead tabular-nums leading-none">{championHistory.wins}×</span>
             </div>
             <div className="mt-1 divide-y divide-border/35">
               {championHistory.seasons.map((s: any, i: number) => (
-                <div key={i} className="py-2 flex items-center justify-between text-[12px]">
+                <div key={i} className="py-2 flex items-center justify-between text-meta">
                   <span className="text-muted-foreground">{s.name}</span>
                   <span className="font-semibold tabular-nums">{fmtUnit(s.points, "XP")}</span>
                 </div>

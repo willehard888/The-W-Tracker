@@ -139,7 +139,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
               >
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-sm font-bold truncate", on && "text-gold")}>{r.name}</p>
-                  <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1 tabular-nums">
+                  <p className="text-label text-muted-foreground inline-flex items-center gap-1 tabular-nums">
                     <Users size={11} aria-hidden /> {r.member_count} member{r.member_count === 1 ? "" : "s"} · {r.visibility}
                   </p>
                 </div>
@@ -152,7 +152,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
 
       {selected && (
         <div className="mt-4">
-          <p className="text-[11px] font-bold text-muted-foreground mb-2">Duration</p>
+          <p className="text-label font-bold text-muted-foreground mb-2">Duration</p>
           <div className="grid grid-cols-3 gap-1.5">
             {DURATIONS.map((d) => (
               <Button
@@ -163,7 +163,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
                 onClick={() => setDuration(d.value)}
               >
                 <span className="text-xs font-black">{d.label}</span>
-                <span className="text-[10px] font-normal text-muted-foreground">{d.sub}</span>
+                <span className="text-micro font-normal text-muted-foreground">{d.sub}</span>
               </Button>
             ))}
           </div>

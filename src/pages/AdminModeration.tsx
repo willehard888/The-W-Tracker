@@ -159,13 +159,13 @@ export default function AdminModeration() {
         <div className="mt-3 flex items-center gap-4">
           <a
             href="/admin/legend-invites"
-            className="text-[11px] font-bold inline-flex items-center gap-1.5 text-gold hover:underline"
+            className="text-label font-bold inline-flex items-center gap-1.5 text-gold hover:underline"
           >
             → Legend invites
           </a>
           <a
             href="/admin/metrics"
-            className="text-[11px] font-bold inline-flex items-center gap-1.5 text-gold hover:underline"
+            className="text-label font-bold inline-flex items-center gap-1.5 text-gold hover:underline"
           >
             → Command Center
           </a>
@@ -202,18 +202,18 @@ export default function AdminModeration() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-bold text-muted-foreground">
+                  <span className="text-label font-bold text-muted-foreground">
                     {item.content_type}
                   </span>
                   {item.severity && (
-                    <span className="text-[11px] font-bold text-destructive">
+                    <span className="text-label font-bold text-destructive">
                       {item.severity}
                     </span>
                   )}
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-label text-muted-foreground">
                     conf {Math.round((item.ai_confidence ?? 0) * 100)}%
                   </span>
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-label text-muted-foreground">
                     {fmtRelative(item.created_at)}
                   </span>
                 </div>

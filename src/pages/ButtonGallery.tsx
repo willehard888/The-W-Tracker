@@ -114,7 +114,7 @@ const ButtonGallery = () => {
         if (items.length === 0) return null;
         return (
           <section key={group} className="mb-7">
-            <h2 className="text-[11px] font-bold text-[hsl(var(--gold-soft))] mb-3 px-1">
+            <h2 className="text-label font-bold text-[hsl(var(--gold-soft))] mb-3 px-1">
               {group}
             </h2>
             <div className="space-y-3">
@@ -131,7 +131,7 @@ const ButtonGallery = () => {
         );
       })}
 
-      <p className="mt-8 text-[11px] text-muted-foreground/60 text-center px-4 leading-relaxed">
+      <p className="mt-8 text-label text-muted-foreground/60 text-center px-4 leading-relaxed">
         Compare hover (mouse over) and pressed (mouse down/touch) states. The
         third column is permanently disabled to show the inert state.
       </p>
@@ -156,9 +156,9 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
     >
       <div className="flex items-baseline justify-between mb-2 px-0.5">
         <span className="text-sm font-bold text-foreground">{spec.label}</span>
-        <code className="text-[11px] text-muted-foreground/70 font-mono">{spec.id}</code>
+        <code className="text-label text-muted-foreground/70 font-mono">{spec.id}</code>
       </div>
-      <p className="text-[12px] text-muted-foreground mb-3 px-0.5 leading-snug">
+      <p className="text-meta text-muted-foreground mb-3 px-0.5 leading-snug">
         {spec.description}
       </p>
 
@@ -219,7 +219,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
 
 const StateCell = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-1.5">
-    <span className="text-[10px] font-bold text-muted-foreground/70 text-center">
+    <span className="text-micro font-bold text-muted-foreground/70 text-center">
       {label}
     </span>
     {children}

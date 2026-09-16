@@ -17,9 +17,9 @@ const MacroRow = ({ nutrition, className }: { nutrition: MacroSummary; className
   <div className={["flex items-stretch gap-3", className].filter(Boolean).join(" ")}>
     <div className="rounded-2xl border border-gold/30 bg-gold/[0.07] px-4 py-3 shrink-0">
       <p className="font-display text-[30px] font-black leading-none text-gold tabular-nums">
-        {fmt(nutrition.protein)}<span className="text-[17px]">g</span>
+        {fmt(nutrition.protein)}<span className="text-lead">g</span>
       </p>
-      <p className="text-[11px] font-bold text-muted-foreground mt-1.5">Protein</p>
+      <p className="text-label font-bold text-muted-foreground mt-1.5">Protein</p>
     </div>
     <div className="flex-1 grid grid-cols-3 gap-x-3 gap-y-2 content-center">
       {[
@@ -28,8 +28,8 @@ const MacroRow = ({ nutrition, className }: { nutrition: MacroSummary; className
         { v: `${fmt(nutrition.fat)}g`, l: "fat" },
       ].map((m) => (
         <div key={m.l}>
-          <p className="text-[15px] font-black leading-none tabular-nums">{m.v}</p>
-          <p className="text-[11px] font-bold text-muted-foreground mt-1">{m.l}</p>
+          <p className="text-read font-black leading-none tabular-nums">{m.v}</p>
+          <p className="text-label font-bold text-muted-foreground mt-1">{m.l}</p>
         </div>
       ))}
     </div>

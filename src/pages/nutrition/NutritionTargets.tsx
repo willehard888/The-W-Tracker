@@ -156,7 +156,7 @@ const NutritionTargets = () => {
 
       <div className="px-4 pt-4 pb-6 space-y-6">
         <div className="home-rise">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {targets ? (
               <>
                 Measuring against <span className="tabular-nums">{fmtKcal(targets.kcal)}</span> kcal.
@@ -166,13 +166,13 @@ const NutritionTargets = () => {
             )}
           </h2>
           <div className="mt-3 flex items-center gap-3 min-h-11">
-            <p className="flex-1 min-w-0 text-[13px] text-muted-foreground truncate tabular-nums">
+            <p className="flex-1 min-w-0 text-dense text-muted-foreground truncate tabular-nums">
               {profileLine.length > 0 ? profileLine.join(" · ") : "Profile not filled in yet"}
             </p>
             <button
               type="button"
               onClick={() => navigate("/coach/profile")}
-              className="shrink-0 min-h-11 inline-flex items-center gap-0.5 text-[13px] font-bold text-foreground active:opacity-70"
+              className="shrink-0 min-h-11 inline-flex items-center gap-0.5 text-dense font-bold text-foreground active:opacity-70"
             >
               Edit profile <ChevronRight size={14} aria-hidden />
             </button>
@@ -180,7 +180,7 @@ const NutritionTargets = () => {
         </div>
 
         <div className="home-rise home-rise-1">
-          <p className="text-[12px] font-bold text-muted-foreground mb-1.5">Activity</p>
+          <p className="text-meta font-bold text-muted-foreground mb-1.5">Activity</p>
           <div className={SEGMENT_TRACK} role="group" aria-label="Activity level">
             {ACTIVITY.map((a) => (
               <button
@@ -191,7 +191,7 @@ const NutritionTargets = () => {
                   hapticSelection();
                   setActivityChoice(a.key);
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-[11px] font-black transition-[color,box-shadow] ", activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-label font-black transition-[color,box-shadow] ", activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {a.label}
               </button>
@@ -204,14 +204,14 @@ const NutritionTargets = () => {
 
           {adjusting && (
             <div className="surface-card surface-card-quiet p-4 space-y-3 home-rise">
-              <p className="text-[15px] font-bold">{result.ok ? "Adjust by hand" : "Type your targets"}</p>
+              <p className="text-read font-bold">{result.ok ? "Adjust by hand" : "Type your targets"}</p>
               <div className="grid grid-cols-2 gap-3">
                 <NumField label="Calories" unit="kcal" mode="numeric" required value={current.kcal} onChange={(v) => setField("kcal", v)} error={errors.kcal} />
                 <NumField label="Protein" unit="g" mode="numeric" required value={current.protein} onChange={(v) => setField("protein", v)} error={errors.protein} />
                 <NumField label="Carbs" unit="g" mode="numeric" required value={current.carbs} onChange={(v) => setField("carbs", v)} error={errors.carbs} />
                 <NumField label="Fat" unit="g" mode="numeric" required value={current.fat} onChange={(v) => setField("fat", v)} error={errors.fat} />
               </div>
-              <p className="text-[12px] text-muted-foreground tabular-nums" aria-live="polite">
+              <p className="text-meta text-muted-foreground tabular-nums" aria-live="polite">
                 = {fmtKcal(macroKcal)} kcal from macros
               </p>
               <Button size="lg" className="w-full" onClick={saveManual} loading={saving} disabled={saving}>
@@ -224,15 +224,15 @@ const NutritionTargets = () => {
         {targets && (
           <div className="home-rise home-rise-3">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="text-[12px] font-bold text-muted-foreground">Current targets</p>
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-meta font-bold text-muted-foreground">Current targets</p>
+              <p className="text-meta text-muted-foreground">
                 In force since {targets.effective_from ? format(parseISO(targets.effective_from), "MMM d") : "today"}
               </p>
             </div>
-            <p className="mt-1 text-[15px] font-bold tabular-nums">
+            <p className="mt-1 text-read font-bold tabular-nums">
               {fmtKcal(targets.kcal)} kcal · P {Math.round(targets.protein_g)} · C {Math.round(targets.carbs_g)} · F {Math.round(targets.fat_g)}
             </p>
-            <p className="text-[12px] text-muted-foreground">{METHOD_LABEL[targets.method] ?? targets.method}</p>
+            <p className="text-meta text-muted-foreground">{METHOD_LABEL[targets.method] ?? targets.method}</p>
           </div>
         )}
 
@@ -241,8 +241,8 @@ const NutritionTargets = () => {
             <div className="flex items-center gap-3 px-4 py-3 min-h-11">
               <HeartPulse aria-hidden size={14} className="text-muted-foreground shrink-0" />
               <span className="flex-1 min-w-0">
-                <span className="block text-[13px] font-semibold">Save meals to Apple Health</span>
-                <span className="block text-[11px] text-muted-foreground mt-0.5">Calories, protein, carbs, fat, water, caffeine</span>
+                <span className="block text-dense font-semibold">Save meals to Apple Health</span>
+                <span className="block text-label text-muted-foreground mt-0.5">Calories, protein, carbs, fat, water, caffeine</span>
               </span>
               <Switch checked={healthOn} onCheckedChange={(v) => void toggleHealth(v)} aria-label="Save meals to Apple Health" />
             </div>
@@ -254,8 +254,8 @@ const NutritionTargets = () => {
           >
             <Info aria-hidden size={14} className="text-muted-foreground shrink-0" />
             <span className="flex-1 min-w-0">
-              <span className="block text-[13px] font-semibold">How estimates work · Data sources</span>
-              <span className="block text-[11px] text-muted-foreground mt-0.5">What the numbers can and cannot tell you</span>
+              <span className="block text-dense font-semibold">How estimates work · Data sources</span>
+              <span className="block text-label text-muted-foreground mt-0.5">What the numbers can and cannot tell you</span>
             </span>
             <ChevronRight aria-hidden size={14} className="text-muted-foreground/75 shrink-0" />
           </button>

@@ -17,6 +17,50 @@ export default {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
       },
+      /**
+       * Type scale.
+       *
+       * The app ran on two ladders at once: Tailwind's stock steps and its own
+       * 10–27px range, the second written out 1201 times as `text-[Npx]`
+       * because no name existed for it. These are the rungs it actually uses.
+       *
+       * VALUES ARE BARE STRINGS ON PURPOSE — do not "finish" them into
+       * ["11px", "1.27"] tuples, and do not fold a rung into the stock name of
+       * the same size. Both mistakes inject a line-height. An arbitrary
+       * `text-[11px]` emits a font-size and nothing else, while stock
+       * `.text-xs` is `font-size:.75rem;line-height:1rem` — so mapping
+       * `text-[12px]` onto `text-xs` would hand 300-odd elements a leading
+       * they never had. Most former `text-[11px]` sites inherit their leading
+       * from elsewhere; that is why every rung here is size-only, and why
+       * 12/14/16/18/20/24 get a rung of their own despite Tailwind having a
+       * stock step at the same pixel value. The stock names stay valid for the
+       * call sites that want the pair.
+       *
+       * Above 27px is display territory — one-off hero, celebration and
+       * share-image sizes that should stay arbitrary. The ladder stops there,
+       * and style-guard rule 19 polices only 0–27px for the same reason.
+       */
+      fontSize: {
+        // 11px, not 10. Apple's smallest text style is 11pt, and 85 labels sat
+        // under it. Deliberately the same value as `label` for now: keeping the
+        // rung means this is one line to revert if the density turns out worse
+        // on a real phone. If it survives that look, fold micro into label and
+        // drop this rung — two names for one size is not a scale.
+        micro: "11px", // smallest label
+
+        label: "11px", // micro-label — what an `.eyebrow` demotes to
+        meta: "12px", // meta line, timestamp, caption
+        dense: "13px", // dense body
+        note: "14px", // secondary body
+        read: "15px", // body
+        copy: "16px", // long-form copy, and inputs iOS must not zoom
+        lead: "17px", // emphasised body
+        subhead: "18px", // subheading
+        head: "20px", // heading
+        title: "22px", // section title
+        major: "24px", // large heading
+        beat: "27px", // the opening beat (wf-screen-redesign §4)
+      },
       // Elevation ladder (index.css --shadow-1..4): shadow-1 chip · shadow-2
       // card · shadow-3 sticky chrome · shadow-4 hero/modal.
       boxShadow: {

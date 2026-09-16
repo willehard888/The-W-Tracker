@@ -26,9 +26,9 @@ const ApexBadge = ({
   className,
 }: ApexBadgeProps) => {
   const sizes = {
-    xs: { wrap: "h-4 px-1.5 text-[10px] gap-0.5", icon: 8 },
-    sm: { wrap: "h-5 px-2 text-[10px] gap-0.5", icon: 9 },
-    md: { wrap: "h-6 px-2.5 text-[11px] gap-1", icon: 11 },
+    xs: { wrap: "h-4 px-1.5 text-micro gap-0.5", icon: 8 },
+    sm: { wrap: "h-5 px-2 text-micro gap-0.5", icon: 9 },
+    md: { wrap: "h-6 px-2.5 text-label gap-1", icon: 11 },
   };
   const s = sizes[size];
 

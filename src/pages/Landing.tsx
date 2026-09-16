@@ -51,7 +51,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       {/* Header */}
       <header className="relative flex items-center gap-3 px-6 pt-6 pb-2 home-rise">
         <BrandLogo size={44} priority className="rounded-xl" />
-        <span className="font-display font-bold text-[15px] tracking-tight">Whealth Factory</span>
+        <span className="font-display font-bold text-read tracking-tight">Whealth Factory</span>
       </header>
 
       <main className="relative flex-1 flex flex-col px-6 pt-10">
@@ -93,7 +93,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
           <button
             type="button"
             onClick={() => navigate("/auth?mode=login")}
-            className="press mt-2 w-full min-h-11 text-[13px] font-bold text-muted-foreground"
+            className="press mt-2 w-full min-h-11 text-dense font-bold text-muted-foreground"
           >
             I already have an account
           </button>
@@ -101,14 +101,14 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
 
         {/* What you actually get — one app replaces the whole stack */}
         <div className="home-rise home-rise-3 mt-14 max-w-md">
-          <p className="font-display font-black text-[17px] tracking-tight leading-tight">One app · replaces five</p>
+          <p className="font-display font-black text-lead tracking-tight leading-tight">One app · replaces five</p>
           <ul className="mt-2 divide-y divide-border/35 border-t border-border/35">
             {WHAT_YOU_GET.map(({ icon: Icon, title, text }) => (
               <li key={title} className="flex items-start gap-3 py-3">
                 <Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
                 <div className="min-w-0">
-                  <p className="text-[14px] font-bold leading-tight">{title}</p>
-                  <p className="text-[12px] text-muted-foreground leading-snug mt-0.5">{text}</p>
+                  <p className="text-note font-bold leading-tight">{title}</p>
+                  <p className="text-meta text-muted-foreground leading-snug mt-0.5">{text}</p>
                 </div>
               </li>
             ))}
@@ -118,7 +118,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
 
       {/* Bottom tagline */}
       <footer className="relative px-6 pb-8 pt-10 home-rise home-rise-4">
-        <p className="text-[11px] text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
+        <p className="text-label text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
           Built for those who refuse to be average
         </p>
       </footer>

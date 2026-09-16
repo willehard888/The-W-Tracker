@@ -190,7 +190,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
             <OptionRow key={e.id} {...e} active={draft.training_experience === e.id} onClick={() => pick("training_experience", e.id)} />
           ))}
           {draft.training_experience === "never_trained" && (
-            <p className="text-[12px] text-muted-foreground leading-snug pt-2 px-3">
+            <p className="text-meta text-muted-foreground leading-snug pt-2 px-3">
               You will start on a written 8-week plan: three sessions a week, a handful of
               movements, and proper coaching on every one of them. Your coach takes over once
               they feel familiar.
@@ -250,7 +250,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               placeholder="e.g. New baby, working remote, training around 6am only."
               className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[11px] text-muted-foreground/75 mt-1 tabular-nums">{(draft.life_context ?? "").length}/160</p>
+            <p className="text-label text-muted-foreground/75 mt-1 tabular-nums">{(draft.life_context ?? "").length}/160</p>
           </Field>
 
           <Field label="Stress lately">
@@ -323,7 +323,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               placeholder="e.g. The dad my kids see show up strong every day. Someone who keeps promises to himself."
               className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
             />
-            <p className="text-[11px] text-muted-foreground/75 mt-1 tabular-nums">
+            <p className="text-label text-muted-foreground/75 mt-1 tabular-nums">
               {draft.i_am.length}/160 · This is what every check-in is really for.
             </p>
           </Field>
@@ -381,10 +381,10 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
               )} />
             ))}
           </div>
-          <span className="text-[11px] font-bold text-muted-foreground tabular-nums">{step + 1}/{STEPS.length}</span>
+          <span className="text-label font-bold text-muted-foreground tabular-nums">{step + 1}/{STEPS.length}</span>
         </div>
-        <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">{cur.title}</h2>
-        <p className="mt-1.5 text-[13px] text-muted-foreground mb-5">{cur.sub}</p>
+        <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">{cur.title}</h2>
+        <p className="mt-1.5 text-dense text-muted-foreground mb-5">{cur.sub}</p>
       </header>
 
       <div className="home-rise home-rise-1">
@@ -437,8 +437,8 @@ const OptionRow = ({
     >
       <Icon size={16} className={cn("shrink-0", active ? "text-gold" : "text-muted-foreground")} aria-hidden />
       <span className="flex-1 min-w-0">
-        <span className="block text-[14px] font-semibold leading-tight">{label}</span>
-        {sub && <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{sub}</span>}
+        <span className="block text-note font-semibold leading-tight">{label}</span>
+        {sub && <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{sub}</span>}
       </span>
       <span
         className={cn(
@@ -473,7 +473,7 @@ const Scale = ({
             aria-pressed={active}
             onClick={() => onChange(v)}
             className={cn(
-              "h-11 rounded-xl border font-display font-black text-[15px] tabular-nums transition-colors",
+              "h-11 rounded-xl border font-display font-black text-read tabular-nums transition-colors",
               active ? "border-gold/70 bg-gold/[0.08] text-gold" : "border-border/50 text-muted-foreground",
             )}
           >
@@ -482,7 +482,7 @@ const Scale = ({
         );
       })}
     </div>
-    <p className="mt-1 flex justify-between text-[11px] text-muted-foreground/75">
+    <p className="mt-1 flex justify-between text-label text-muted-foreground/75">
       <span>{words[0]}</span>
       <span>{words[words.length - 1]}</span>
     </p>
@@ -492,7 +492,7 @@ const Scale = ({
 const Field = forwardRef<HTMLDivElement, { label: string; children: React.ReactNode }>(
   ({ label, children }, ref) => (
     <div ref={ref}>
-      <label className="block text-[11px] font-bold text-muted-foreground mb-2">{label}</label>
+      <label className="block text-label font-bold text-muted-foreground mb-2">{label}</label>
       {children}
     </div>
   ),
@@ -526,7 +526,7 @@ const Stepper = ({
   const inc = () => { hapticImpact("light"); onChange(Math.min(max, value + step)); };
   return (
     <div>
-      <label className="block text-[11px] font-bold text-muted-foreground mb-2">{label}</label>
+      <label className="block text-label font-bold text-muted-foreground mb-2">{label}</label>
       {/* No box around the number: the value is the type moment, the two
           44 pt rings are the only chrome. */}
       <div className="flex items-center gap-2">

@@ -58,11 +58,11 @@ const DetectedItemRow = ({
     <div className="py-3">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-bold leading-tight">
+          <p className="text-read font-bold leading-tight">
             {chosen ? chosen.name : item.name}
             {chosen?.brand && <span className="text-muted-foreground font-medium"> · {chosen.brand}</span>}
           </p>
-          <p className="text-[12px] text-muted-foreground leading-snug mt-0.5 flex items-center gap-1.5 flex-wrap">
+          <p className="text-meta text-muted-foreground leading-snug mt-0.5 flex items-center gap-1.5 flex-wrap">
             {!chosen && <span>{item.name}</span>}
             {item.preparation !== "unknown" && <span>{item.preparation}</span>}
             {range && (
@@ -73,7 +73,7 @@ const DetectedItemRow = ({
             {label && (
               <span
                 className={cn(
-                  "text-[10px] font-bold text-muted-foreground inline-flex items-center rounded-full border px-2 py-0.5",
+                  "text-micro font-bold text-muted-foreground inline-flex items-center rounded-full border px-2 py-0.5",
                   tier === "check" ? "border-[hsl(var(--ember))]/50 text-[hsl(var(--ember))]" : "border-border text-muted-foreground",
                 )}
               >
@@ -82,7 +82,7 @@ const DetectedItemRow = ({
             )}
           </p>
           {item.preview && chosen && (
-            <p className="text-[12px] tabular-nums text-muted-foreground mt-1">
+            <p className="text-meta tabular-nums text-muted-foreground mt-1">
               {item.preview.kcal != null ? `${Math.round(item.preview.kcal)} kcal` : "— kcal"}
               {item.preview.protein_g != null && ` · P ${Math.round(item.preview.protein_g)}`}
               {item.preview.carbs_g != null && ` · C ${Math.round(item.preview.carbs_g)}`}
@@ -115,10 +115,10 @@ const DetectedItemRow = ({
               const n = Number(e.target.value.replace(",", "."));
               if (Number.isFinite(n) && n > 0) onGramsChange(item.id, toGrams(n));
             }}
-            className="w-20 surface-inset rounded-xl h-11 px-3 text-[15px] font-black tabular-nums outline-none focus:border-gold/50"
+            className="w-20 surface-inset rounded-xl h-11 px-3 text-read font-black tabular-nums outline-none focus:border-gold/50"
           />
         </label>
-        <span className="text-[12px] font-bold text-muted-foreground">{unit}</span>
+        <span className="text-meta font-bold text-muted-foreground">{unit}</span>
         {chips.length > 0 && (
           <div className={cn(SEGMENT_TRACK, "flex-1")} role="group" aria-label={`Quick ${liquid ? "millilitres" : "grams"}`}>
             {chips.map((q) => (
@@ -130,7 +130,7 @@ const DetectedItemRow = ({
                   hapticSelection();
                   onGramsChange(item.id, toGrams(q));
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-[12px] font-black tabular-nums transition-[color,box-shadow] ", shown === q ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn("press flex-1 h-11 rounded-lg text-meta font-black tabular-nums transition-[color,box-shadow] ", shown === q ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {q}
               </button>
@@ -144,13 +144,13 @@ const DetectedItemRow = ({
           <Button variant="ghost" size="icon" aria-label="One piece fewer" className="text-muted-foreground" onClick={() => step(-1)}>
             <Minus aria-hidden />
           </Button>
-          <span className="text-[13px] font-bold tabular-nums min-w-12 text-center">
+          <span className="text-dense font-bold tabular-nums min-w-12 text-center">
             {item.count} pcs
           </span>
           <Button variant="ghost" size="icon" aria-label="One piece more" className="text-muted-foreground" onClick={() => step(1)}>
             <Plus aria-hidden />
           </Button>
-          {item.unit_g && <span className="text-[11px] text-muted-foreground">≈ {item.unit_g} g each</span>}
+          {item.unit_g && <span className="text-label text-muted-foreground">≈ {item.unit_g} g each</span>}
         </div>
       )}
 
@@ -160,7 +160,7 @@ const DetectedItemRow = ({
             type="button"
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
-            className="min-h-11 inline-flex items-center gap-1 text-[12px] font-bold text-muted-foreground active:opacity-70"
+            className="min-h-11 inline-flex items-center gap-1 text-meta font-bold text-muted-foreground active:opacity-70"
           >
             {chosen ? "Change match" : "Choose the right match"}
             <ChevronDown aria-hidden size={14} className={cn("transition-transform", open && "rotate-180")} />
@@ -189,20 +189,20 @@ const DetectedItemRow = ({
                 className={cn("w-full min-h-11 px-3 py-2 text-left flex items-center gap-3 active:opacity-70", active && "bg-gold/[0.06]")}
               >
                 <span className="min-w-0 flex-1">
-                  <span className={cn("block text-[14px] font-bold leading-tight truncate", active && "text-gold")}>{c.name}</span>
-                  <span className="block text-[11px] text-muted-foreground truncate">
+                  <span className={cn("block text-note font-bold leading-tight truncate", active && "text-gold")}>{c.name}</span>
+                  <span className="block text-label text-muted-foreground truncate">
                     {c.brand ? `${c.brand} · ` : ""}
                     {c.per_100g.kcal != null ? `${Math.round(c.per_100g.kcal)} kcal` : "— kcal"} / 100 g
                   </span>
                 </span>
-                <span className="text-[11px] tabular-nums text-muted-foreground shrink-0">{Math.round(c.similarity * 100)} % match</span>
+                <span className="text-label tabular-nums text-muted-foreground shrink-0">{Math.round(c.similarity * 100)} % match</span>
               </button>
             );
           })}
         </div>
       )}
       {item.candidates.length === 0 && (
-        <p className="text-[12px] text-[hsl(var(--ember))] mt-1">
+        <p className="text-meta text-[hsl(var(--ember))] mt-1">
           {item.online_lookup === "miss" ? "Not found online either — search, or add it as your own food." : "Not in the database yet — search for it, or remove this item."}
         </p>
       )}

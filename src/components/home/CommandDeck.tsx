@@ -86,8 +86,8 @@ const CommandDeck = ({
           <Check aria-hidden size={15} className="text-gold" strokeWidth={3} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-black leading-tight">Day banked</p>
-          <p className="text-[12px] text-muted-foreground leading-tight mt-0.5">
+          <p className="text-dense font-black leading-tight">Day banked</p>
+          <p className="text-meta text-muted-foreground leading-tight mt-0.5">
             Next check-in in <MidnightCountdown />
           </p>
         </div>
@@ -104,7 +104,7 @@ const CommandDeck = ({
             <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
             {/* The streak is the number the whole product is about; it landed
                 instantly while the rank next to it counted. */}
-            <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(var(--ember-light))]">
+            <span className="font-display font-black text-note tabular-nums leading-none text-[hsl(var(--ember-light))]">
               <AnimatedNumber value={streak} duration={800} />
             </span>
           </span>
@@ -174,11 +174,11 @@ const CommandDeck = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold text-gold/85 mb-0.5">Lock your day</p>
-              <p className="font-display font-black text-[19px] leading-none tracking-tight">
+              <p className="text-label font-bold text-gold/85 mb-0.5">Lock your day</p>
+              <p className="font-display font-black text-head leading-none tracking-tight">
                 Daily Check-In
               </p>
-              <p className="text-[12px] text-muted-foreground mt-1 leading-snug">
+              <p className="text-meta text-muted-foreground mt-1 leading-snug">
                 {streak > 0 ? `Defend your ${streak}-day streak.` : "Start your streak. Earn XP. Climb."}
               </p>
             </div>
@@ -187,7 +187,7 @@ const CommandDeck = ({
             {streak > 0 && (
               <div ref={streakTargetRef} className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[hsl(var(--ember)/0.12)] border border-[hsl(var(--ember))]/30 px-2.5 py-1">
                 <Flame aria-hidden size={13} className="text-[hsl(var(--ember))] status-flame-flicker" strokeWidth={2.8} />
-                <span className="font-display font-black text-[14px] tabular-nums leading-none text-[hsl(var(--ember-light))]"><AnimatedNumber value={streak} duration={800} /></span>
+                <span className="font-display font-black text-note tabular-nums leading-none text-[hsl(var(--ember-light))]"><AnimatedNumber value={streak} duration={800} /></span>
               </div>
             )}
           </div>
@@ -329,13 +329,13 @@ const CommandDeck = ({
                   }}
                 />
                 <span
-                  className="cta-melt-label relative z-[2] font-display font-black text-[26px] leading-none uppercase tracking-tight inline-flex items-center gap-2.5"
+                  className="cta-melt-label relative z-[2] font-display font-black text-beat leading-none uppercase tracking-tight inline-flex items-center gap-2.5"
                   style={{ color: "hsl(20 85% 10%)", textShadow: "0 1px 0 hsl(46 100% 75% / 0.6)" }}
                 >
                   <Flame aria-hidden size={24} strokeWidth={2.9} /> Lock in
                 </span>
                 <span
-                  className="relative z-[2] inline-flex items-center gap-1 font-black text-[13px] tabular-nums shrink-0"
+                  className="relative z-[2] inline-flex items-center gap-1 font-black text-dense tabular-nums shrink-0"
                   style={{ color: "hsl(20 70% 16%)" }}
                 >
                   +{maxXp} XP

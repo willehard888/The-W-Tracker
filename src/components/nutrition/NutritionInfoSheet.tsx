@@ -29,9 +29,9 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
   return (
     <div className="space-y-7 pb-6">
       <section>
-        <p className="text-[11px] font-bold text-gold/85 mb-2">How estimates work</p>
-        <h2 className="font-display text-[22px] font-black tracking-tight leading-tight">Every number here is a measurement of a guess.</h2>
-        <ul className="mt-3 space-y-2.5 text-[14px] leading-snug text-foreground/90">
+        <p className="text-label font-bold text-gold/85 mb-2">How estimates work</p>
+        <h2 className="font-display text-title font-black tracking-tight leading-tight">Every number here is a measurement of a guess.</h2>
+        <ul className="mt-3 space-y-2.5 text-note leading-snug text-foreground/90">
           <li>
             <b>Nutrition always comes from a database record</b> — Fineli, USDA or Open Food Facts — never from the camera. The photo
             scanner only names what it sees and guesses how much.
@@ -55,23 +55,23 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
       </section>
 
       <section>
-        <p className="text-[11px] font-bold text-gold/85 mb-2">Data sources</p>
+        <p className="text-label font-bold text-gold/85 mb-2">Data sources</p>
         <div className="divide-y divide-border/35">
           {list.map((s) => (
             <div key={s.code} className="py-3">
               <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[15px] font-bold">{s.name}</p>
-                <span className="text-[11px] font-bold text-muted-foreground shrink-0">{s.licence}</span>
+                <p className="text-read font-bold">{s.name}</p>
+                <span className="text-label font-bold text-muted-foreground shrink-0">{s.licence}</span>
               </div>
-              <p className="text-[13px] text-muted-foreground leading-snug mt-1">{s.attribution_text}</p>
+              <p className="text-dense text-muted-foreground leading-snug mt-1">{s.attribution_text}</p>
               <div className="flex gap-4 mt-1.5">
                 {s.attribution_url && (
-                  <a href={s.attribution_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 min-h-11 text-[12px] font-bold text-gold">
+                  <a href={s.attribution_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 min-h-11 text-meta font-bold text-gold">
                     Source <ExternalLink size={12} aria-hidden />
                   </a>
                 )}
                 {s.licence_url && (
-                  <a href={s.licence_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 min-h-11 text-[12px] font-bold text-muted-foreground">
+                  <a href={s.licence_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 min-h-11 text-meta font-bold text-muted-foreground">
                     Licence <ExternalLink size={12} aria-hidden />
                   </a>
                 )}
@@ -79,7 +79,7 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
             </div>
           ))}
         </div>
-        <p className="text-[12px] text-muted-foreground/80 leading-snug mt-3">
+        <p className="text-meta text-muted-foreground/80 leading-snug mt-3">
           Open Food Facts records are kept separate from Fineli and USDA records and are never merged, so their share-alike
           licence stays honoured. Product photos from Open Food Facts are not shown.
         </p>

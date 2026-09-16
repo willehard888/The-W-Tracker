@@ -35,8 +35,8 @@ const PersonRow = ({
       <StatusAvatar src={person.avatar_url} name={person.username} tier={person.status_tier || "recruit"} size="sm" animated={false} />
     </button>
     <button type="button" onClick={onOpen} className="press flex-1 min-w-0 min-h-11 text-left">
-      <span className="block text-[14px] font-semibold leading-tight truncate">@{person.username}</span>
-      <span className="block text-[12px] text-muted-foreground leading-snug mt-0.5">{sub}</span>
+      <span className="block text-note font-semibold leading-tight truncate">@{person.username}</span>
+      <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{sub}</span>
     </button>
     {children}
   </li>
@@ -88,7 +88,7 @@ const Friends = () => {
   const relation = (id: string) => {
     const incomingFid = incomingById.get(id);
     if (friendIds.has(id)) {
-      return <span className="inline-flex items-center gap-1 text-[12px] font-bold text-muted-foreground px-2"><UserCheck size={13} aria-hidden /> In circle</span>;
+      return <span className="inline-flex items-center gap-1 text-meta font-bold text-muted-foreground px-2"><UserCheck size={13} aria-hidden /> In circle</span>;
     }
     if (incomingFid) {
       return (
@@ -99,7 +99,7 @@ const Friends = () => {
       );
     }
     if (sentIds.has(id)) {
-      return <span className="inline-flex items-center gap-1 text-[12px] font-bold text-muted-foreground px-2"><Clock size={12} aria-hidden /> Pending</span>;
+      return <span className="inline-flex items-center gap-1 text-meta font-bold text-muted-foreground px-2"><Clock size={12} aria-hidden /> Pending</span>;
     }
     return (
       <Button size="sm" variant="ember" className="min-h-11" disabled={busy === id}
@@ -115,7 +115,7 @@ const Friends = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
             {friendsLoading || friendsFailed ? (
               "Your circle."
             ) : count === 0 ? (
@@ -134,7 +134,7 @@ const Friends = () => {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Add a friend by username"
-              className="h-11 rounded-xl pl-9 pr-9 text-[13px]"
+              className="h-11 rounded-xl pl-9 pr-9 text-dense"
             />
           </div>
 
@@ -142,7 +142,7 @@ const Friends = () => {
             searching && !results ? (
               <div className="mt-2 h-14 rounded-xl bg-card/60 skeleton-block" />
             ) : (results ?? []).length === 0 ? (
-              <p className="text-[12px] text-muted-foreground px-1 py-3 text-center">No one matches “{q.trim()}”.</p>
+              <p className="text-meta text-muted-foreground px-1 py-3 text-center">No one matches “{q.trim()}”.</p>
             ) : (
               <ul className="mt-2 divide-y divide-border/35 border-t border-border/35">
                 {results!.map((r) => (
@@ -158,7 +158,7 @@ const Friends = () => {
         {/* Incoming requests: the one block with weight. */}
         {(requests?.length ?? 0) > 0 && (
           <div className="home-rise home-rise-2 mt-5 surface-card p-3">
-            <p className="text-[11px] font-bold text-muted-foreground px-1 mb-1">
+            <p className="text-label font-bold text-muted-foreground px-1 mb-1">
               {requests!.length === 1 ? "One request" : `${requests!.length} requests`}
             </p>
             <ul className="divide-y divide-border/35">
@@ -233,7 +233,7 @@ const Friends = () => {
         {/* People you may know: members of your tribes you're not connected to. */}
         {!isSearching && (suggestions?.length ?? 0) > 0 && (
           <div className="home-rise home-rise-4 mt-6">
-            <p className="text-[11px] font-bold text-muted-foreground mb-1">People you may know</p>
+            <p className="text-label font-bold text-muted-foreground mb-1">People you may know</p>
             <ul className="divide-y divide-border/35 border-t border-border/35">
               {suggestions!.map((s) => (
                 <PersonRow

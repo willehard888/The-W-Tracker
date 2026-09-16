@@ -546,7 +546,7 @@ const NutritionDiary = () => {
       />
 
       {!online && (
-        <p role="status" className="px-4 pt-2.5 text-[12px] text-muted-foreground inline-flex items-center gap-1.5">
+        <p role="status" className="px-4 pt-2.5 text-meta text-muted-foreground inline-flex items-center gap-1.5">
           <WifiOff size={12} aria-hidden /> Offline — showing what's synced
         </p>
       )}
@@ -569,7 +569,7 @@ const NutritionDiary = () => {
             {/* ── OPENING BEAT — the day's verdict, one line. The hero is a
                    sentence with a number in it, not a metric tile. ── */}
             <div className="home-rise">
-              <h1 className="font-display font-black text-[27px] leading-[1.04] tracking-tight">
+              <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
                 {state === "no_targets" ? (
                   <button type="button" onClick={() => navigate("/nutrition/targets")} className="text-left min-h-11 active:opacity-70 transition-opacity">
                     {beat}
@@ -578,7 +578,7 @@ const NutritionDiary = () => {
                   beat
                 )}
               </h1>
-              <p className="text-[13px] text-muted-foreground mt-1.5 tabular-nums">{sub}</p>
+              <p className="text-dense text-muted-foreground mt-1.5 tabular-nums">{sub}</p>
             </div>
 
             <div className="home-rise home-rise-1 mt-5">
@@ -634,7 +634,7 @@ const NutritionDiary = () => {
         {sheet?.view === "search" && (
           <>
             {lookingUp && (
-              <p role="status" className="mb-2 text-[12px] text-muted-foreground inline-flex items-center gap-1.5">
+              <p role="status" className="mb-2 text-meta text-muted-foreground inline-flex items-center gap-1.5">
                 <Loader2 size={12} className="animate-spin" aria-hidden /> Looking it up…
               </p>
             )}
@@ -674,7 +674,7 @@ const NutritionDiary = () => {
               submitManualCode(sheet.slot);
             }}
           >
-            <p className="text-[13px] text-muted-foreground">The digits under the bars — EAN-8, EAN-13 or UPC.</p>
+            <p className="text-dense text-muted-foreground">The digits under the bars — EAN-8, EAN-13 or UPC.</p>
             <input
               type="text"
               inputMode="numeric"
@@ -684,7 +684,7 @@ const NutritionDiary = () => {
               onChange={(e) => setManualCode(e.target.value)}
               aria-label="Barcode"
               placeholder="6412345678901"
-              className="w-full surface-inset rounded-xl h-11 px-3 text-[15px] tabular-nums outline-none focus:border-gold/50 transition-colors"
+              className="w-full surface-inset rounded-xl h-11 px-3 text-read tabular-nums outline-none focus:border-gold/50 transition-colors"
             />
             <Button type="submit" size="lg" className="w-full" disabled={manualCode.replace(/\D/g, "").length < 8} loading={lookingUp}>
               Look up
@@ -736,9 +736,9 @@ const NutritionDiary = () => {
 
         {sheet?.view === "quick" && (
           <div className="space-y-5 pt-1">
-            <p className="font-display text-[20px] font-black tracking-tight leading-tight">{sheet.item.display_name}</p>
+            <p className="font-display text-head font-black tracking-tight leading-tight">{sheet.item.display_name}</p>
             <MacroRow nutrition={macroSummary(sheet.item.snapshot)} />
-            <p className="text-[12px] text-muted-foreground leading-snug">A quick add carries only the macros you typed. To change them, remove it and add again.</p>
+            <p className="text-meta text-muted-foreground leading-snug">A quick add carries only the macros you typed. To change them, remove it and add again.</p>
             <div className="flex items-center gap-2">
               <Button variant="outline" className="flex-1 min-h-11" onClick={() => void duplicateItem(sheet.item, sheet.slot)} disabled={pending}>
                 Duplicate

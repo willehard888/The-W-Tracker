@@ -95,7 +95,7 @@ const Referrals = () => {
             <div className="h-7 w-2/5 rounded skeleton-block bg-secondary/30" />
           </div>
         ) : (
-          <h2 className="home-rise font-display font-black text-[27px] leading-[1.04] tracking-tight">
+          <h2 className="home-rise font-display font-black text-beat leading-[1.04] tracking-tight">
             {paidCount > 0
               ? `${paidCount % CREDIT_EVERY} of ${CREDIT_EVERY}. ${toNextMonth} ${toNextMonth === 1 ? "friend" : "friends"} to a free month.`
               : "Three paid friends. One month free."}
@@ -104,11 +104,11 @@ const Referrals = () => {
 
         {/* Hero — the code and its Share pair. The code is the screen's gold. */}
         <div className="home-rise home-rise-1 surface-card p-5 mt-5">
-          <p className="text-[12px] text-muted-foreground">Your invite code</p>
+          <p className="text-meta text-muted-foreground">Your invite code</p>
           <p className="font-display text-[30px] font-black text-gold glow-gold-text tracking-wide truncate leading-none mt-1.5">
             {referralCode}
           </p>
-          <p className="text-[11px] text-muted-foreground/75 truncate mt-2">{referralLink}</p>
+          <p className="text-label text-muted-foreground/75 truncate mt-2">{referralLink}</p>
           <div className="grid grid-cols-2 gap-2 mt-4">
             <Button variant="gold-soft" size="lg" onClick={handleCopy}>
               <span className={cn("inline-flex items-center gap-2", copiedPop && "commit-pop")}>
@@ -134,12 +134,12 @@ const Referrals = () => {
         <div className="home-rise home-rise-2 surface-card surface-card-quiet mt-4 px-4 py-3 flex items-baseline gap-x-4 gap-y-1 flex-wrap">
           {standing.map(([n, label]) => (
             <span key={label} className="inline-flex items-baseline gap-1">
-              <span className="font-display font-black text-[17px] tabular-nums leading-none">{fmtInt(n)}</span>
-              <span className="text-[11px] text-muted-foreground">{label}</span>
+              <span className="font-display font-black text-lead tabular-nums leading-none">{fmtInt(n)}</span>
+              <span className="text-label text-muted-foreground">{label}</span>
             </span>
           ))}
           {creditsActive && creditsUntil && (
-            <span className="ml-auto text-[11px] text-muted-foreground">Free until {fmtDate(creditsUntil)}</span>
+            <span className="ml-auto text-label text-muted-foreground">Free until {fmtDate(creditsUntil)}</span>
           )}
         </div>
 
@@ -170,10 +170,10 @@ const Referrals = () => {
                       (r.referred_username?.charAt(0) || "?").toUpperCase()
                     )}
                   </div>
-                  <p className="flex-1 min-w-0 text-[13px] font-bold truncate">@{r.referred_username}</p>
+                  <p className="flex-1 min-w-0 text-dense font-bold truncate">@{r.referred_username}</p>
                   <p
                     className={cn(
-                      "text-[11px] font-bold shrink-0",
+                      "text-label font-bold shrink-0",
                       r.converted ? "text-xp-green" : r.activated_at ? "text-ember" : "text-muted-foreground",
                     )}
                   >
@@ -182,7 +182,7 @@ const Referrals = () => {
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
+            <p className="text-label text-muted-foreground mt-2">
               Active = 3 check-ins (+250 XP to you). Free months land when they go Premium.
             </p>
           </section>
@@ -191,7 +191,7 @@ const Referrals = () => {
         {/* How it works — three lines of type. */}
         <section className="home-rise home-rise-4 mt-7">
           <h3 className="font-display font-bold text-sm tracking-tight">How it works</h3>
-          <ul className="mt-2 space-y-1.5 text-[13px] text-muted-foreground leading-snug">
+          <ul className="mt-2 space-y-1.5 text-dense text-muted-foreground leading-snug">
             <li>Share your code. Friends get a 14-day free trial.</li>
             <li>They show up. 50 XP to you when they join, 250 XP at their third check-in.</li>
             <li>Every three who go paid give you a month free. No cap.</li>
@@ -202,7 +202,7 @@ const Referrals = () => {
         <section className="home-rise home-rise-4 mt-7">
           <div className="flex items-baseline justify-between">
             <h3 className="font-display font-bold text-sm tracking-tight">Badge milestones</h3>
-            <p className="text-[11px] text-muted-foreground">paid friends</p>
+            <p className="text-label text-muted-foreground">paid friends</p>
           </div>
           <div className="divide-y divide-border/35 mt-1">
             {BADGE_MILESTONES.map((m) => {
@@ -211,8 +211,8 @@ const Referrals = () => {
                 <div key={m.count} className={cn("flex items-center gap-3 py-2.5", !unlocked && "text-muted-foreground")}>
                   <span className="w-7 shrink-0 font-display font-black text-sm tabular-nums">{m.count}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold tracking-tight">{m.title}</p>
-                    <p className="text-[12px] text-muted-foreground leading-snug">{m.detail}</p>
+                    <p className="text-dense font-bold tracking-tight">{m.title}</p>
+                    <p className="text-meta text-muted-foreground leading-snug">{m.detail}</p>
                   </div>
                   {unlocked && <Check size={14} className="shrink-0" aria-hidden />}
                 </div>

@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
+import { battlePushCopy, isBattlePushKind } from "../_shared/battle-push.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,8 +19,9 @@ function isServiceRole(token: string, envKey: string): boolean {
 }
 
 // Social pushes that never existed before the notification inbox: friend
-// requests, friend accepts and 1v1 battle challenges. The in-app ledger row
-// is written by the DB trigger; this only delivers the APNs push.
+// requests, friend accepts and the 1v1 battle events (challenge, accepted,
+// declined, halfway, decided). The in-app ledger row is written by the DB
+// trigger; this only delivers the APNs push.
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -53,8 +55,8 @@ Deno.serve(async (req) => {
         ? { title: "👋 New friend request", body: `${name} wants to be friends. Accept from your notifications.`, data: { route: "/notifications" } }
         : kind === "friend_accepted"
         ? { title: "🤝 Request accepted", body: `${name} accepted your friend request.`, data: { route: "/friends" } }
-        : kind === "battle_challenge"
-        ? { title: "⚔️ Battle challenge", body: `${name} challenged you to a battle. Accept before it expires.`, data: { route: "/notifications" } }
+        : isBattlePushKind(kind)
+        ? battlePushCopy(kind, name)
         : null;
 
     if (!payload) {

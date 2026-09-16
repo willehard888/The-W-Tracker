@@ -56,20 +56,9 @@ SELECT cron.schedule(
   $$
 );
 
--- Resolve battles (finalize finished battles, award winners) — every 15 minutes
-SELECT cron.schedule(
-  'resolve-battles',
-  '*/15 * * * *',
-  $$
-    SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/resolve-battles',
-      headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
-    );
-  $$
-);
+-- Resolve 1v1 battles: scored and decided in SQL since 2026-09-18
+-- (migration 20260918100000 schedules this itself; kept here for DR).
+SELECT cron.schedule('resolve-battles', '*/15 * * * *', 'SELECT public.resolve_expired_battles()');
 
 -- coach-morning-nudge was deleted in round 10 (2026-09-14): never scheduled on
 -- the live project, elite-only, and the in-app brief already owns the morning.

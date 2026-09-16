@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { fmtRelative } from "@/lib/format";
 import type { BattleTypeInfo } from "@/components/battles/types";
+import { fmtScore } from "@/components/battles/BattleActiveCard";
 
 interface Props {
   battle: any;
@@ -16,9 +17,13 @@ interface Props {
   onAdminDelete: (battleId: string) => void;
 }
 
-/** One line of the record. Weight carries the result; gold stays with the hero. */
+/** One line of the record: the result in weight, the score in numbers. Gold stays with the hero. */
 const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAdmin, onAdminDelete }: Props) => {
-  const won = battle.winner_id === currentUserId;
+  const won = !!battle.winner_id && battle.winner_id === currentUserId;
+  const draw = !battle.winner_id;
+  const amChallenger = battle.challenger_id === currentUserId;
+  const mine = Number((amChallenger ? battle.challenger_score : battle.opponent_score) ?? 0);
+  const theirs = Number((amChallenger ? battle.opponent_score : battle.challenger_score) ?? 0);
   const Icon = won ? Trophy : Swords;
   return (
     <div className="flex items-center gap-3 py-3 min-h-11">
@@ -26,14 +31,14 @@ const BattleHistoryCard = ({ battle, opponentName, typeInfo, currentUserId, isAd
       <div className="flex-1 min-w-0">
         <p className="text-note font-semibold leading-tight truncate">@{opponentName}</p>
         <p className="text-meta text-muted-foreground mt-0.5">
-          {battle.duration_days}-day {typeInfo.label}{battle.ended_at ? ` · ended ${fmtRelative(battle.ended_at)}` : ""}
+          {typeInfo.label} · {fmtScore(mine)} to {fmtScore(theirs)}{battle.ended_at ? ` · ${fmtRelative(battle.ended_at)}` : ""}
         </p>
       </div>
       <span className={cn("inline-flex items-center gap-1 text-meta shrink-0", won ? "font-black" : "font-bold text-muted-foreground")}>
         {won && battle.winner_verified === true && (
-          <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" aria-label="HealthKit-verified win" />
+          <ShieldCheck size={12} className="text-[hsl(var(--xp-green))]" aria-label="Verified by Apple Health" />
         )}
-        {won ? "Won" : battle.winner_id ? "Lost" : "No result"}
+        {won ? "Won" : draw ? "Draw" : "Lost"}
       </span>
       {isAdmin && (
         <DropdownMenu>

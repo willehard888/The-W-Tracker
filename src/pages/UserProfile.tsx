@@ -375,12 +375,15 @@ const UserProfile = () => {
                 toast.success(`Challenge sent to @${profile.username}! ⚔️`);
                 setShowBattleModal(false);
               } catch (e: any) {
-                const key = e?.message?.match(/not_friends|self_battle|battle_exists|unauthorized/)?.[0];
+                const key = e?.message?.match(/not_friends|self_battle|battle_exists|unauthorized|health_sync_required|unknown_type|unknown_duration/)?.[0];
                 const msg = ({
                   not_friends: "You can only battle friends. Add them first.",
                   self_battle: "Can't challenge yourself!",
                   battle_exists: "You already have a battle going with them.",
                   unauthorized: "Please sign in.",
+                  health_sync_required: "Connect Apple Health and sync today to battle on steps, sleep or calories.",
+                  unknown_type: "That discipline is not available. Pick another.",
+                  unknown_duration: "Pick 3, 7, 14 or 30 days.",
                 } as Record<string, string>)[key] ?? "Failed to send challenge";
                 toast.error(msg);
               }

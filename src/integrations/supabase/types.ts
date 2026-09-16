@@ -136,14 +136,18 @@ export type Database = {
           challenger_start_xp: number
           created_at: string
           duration_days: number
+          end_date: string | null
           ended_at: string | null
+          halfway_notified_at: string | null
           id: string
           opponent_id: string
           opponent_proof_url: string | null
           opponent_score: number
           opponent_start_xp: number
+          start_date: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["battle_status"]
+          tz_offset_minutes: number
           verification_notes: Json | null
           winner_id: string | null
           winner_verified: boolean | null
@@ -156,14 +160,18 @@ export type Database = {
           challenger_start_xp?: number
           created_at?: string
           duration_days?: number
+          end_date?: string | null
           ended_at?: string | null
+          halfway_notified_at?: string | null
           id?: string
           opponent_id: string
           opponent_proof_url?: string | null
           opponent_score?: number
           opponent_start_xp?: number
+          start_date?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
+          tz_offset_minutes?: number
           verification_notes?: Json | null
           winner_id?: string | null
           winner_verified?: boolean | null
@@ -176,14 +184,18 @@ export type Database = {
           challenger_start_xp?: number
           created_at?: string
           duration_days?: number
+          end_date?: string | null
           ended_at?: string | null
+          halfway_notified_at?: string | null
           id?: string
           opponent_id?: string
           opponent_proof_url?: string | null
           opponent_score?: number
           opponent_start_xp?: number
+          start_date?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["battle_status"]
+          tz_offset_minutes?: number
           verification_notes?: Json | null
           winner_id?: string | null
           winner_verified?: boolean | null
@@ -3686,6 +3698,21 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      battle_day_scores: {
+        Args: { p_from: string; p_to: string; p_type: string; p_user: string }
+        Returns: {
+          day: string
+          value: number
+          verified: boolean
+        }[]
+      }
+      battle_num: { Args: { p: number }; Returns: string }
+      battle_scores: { Args: { p_battle_id: string }; Returns: Json }
+      battle_standing: {
+        Args: { p_mine: number; p_theirs: number; p_unit: string }
+        Returns: string
+      }
+      battle_unit: { Args: { p_type: string }; Returns: string }
       block_user: { Args: { p_target: string }; Returns: undefined }
       bump_ai_usage: {
         Args: { p_kind?: string; p_limit: number }
@@ -4166,12 +4193,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      resolve_expired_battles: { Args: never; Returns: undefined }
       resolve_tribe_battle: {
         Args: { p_battle_id: string }
         Returns: undefined
       }
       respond_to_battle: {
-        Args: { accept: boolean; battle_id: string }
+        Args: {
+          accept: boolean
+          battle_id: string
+          p_tz_offset_minutes?: number
+        }
         Returns: undefined
       }
       respond_to_tribe_battle: {
@@ -4527,6 +4559,7 @@ export type Database = {
         Returns: string
       }
       user_badge_stats: { Args: never; Returns: Json }
+      user_tz_offset: { Args: { p_user: string }; Returns: number }
       user_verified_performer_stats: {
         Args: { _user_id: string }
         Returns: Json

@@ -20,12 +20,16 @@ import { useNotifications, markNotificationRead, type AppNotification } from "@/
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
+import { battleTypeInfo } from "@/components/battles/battle-types";
 
 /** kind → icon for rows without an actor avatar. */
 const KIND_ICONS: Record<string, typeof Bell> = {
   friend_request: Users,
   friend_accepted: Users,
   battle_challenge: Swords,
+  battle_accepted: Swords,
+  battle_declined: Swords,
+  battle_halfway: Swords,
   battle_resolved: Swords,
   tribe_invite: Crown,
   tribe_join_request: Crown,
@@ -123,7 +127,7 @@ const Notifications = () => {
 
   const respondBattle = (battleId: string, accept: boolean) =>
     guard(battleId, async () => {
-      const { error } = await supabase.rpc("respond_to_battle", { battle_id: battleId, accept });
+      const { error } = await supabase.rpc("respond_to_battle", { battle_id: battleId, accept, p_tz_offset_minutes: new Date().getTimezoneOffset() });
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     }, accept ? "Battle accepted! ⚔️" : "Battle declined");
@@ -228,7 +232,7 @@ const Notifications = () => {
                     <Swords size={13} className="inline -mt-0.5 mr-1 text-gold" aria-hidden />@{b.challenger?.username ?? "someone"}
                   </>
                 }
-                subtitle={`${b.battle_type} battle · ${b.duration_days} days`}
+                subtitle={`${battleTypeInfo(b.battle_type).label} · ${b.duration_days} days`}
                 busy={busy === b.id}
                 onAccept={() => respondBattle(b.id, true)}
                 onDecline={() => respondBattle(b.id, false)}

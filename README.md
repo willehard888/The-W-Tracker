@@ -155,7 +155,7 @@ CI builds run on Xcode Cloud — see `ios/App/ci_scripts/`. `package-lock.json` 
 | `weekly-briefing-generate`     | cron (Sunday)          | Sunday Briefing AI summary + push          |
 | `winback-lapsed`               | cron (daily)           | 3/7/14-day win-back pushes                 |
 | `sync-streaks`                 | cron                   | Recomputes streak state for all users      |
-| `resolve-battles`              | cron                   | Closes expired battles, awards XP          |
+| `resolve_expired_battles()`    | pg_cron (SQL)          | Scores and decides 1v1 battles, awards XP  |
 | `tribe-nudges` / `tribe-notify`| cron / DB trigger      | Tribe events, fire-at-risk, battle pushes  |
 | `notify-message` / `notify-social` / `notify-referral` | trigger/client | Social APNs pushes |
 | `moderate-content`             | client                 | AI moderation gate (JWT verified)          |

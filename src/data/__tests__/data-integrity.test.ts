@@ -133,6 +133,29 @@ describe("daily insights ↔ Vault lessons", () => {
     }
   });
 
+  // The masters migration (thirteen new pieces + the map's manual) uses the
+  // same literal shape; a typo there would also only surface at db push.
+  it("the masters migration's JSON parses and every quiz answer is in range", () => {
+    const sql = readFileSync("supabase/migrations/20260917100001_vault_masters_content.sql", "utf8");
+    const literals = [...sql.matchAll(/'(\[[\s\S]*?\])'::jsonb/g)].map((m) => JSON.parse(m[1].replace(/''/g, "'")) as unknown[]);
+    const quizzes = literals.filter((l) => (l[0] as { q?: string })?.q) as { q: string; choices: string[]; correct: number; explain: string }[][];
+    const refs = literals.filter((l) => (l[0] as { author?: string })?.author) as { author: string; title: string }[][];
+    expect(quizzes).toHaveLength(14);
+    expect(refs).toHaveLength(14);
+    for (const quiz of quizzes) {
+      expect(quiz.length).toBeGreaterThanOrEqual(2);
+      for (const q of quiz) {
+        expect(q.correct).toBeGreaterThanOrEqual(0);
+        expect(q.correct).toBeLessThan(q.choices.length);
+        expect(q.explain.length).toBeGreaterThan(0);
+      }
+    }
+    for (const r of refs) {
+      expect(r.length).toBeGreaterThanOrEqual(2);
+      expect(r.some((x) => x.author === "Note"), "every piece carries the attribution note").toBe(true);
+    }
+  });
+
   it("every Wisdom lesson has at least four voices on Home, each naming its teacher", () => {
     const wisdom = DAILY_INSIGHTS.filter((i) => i.id.startsWith("wis-"));
     for (const slug of WISDOM_SLUGS) {

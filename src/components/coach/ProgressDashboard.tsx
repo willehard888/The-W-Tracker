@@ -161,7 +161,7 @@ const Tile = ({ label, value, target }: { label: string; value: string; target: 
       {value}
       <span className="text-label font-bold text-muted-foreground">{target}</span>
     </p>
-    <p className="text-micro font-bold text-muted-foreground mt-1">{label}</p>
+    <p className="text-label font-bold text-muted-foreground mt-1">{label}</p>
   </div>
 );
 

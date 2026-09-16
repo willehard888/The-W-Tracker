@@ -98,7 +98,7 @@ const PerformanceOSDashboard = () => {
           { label: "Consistency", val: consistencyAvg, max: 20 },
         ].map((c) => (
           <div key={c.label} className="surface-card p-3">
-            <p className="text-micro font-bold text-muted-foreground">{c.label}</p>
+            <p className="text-label font-bold text-muted-foreground">{c.label}</p>
             <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-label text-muted-foreground/75">/{c.max}</span></p>
             <div className="h-1 rounded-full bg-card mt-1 overflow-hidden">
               <div
@@ -125,19 +125,19 @@ const PerformanceOSDashboard = () => {
           </div>
           {review.driver_of_week && (
             <div className="mb-2.5">
-              <p className="text-micro font-bold text-muted-foreground">Driver of the week</p>
+              <p className="text-label font-bold text-muted-foreground">Driver of the week</p>
               <p className="text-sm font-bold mt-0.5">{review.driver_of_week}</p>
             </div>
           )}
           {review.next_week_focus && (
             <div className="mb-2.5">
-              <p className="text-micro font-bold text-muted-foreground">Next week focus</p>
+              <p className="text-label font-bold text-muted-foreground">Next week focus</p>
               <p className="text-meta mt-0.5 leading-relaxed">{review.next_week_focus}</p>
             </div>
           )}
           {review.program_tweak && (
             <div className="rounded-lg border border-gold/20 bg-gold/5 px-2.5 py-1.5 mt-2">
-              <p className="text-micro font-bold text-gold/80">Program tweak</p>
+              <p className="text-label font-bold text-gold/80">Program tweak</p>
               <p className="text-meta mt-0.5">{review.program_tweak}</p>
             </div>
           )}

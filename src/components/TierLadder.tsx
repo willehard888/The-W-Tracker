@@ -132,7 +132,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
                   onClick={() => setExpanded(isOpen ? null : key)}
                   className="w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
-                  <TierMark rank={cfg.rank} className={cn("h-9 w-9 text-micro", !held && !isCurrent && "opacity-70")}>
+                  <TierMark rank={cfg.rank} className={cn("h-9 w-9 text-label", !held && !isCurrent && "opacity-70")}>
                     {held ? <Check size={15} strokeWidth={3} aria-hidden /> : isLegend && !isCurrent ? <Crown size={14} aria-hidden /> : cfg.shortLabel}
                   </TierMark>
                   <span className="flex-1 min-w-0">

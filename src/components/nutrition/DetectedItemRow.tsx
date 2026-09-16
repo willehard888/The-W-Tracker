@@ -73,7 +73,7 @@ const DetectedItemRow = ({
             {label && (
               <span
                 className={cn(
-                  "text-micro font-bold text-muted-foreground inline-flex items-center rounded-full border px-2 py-0.5",
+                  "text-label font-bold text-muted-foreground inline-flex items-center rounded-full border px-2 py-0.5",
                   tier === "check" ? "border-[hsl(var(--ember))]/50 text-[hsl(var(--ember))]" : "border-border text-muted-foreground",
                 )}
               >

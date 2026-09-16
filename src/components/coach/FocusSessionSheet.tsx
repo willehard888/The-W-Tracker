@@ -51,7 +51,7 @@ const Thumb = ({ slug, name }: { slug: string; name: string }) => {
       {ill ? (
         <img src={illustrationThumb(ill.idNum)} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain p-0.5" style={{ filter: GOLD_LINES }} />
       ) : (
-        <span className="text-micro font-black text-muted-foreground">{name.slice(0, 2).toUpperCase()}</span>
+        <span className="text-label font-black text-muted-foreground">{name.slice(0, 2).toUpperCase()}</span>
       )}
     </div>
   );

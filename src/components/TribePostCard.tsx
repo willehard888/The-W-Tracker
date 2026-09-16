@@ -104,7 +104,7 @@ const CommentThread = ({
             <div className="flex items-center gap-1.5">
               <span className="text-meta font-bold text-[hsl(var(--ember))]">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-micro font-bold text-[hsl(var(--ember))]/70 italic">· edited</span>
+                <span className="text-label font-bold text-[hsl(var(--ember))]/70 italic">· edited</span>
               )}
             </div>
             {isEditing ? (
@@ -143,7 +143,7 @@ const CommentThread = ({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-micro text-muted-foreground">
+              <p className="text-label text-muted-foreground">
                 {fmtRelative(node.created_at)}
               </p>
               {/* Three copies of one class string became three uses of the new
@@ -194,7 +194,7 @@ const CommentThread = ({
                 }}
               />
               {node.children.length > 0 && (
-                <span className="text-micro text-muted-foreground tabular-nums">
+                <span className="text-label text-muted-foreground tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}
@@ -461,7 +461,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               {isApexAuthor && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/40">
                   <Zap aria-hidden size={7} className="text-[hsl(var(--ember))]" fill="currentColor" />
-                  <span className="text-micro font-bold text-[hsl(var(--ember))]">Apex</span>
+                  <span className="text-label font-bold text-[hsl(var(--ember))]">Apex</span>
                 </span>
               )}
               {post.author?.status_tier === "elite" && (
@@ -683,7 +683,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     />
                     {commentText.length > 0 && (
                       <span className={cn(
-                        "absolute right-12 top-1/2 -translate-y-1/2 text-micro font-semibold tabular-nums",
+                        "absolute right-12 top-1/2 -translate-y-1/2 text-label font-semibold tabular-nums",
                         commentText.length > 270 ? "text-destructive" : "text-muted-foreground/75"
                       )}>
                         {300 - commentText.length}

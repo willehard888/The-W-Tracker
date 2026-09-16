@@ -21,6 +21,7 @@ import { gatherProgression, buildProgressionBlock } from "../_shared/progression
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
+import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
 import { sportName, sportBreakdown } from "../_shared/sports.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 import { programWeekState } from "../_shared/program-week.ts";
@@ -225,6 +226,7 @@ ${recentSummary}${reflectionsBlock}${goalsBlock}${logsBlock}${insightsBlock}${br
 ${situationBlock ? `\n${situationBlock}\n` : ""}
 ${INNER_WORK_BLOCK}
 ${LONGEVITY_BLOCK}
+${WISDOM_BLOCK}
 ${knowledgeBlocks}
 
 How to reply — the craft of a world-class private coach.
@@ -366,7 +368,7 @@ Deno.serve(async (req) => {
       // What they've STUDIED (reference, never re-teach).
       supabase
         .from("vault_lesson_progress")
-        .select("quiz_score, vault_articles(title, category_id)")
+        .select("quiz_score, practiced_at, vault_articles(title, category_id)")
         .eq("user_id", userId)
         .limit(60),
       // Per-habit maturity (streaks/levels).
@@ -517,7 +519,7 @@ Deno.serve(async (req) => {
         `\nUse the weakest pillar and these patterns to aim your coaching; cite a number only when it sharpens the point.`;
     }
 
-    const lessons = (lessonsRes?.data ?? []) as Array<{ quiz_score: number | null; vault_articles: { title: string; category_id: string } | null }>;
+    const lessons = (lessonsRes?.data ?? []) as Array<{ quiz_score: number | null; practiced_at: string | null; vault_articles: { title: string; category_id: string } | null }>;
     let studiedBlock = "";
     if (lessons.length) {
       const byCat = new Map<string, number>();
@@ -525,12 +527,17 @@ Deno.serve(async (req) => {
         const cat = l.vault_articles?.category_id ?? "other";
         byCat.set(cat, (byCat.get(cat) ?? 0) + 1);
       }
+      const practised = lessons
+        .filter((l) => l.practiced_at && l.vault_articles?.title)
+        .slice(-4)
+        .map((l) => l.vault_articles!.title);
       const weak = lessons
         .filter((l) => l.quiz_score != null && l.quiz_score < 67 && l.vault_articles?.title)
         .slice(0, 2)
         .map((l) => l.vault_articles!.title);
       studiedBlock = `\n\nSTUDIED IN THE VAULT (${lessons.length} lessons: ${[...byCat.entries()].map(([c, n]) => `${c} ${n}`).join(", ")}) — build on what they know, never re-teach it.` +
-        (weak.length ? ` Shaky on: ${weak.join("; ")} — reinforce when relevant.` : "");
+        (weak.length ? ` Shaky on: ${weak.join("; ")} — reinforce when relevant.` : "") +
+        (practised.length ? ` PRACTISED (ran the exercise, answered privately — never ask what they wrote): ${practised.join("; ")}.` : "");
     }
 
     const habitRows = (habitsRes?.data ?? []) as Array<{ protocol_id: string; current_streak: number | null; best_streak: number | null; level: number | null }>;

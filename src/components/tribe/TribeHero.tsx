@@ -267,7 +267,7 @@ const TribeHero = ({
                 reactor.connected ? "bg-xp-green animate-pulse" : "bg-muted-foreground/50",
               )}
             />
-            <span className="text-micro font-bold text-muted-foreground/75">
+            <span className="text-label font-bold text-muted-foreground/75">
               {reactor.connected ? "Live" : "…"}
             </span>
           </span>

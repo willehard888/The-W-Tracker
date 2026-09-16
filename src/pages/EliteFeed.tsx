@@ -788,7 +788,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
               >
                 <ShieldCheck aria-hidden size={15} />
                 {unresolvedReportsCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-micro font-black flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-label font-black flex items-center justify-center">
                     {unresolvedReportsCount}
                   </span>
                 )}

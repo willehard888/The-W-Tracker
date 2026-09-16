@@ -197,7 +197,7 @@ const TribeLeaderboard = () => {
                     {r.visibility === "private" && (
                       <Lock size={12} className="text-muted-foreground shrink-0" aria-label="Private tribe" />
                     )}
-                    {mine && <span className="text-micro font-bold text-muted-foreground shrink-0">Mine</span>}
+                    {mine && <span className="text-label font-bold text-muted-foreground shrink-0">Mine</span>}
                   </div>
                   <div className="flex items-center gap-2.5 mt-0.5 flex-wrap">
                     <span className="inline-flex items-center gap-1 text-label font-bold tabular-nums text-muted-foreground">

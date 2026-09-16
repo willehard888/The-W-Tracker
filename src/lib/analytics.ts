@@ -89,6 +89,17 @@ export const FUNNEL = {
   pushOpened: "push_opened",
   // Today's session by focus (coach-build-session): { focus, minutes, commit }.
   sessionBuilt: "session_built",
+  // The Vault's practice loop: a piece opened, understood (Mark complete),
+  // its reflection answered, its practice run (server-recorded, +XP), its
+  // integration answered; and a path walked to the end. Props carry
+  // { slug, master, path } — never the reflection text.
+  vaultOpened: "vault_opened",
+  lessonOpened: "lesson_opened",
+  lessonCompleted: "lesson_completed",
+  vaultReflected: "vault_reflected",
+  vaultPracticed: "vault_practiced",
+  vaultIntegrated: "vault_integrated",
+  pathCompleted: "path_completed",
   // Activation spine (Growth Engine): every step a user can drop from.
   onboardingViewed: "onboarding_viewed",
   onboardingStep: "onboarding_step",

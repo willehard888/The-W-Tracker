@@ -163,7 +163,7 @@ const RecoveryCard = () => {
       {rhrTrend.length >= 5 && (
         <div className="mb-3 surface-inset rounded-xl px-3 py-2">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-micro font-bold text-muted-foreground/75">
+            <p className="text-label font-bold text-muted-foreground/75">
               Resting HR · {rhrTrend.length} nights
             </p>
             {trendDelta != null && Math.abs(trendDelta) >= 1 && (

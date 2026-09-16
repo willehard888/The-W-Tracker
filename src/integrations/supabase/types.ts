@@ -3312,13 +3312,17 @@ export type Database = {
           display_order: number
           evidence_tier: string
           id: string
+          integrate_prompt: string | null
           key_takeaways: string[]
           lesson_number: number | null
+          master_slug: string | null
+          practice_minutes: number | null
           protocol: Json
           published_at: string
           quiz: Json
           read_time_min: number
           references_json: Json
+          reflect_prompt: string | null
           risks: string[]
           slug: string
           subtitle: string | null
@@ -3337,13 +3341,17 @@ export type Database = {
           display_order?: number
           evidence_tier: string
           id?: string
+          integrate_prompt?: string | null
           key_takeaways?: string[]
           lesson_number?: number | null
+          master_slug?: string | null
+          practice_minutes?: number | null
           protocol?: Json
           published_at?: string
           quiz?: Json
           read_time_min?: number
           references_json?: Json
+          reflect_prompt?: string | null
           risks?: string[]
           slug: string
           subtitle?: string | null
@@ -3362,13 +3370,17 @@ export type Database = {
           display_order?: number
           evidence_tier?: string
           id?: string
+          integrate_prompt?: string | null
           key_takeaways?: string[]
           lesson_number?: number | null
+          master_slug?: string | null
+          practice_minutes?: number | null
           protocol?: Json
           published_at?: string
           quiz?: Json
           read_time_min?: number
           references_json?: Json
+          reflect_prompt?: string | null
           risks?: string[]
           slug?: string
           subtitle?: string | null
@@ -3385,6 +3397,8 @@ export type Database = {
           article_id: string
           completed_at: string
           id: string
+          integrated_at: string | null
+          practiced_at: string | null
           quiz_score: number | null
           user_id: string
         }
@@ -3392,6 +3406,8 @@ export type Database = {
           article_id: string
           completed_at?: string
           id?: string
+          integrated_at?: string | null
+          practiced_at?: string | null
           quiz_score?: number | null
           user_id: string
         }
@@ -3399,12 +3415,52 @@ export type Database = {
           article_id?: string
           completed_at?: string
           id?: string
+          integrated_at?: string | null
+          practiced_at?: string | null
           quiz_score?: number | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "vault_lesson_progress_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "vault_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vault_reflections: {
+        Row: {
+          answer: string
+          article_id: string
+          created_at: string
+          id: string
+          stage: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          article_id: string
+          created_at?: string
+          id?: string
+          stage: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          article_id?: string
+          created_at?: string
+          id?: string
+          stage?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_reflections_article_id_fkey"
             columns: ["article_id"]
             isOneToOne: false
             referencedRelation: "vault_articles"
@@ -3443,22 +3499,31 @@ export type Database = {
         Row: {
           app_user_id: string | null
           created_at: string
+          environment: string | null
           event_id: string
           event_ts: number
+          event_type: string | null
+          product_id: string | null
           source: string
         }
         Insert: {
           app_user_id?: string | null
           created_at?: string
+          environment?: string | null
           event_id: string
           event_ts?: number
+          event_type?: string | null
+          product_id?: string | null
           source: string
         }
         Update: {
           app_user_id?: string | null
           created_at?: string
+          environment?: string | null
           event_id?: string
           event_ts?: number
+          event_type?: string | null
+          product_id?: string | null
           source?: string
         }
         Relationships: []
@@ -3600,6 +3665,26 @@ export type Database = {
       award_badge_if_earned: {
         Args: { p_badge_id: string; p_user_id: string }
         Returns: boolean
+      }
+      award_vault_badges: {
+        Args: never
+        Returns: {
+          category: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          rarity: Database["public"]["Enums"]["badge_rarity"]
+          requirement_type: string | null
+          requirement_value: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "badges"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       block_user: { Args: { p_target: string }; Returns: undefined }
       bump_ai_usage: {
@@ -4061,6 +4146,10 @@ export type Database = {
         Args: { p_rows: Json; p_scan_id: string }
         Returns: number
       }
+      record_vault_practice: {
+        Args: { p_article_id: string; p_tz_offset_minutes?: number }
+        Returns: Json
+      }
       redeem_legend_invite: { Args: { p_code: string }; Returns: Json }
       redeem_pilot_code: { Args: { p_code: string }; Returns: Json }
       refresh_tribe_fire: { Args: never; Returns: undefined }
@@ -4297,7 +4386,7 @@ export type Database = {
         }
       }
       upsert_daily_brief: {
-        Args: { _payload: Json }
+        Args: { _brief_date?: string; _payload: Json }
         Returns: {
           brief_date: string
           created_at: string

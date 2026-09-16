@@ -132,7 +132,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
         >
           <span
             className={cn(
-              "text-micro font-bold text-muted-foreground inline-flex items-center gap-1 px-2.5 py-1 rounded-full ring-1",
+              "text-label font-bold text-muted-foreground inline-flex items-center gap-1 px-2.5 py-1 rounded-full ring-1",
               accent.ring,
               cfg.rank >= 5
                 ? "bg-background/60 text-foreground"
@@ -230,14 +230,14 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Trophy aria-hidden size={12} className={leveledUp ? "text-gold" : "text-muted-foreground"} />
-              <p className="text-micro font-bold text-muted-foreground">Level</p>
+              <p className="text-label font-bold text-muted-foreground">Level</p>
               {leveledUp && (
                 <m.span
                   animate={{ y: [0, -2, 0] }}
                   // Three bounces, then rest — an infinite main-thread loop
                   // kept running long after the moment passed.
                   transition={{ duration: 1.4, repeat: 2 }}
-                  className="ml-auto flex items-center gap-0.5 text-micro font-black text-gold"
+                  className="ml-auto flex items-center gap-0.5 text-label font-black text-gold"
                 >
                   <ArrowUp aria-hidden size={12} strokeWidth={3} />UP
                 </m.span>
@@ -258,7 +258,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                 className={cn("absolute inset-0 rounded-full", leveledUp ? "bg-gradient-to-r from-gold to-gold-light" : "bg-foreground/40")}
               />
             </div>
-            <p className="text-micro text-muted-foreground mt-1 tabular-nums font-bold">
+            <p className="text-label text-muted-foreground mt-1 tabular-nums font-bold">
               {summary.xpToNextLevel} XP to next
             </p>
           </div>
@@ -290,7 +290,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                     : "text-streak-orange"
                 }
               />
-              <p className="text-micro font-bold text-muted-foreground">Streak</p>
+              <p className="text-label font-bold text-muted-foreground">Streak</p>
             </div>
             <p
               className={cn(
@@ -310,7 +310,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             {/* Demoted from a tracked-uppercase eyebrow: seven of those on one
                 screen made the reward read as a dashboard of labels. Matches
                 the sibling card's "XP to next" line. */}
-            <p className="text-micro text-muted-foreground mt-2 font-semibold">
+            <p className="text-label text-muted-foreground mt-2 font-semibold">
               {summary.streakBroken
                 ? "Reset · Day 1"
                 : summary.newStreak >= 30

@@ -53,7 +53,7 @@ const FoodResultRow = ({
           {food.isRecipe ? "per serving" : "per 100 g"}
           {food.kcal != null && ` · ${Math.round(food.kcal)} kcal`}
           {food.protein != null && ` · P ${Math.round(food.protein)}`}
-          {tag && <span className="text-micro font-bold ml-1.5 text-muted-foreground/75">{tag}</span>}
+          {tag && <span className="text-label font-bold ml-1.5 text-muted-foreground/75">{tag}</span>}
         </p>
       </button>
       {onToggleFavorite && (

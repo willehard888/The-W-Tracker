@@ -92,7 +92,7 @@ const CommentThread = memo(function CommentThread({
             <div className="flex items-center gap-1.5">
               <span className="text-meta font-bold text-gold">@{username}</span>
               {isEdited(node) && !isEditing && (
-                <span className="text-micro font-bold text-gold/70 italic">
+                <span className="text-label font-bold text-gold/70 italic">
                   · edited
                 </span>
               )}
@@ -139,7 +139,7 @@ const CommentThread = memo(function CommentThread({
           </div>
           {!isEditing && (
             <div className="flex items-center gap-2 mt-0.5 ml-3 flex-wrap">
-              <p className="text-micro text-muted-foreground/75">
+              <p className="text-label text-muted-foreground/75">
                 {fmtRelative(node.created_at)}
               </p>
               {currentUserId && (
@@ -149,7 +149,7 @@ const CommentThread = memo(function CommentThread({
                     hapticSelection();
                     onReply(node.id, username, node.content || "");
                   }}
-                  className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
+                  className="relative before:absolute before:-inset-2 before:content-[''] text-label font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
                 >
                   <Reply aria-hidden size={12} />
                   Reply
@@ -159,7 +159,7 @@ const CommentThread = memo(function CommentThread({
                 <button
                   type="button"
                   onClick={() => onReport(node.id, node.user_id)}
-                  className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
+                  className="relative before:absolute before:-inset-2 before:content-[''] text-label font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
                 >
                   <Flag size={12} aria-hidden /> Report
                 </button>
@@ -173,21 +173,21 @@ const CommentThread = memo(function CommentThread({
                       setDraft(node.content || "");
                       setEditingId(node.id);
                     }}
-                    className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
+                    className="relative before:absolute before:-inset-2 before:content-[''] text-label font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
-                    className="relative before:absolute before:-inset-2 before:content-[''] text-micro font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
+                    className="relative before:absolute before:-inset-2 before:content-[''] text-label font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-destructive transition-colors"
                   >
                     Delete
                   </button>
                 </>
               )}
               {node.children.length > 0 && (
-                <span className="text-micro text-muted-foreground/75 tabular-nums">
+                <span className="text-label text-muted-foreground/75 tabular-nums">
                   · {node.children.length} {node.children.length === 1 ? "reply" : "replies"}
                 </span>
               )}

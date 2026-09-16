@@ -170,7 +170,7 @@ const PublicProfile = () => {
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {isApexSubscriber && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/40 bg-gold/10 text-micro font-bold text-gold">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/40 bg-gold/10 text-label font-bold text-gold">
                 <Crown size={11} aria-hidden /> Day-One
               </span>
             )}
@@ -180,7 +180,7 @@ const PublicProfile = () => {
               <ApexBadge tier="legend" size="sm" />
             ) : null}
             {profile.champion_wins > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-micro font-bold text-muted-foreground">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-label font-bold text-muted-foreground">
                 <Trophy size={11} aria-hidden /> {profile.champion_wins > 1 ? `${profile.champion_wins}× ` : ""}Season Champion
               </span>
             )}
@@ -265,7 +265,7 @@ const PublicProfile = () => {
               {badges.map((b) => (
                 <div key={b.badge_id} className="aspect-square rounded-xl border border-border/50 bg-card/40 flex flex-col items-center justify-center">
                   <span className="text-2xl" aria-hidden>{b.badges?.icon}</span>
-                  <span className="text-micro font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
+                  <span className="text-label font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
                     {b.badges?.name}
                   </span>
                 </div>

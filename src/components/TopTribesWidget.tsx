@@ -53,7 +53,7 @@ const TopTribesWidget = () => {
         <div className="flex items-center gap-2 min-w-0">
           <Crown aria-hidden size={15} className="text-[hsl(var(--ember))] shrink-0" />
           <h2 className="font-display font-bold text-base tracking-tight truncate">Top Tribes</h2>
-          <span className="text-micro font-bold shrink-0 text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
+          <span className="text-label font-bold shrink-0 text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
             Weekly
           </span>
         </div>

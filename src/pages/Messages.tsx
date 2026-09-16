@@ -134,7 +134,7 @@ const Messages = () => {
           >
             <Users aria-hidden size={18} />
             {pending > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-micro font-black flex items-center justify-center tabular-nums">
+              <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-label font-black flex items-center justify-center tabular-nums">
                 {pending > 99 ? "99+" : pending}
               </span>
             )}

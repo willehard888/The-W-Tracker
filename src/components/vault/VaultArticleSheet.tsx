@@ -7,15 +7,20 @@ import {
   AlertTriangle,
   BookMarked,
   Target,
-  X,
   Lightbulb,
   Zap,
   ListChecks,
 } from "lucide-react";
 import EvidenceChip from "./EvidenceChip";
 import LessonQuiz from "./LessonQuiz";
+import PracticeLoop from "./PracticeLoop";
 import { useVaultArticle, useVaultArticles, type VaultArticle, type VaultArticleSummary } from "@/hooks/use-vault-articles";
 import { useCompleteLesson, useVaultProgress } from "@/hooks/use-vault-progress";
+import type { PracticeResult } from "@/hooks/use-vault-practice";
+import { hasLoop } from "@/lib/vault-loop";
+import { MASTER_BY_SLUG } from "@/data/vault-masters";
+import { pathOfArticle } from "@/data/vault-paths";
+import { track, FUNNEL } from "@/lib/analytics";
 import { hapticImpact } from "@/lib/haptics";
 import { toast } from "sonner";
 
@@ -30,36 +35,57 @@ import { toast } from "sonner";
  *  - Rendering straight into <body> (with z-[var(--z-top)]) guarantees the sheet
  *    sits above the TabHost, BottomNav, and any push-route stack regardless
  *    of containing-block / transform ancestors.
+ *
+ * A piece with a reflection and an integration question runs the practice
+ * loop (PracticeLoop) instead of the bare Mark complete; every other piece
+ * keeps the button.
  */
+
+const EMPTY_FULL: Omit<VaultArticle, keyof VaultArticleSummary> = {
+  protocol: {},
+  benefits: [],
+  risks: [],
+  body_md: "",
+  references_json: [],
+  why_it_matters: null,
+  try_today: [],
+  key_takeaways: [],
+  quiz: [],
+  integrate_prompt: null,
+};
 
 const VaultArticleSheet = ({
   article: summary,
   accent,
   open,
   onClose,
+  onOpenSlug,
+  onPracticed,
 }: {
   article: VaultArticleSummary | null;
   accent: string;
   open: boolean;
   onClose: () => void;
+  /** Open another piece from inside this one (the next step on a path). */
+  onOpenSlug?: (slug: string) => void;
+  onPracticed?: (r: PracticeResult) => void;
 }) => {
   // The index carries titles and summaries only; the body, protocol, quiz and
   // references arrive by id when a piece opens (see use-vault-articles.ts).
-  // Until they land the heavy sections are empty and "The science" shows a
+  // Until they land the heavy sections are empty and the body shows a
   // skeleton — the header paints from the summary at once.
   const { data: full, isLoading: bodyLoading } = useVaultArticle(summary?.id);
   const article: VaultArticle | null = summary
     ? full && full.id === summary.id
       ? full
-      : { ...summary, protocol: {}, benefits: [], risks: [], body_md: "", references_json: [], why_it_matters: null, try_today: [], key_takeaways: [], quiz: [] }
+      : { ...summary, ...EMPTY_FULL }
     : null;
   const { data: progress } = useVaultProgress();
   const completeLesson = useCompleteLesson();
   const [quizScore, setQuizScore] = useState<number | null>(null);
 
   // Course length for the "Lesson N of M" badge — counted from the cached
-  // library (react-query dedups with the Vault page's query). The old
-  // hardcoded "of 5" was wrong for every 8-13 lesson course.
+  // library (react-query dedups with the Vault page's query).
   const { data: allArticles } = useVaultArticles();
   const courseTotal = article
     ? (allArticles ?? []).filter(
@@ -67,12 +93,21 @@ const VaultArticleSheet = ({
       ).length
     : 0;
 
-  const isCompleted = !!progress?.find((p) => p.article_id === article?.id);
+  const progressRow = progress?.find((p) => p.article_id === article?.id);
+  const isCompleted = !!progressRow;
+  const loop = !!article && hasLoop(article);
+  const master = article?.master_slug ? MASTER_BY_SLUG[article.master_slug] : undefined;
+  const path = article ? pathOfArticle(article.slug) : undefined;
+  const isIdea = article?.category_id === "wisdom" || article?.category_id === "inner-work";
 
-  // Reset quiz score whenever a new article opens
+  // Reset quiz score whenever a new article opens; one open event per piece.
   useEffect(() => {
     setQuizScore(null);
-  }, [article?.id]);
+    if (open && summary) {
+      void track(FUNNEL.lessonOpened, { slug: summary.slug, master: summary.master_slug ?? null, path: pathOfArticle(summary.slug)?.slug ?? null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summary?.id, open]);
 
   // Escape-to-close (the BottomSheet owns the scroll lock)
   useEffect(() => {
@@ -89,11 +124,12 @@ const VaultArticleSheet = ({
     hapticImpact("medium");
     try {
       await completeLesson.mutateAsync({ articleId: article.id, quizScore });
+      void track(FUNNEL.lessonCompleted, { slug: article.slug, quiz: quizScore });
       toast.success("Lesson complete", {
         description: quizScore != null ? `Quiz: ${quizScore}/${article.quiz.length}` : undefined,
       });
-    } catch (e: any) {
-      toast.error("Could not save progress", { description: e?.message });
+    } catch (e: unknown) {
+      toast.error("Could not save progress", { description: e instanceof Error ? e.message : undefined });
     }
   };
 
@@ -112,7 +148,7 @@ const VaultArticleSheet = ({
               <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
                 {article.lesson_number && (
                   <span
-                    className="text-micro font-bold text-muted-foreground inline-flex items-center px-2 py-0.5 rounded-full"
+                    className="text-label font-bold text-muted-foreground inline-flex items-center px-2 py-0.5 rounded-full"
                     style={{
                       background: `${accent}22`,
                       color: accent,
@@ -142,6 +178,13 @@ const VaultArticleSheet = ({
               <p className="text-meta text-muted-foreground mt-2 leading-relaxed">
                 {article.summary}
               </p>
+              {(master || path) && (
+                <p className="text-label font-bold text-muted-foreground mt-2">
+                  {master ? `${master.name} · ${master.tradition}` : ""}
+                  {master && path ? " · " : ""}
+                  {path ? path.title : ""}
+                </p>
+              )}
             </div>
 
             {/* Scrollable body */}
@@ -206,7 +249,7 @@ const VaultArticleSheet = ({
 
               {article.benefits.length > 0 && (
                 <section>
-                  <SectionHeader Icon={CheckCircle2} label="Expected benefits" color="hsl(152 68% 50%)" />
+                  <SectionHeader Icon={CheckCircle2} label={isIdea ? "What it gives you" : "Expected benefits"} color="hsl(152 68% 50%)" />
                   <ul className="space-y-1.5">
                     {article.benefits.map((b, i) => (
                       <li key={i} className="flex items-start gap-2 text-meta">
@@ -224,7 +267,7 @@ const VaultArticleSheet = ({
 
               {article.risks.length > 0 && (
                 <section>
-                  <SectionHeader Icon={AlertTriangle} label="Risks & limits" color="hsl(35 90% 60%)" />
+                  <SectionHeader Icon={AlertTriangle} label={isIdea ? "Where it is honest about its limits" : "Risks & limits"} color="hsl(35 90% 60%)" />
                   <ul className="space-y-1.5">
                     {article.risks.map((r, i) => (
                       <li key={i} className="flex items-start gap-2 text-meta">
@@ -241,7 +284,7 @@ const VaultArticleSheet = ({
               )}
 
               <section>
-                <SectionHeader Icon={BookMarked} label="The science" color={accent} />
+                <SectionHeader Icon={BookMarked} label={isIdea ? "The idea" : "The science"} color={accent} />
                 {bodyLoading && !article.body_md ? (
                   <div className="space-y-2" aria-hidden>
                     {[92, 100, 84, 96, 60].map((w, i) => (
@@ -255,7 +298,9 @@ const VaultArticleSheet = ({
                 )}
               </section>
 
-              {article.try_today?.length > 0 && (
+              {/* Without the loop, the practice is a list to read; with it, the
+                  steps live inside the Practise stage below. */}
+              {!loop && article.try_today?.length > 0 && (
                 <section
                   className="rounded-2xl border p-4"
                   style={{
@@ -305,6 +350,19 @@ const VaultArticleSheet = ({
                 <LessonQuiz quiz={article.quiz} accent={accent} onScore={setQuizScore} />
               )}
 
+              {loop && !bodyLoading && (
+                <div className="pt-2 border-t border-border/30">
+                  <PracticeLoop
+                    article={article}
+                    accent={accent}
+                    progress={progressRow}
+                    quizScore={quizScore}
+                    onPracticed={onPracticed}
+                    onOpenSlug={onOpenSlug}
+                  />
+                </div>
+              )}
+
               {article.references_json?.length > 0 && (
                 <section className="pt-2 border-t border-border/30">
                   <p className="text-label font-bold text-muted-foreground mb-2">
@@ -314,7 +372,7 @@ const VaultArticleSheet = ({
                     {article.references_json.map((r, i) => (
                       <li key={i} className="leading-snug">
                         <span className="text-foreground/85 font-semibold">{r.author}</span>
-                        {r.year ? ` (${r.year})` : ""} —{" "}
+                        {r.year ? ` (${r.year < 0 ? `${-r.year} BC` : r.year})` : ""}{": "}
                         {r.url ? (
                           <a
                             href={r.url}
@@ -333,24 +391,26 @@ const VaultArticleSheet = ({
                 </section>
               )}
 
-              <button
-                type="button"
-                onClick={handleComplete}
-                disabled={completeLesson.isPending || isCompleted}
-                className="press text-label font-bold text-muted-foreground w-full rounded-2xl py-3 transition-[color,opacity] disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{
-                  background: isCompleted ? `${accent}20` : accent,
-                  color: isCompleted ? accent : "hsl(var(--background))",
-                  border: `1px solid ${accent}66`,
-                  boxShadow: isCompleted ? "none" : `0 8px 24px ${accent}40`,
-                }}
-              >
-                {isCompleted
-                  ? "✓ Lesson complete"
-                  : completeLesson.isPending
-                    ? "Saving…"
-                    : "Mark lesson complete"}
-              </button>
+              {!loop && (
+                <button
+                  type="button"
+                  onClick={handleComplete}
+                  disabled={completeLesson.isPending || isCompleted}
+                  className="press text-label font-bold text-muted-foreground w-full rounded-2xl py-3 transition-[color,opacity] disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{
+                    background: isCompleted ? `${accent}20` : accent,
+                    color: isCompleted ? accent : "hsl(var(--background))",
+                    border: `1px solid ${accent}66`,
+                    boxShadow: isCompleted ? "none" : `0 8px 24px ${accent}40`,
+                  }}
+                >
+                  {isCompleted
+                    ? "✓ Lesson complete"
+                    : completeLesson.isPending
+                      ? "Saving…"
+                      : "Mark lesson complete"}
+                </button>
+              )}
 
               <p className="text-label text-muted-foreground/75 text-center pt-1">
                 Educational content — not a substitute for medical advice.

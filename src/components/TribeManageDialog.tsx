@@ -398,7 +398,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold truncate">{m.username}</p>
                     {isAdmin && (
-                      <span className="inline-flex items-center gap-0.5 text-micro font-bold text-gold">
+                      <span className="inline-flex items-center gap-0.5 text-label font-bold text-gold">
                         <Crown size={10} aria-hidden /> Admin
                       </span>
                     )}

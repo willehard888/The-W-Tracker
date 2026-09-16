@@ -31,6 +31,11 @@ export type VaultArticle = {
   try_today: string[];
   key_takeaways: string[];
   quiz: VaultQuizQ[];
+  /** The practice loop (migration 20260917100001): a master, a question in, a question out. */
+  master_slug: string | null;
+  reflect_prompt: string | null;
+  integrate_prompt: string | null;
+  practice_minutes: number | null;
 };
 
 /**
@@ -44,10 +49,11 @@ export type VaultArticleSummary = Pick<
   VaultArticle,
   "id" | "category_id" | "slug" | "title" | "subtitle" | "summary" | "evidence_tier"
   | "read_time_min" | "display_order" | "lesson_number" | "course_role"
+  | "master_slug" | "reflect_prompt" | "practice_minutes"
 >;
 
 const SUMMARY_COLUMNS =
-  "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, display_order, lesson_number, course_role";
+  "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, display_order, lesson_number, course_role, master_slug, reflect_prompt, practice_minutes";
 
 /** The index fetcher, shared with the shell's idle prefetch (keys must match). */
 export const vaultArticlesKey = (userId: string | undefined, categoryId?: string) =>
@@ -94,7 +100,7 @@ export const useVaultArticle = (id: string | null | undefined) => {
       const { data, error } = await supabase
         .from("vault_articles")
         .select(
-          "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, protocol, benefits, risks, body_md, references_json, display_order, lesson_number, course_role, why_it_matters, try_today, key_takeaways, quiz",
+          "id, category_id, slug, title, subtitle, summary, evidence_tier, read_time_min, protocol, benefits, risks, body_md, references_json, display_order, lesson_number, course_role, why_it_matters, try_today, key_takeaways, quiz, master_slug, reflect_prompt, integrate_prompt, practice_minutes",
         )
         .eq("id", id!)
         .single();

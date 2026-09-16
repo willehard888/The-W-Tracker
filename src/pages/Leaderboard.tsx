@@ -412,7 +412,7 @@ const Leaderboard = () => {
                           <ShieldCheck aria-hidden size={12} strokeWidth={2.6} />
                         </span>
                       )}
-                      {isMe && <span className="shrink-0 text-micro text-muted-foreground font-medium">(you)</span>}
+                      {isMe && <span className="shrink-0 text-label text-muted-foreground font-medium">(you)</span>}
                     </span>
                     <span className="flex items-center gap-2 mt-0.5 text-meta text-muted-foreground">
                       <span>Lv {user.level}</span>
@@ -524,7 +524,7 @@ const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCar
       )}
     >
       {isFirst && <Crown aria-hidden size={22} className="absolute -top-3 left-1/2 -translate-x-1/2 text-gold" />}
-      <span className={cn("text-micro font-bold text-muted-foreground absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
+      <span className={cn("text-label font-bold text-muted-foreground absolute top-2 right-2 tabular-nums", isFirst && "text-gold")}>
         {mark?.tied ? `=${ORDINAL[mark.position] ?? mark.position}` : PODIUM[rank].label}
       </span>
       <StatusAvatar
@@ -539,7 +539,7 @@ const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCar
         tier={user.status_tier || "recruit"}
         className="font-display font-bold text-xs mt-2 truncate max-w-full px-1"
       />
-      {isMe && <span className="text-micro text-muted-foreground font-medium">(you)</span>}
+      {isMe && <span className="text-label text-muted-foreground font-medium">(you)</span>}
       <p className={cn("font-display font-black tabular-nums mt-1", isFirst ? "text-gold text-lg" : "text-sm")}>
         {fmtUnit(points, "XP")}
       </p>

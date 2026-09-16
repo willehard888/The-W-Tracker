@@ -41,14 +41,7 @@ export default {
        * and style-guard rule 19 polices only 0–27px for the same reason.
        */
       fontSize: {
-        // 11px, not 10. Apple's smallest text style is 11pt, and 85 labels sat
-        // under it. Deliberately the same value as `label` for now: keeping the
-        // rung means this is one line to revert if the density turns out worse
-        // on a real phone. If it survives that look, fold micro into label and
-        // drop this rung — two names for one size is not a scale.
-        micro: "11px", // smallest label
-
-        label: "11px", // micro-label — what an `.eyebrow` demotes to
+        label: "11px", // the smallest text: Apple's smallest style is 11pt (Iipo's type scale); what an `.eyebrow` demotes to
         meta: "12px", // meta line, timestamp, caption
         dense: "13px", // dense body
         note: "14px", // secondary body

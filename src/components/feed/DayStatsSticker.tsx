@@ -61,7 +61,7 @@ const DayStatsSticker = ({ stats, className }: { stats: DayStats; className?: st
             </span>
           )}
           {stats.verified && (
-            <span className="text-micro font-bold inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-teal leading-none">
+            <span className="text-label font-bold inline-flex items-center gap-0.5 rounded-md bg-teal/20 border border-teal/40 px-1 py-0.5 text-teal leading-none">
               <ShieldCheck aria-hidden size={11} strokeWidth={2.8} />
               Verified
             </span>

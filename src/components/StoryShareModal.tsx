@@ -506,7 +506,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                   ].map((s) => (
                     <div key={s.label} className="flex flex-col items-center">
                       <p className="font-black text-foreground text-lg">{s.emoji} {s.value}</p>
-                      <p className="font-bold tracking-widest text-muted-foreground/30 text-micro">{s.label}</p>
+                      <p className="font-bold tracking-widest text-muted-foreground/30 text-label">{s.label}</p>
                     </div>
                   ))}
                 </div>
@@ -538,7 +538,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                     );
                   })}
                 </div>
-                <p className="text-muted-foreground/30 font-semibold mt-3 text-micro tracking-wider">
+                <p className="text-muted-foreground/30 font-semibold mt-3 text-label tracking-wider">
                   COMPUTED FROM ALL MY DATA
                 </p>
               </>

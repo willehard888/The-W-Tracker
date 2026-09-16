@@ -116,7 +116,7 @@ const NextTierProgress = ({ className, ladder, fallback }: { className?: string;
               {r.overallPercent}
               <span className="text-sm text-muted-foreground">%</span>
             </p>
-            <p className="text-micro font-bold text-muted-foreground mt-1">
+            <p className="text-label font-bold text-muted-foreground mt-1">
               {r.metCount}/{r.pathCount} {r.pathCount === 1 ? "path" : "paths"} met
             </p>
           </div>

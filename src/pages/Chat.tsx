@@ -219,7 +219,7 @@ const Chat = () => {
               <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
                 @{partner?.username || "…"}
                 {partnerIsElite && (
-                  <span className="text-micro font-bold text-muted-foreground bg-secondary/60 border border-border/60 rounded-full px-1.5 py-[1px] leading-none">
+                  <span className="text-label font-bold text-muted-foreground bg-secondary/60 border border-border/60 rounded-full px-1.5 py-[1px] leading-none">
                     Elite
                   </span>
                 )}
@@ -323,7 +323,7 @@ const Chat = () => {
                 {showTime && (
                   <p
                     className={cn(
-                      "text-micro mt-1 px-1",
+                      "text-label mt-1 px-1",
                       isOwn ? "text-gold/75" : "text-muted-foreground/75"
                     )}
                   >

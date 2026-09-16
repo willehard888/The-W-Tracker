@@ -219,7 +219,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
 
 const StateCell = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-1.5">
-    <span className="text-micro font-bold text-muted-foreground/70 text-center">
+    <span className="text-label font-bold text-muted-foreground/70 text-center">
       {label}
     </span>
     {children}

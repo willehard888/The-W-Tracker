@@ -126,7 +126,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
                 className={cn("press flex-1 h-11 rounded-lg text-dense font-black tabular-nums transition-[color,box-shadow] ", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {massUnit ? q : fmtQty(q)}
-                {massUnit ? <span className="text-micro font-bold ml-0.5">{value.unit}</span> : "×"}
+                {massUnit ? <span className="text-label font-bold ml-0.5">{value.unit}</span> : "×"}
               </button>
             );
           })}

@@ -37,7 +37,7 @@ const norm = (p) => (sep === "/" ? p : p.split(sep).join("/"));
 
 /** px → rung. Size-for-size; anything absent stays arbitrary on purpose. */
 const RUNG = {
-  10: "micro", 11: "label", 12: "meta", 13: "dense", 14: "note",
+  10: "label", 11: "label", 12: "meta", 13: "dense", 14: "note",
   15: "read", 16: "copy", 17: "lead", 18: "subhead", 20: "head",
   22: "title", 24: "major", 27: "beat",
 };

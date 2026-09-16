@@ -97,7 +97,7 @@ const HabitToggle = ({
       <div className="flex items-center gap-1.5 flex-wrap">
         <p className={cn("font-bold text-read leading-tight", active ? "text-gold" : "text-foreground")}>{habit.label}</p>
         {detected && (
-          <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/12 px-1.5 py-0.5 rounded-full">
+          <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/12 px-1.5 py-0.5 rounded-full">
             <ShieldCheck aria-hidden size={12} /> Detected
           </span>
         )}
@@ -953,7 +953,7 @@ const DailyCheckin = () => {
               )}><Moon aria-hidden size={20} /></div>
               <div>
                 <p className="font-semibold text-sm flex items-center gap-1.5">
-                  Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
+                  Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
               </div>
@@ -987,7 +987,7 @@ const DailyCheckin = () => {
               <div className="flex-1 min-w-0">
                 <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
                   {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
-                  {detected.workout && <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
+                  {detected.workout && <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {isRestDay
@@ -1047,7 +1047,7 @@ const DailyCheckin = () => {
                       <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
                         {sport.label}
                         {detectedSportId === sport.id && (
-                          <span className="inline-flex items-center gap-1 text-micro font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
+                          <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
                         )}
                       </span>
                       {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}

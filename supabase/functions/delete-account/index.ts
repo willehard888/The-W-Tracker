@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
       "coach_chat_memory", "coach_athlete_profile", "coach_programs", "coach_program_logs",
       "coach_daily_briefs", "coach_daily_plans", "coach_mission_logs", "coach_reflections",
       "coach_goals", "coach_performance_snapshots", "coach_weekly_reviews", "coach_nudges",
-      "weekly_briefings", "vault_lesson_progress", "user_habits", "user_habit_logs",
+      "weekly_briefings", "vault_lesson_progress", "vault_reflections", "user_habits", "user_habit_logs",
       "analytics_events", "tribe_members", "tribe_invites", "tribe_event_rsvps",
       "moderation_queue", "content_moderations", "health_night_metrics", "workout_logs",
       "health_sync_snapshots",

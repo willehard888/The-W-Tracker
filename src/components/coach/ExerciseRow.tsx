@@ -199,7 +199,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
             <ol className="space-y-1 list-none">
               {(ex?.instructions?.length ? ex.instructions : illustrated!.steps).map((step, i) => (
                 <li key={i} className="flex gap-2 text-meta text-foreground/80 leading-snug">
-                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-micro font-black flex items-center justify-center mt-px">{i + 1}</span>
+                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-label font-black flex items-center justify-center mt-px">{i + 1}</span>
                   <span>{step}</span>
                 </li>
               ))}

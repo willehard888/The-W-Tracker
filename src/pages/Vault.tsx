@@ -1,5 +1,5 @@
 import { backOr } from "@/lib/nav";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -16,17 +16,25 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
-import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import PageBar from "@/components/ui/page-bar";
+import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { useVaultArticles, type VaultArticleSummary } from "@/hooks/use-vault-articles";
 import { useVaultProgress } from "@/hooks/use-vault-progress";
 import { useTrialAccess } from "@/hooks/use-trial-access";
+import type { PracticeResult } from "@/hooks/use-vault-practice";
 import { EVIDENCE_LABEL } from "@/components/vault/EvidenceChip";
 import { RECIPE_COUNT } from "@/data/library-counts";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
 import VaultCover from "@/components/vault/VaultCover";
+import TodayPractice from "@/components/vault/TodayPractice";
+import PathSheet from "@/components/vault/PathSheet";
+import MasterSheet from "@/components/vault/MasterSheet";
+import { VAULT_PATHS, PATH_BY_SLUG, DIMENSION_LABEL, type VaultDimension, type VaultPath } from "@/data/vault-paths";
+import { VAULT_MASTERS, MASTER_BY_SLUG, type VaultMaster } from "@/data/vault-masters";
+import { pathProgress } from "@/lib/vault-loop";
+import { track, FUNNEL } from "@/lib/analytics";
 import { hapticImpact } from "@/lib/haptics";
 
 interface VaultCategory {
@@ -105,18 +113,31 @@ const CATEGORIES: VaultCategory[] = [
   {
     id: "wisdom",
     title: "Wisdom",
-    tagline: "Great books · great teachers · the practice",
+    tagline: "Twenty thinkers · one loop · six paths",
     description:
-      "Nine sources, one rule: take the practice, test the claim. Atomic Habits, The Power of Now, A New Earth, The Greatest Secret, Wealth Money Can't Buy, and the teachings of Jung, Dispenza, Huberman and Watts, each tiered honestly.",
+      "The eleven-lesson course on nine sources, and one piece each from the thinkers behind the map: Frankl, the Stoics, Aristotle, Campbell, Nietzsche, Greene, Goggins, Thich Nhat Hanh, Kabat-Zinn, Attia and a second Jung. Every piece runs the loop: understand, reflect, practise, integrate.",
     icon: BookOpen,
     accent: "hsl(350 60% 64%)",
   },
 ];
 
+const WISDOM_ACCENT = "hsl(350 60% 64%)";
+
+/** Each dimension borrows the accent of the shelf it is closest to; gold stays the hero's. */
+const DIMENSION_ACCENT: Record<VaultDimension, string> = {
+  body: "hsl(168 70% 45%)",
+  mind: "hsl(280 70% 65%)",
+  discipline: "hsl(var(--ember))",
+  character: WISDOM_ACCENT,
+  purpose: "hsl(220 80% 65%)",
+  mastery: "hsl(190 80% 60%)",
+};
+
 /**
- * The library, one shelf, covers lead. The opening line is the reader's own
- * count; the covers are the categories (no frame around them); the pieces
- * inside a category are hairline rows.
+ * The Vault: a map, then a library. Today's practice opens it (one thinker,
+ * one piece, one question); the six paths and the twenty masters are the
+ * map; the covers below are the shelf as it was. Pieces open in a sheet;
+ * paths and masters open in their own sheets and hand off to the piece.
  */
 const Vault = () => {
   const navigate = useNavigate();
@@ -137,12 +158,24 @@ const Vault = () => {
   const [openArticle, setOpenArticle] = useState<{ article: VaultArticleSummary; accent: string; wasRead: boolean } | null>(
     null,
   );
+  const [openPath, setOpenPath] = useState<VaultPath | null>(null);
+  const [openMaster, setOpenMaster] = useState<VaultMaster | null>(null);
   const [poppedId, setPoppedId] = useState<string | null>(null);
+  // A badge earned inside the sheet waits until the sheet closes: the unlock
+  // modal (z-modal) sits under the sheet (z-celebration).
+  const [pendingBadge, setPendingBadge] = useState<PracticeResult["newBadge"]>(null);
+  const [unlockedBadge, setUnlockedBadge] = useState<PracticeResult["newBadge"]>(null);
 
   // One cached query for the beat and every category (react-query dedups).
   const { data: allVaultArticles, isLoading } = useVaultArticles();
   const { data: progress } = useVaultProgress();
-  const readIds = new Set((progress ?? []).map((p) => p.article_id));
+  const readIds = useMemo(() => new Set((progress ?? []).map((p) => p.article_id)), [progress]);
+  const practicedSlugs = useMemo(() => {
+    const byId = new Map((allVaultArticles ?? []).map((a) => [a.id, a.slug]));
+    const s = new Set<string>();
+    for (const p of progress ?? []) if (p.practiced_at) { const slug = byId.get(p.article_id); if (slug) s.add(slug); }
+    return s;
+  }, [progress, allVaultArticles]);
   const readIdsRef = useRef(readIds);
   readIdsRef.current = readIds;
 
@@ -151,35 +184,72 @@ const Vault = () => {
     if (!hasVaultAccess) navigate("/paywall", { replace: true });
   }, [hasVaultAccess, accessLoading, navigate]);
 
-  // ?lesson=<slug> deep link (Daily Insight card and coach references) — open
-  // the article sheet once the library resolves, then strip the param so
+  useEffect(() => {
+    if (hasVaultAccess) void track(FUNNEL.vaultOpened);
+  }, [hasVaultAccess]);
+
+  const accentFor = useCallback(
+    (a: VaultArticleSummary) => CATEGORIES.find((c) => c.id === a.category_id)?.accent ?? "hsl(45 90% 58%)",
+    [],
+  );
+
+  /** Open a piece by slug from anywhere: today's door, a path, a master, a deep link. */
+  const openBySlug = useCallback(
+    (slug: string) => {
+      const article = allVaultArticles?.find((a) => a.slug === slug);
+      if (!article) return;
+      setOpenPath(null);
+      setOpenMaster(null);
+      setPoppedId(null);
+      setOpenArticle({ article, accent: accentFor(article), wasRead: readIdsRef.current.has(article.id) });
+    },
+    [allVaultArticles, accentFor],
+  );
+
+  // ?lesson= / ?path= / ?master= deep links (Home, the coach, the next-piece
+  // button) — open once the library resolves, then strip the param so
   // closing the sheet or going back doesn't reopen it.
   const [searchParams, setSearchParams] = useSearchParams();
   const lessonSlug = searchParams.get("lesson");
+  const pathSlug = searchParams.get("path");
+  const masterSlug = searchParams.get("master");
   useEffect(() => {
-    if (!lessonSlug || !allVaultArticles) return;
-    const article = allVaultArticles.find((a) => a.slug === lessonSlug);
-    if (article) {
-      const accent =
-        CATEGORIES.find((c) => c.id === article.category_id)?.accent ?? "hsl(45 90% 58%)";
-      setOpenArticle({ article, accent, wasRead: readIdsRef.current.has(article.id) });
-    }
+    if (!allVaultArticles) return;
+    if (!lessonSlug && !pathSlug && !masterSlug) return;
+    if (lessonSlug) openBySlug(lessonSlug);
+    else if (pathSlug && PATH_BY_SLUG[pathSlug]) setOpenPath(PATH_BY_SLUG[pathSlug]);
+    else if (masterSlug && MASTER_BY_SLUG[masterSlug]) setOpenMaster(MASTER_BY_SLUG[masterSlug]);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.delete("lesson");
+      next.delete("path");
+      next.delete("master");
       return next;
     }, { replace: true });
-  }, [lessonSlug, allVaultArticles, setSearchParams]);
+  }, [lessonSlug, pathSlug, masterSlug, allVaultArticles, openBySlug, setSearchParams]);
 
   if (!hasVaultAccess) return null;
 
   const total = allVaultArticles?.length ?? 0;
   const read = (allVaultArticles ?? []).filter((a) => readIds.has(a.id)).length;
   const left = total - read;
+  const practicedCount = practicedSlugs.size;
 
   const closeArticle = () => {
     if (openArticle && !openArticle.wasRead && readIds.has(openArticle.article.id)) setPoppedId(openArticle.article.id);
     setOpenArticle(null);
+    if (pendingBadge) {
+      setUnlockedBadge(pendingBadge);
+      setPendingBadge(null);
+    }
+  };
+
+  const onPracticed = (r: PracticeResult) => {
+    if (r.newBadge) setPendingBadge(r.newBadge);
+    const path = openArticle ? VAULT_PATHS.find((p) => p.steps.includes(openArticle.article.slug)) : undefined;
+    if (path && path.steps.every((s) => s === openArticle!.article.slug || practicedSlugs.has(s))) {
+      void track(FUNNEL.pathCompleted, { path: path.slug });
+    }
   };
 
   return (
@@ -193,49 +263,149 @@ const Vault = () => {
             <div className="h-7 w-3/4 rounded-lg bg-card/40 skeleton-block" />
           ) : (
             <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
-              {read > 0 ? (
+              {practicedCount > 0 ? (
+                <>
+                  <span className="text-gold glow-gold-text tabular-nums">{fmtInt(practicedCount)}</span>
+                  {practicedCount === 1 ? " practice run." : " practices run."} {fmtInt(read)} read.
+                </>
+              ) : read > 0 ? (
                 <>
                   <span className="text-gold glow-gold-text tabular-nums">{fmtInt(read)}</span> read.{" "}
                   {left > 0 ? `${fmtInt(left)} to go.` : "The whole shelf."}
                 </>
               ) : total > 0 ? (
-                `${fmtInt(total)} pieces. Start anywhere.`
+                `${fmtInt(total)} pieces. Start with today.`
               ) : (
-                "Start anywhere."
+                "Start with today."
               )}
             </h2>
           )}
           <p className="text-meta text-muted-foreground leading-relaxed mt-2">
-            Every piece is graded by evidence tier and cites its research. New protocols ship regularly.
+            Ideas you use, not content you consume: understand, reflect, practise, integrate. The practice is what counts.
           </p>
         </header>
 
-        {/* The shelf — covers are the categories. No frame, no strip below. */}
-        <div className="mt-5 space-y-3">
-          {CATEGORIES.map((cat, i) => (
-            <div key={cat.id} className={cn("", i < 4 && "animate-fade-in-up", "")} style={i < 4 ? { animationDelay: `${120 + i * 45}ms` } : undefined}>
-              <VaultCategoryBlock
-                category={cat}
-                poppedId={poppedId}
-                onOpenArticle={(a) => {
-                  hapticImpact("light");
-                  setOpenArticle({ article: a, accent: cat.accent, wasRead: readIds.has(a.id) });
-                }}
-              />
-            </div>
-          ))}
+        {/* Today — one thinker, one piece, one question. The hero. */}
+        <div className="home-rise home-rise-1 mt-6">
+          <TodayPractice onOpen={openBySlug} />
         </div>
+
+        {/* Paths — six doors in a row, one per dimension. */}
+        <section className="home-rise home-rise-2 mt-7" aria-label="Paths">
+          <h3 className="font-display text-head font-black tracking-tight leading-none">Paths</h3>
+          <p className="text-meta text-muted-foreground mt-1">Pieces in walking order around one change. The next step is always the first you have not practised.</p>
+          <div className="no-scrollbar -mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+            {VAULT_PATHS.map((p) => {
+              const pp = pathProgress(p.steps, practicedSlugs);
+              const accent = DIMENSION_ACCENT[p.dimension];
+              return (
+                <button
+                  key={p.slug}
+                  type="button"
+                  onClick={() => {
+                    hapticImpact("light");
+                    setOpenPath(p);
+                  }}
+                  className="press snap-start shrink-0 w-[152px] rounded-2xl border border-border/50 bg-card/40 p-3.5 text-left"
+                  style={{ borderColor: pp.complete ? `${accent}66` : undefined }}
+                >
+                  <span className="block text-label font-bold" style={{ color: accent }}>
+                    {DIMENSION_LABEL[p.dimension]}
+                  </span>
+                  <span className="mt-1 block font-display text-read font-black tracking-tight leading-tight min-h-[2.4em]">
+                    {p.title}
+                  </span>
+                  <span className="mt-2 block text-label text-muted-foreground tabular-nums">
+                    {pp.complete ? "Walked" : `${pp.done} of ${pp.total} practised`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Masters — the thinkers as lenses. Type only; a name and its tradition. */}
+        <section className="home-rise home-rise-3 mt-7" aria-label="Masters">
+          <h3 className="font-display text-head font-black tracking-tight leading-none">Masters</h3>
+          <p className="text-meta text-muted-foreground mt-1">Twenty thinkers, each a lens. Tap a name for their ideas and what kind of claim they make.</p>
+          <ul className="mt-2 grid grid-cols-2 gap-x-5">
+            {VAULT_MASTERS.map((m) => {
+              const mine = (allVaultArticles ?? []).filter((a) => a.master_slug === m.slug);
+              const done = mine.filter((a) => practicedSlugs.has(a.slug)).length;
+              return (
+                <li key={m.slug} className="border-b border-border/35">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      hapticImpact("light");
+                      setOpenMaster(m);
+                    }}
+                    className="w-full py-2.5 text-left"
+                  >
+                    <span className="block font-display text-dense font-black tracking-tight leading-tight truncate">{m.name}</span>
+                    <span className="block text-label text-muted-foreground leading-snug truncate" style={done ? { color: WISDOM_ACCENT } : undefined}>
+                      {done ? `${done} practised` : m.tradition}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        {/* The shelf — covers are the categories. No frame, no strip below. */}
+        <section className="mt-8" aria-label="The shelf">
+          <h3 className="font-display text-head font-black tracking-tight leading-none">The shelf</h3>
+          <p className="text-meta text-muted-foreground mt-1">Every piece is graded by evidence tier and cites its research.</p>
+          <div className="mt-4 space-y-3">
+            {CATEGORIES.map((cat, i) => (
+              <div key={cat.id} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${120 + i * 45}ms` } : undefined}>
+                <VaultCategoryBlock
+                  category={cat}
+                  poppedId={poppedId}
+                  practicedSlugs={practicedSlugs}
+                  onOpenArticle={(a) => {
+                    hapticImpact("light");
+                    setPoppedId(null);
+                    setOpenArticle({ article: a, accent: cat.accent, wasRead: readIds.has(a.id) });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* No hardcoded price — a US/UK member paid a different number than the
             euro list price, and the store price is the only truth. */}
-        <p className="mt-8 text-center text-label text-muted-foreground/75">Premium member</p>
+        <p className="mt-8 text-center text-label text-muted-foreground/75">{isPremium ? "Premium member" : "Full access during your trial"}</p>
 
         <VaultArticleSheet
           article={openArticle?.article ?? null}
           accent={openArticle?.accent ?? "hsl(var(--gold))"}
           open={!!openArticle}
           onClose={closeArticle}
+          onOpenSlug={openBySlug}
+          onPracticed={onPracticed}
         />
+        <PathSheet
+          path={openPath}
+          accent={openPath ? DIMENSION_ACCENT[openPath.dimension] : WISDOM_ACCENT}
+          open={!!openPath}
+          onClose={() => setOpenPath(null)}
+          articles={allVaultArticles ?? []}
+          practiced={practicedSlugs}
+          onOpenSlug={openBySlug}
+        />
+        <MasterSheet
+          master={openMaster}
+          accent={WISDOM_ACCENT}
+          open={!!openMaster}
+          onClose={() => setOpenMaster(null)}
+          articles={allVaultArticles ?? []}
+          practiced={practicedSlugs}
+          onOpenSlug={openBySlug}
+        />
+        <BadgeUnlockModal badge={unlockedBadge} onClose={() => setUnlockedBadge(null)} />
       </div>
     </div>
   );
@@ -244,10 +414,12 @@ const Vault = () => {
 const VaultCategoryBlock = ({
   category,
   poppedId,
+  practicedSlugs,
   onOpenArticle,
 }: {
   category: VaultCategory;
   poppedId: string | null;
+  practicedSlugs: ReadonlySet<string>;
   onOpenArticle: (a: VaultArticleSummary) => void;
 }) => {
   const Icon = category.icon;
@@ -332,6 +504,8 @@ const VaultCategoryBlock = ({
           {!isLoading &&
             articles.map((a) => {
               const isRead = readIds.has(a.id);
+              const isPracticed = practicedSlugs.has(a.slug);
+              const master = a.master_slug ? MASTER_BY_SLUG[a.master_slug] : undefined;
               return (
                 <button
                   key={a.id}
@@ -352,8 +526,9 @@ const VaultCategoryBlock = ({
                     {a.subtitle && (
                       <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{a.subtitle}</span>
                     )}
-                    <span className="text-micro font-bold text-muted-foreground block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
-                      {EVIDENCE_LABEL[a.evidence_tier]} · {a.read_time_min} min
+                    <span className="text-label font-bold text-muted-foreground block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
+                      {isPracticed ? "Practised" : `${EVIDENCE_LABEL[a.evidence_tier]} · ${a.read_time_min} min`}
+                      {master ? ` · ${master.name}` : ""}
                     </span>
                   </span>
                   {isRead ? (

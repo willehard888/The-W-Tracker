@@ -419,7 +419,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     {m.avatar_url ? (
                       <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 40)} alt={m.username} className="h-full w-full object-cover" />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-micro font-black text-muted-foreground">
+                      <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
                         {m.username.slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -494,7 +494,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/75 shrink-0" aria-label="Private" />}
                 {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
                 {isNew && (
-                  <span className="text-micro font-bold shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
+                  <span className="text-label font-bold shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
                     New
                   </span>
                 )}

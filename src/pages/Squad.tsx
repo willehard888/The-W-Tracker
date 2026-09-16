@@ -79,7 +79,7 @@ const Squad = () => {
         >
           <MessageCircle aria-hidden size={18} />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-micro font-black flex items-center justify-center tabular-nums">
+            <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[hsl(var(--ember))] text-white text-label font-black flex items-center justify-center tabular-nums">
               {unread > 99 ? "99+" : unread}
             </span>
           )}

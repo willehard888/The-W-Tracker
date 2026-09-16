@@ -324,7 +324,7 @@ export default function AdminMetrics() {
         <div className="surface-card overflow-hidden">
           <table className="w-full text-meta">
             <thead>
-              <tr className="text-micro font-bold border-b border-border/60 text-muted-foreground">
+              <tr className="text-label font-bold border-b border-border/60 text-muted-foreground">
                 <th className="text-left font-semibold px-3 py-2">Week</th>
                 <th className="text-right font-semibold px-2 py-2">Users</th>
                 <th className="text-right font-semibold px-2 py-2">D1</th>

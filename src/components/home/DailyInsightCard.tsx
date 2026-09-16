@@ -1,19 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTrialAccess } from "@/hooks/use-trial-access";
 import { localDayIndex, pickDaily } from "@/lib/daily-rotation";
 import { DAILY_INSIGHTS } from "@/data/daily-insights";
 import { hapticImpact } from "@/lib/haptics";
+import TodayPractice from "@/components/vault/TodayPractice";
 
 /**
- * One Vault insight per day — rendered as an editorial pull-quote, not a
- * card: the day's thought to read, in the display face at reading size, leading
- * the Library zone below it. Deterministic rotation (salted off the header
- * quote), deep-links into the matching Vault lesson; shown to everyone, so a
- * non-premium tap lands on the paywall and the quote doubles as a teaser.
+ * The Vault's voice on Home. For a member it is today's practice: one
+ * thinker's lens, one piece, one question, one door (TodayPractice). For
+ * everyone else it stays the editorial pull-quote, deep-linked into the
+ * matching lesson, so a non-member tap lands on the paywall and the quote
+ * doubles as a teaser.
  *
- * Two pools alternate by local day: the Wisdom course (the great books and
- * teachers, named on the card) one day, Inner Work and Longevity the next —
- * so the teachers surface every other day instead of one day in four.
+ * Two quote pools alternate by local day: the Wisdom course (the great books
+ * and teachers, named on the card) one day, Inner Work and Longevity the next.
  *
  * Type-only (no surface, no gold tile) is deliberate: it breaks the stacked-
  * card silhouette and gives the "vault" its own voice above the shelf.
@@ -23,7 +25,13 @@ const REST = DAILY_INSIGHTS.filter((i) => !i.id.startsWith("wis-"));
 
 const DailyInsightCard = () => {
   const navigate = useNavigate();
+  const { isPremium } = useAuth();
+  const { isInTrial } = useTrialAccess();
   const insight = pickDaily(localDayIndex() % 2 === 0 ? WISDOM : REST, "insight");
+
+  if (isPremium || isInTrial) {
+    return <TodayPractice onOpen={(slug) => navigate(`/vault?lesson=${slug}`)} />;
+  }
 
   return (
     <button

@@ -87,7 +87,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
           detail. Falls back gracefully when not yet authored. */}
       {why && (
         <div className="mt-4">
-          <p className="text-micro font-bold text-muted-foreground mb-1">
+          <p className="text-label font-bold text-muted-foreground mb-1">
             Who I'm becoming
           </p>
           <p className="font-display text-lead font-black leading-snug tracking-tight text-foreground">
@@ -142,7 +142,7 @@ const Row = ({
   <div className="surface-inset rounded-xl px-3 py-2 min-w-0">
     <div className="flex items-center gap-1 text-muted-foreground/75 mb-0.5">
       <span className="shrink-0">{icon}</span>
-      <p className="text-micro font-bold text-muted-foreground">{label}</p>
+      <p className="text-label font-bold text-muted-foreground">{label}</p>
     </div>
     <p className="text-meta font-bold text-foreground/95 leading-tight truncate">{value}</p>
   </div>

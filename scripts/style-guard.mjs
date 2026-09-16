@@ -59,7 +59,7 @@ const RULES = [
   // sizes are one-offs and stay arbitrary, so the rule stops at 27. The two
   // exemptions render their text into an image that is then scaled down,
   // which is why they may sit below the ladder's floor.
-  { re: /text-\[(?:\d|1\d|2[0-7])(?:\.\d+)?px\]/, msg: "hand-written text size — use a rung (text-micro/label/meta/dense/note/read/copy/lead/subhead/head/title/major/beat)",
+  { re: /text-\[(?:\d|1\d|2[0-7])(?:\.\d+)?px\]/, msg: "hand-written text size — use a rung (text-label/meta/dense/note/read/copy/lead/subhead/head/title/major/beat)",
     exempt: ["src/components/StoryShareModal.tsx", "src/components/feed/DayStatsSticker.tsx"] },
 ];
 

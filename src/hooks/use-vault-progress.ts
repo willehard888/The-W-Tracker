@@ -7,6 +7,8 @@ export type VaultProgressRow = {
   article_id: string;
   completed_at: string;
   quiz_score: number | null;
+  practiced_at: string | null;
+  integrated_at: string | null;
 };
 
 export const useVaultProgress = () => {
@@ -21,7 +23,7 @@ export const useVaultProgress = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vault_lesson_progress")
-        .select("article_id, completed_at, quiz_score")
+        .select("article_id, completed_at, quiz_score, practiced_at, integrated_at")
         .eq("user_id", user!.id);
       if (error) {
         console.error("[vault-progress] fetch error", error);

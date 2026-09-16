@@ -163,7 +163,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
                 onClick={() => setDuration(d.value)}
               >
                 <span className="text-xs font-black">{d.label}</span>
-                <span className="text-micro font-normal text-muted-foreground">{d.sub}</span>
+                <span className="text-label font-normal text-muted-foreground">{d.sub}</span>
               </Button>
             ))}
           </div>

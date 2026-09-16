@@ -115,7 +115,7 @@ export const ExerciseCoachingCompact = ({ slug }: { slug?: string | null }) => {
       <Rhythm c={c} compact />
       {c.cues[0] && (
         <p className="flex gap-2 text-dense text-foreground/90 leading-snug">
-          <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-micro font-black flex items-center justify-center mt-px" aria-hidden>
+          <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-label font-black flex items-center justify-center mt-px" aria-hidden>
             !
           </span>
           <span className="font-semibold">{c.cues[0]}</span>

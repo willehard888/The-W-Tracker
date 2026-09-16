@@ -7,6 +7,7 @@ import { gatherProgression, buildProgressionBlock } from "../_shared/progression
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
+import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
 import { programWeekState } from "../_shared/program-week.ts";
 import { clampTzOffset, localDayKey } from "../_shared/local-day.ts";
 
@@ -156,6 +157,7 @@ Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${worko
 ${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${whealthBlock}
 ${INNER_WORK_BLOCK}
 ${LONGEVITY_BLOCK}
+${WISDOM_BLOCK}
 
 Write the daily brief — 2-3 sentences, second person. No sign-off: the surface
 rendering this already labels itself "AI Coach", and ai-coach is instructed the

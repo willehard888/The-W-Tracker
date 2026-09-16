@@ -140,7 +140,7 @@ const FoodSearchPanel = ({
         <section aria-label="Search results" aria-busy={loading}>
           <div className="flex items-center gap-2 mt-1 mb-1">
             <span className="h-px flex-1 bg-border/50" aria-hidden />
-            <span className="text-micro font-bold text-muted-foreground/75">
+            <span className="text-label font-bold text-muted-foreground/75">
               {loading ? "Searching" : `${serverOnly.length} result${serverOnly.length === 1 ? "" : "s"}`}
             </span>
             {loading && <Loader2 size={12} className="animate-spin text-muted-foreground" aria-hidden />}

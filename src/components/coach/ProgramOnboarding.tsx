@@ -319,7 +319,7 @@ const DayDots = ({ active }: { active: number[] }) => (
   <span className="inline-flex gap-0.5 ml-1">
     {DAY_LETTERS.map((l, i) => (
       <span key={i} className={cn(
-        "w-3.5 h-3.5 rounded-[5px] text-micro font-black flex items-center justify-center",
+        "w-3.5 h-3.5 rounded-[5px] text-label font-black flex items-center justify-center",
         active.includes(i) ? "bg-[hsl(var(--gold)/0.8)] text-background" : "bg-card/60 text-muted-foreground/75",
       )}>{l}</span>
     ))}

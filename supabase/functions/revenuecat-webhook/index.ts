@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { allowSandboxEvent } from "../_shared/sandbox-rule.ts";
+import { PREMIUM_PRODUCT_IDS } from "../_shared/products.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
 
@@ -19,17 +20,6 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 // Premium replaces Apex purchase. Apex IDs kept as legacy fallback.
-const PREMIUM_PRODUCT_IDS = [
-  // Real ASC products only — keep in sync with RevenueCatContext.PRODUCT_IDS;
-  // a webhook that doesn't recognise the id silently fails to grant Premium
-  // after a successful purchase. WhealthFactory499 = 8,99 €/mo monthly,
-  // eliteyearly4799 = 89,99 €/yr annual (ids kept through the reprice).
-  "WhealthFactory499", "com.app.WhealthFactory499",
-  "eliteyearly4799", "com.app.eliteyearly4799",
-  // Legacy
-  "premiummonthly1799", "com.app.premiummonthly1799",
-  "premiumyearly17299", "com.app.premiumyearly17299",
-];
 const APEX_PRODUCT_IDS = ["Apex888", "com.app.Apex888", "apexmonthly1599", "com.app.apexmonthly1599", "apexyearly17299", "com.app.apexyearly17299"];
 const APEX_ENTITLEMENT = "apex_subscriber";
 // Must match the RevenueCat entitlement the client checks (RevenueCatContext

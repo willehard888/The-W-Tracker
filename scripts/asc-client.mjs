@@ -49,3 +49,84 @@ export const makeAsc = ({ keyId, issuer, pem }) => {
   const getAll = async (p) => { const out = []; let next = p; while (next) { const page = await get(next); out.push(...page.data); out.included = [...(out.included ?? []), ...(page.included ?? [])]; next = page.links?.next ?? null; } return out; };
   return { call, get, getAll };
 };
+
+// ── Shared subscription helpers ────────────────────────────────────────────
+
+/** Every App Store territory id. */
+export const allTerritories = async (asc) => (await asc.getAll("/v1/territories?limit=200")).map((t) => t.id);
+
+/** Make a subscription available everywhere, now and in territories Apple adds later. */
+export const setAvailabilityEverywhere = async (asc, subId) => {
+  const territories = await allTerritories(asc);
+  await asc.call("POST", "/v1/subscriptionAvailabilities", {
+    data: {
+      type: "subscriptionAvailabilities",
+      attributes: { availableInNewTerritories: true },
+      relationships: {
+        subscription: { data: { type: "subscriptions", id: subId } },
+        availableTerritories: { data: territories.map((id) => ({ type: "territories", id })) },
+      },
+    },
+  });
+  return territories.length;
+};
+
+/** Reserve → upload → commit the App Store review screenshot for a subscription. */
+export const uploadReviewScreenshot = async (asc, subId, filePath) => {
+  const { readFileSync } = await import("node:fs");
+  const { createHash } = await import("node:crypto");
+  const bytes = readFileSync(filePath);
+  const fileName = filePath.split("/").pop();
+  const reserved = await asc.call("POST", "/v1/subscriptionAppStoreReviewScreenshots", {
+    data: {
+      type: "subscriptionAppStoreReviewScreenshots",
+      attributes: { fileName, fileSize: bytes.length },
+      relationships: { subscription: { data: { type: "subscriptions", id: subId } } },
+    },
+  });
+  for (const op of reserved.data.attributes.uploadOperations ?? []) {
+    const headers = Object.fromEntries((op.requestHeaders ?? []).map((h) => [h.name, h.value]));
+    const r = await fetch(op.url, { method: op.method, headers, body: bytes.subarray(op.offset, op.offset + op.length) });
+    if (!r.ok) throw new Error(`upload chunk failed ${r.status}`);
+  }
+  await asc.call("PATCH", `/v1/subscriptionAppStoreReviewScreenshots/${reserved.data.id}`, {
+    data: { type: "subscriptionAppStoreReviewScreenshots", id: reserved.data.id, attributes: { uploaded: true, sourceFileChecksum: createHash("md5").update(bytes).digest("hex") } },
+  });
+};
+
+/** Set the base price in one territory and Apple's equalization of it everywhere else. */
+export const priceEverywhere = async (asc, subId, baseTerritory, customerPrice) => {
+  const points = await asc.getAll(`/v1/subscriptions/${subId}/pricePoints?filter[territory]=${baseTerritory}&limit=8000`);
+  const base = points.find((p) => p.attributes.customerPrice === customerPrice);
+  if (!base) throw new Error(`no ${baseTerritory} price point at ${customerPrice}`);
+  // A subscription with no price yet rejects `preserveCurrentPrice` /
+  // `startDate` outright (409 "problem with the pricing information"); the
+  // bare relationship is the starting price. Territories already priced at
+  // the wanted point are left alone, so the call can be repeated.
+  const current = await asc.getAll(`/v1/subscriptions/${subId}/prices?include=subscriptionPricePoint&limit=200`);
+  const priced = new Map(current.map((r) => [r.relationships?.territory?.data?.id, r.relationships?.subscriptionPricePoint?.data?.id]));
+  const post = (pointId, territory) => priced.get(territory) === pointId ? Promise.resolve() : asc.call("POST", "/v1/subscriptionPrices", {
+    data: {
+      type: "subscriptionPrices",
+      relationships: {
+        subscription: { data: { type: "subscriptions", id: subId } },
+        subscriptionPricePoint: { data: { type: "subscriptionPricePoints", id: pointId } },
+        territory: { data: { type: "territories", id: territory } },
+      },
+    },
+  });
+  await post(base.id, baseTerritory);
+  const eq = await asc.getAll(`/v1/subscriptionPricePoints/${base.id}/equalizations?include=territory&limit=200`);
+  let done = 1, failed = [];
+  for (const p of eq) {
+    const territory = p.relationships?.territory?.data?.id;
+    if (!territory) continue;
+    try { await post(p.id, territory); done++; } catch (e) { failed.push(territory); }
+  }
+  // One more pass for Apple's transient 500s.
+  for (const territory of [...failed]) {
+    const p = eq.find((x) => x.relationships?.territory?.data?.id === territory);
+    try { await post(p.id, territory); done++; failed = failed.filter((t) => t !== territory); } catch { /* reported */ }
+  }
+  return { done, failed };
+};

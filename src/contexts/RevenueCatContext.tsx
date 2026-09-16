@@ -13,21 +13,14 @@ import { isNativePlatform } from "@/lib/platform";
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
 import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
 import { toast } from "sonner";
+import { MONTHLY_PRODUCT_IDS, YEARLY_PRODUCT_IDS } from "@/lib/products";
 
 // ─── Constants ──────────────────────────────────────────
 const RC_API_KEY_APPLE = "appl_qgpDFJEtyXTeNTJZxBoHzxzgiTr";
 const ENTITLEMENT = "The W Tracker Pro";
-// Must match the REAL App Store Connect products + the revenuecat-webhook
-// PREMIUM_PRODUCT_IDS. WhealthFactory499 — the 8,99 €/mo full-access
-// subscription (the trailing "499" is a misnomer since the reprice: the id
-// stayed put so nothing had to migrate); eliteyearly4799 — the 89,99 €/yr
-// annual (same misnomer story). The elite monthly ids are legacy fallbacks.
-// No speculative ids: an id that might exist someday belongs here the day
-// it actually ships, not before.
-const PRODUCT_IDS = [
-  "WhealthFactory499", "com.app.WhealthFactory499",
-  "eliteyearly4799", "com.app.eliteyearly4799",
-] as const;
+// The products the paywall can buy — the one list shared with the webhook
+// (src/lib/products.ts mirrors supabase/functions/_shared/products.ts).
+const PRODUCT_IDS = [...MONTHLY_PRODUCT_IDS, ...YEARLY_PRODUCT_IDS] as const;
 const PRIMARY_PRODUCT_ID = "WhealthFactory499";
 
 // ─── Types ──────────────────────────────────────────────
@@ -139,9 +132,8 @@ function productId(value: any): string | null {
 // PRODUCT_IDS, so when the store did not return the monthly product the
 // "monthly" fallback picked the yearly one and a tap on 8,99 €/month bought
 // 89,99 €/year (2026-09-15, TestFlight). A plan buys its own product or fails.
-const MONTHLY_IDS: readonly string[] = ["WhealthFactory499", "com.app.WhealthFactory499"];
 function isKnownMonthlyId(id: string | null): boolean {
-  return !!id && MONTHLY_IDS.includes(id);
+  return !!id && (MONTHLY_PRODUCT_IDS as readonly string[]).includes(id);
 }
 
 /** Get a formatted price string. */

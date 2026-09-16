@@ -63,9 +63,23 @@ select count(*) from webhook_events where app_user_id = '<qa user id>' and sourc
 select is_premium, is_elite from profiles where user_id = '<qa user id>';
 ```
 
-## Known flaw, not fixed here
+## The yearly plan and its group (fixed 2026-09-15)
 
-Monthly and yearly live in **different subscription groups** ("Whealth Factory" and
-"Elite Monthly"). Apple treats them as unrelated: no upgrade/downgrade, and a customer can
-hold both. Products cannot move between groups; the fix is a new yearly product inside the
-Whealth Factory group, then re-pointing RevenueCat's `$rc_annual`.
+`eliteyearly4799` was created in the "Elite Monthly" group while the monthly lives in
+"Whealth Factory", so Apple treated them as unrelated products: no upgrade/downgrade, and a
+customer could hold both. Products cannot move between groups, so
+`scripts/asc-create-yearly.mjs` created **`WhealthFactoryYearly`** inside the Whealth Factory
+group (level 1, next to the monthly) with the en-US localization, 89,99 € in Finland plus
+Apple's equalization everywhere, availability in every territory and the review screenshot.
+Apple rejects `preserveCurrentPrice`/`startDate` on a subscription's first price
+(409 "problem with the pricing information"); the bare relationship is the starting price.
+
+The product ids live in ONE list, `supabase/functions/_shared/products.ts`, mirrored by
+`src/lib/products.ts` (parity test): monthly `WhealthFactory499`, yearly
+`WhealthFactoryYearly`, legacy `eliteyearly4799` kept only so an existing subscription keeps
+its access.
+
+**RevenueCat (dashboard, founder):** Products → add `WhealthFactoryYearly` (or let the ASC
+import find it) → attach it to the entitlement "The W Tracker Pro" → Offerings → `default` →
+package `$rc_annual` → product `WhealthFactoryYearly`. Until this is done the paywall's yearly
+row still sells the old product.

@@ -7,8 +7,8 @@
 export const LONGEVITY_BLOCK = `
 Vault · Longevity lessons ("The 100-Year Athlete") you may reference by exact name when the athlete asks about aging, healthspan, longevity, "training for later life", supplements for longevity, or when their primary_goal is longevity:
 - "Healthspan vs Lifespan: The Real Goal" — compression of morbidity, the marginal decade
-- "The Hierarchy of Levers" — VO2max, strength, sleep, metabolic health, connection ranked by mortality data
-- "VO2max: The Strongest Predictor" — zone 2 base + weekly 4x4 intervals
+- "The Hierarchy of Levers" — VO₂max, strength, sleep, metabolic health, connection ranked by mortality data
+- "VO₂max: The Strongest Predictor" — zone 2 base + weekly 4×4 intervals
 - "Strength: The Longevity Organ" — grip/mortality data, 2x/week six movement patterns
 - "Protein and the Aging Athlete" — 1.6-2.2 g/kg, anabolic resistance, per-meal dosing
 - "Sleep: The Nightly Repair Budget" — mortality + dementia data, the 3-lever protocol

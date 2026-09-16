@@ -23,9 +23,9 @@ export const MIGRATIONS_DIR = join(ROOT, "supabase/migrations");
 export const REWRITE_FROM = "20260918110000";
 
 /** Shelves already brought to the voice: the lint is a hard failure on these. */
-export const REWRITTEN_CATEGORIES = ["wisdom", "recovery", "training", "recipes"];
+export const REWRITTEN_CATEGORIES = ["wisdom", "recovery", "training", "recipes", "mind", "nervous-system", "inner-work", "longevity"];
 
-export const ACRONYMS = new Set(["HRV", "RPE", "NSDR", "MBSR", "CBT", "XP", "RCT", "RCTS", "BAC", "HR", "PET", "AD", "BC", "VO", "MAX", "NLP", "PETTLEP", "WOOP", "ACT", "DNA", "BMI", "SSRI", "SSRIS", "NEAT", "HIIT", "UK", "US", "USA", "EU", "GPS", "REM", "MET", "METS", "TIPP", "TIP", "LDL", "HDL", "ATP", "CNS", "RHR", "SPO2", "II", "III", "IV", "SEAL", "SEALS", "JAMA", "MIT", "PNAS", "NHS", "WHO", "CDC", "FDA", "NASA", "TV", "PDF", "OK", "USMC", "NBA", "NFL", "UFC", "AM", "PM", "GPS", "ACSM", "PREDIMED"]);
+export const ACRONYMS = new Set(["HRV", "RPE", "NSDR", "MBSR", "CBT", "XP", "RCT", "RCTS", "BAC", "HR", "PET", "AD", "BC", "VO", "MAX", "NLP", "PETTLEP", "WOOP", "ACT", "DNA", "BMI", "SSRI", "SSRIS", "NEAT", "HIIT", "UK", "US", "USA", "EU", "GPS", "REM", "MET", "METS", "TIPP", "TIP", "LDL", "HDL", "ATP", "CNS", "RHR", "SPO2", "II", "III", "IV", "SEAL", "SEALS", "JAMA", "MIT", "PNAS", "NHS", "WHO", "CDC", "FDA", "NASA", "TV", "PDF", "OK", "USMC", "NBA", "NFL", "UFC", "AM", "PM", "GPS", "ACSM", "PREDIMED", "PURE", "NAD", "NMN"]);
 
 export const BANNED_PHRASES = [
   "game-changer", "game changer", "unlock", "biohack", "life hack", "protocol stack", "in today's", "here's the thing",

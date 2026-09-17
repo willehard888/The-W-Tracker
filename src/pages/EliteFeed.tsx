@@ -1,4 +1,5 @@
 
+import { firstVideoFrame } from "@/lib/video-frame";
 import { fmtRelative } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import StreakFlameInline from "@/components/StreakFlameInline";
@@ -189,7 +190,9 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       }
 
       // Moderate text in parallel-ish (fail-open inside hook)
-      if (newPost && newPost.trim().length > 0 && !imageFile) {
+      // Always, not "only when there is no image": an abusive caption used to
+      // ship unscreened as long as a photo rode along with it.
+      if (newPost && newPost.trim().length > 0) {
         const outcome = await moderation.moderateText({
           text: newPost.trim(),
           kind: "feed_post",
@@ -219,6 +222,22 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       }
 
       if (videoFile) {
+        // A video was the one thing that reached storage unscreened. Its first
+        // frame is what the feed shows as a thumbnail, so it goes through the
+        // same gate as an image. Fail closed: if the frame cannot be read, the
+        // post does not go up.
+        setUploadPhase("Checking…");
+        let frame: File;
+        try {
+          frame = await firstVideoFrame(videoFile);
+        } catch (e) {
+          console.error("video frame extraction failed", e);
+          throw new Error("Couldn't read that video. Try a different clip.");
+        }
+        const frameOutcome = await moderation.moderateImage({ file: frame, kind: "feed_post" });
+        if (frameOutcome.blocked) {
+          throw new Error(frameOutcome.friendlyMessage ?? "Post rejected by content policy");
+        }
         setUploadPhase("Uploading…");
         const fileExt = videoFile.name.split(".").pop()?.toLowerCase() || "mp4";
         const path = `${user.id}/${Date.now()}.${fileExt}`;

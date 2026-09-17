@@ -1,3 +1,4 @@
+import { markReported } from "@/lib/reported-content";
 import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,8 +61,13 @@ export function useBlockActions() {
     });
     if (error) { toast.error("Couldn't send report — try again."); return; }
     hapticNotification("success");
+    // The reporter should not keep looking at what they just flagged: hide it
+    // for this session and refetch the lists, so the report visibly did
+    // something (App Review 1.2 checks exactly this).
+    markReported(contentId);
+    refreshAfterBlockChange();
     toast.success("Report sent", { description: "Our team reviews reports — usually within 24 hours." });
-  }, []);
+  }, [refreshAfterBlockChange]);
 
   return { block, unblock, report };
 }

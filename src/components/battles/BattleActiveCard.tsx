@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Camera, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ export const sidesOf = (
 
 interface Props {
   battle: any;
-  opp: { username?: string };
+  opp: { username?: string; user_id?: string };
   typeInfo: BattleTypeInfo;
   profileUsername?: string;
   meId?: string;
@@ -55,6 +56,7 @@ const BattleActiveCard = ({
   battle, opp, typeInfo, profileUsername, meId, board,
   myProof, oppProof, isAdmin, isUploading, onRequestUpload, onAdminCancel, onAdminDelete,
 }: Props) => {
+  const navigate = useNavigate();
   // proof-photos is a private bucket — render via signed URLs.
   const myProofSrc = useSignedMediaUrl(myProof);
   const oppProofSrc = useSignedMediaUrl(oppProof);
@@ -157,7 +159,19 @@ const BattleActiveCard = ({
         {(myProofSrc || oppProofSrc) && (
           <div className="flex -space-x-2 shrink-0">
             {myProofSrc && <img loading="lazy" decoding="async" src={myProofSrc} alt="Your proof" className="h-10 w-10 rounded-lg object-cover ring-2 ring-card" />}
-            {oppProofSrc && <img loading="lazy" decoding="async" src={oppProofSrc} alt={`@${opp.username}'s proof`} className="h-10 w-10 rounded-lg object-cover ring-2 ring-card" />}
+            {/* Their photo is user-generated content shown to this member, so
+                it needs the same report door as a post (App Review 1.2). A tap
+                opens their profile, where Report and Block already live. */}
+            {oppProofSrc && (
+              <button
+                type="button"
+                onClick={() => opp.user_id && navigate(`/user/${opp.user_id}`)}
+                aria-label={`Open @${opp.username ?? "opponent"}'s profile to report or block`}
+                className="press rounded-lg"
+              >
+                <img loading="lazy" decoding="async" src={oppProofSrc} alt={`@${opp.username}'s proof`} className="h-10 w-10 rounded-lg object-cover ring-2 ring-card" />
+              </button>
+            )}
           </div>
         )}
         <div className="flex-1 min-w-0">

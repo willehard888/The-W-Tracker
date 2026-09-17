@@ -267,7 +267,9 @@ const Battles = () => {
     // Unreachable while `participants` is still resolving — the list holds its
     // skeleton until then (see the render gate), because this placeholder used
     // to reach four cards and the ledger as a literal "@Loading…".
-    return participants?.[oppId] || { username: "", xp: 0, streak: 0 };
+    // The id rides along so a card can open their profile (where Report and
+    // Block live) from their proof photo.
+    return { ...(participants?.[oppId] || { username: "", xp: 0, streak: 0 }), user_id: oppId as string };
   };
 
   const getMyProof = (battle: any) => {

@@ -30,6 +30,7 @@ const Chat = () => {
   const [sending, setSending] = useState(false);
   // The bubble that lands with commit-pop — only the one this session just sent.
   const [justSentId, setJustSentId] = useState<string | null>(null);
+  // The newest message from the other person: what a report should point at.
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -77,6 +78,9 @@ const Chat = () => {
     },
     enabled: !!user && !!partnerId,
   });
+
+  // The newest message from the other person: what a report should point at.
+  const lastFromPartner = [...(messages ?? [])].reverse().find((m) => m.sender_id === partnerId);
 
   // Mark messages as read
   useEffect(() => {
@@ -239,7 +243,16 @@ const Chat = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[180px]">
               <DropdownMenuItem
-                onClick={() => report("direct_message", partnerId!, partnerId!, `Reported chat with @${partner?.username ?? "user"}`)}
+                // The newest message FROM them, not their user id: the
+                // moderation queue has to point at content a moderator can
+                // read (it stored the reporter's partner id, which is not a
+                // message and reviews as nothing).
+                onClick={() => report(
+                  "direct_message",
+                  lastFromPartner?.id ?? partnerId!,
+                  partnerId!,
+                  lastFromPartner ? `Reported message from @${partner?.username ?? "user"}` : `Reported chat with @${partner?.username ?? "user"}`,
+                )}
               >
                 <Flag size={14} className="mr-2" aria-hidden /> Report
               </DropdownMenuItem>

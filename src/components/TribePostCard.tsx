@@ -1,3 +1,5 @@
+import { useBlockActions } from "@/hooks/use-blocking";
+import { useReportedIds } from "@/lib/use-reported-ids";
 import { fmtRelative } from "@/lib/format";
 import { useState, useRef, useMemo, memo } from "react";
 import StreakFlameInline from "@/components/StreakFlameInline";
@@ -14,10 +16,7 @@ import TierUsername from "@/components/TierUsername";
 import PostMedia from "@/components/feed/PostMedia";
 import ImageLightbox from "@/components/ImageLightbox";
 import type { StatusTier } from "@/lib/status-tiers";
-import {
-  Flame, MessageCircle, Award, MoreHorizontal,
-  AlertTriangle, Trash2, ShieldCheck, Crown, Reply, X, Send, Zap,
-} from "lucide-react";
+import { Flame, MessageCircle, Award, MoreHorizontal, AlertTriangle, Trash2, ShieldCheck, Crown, Reply, X, Send, Zap, Flag } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -50,12 +49,13 @@ interface CommentThreadProps {
   onReply: (id: string, username: string, snippet: string) => void;
   onEdit: (id: string, content: string) => Promise<void> | void;
   onDelete: (id: string) => Promise<void> | void;
+  onReport?: (commentId: string, authorId: string) => void;
   editingId: string | null;
   setEditingId: (id: string | null) => void;
 }
 
 const CommentThread = ({
-  node, currentUserId, canDeleteAny, onReply, onEdit, onDelete, editingId, setEditingId,
+  node, currentUserId, canDeleteAny, onReply, onEdit, onDelete, onReport, editingId, setEditingId,
 }: CommentThreadProps) => {
   const username = node.profile?.username || "anon";
   const isReply = node.depth > 0;
@@ -160,6 +160,20 @@ const CommentThread = ({
                   <Reply aria-hidden size={12} /> Reply
                 </Button>
               )}
+              {/* A comment is user-generated content like any other: it needs a
+                  way to report it (App Review 1.2). The feed's thread has had
+                  one; this one had none. */}
+              {!isOwn && currentUserId && onReport && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  className={COMMENT_ACTION}
+                  onClick={() => { hapticSelection(); onReport(node.id, node.user_id); }}
+                >
+                  <Flag aria-hidden size={12} /> Report
+                </Button>
+              )}
               {isOwn && (
                 <Button
                   type="button"
@@ -210,7 +224,7 @@ const CommentThread = ({
         )}>
           {node.children.map((child: CommentNode) => (
             <CommentThread key={child.id} node={child} currentUserId={currentUserId} canDeleteAny={canDeleteAny}
-              onReply={onReply} onEdit={onEdit} onDelete={onDelete} editingId={editingId} setEditingId={setEditingId} />
+              onReply={onReply} onEdit={onEdit} onDelete={onDelete} onReport={onReport} editingId={editingId} setEditingId={setEditingId} />
           ))}
         </div>
       )}
@@ -254,6 +268,8 @@ interface Props {
 }
 
 const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemaining, onChanged }: Props) => {
+  const { report } = useBlockActions();
+  const reportedIds = useReportedIds();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -383,13 +399,18 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       // from it. This card used to set that flag itself, which RLS silently
       // dropped (author-only UPDATE), so every report toasted success and did
       // nothing.
+      // Two writes, two audiences. The report row drives the tribe owner's
+      // own review dialog (a trigger derives tribe_posts.reported from it);
+      // report_content puts the same post in OUR moderation queue, which is
+      // what App Review 1.2 requires — the developer has to see it, not
+      // another member. The queue write is the one that must not be lost.
+      await report("tribe_post", post.id, post.user_id);
       const { error } = await supabase.from("tribe_post_reports").insert({
         post_id: post.id, reporter_id: user.id, reason: "Reported by user",
       });
-      if (error) throw error;
+      if (error) console.warn("tribe owner report row failed", error.message);
     },
     onSuccess: () => {
-      toast.success("Post reported", { description: "Tribe owner will review it." });
       onChanged();
     },
     onError: (e: any) => toast.error(friendlyError(e, "Failed to report")),
@@ -614,7 +635,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   No comments yet — start the conversation
                 </p>
               )}
-              {tree.map((node) => (
+              {tree.filter((node) => !reportedIds.has(node.id)).map((node) => (
                 <CommentThread
                   key={node.id}
                   node={node}
@@ -626,6 +647,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                   }}
                   onEdit={async (id, content) => { await editComment.mutateAsync({ id, content }); }}
                   onDelete={async (id) => { await deleteComment.mutateAsync(id); }}
+                  onReport={(id, authorId) => void report("tribe_comment", id, authorId)}
                   editingId={editingCommentId}
                   setEditingId={setEditingCommentId}
                 />

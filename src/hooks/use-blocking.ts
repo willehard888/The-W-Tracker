@@ -24,7 +24,10 @@ export function useBlockActions() {
     // Content visibility is server-enforced; just refetch what shows other
     // users' content so the blocked/unblocked rows appear or disappear.
     ["blocked-users", "feed-posts", "feed-comments", "conversations",
-     "friends", "pending-friend-requests", "tribe-posts"].forEach((k) =>
+     "friends", "pending-friend-requests", "tribe-posts",
+     // The open chat thread: without this the composer stayed live on the
+     // screen the block was made from, and every send failed silently.
+     "chat-blocked", "chat-messages"].forEach((k) =>
       qc.invalidateQueries({ queryKey: [k] }),
     );
   }, [qc]);

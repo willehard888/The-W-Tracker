@@ -14,9 +14,11 @@ const APPLY = args.includes("--apply");
 const { call, get } = makeAsc(authFromArgs(args));
 
 const SITE = "https://www.whealthfactory.com"; // the apex answers 308 to www
-// The support page must be a real page, not the app shell answering 200. Until
-// public/support.html is live on SITE, the listing keeps the old page that works.
-const SUPPORT_URL = "https://thewtracker.store/support.html";
+// The support page must be a real page, not the app shell answering 200.
+// public/support.html + the /support rewrite in vercel.json ship with the
+// release, so verify this URL returns the support page before --apply — the
+// old thewtracker.store page it replaces is being retired.
+const SUPPORT_URL = `${SITE}/support`;
 
 const EN_DESCRIPTION = `Whealth Factory turns discipline into something you can see.
 

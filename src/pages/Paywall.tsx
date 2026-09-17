@@ -195,6 +195,7 @@ const Paywall = () => {
       if (outcome?.pending) {
         // Ask to Buy / SCA: the request left the device and is waiting on
         // someone else. Nothing to verify and nothing went wrong.
+        track(FUNNEL.purchasePending, { plan, platform: "native" });
         hapticNotification("warning");
         setStatus("pending");
         return;
@@ -231,6 +232,7 @@ const Paywall = () => {
         return;
       }
       if (isPaymentPending(e)) {
+        track(FUNNEL.purchasePending, { plan, platform: "native" });
         hapticNotification("warning");
         setStatus("pending");
         return;

@@ -414,7 +414,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
   const [meetingUrl, setMeetingUrl] = useState("");
   const [when, setWhen] = useState("");
   const [sessions, setSessions] = useState<string[]>([""]); // series: datetime-local per session
-  const [duration, setDuration] = useState(60);
+  const [duration, setDuration] = useState("60");
   const [capacity, setCapacity] = useState("");
   const [desc, setDesc] = useState("");
   const [busy, setBusy] = useState(false);
@@ -430,13 +430,20 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
     setActivity(name);
     const d = activityDefaults(name);
     if (!modeTouched) setMode(d.mode);
-    if (!durationTouched) setDuration(d.duration);
+    if (!durationTouched) setDuration(String(d.duration));
   };
   const titlePlaceholder = kind === "series"
     ? `Series title — e.g. ${activityDefaults(activity).titleHint}`
     : `Title — e.g. ${activityDefaults(activity).titleHint}`;
 
   const linkInvalid = mode === "online" && meetingUrl.trim() !== "" && !/^https?:\/\//i.test(meetingUrl.trim());
+
+  // The field held a number and re-parsed on every keystroke, so clearing it
+  // snapped the state to 60 under an empty box, a half-typed "1" was a
+  // one-minute event, and anything non-numeric went to the server as NaN.
+  // The box holds text; this is what actually gets saved, and onBlur writes it
+  // back so the host sees the clamp instead of being surprised by it.
+  const durationMin = Math.min(600, Math.max(10, parseInt(duration, 10) || 60));
 
   const submit = async () => {
     if (title.trim().length < 2) { toast.error("Give it a title."); return; }
@@ -450,7 +457,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
         title, activity: activity || undefined, description: desc || undefined,
         sessions: dates.map((w) => ({
           starts_at: new Date(w).toISOString(),
-          duration_min: duration,
+          duration_min: durationMin,
           place: mode === "in_person" ? (place || null) : null,
           meeting_url: mode === "online" ? (meetingUrl.trim() || null) : null,
         })),
@@ -466,7 +473,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
       place: mode === "in_person" ? (place || undefined) : undefined,
       meeting_url: mode === "online" ? (meetingUrl.trim() || null) : null,
       starts_at: new Date(when).toISOString(),
-      duration_min: duration, capacity: capacity ? parseInt(capacity, 10) : null,
+      duration_min: durationMin, capacity: capacity ? parseInt(capacity, 10) : null,
     });
     setBusy(false);
   };
@@ -597,7 +604,17 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
           <div className="flex gap-2">
             <div className="flex-1">
               <label className={cn(LABEL, "mb-1 block")}>Duration (min)</label>
-              <Input type="number" value={duration} min={10} step={5} onChange={(e) => { setDuration(parseInt(e.target.value || "60", 10)); setDurationTouched(true); }} className={input} />
+              <Input
+                type="number"
+                inputMode="numeric"
+                value={duration}
+                min={10}
+                max={600}
+                step={5}
+                onChange={(e) => { setDuration(e.target.value); setDurationTouched(true); }}
+                onBlur={() => setDuration(String(durationMin))}
+                className={input}
+              />
             </div>
             {kind === "single" && (
               <div className="flex-1">

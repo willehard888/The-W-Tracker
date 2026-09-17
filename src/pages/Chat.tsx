@@ -79,6 +79,24 @@ const Chat = () => {
     enabled: !!user && !!partnerId,
   });
 
+  // Blocking closes a thread in both directions (the RLS on direct_messages
+  // carries NOT is_blocked on SELECT and INSERT). Without asking, the screen
+  // showed an empty thread under "Start the conversation" and a live composer
+  // whose every send failed with "Message didn't send — try again."
+  const { data: blocked } = useQuery({
+    queryKey: ["chat-blocked", user?.id, partnerId],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("blocked_users")
+        .select("blocker_id", { count: "exact", head: true })
+        .in("blocker_id", [user!.id, partnerId!])
+        .in("blocked_id", [user!.id, partnerId!]);
+      return (count ?? 0) > 0;
+    },
+    enabled: !!user && !!partnerId,
+    staleTime: 60_000,
+  });
+
   // The newest message from the other person: what a report should point at.
   const lastFromPartner = [...(messages ?? [])].reverse().find((m) => m.sender_id === partnerId);
 
@@ -295,7 +313,16 @@ const Chat = () => {
         )}
         {!messagesLoading && !messagesFailed && (!messages || messages.length === 0) && (
           <div className="flex flex-col justify-center h-full">
-            <EmptyState size="compact" icon={Send} title="Start the conversation" description={`Say something to @${partner?.username || "them"}. Messages are private.`} />
+            {blocked ? (
+              <EmptyState
+                size="compact"
+                icon={Ban}
+                title="This conversation is closed"
+                description="One of you blocked the other. Unblock from their profile to reopen it."
+              />
+            ) : (
+              <EmptyState size="compact" icon={Send} title="Start the conversation" description={`Say something to @${partner?.username || "them"}. Messages are private.`} />
+            )}
           </div>
         )}
         {messages?.map((msg, idx) => {
@@ -353,6 +380,11 @@ const Chat = () => {
 
       {/* Input */}
       <div className="shrink-0 border-t border-border/60 bg-card px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        {blocked ? (
+          <p role="status" className="min-h-11 flex items-center justify-center text-center text-meta text-muted-foreground/75">
+            You can't message each other while one of you is blocked.
+          </p>
+        ) : (
         <div className="flex gap-2 items-center">
           <div className="flex-1 relative">
             <Input
@@ -381,6 +413,7 @@ const Chat = () => {
             <Send aria-hidden size={16} />
           </Button>
         </div>
+        )}
       </div>
 
       <BlockUserDialog

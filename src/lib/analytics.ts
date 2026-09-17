@@ -64,6 +64,9 @@ export const FUNNEL = {
   purchaseStarted: "purchase_started",
   purchaseCompleted: "purchase_completed",
   purchaseCancelled: "purchase_cancelled",
+  /** Ask to Buy / SCA: the purchase left the device and waits on someone else's
+   *  approval. Counted separately or it reads as a loss in the funnel. */
+  purchasePending: "purchase_pending",
   purchaseFailed: "purchase_failed",
   purchaseRestored: "purchase_restored",
   /** The store as the app saw it when the paywall opened (ids, labels, errors). */

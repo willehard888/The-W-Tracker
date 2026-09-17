@@ -79,13 +79,20 @@ let byNormTitle: Map<string, string> | null = null;
  * name aliases), then the token-subset fallback. Used by the runner, the
  * program rows and the library so all three show the same picture.
  */
+let bySlug: Map<string, IllustratedExercise> | null = null;
+/** By slug, built once: this runs per row per render in lists of 100+ movements. */
+const illustratedBySlug = (slug: string): IllustratedExercise | undefined => {
+  if (!bySlug) bySlug = new Map(ILLUSTRATED_EXERCISES.map((e) => [e.slug, e]));
+  return bySlug.get(slug);
+};
+
 export const resolveIllustration = (
   catalogSlug?: string | null,
   name?: string | null,
 ): IllustratedExercise | null => {
   const mapped = catalogSlug ? ILLUSTRATION_BY_CATALOG[catalogSlug] : undefined;
   if (mapped) {
-    const hit = ILLUSTRATED_EXERCISES.find((e) => e.slug === mapped);
+    const hit = illustratedBySlug(mapped);
     if (hit) return hit;
   }
   for (const cand of candidatesForName(name)) {
@@ -98,7 +105,7 @@ export const resolveIllustration = (
     for (const e of ILLUSTRATED_EXERCISES) byNormTitle.set(normalizeExerciseName(e.title), e.slug);
   }
   const slug = bestTokenSubsetSlug(name, byNormTitle);
-  const hit = slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) ?? null : null;
+  const hit = slug ? illustratedBySlug(slug) ?? null : null;
   if (!hit) reportMissingIllustration(catalogSlug, name);
   return hit;
 };

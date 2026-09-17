@@ -1463,9 +1463,13 @@
 }
 
 /* Flame rim pulse — thin glowing line under headers/tabs */
+/* Opacity only. It used to animate filter: blur() too: a blur radius cannot be
+   composited, so the sticky header re-rasterised every frame, forever, above
+   the scrolling content of all four tab roots. On a 1px line the blur was
+   invisible anyway. */
 @keyframes flame-rim-pulse {
-  0%, 100% { opacity: 0.45; filter: blur(0.5px); }
-  50%      { opacity: 1;    filter: blur(1px); }
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
 }
 
 /* Ember rise — used for username caption beneath +N chip */

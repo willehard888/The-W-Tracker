@@ -46,6 +46,19 @@ const GROUPS: Array<{ label: string; match: (m: string) => boolean }> = [
  * "knees caving" and "hip hinge" are how people describe the problem they came
  * to fix, and neither phrase appears in any title, muscle name or step.
  */
+// One lowercase haystack per exercise, built on first search. Lowercasing
+// every step of all 268 exercises on each keystroke allocated ~240 kB of
+// strings per character and dropped frames while typing.
+const haystackCache = new Map<string, string>();
+const haystack = (e: { slug: string; title: string; primary: string[]; secondary: string[]; equipment: string[]; steps: string[] }) => {
+  let h = haystackCache.get(e.slug);
+  if (h === undefined) {
+    h = [e.title, ...e.primary, ...e.secondary, ...e.equipment, ...e.steps].join(" \n ").toLowerCase() + " \n " + coachingText(e.slug);
+    haystackCache.set(e.slug, h);
+  }
+  return h;
+};
+
 const coachingTextCache = new Map<string, string>();
 const coachingText = (slug: string) => {
   const cached = coachingTextCache.get(slug);
@@ -160,15 +173,7 @@ const Exercises = () => {
       // Equipment and the step text are searched too. "what can I do with a
       // kettlebell" and "hip hinge" were both dead queries when only the title
       // and the primary muscle were matched.
-      list = list.filter(
-        (e) =>
-          e.title.toLowerCase().includes(q) ||
-          e.primary.some((m) => m.toLowerCase().includes(q)) ||
-          e.secondary.some((m) => m.toLowerCase().includes(q)) ||
-          e.equipment.some((it) => it.toLowerCase().includes(q)) ||
-          e.steps.some((s) => s.toLowerCase().includes(q)) ||
-          coachingText(e.slug).includes(q),
-      );
+      list = list.filter((e) => haystack(e).includes(q));
     }
     return list;
   }, [query, group]);

@@ -25,7 +25,7 @@ const AUTO_LABEL = new RegExp(`^${MUSCLE}( & ${MUSCLE})*$`);
 export const isAutoLabel = (focus: string | null | undefined): boolean =>
   !focus || focus === "Rest" || focus === "Session" || AUTO_LABEL.test(focus);
 
-const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
+const clone = <T,>(v: T): T => (typeof structuredClone === "function" ? structuredClone(v) : JSON.parse(JSON.stringify(v))) as T;
 const restDay = (day: string): ProgramDay => ({ day, focus: "Rest", duration_min: 0, blocks: [], conditioning: "" });
 /** A day with nothing left in it is a rest day; otherwise its length follows its blocks. */
 const finish = (d: ProgramDay): ProgramDay =>

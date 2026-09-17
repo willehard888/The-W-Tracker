@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,11 @@ import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
-import FocusSessionSheet from "@/components/coach/FocusSessionSheet";
+
+// Lazy: the sheet pulls in the 268-movement illustration catalog (164 kB raw,
+// 31 kB gz) through its thumbnails. Imported statically from a Home component
+// it rode in the boot chunk of every cold start, for a sheet that mounts on a tap.
+const FocusSessionSheet = lazy(() => import("@/components/coach/FocusSessionSheet"));
 
 /**
  * Today's prescribed session, on the home screen.
@@ -49,7 +53,7 @@ const FocusDoor = ({ label = "Pick a different focus" }: { label?: string }) => 
       >
         {label} <ChevronRight aria-hidden size={13} />
       </button>
-      {open && <FocusSessionSheet open onClose={() => setOpen(false)} />}
+      {open && <Suspense fallback={null}><FocusSessionSheet open onClose={() => setOpen(false)} /></Suspense>}
     </>
   );
 };

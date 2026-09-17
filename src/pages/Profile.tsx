@@ -577,7 +577,7 @@ const Profile = () => {
               <div key={post.id} className="surface-card surface-card-quiet p-4">
                 {post.content && <p className="text-base mb-2">{post.content}</p>}
                 {post.image_url && (
-                  <AppImage src={post.image_url} width={600} alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
+                  <AppImage src={post.image_url} width={600} placeholderAspect="4 / 5" alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
                 )}
                 <div className="flex items-center gap-3 text-label text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart aria-hidden size={12} /> {post.likes_count}</span>

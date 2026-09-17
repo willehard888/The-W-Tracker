@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Dumbbell, ChevronRight, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCoachProgram, todaySessionOf } from "@/hooks/use-coach-program";
 import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { dayFocus, daySummary } from "@/lib/training/session";
-import FocusSessionSheet from "@/components/coach/FocusSessionSheet";
+
+// Lazy: the sheet pulls in the 268-movement illustration catalog (164 kB raw,
+// 31 kB gz) through its thumbnails. Imported statically from a Home component
+// it rode in the boot chunk of every cold start, for a sheet that mounts on a tap.
+const FocusSessionSheet = lazy(() => import("@/components/coach/FocusSessionSheet"));
 
 /**
  * The program door. No program yet: the two-minute build. Has one: today's
@@ -30,7 +34,7 @@ const ProgramCard = () => {
         <span className="flex-1 min-w-0 text-note font-bold leading-tight">Pick today's focus</span>
         <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
       </button>
-      {pickOpen && <FocusSessionSheet open onClose={() => setPickOpen(false)} />}
+      {pickOpen && <Suspense fallback={null}><FocusSessionSheet open onClose={() => setPickOpen(false)} /></Suspense>}
     </>
   );
   // Today's focus session, when one exists, is the day's training — it leads.

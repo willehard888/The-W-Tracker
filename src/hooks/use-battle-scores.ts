@@ -30,7 +30,9 @@ export const useBattleScores = (battleId: string | null | undefined, enabled = t
     queryKey: battleScoresKey(battleId),
     enabled: !!battleId && enabled,
     staleTime: 30_000,
-    refetchInterval: 60_000,
+    // A foregrounded native app is never "hidden", so this polls for as long as
+    // the screen is open: five minutes, not one.
+    refetchInterval: 5 * 60_000,
     queryFn: async (): Promise<BattleScoreboard> => {
       const { data, error } = await supabase.rpc("battle_scores", { p_battle_id: battleId! });
       if (error) throw error;

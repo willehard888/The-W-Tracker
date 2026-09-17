@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Crown, Sparkles, Share2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,9 @@ import {
   getTierConfig, formatTier, ladderRankValue, tierFromLadder, divisionFromLadder,
 } from "@/lib/status-tiers";
 import { useAuth } from "@/contexts/AuthContext";
-import StoryShareModal from "@/components/StoryShareModal";
 import ConfettiBurst from "@/components/ConfettiBurst";
+
+const StoryShareModal = lazy(() => import("@/components/StoryShareModal"));
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { readLocal, writeLocal } from "@/lib/storage";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
@@ -187,14 +188,16 @@ const TierPromotionCelebration = () => {
         )}
       </AnimatePresence>
 
-      <StoryShareModal
+      {/* Mounted for every signed-in member; the 30 kB share-card renderer it
+          opens is seen a handful of times ever. Loaded when it is asked for. */}
+      {shareOpen && <Suspense fallback={null}><StoryShareModal
         open={shareOpen}
         onClose={() => {
           setShareOpen(false);
           setShowCelebration(false);
         }}
         variant="stats"
-      />
+      /></Suspense>}
     </>
   );
 };

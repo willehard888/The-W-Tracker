@@ -148,6 +148,7 @@ export interface LogSetInput {
 
 export const useLogSet = () => {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: async (p: LogSetInput) => {
       // The SQL function accepts NULL for the optional slots; the generated
@@ -180,8 +181,10 @@ export const useLogSet = () => {
       // history until staleTime lapsed. One device is one user — the bare
       // prefix is exact enough and cannot drift again.
       // Only the movement that was logged: the bare prefix refetched every
-      // open exercise's history on each set, on gym wifi.
-      qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === "exercise-history" && (p.slug == null || q.queryKey[2] === p.slug) });
+      // open exercise's history on each set, on gym wifi. The key keeps the
+      // query's own shape (name, member, slug); see use-workout-log-keys.test.
+      if (p.slug) qc.invalidateQueries({ queryKey: ["exercise-history", user?.id, p.slug] });
+      else qc.invalidateQueries({ queryKey: ["exercise-history"] });
       qc.invalidateQueries({ queryKey: ["recent-workout-logs"] });
     },
   });

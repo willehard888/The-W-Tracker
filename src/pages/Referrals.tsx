@@ -1,3 +1,4 @@
+import { avatarUrl } from "@/lib/img";
 import { backOr } from "@/lib/nav";
 import { useState } from "react";
 import { Copy, Check, Share2, Image as ImageIcon } from "lucide-react";
@@ -165,7 +166,7 @@ const Referrals = () => {
                 <div key={i} className="flex items-center gap-3 py-2.5">
                   <div className="h-9 w-9 rounded-full overflow-hidden bg-secondary flex items-center justify-center font-black text-xs text-muted-foreground shrink-0">
                     {r.avatar_url ? (
-                      <img src={r.avatar_url} alt="" className="h-full w-full object-cover" />
+                      <img src={avatarUrl(r.avatar_url, 72)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
                       (r.referred_username?.charAt(0) || "?").toUpperCase()
                     )}

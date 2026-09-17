@@ -33,6 +33,35 @@ const PATTERN_LABEL: Record<PoolItem["pattern"], string> = {
 };
 const BIG_FIRST: Focus[] = ["legs", "back", "chest", "glutes", "shoulders", "core", "biceps", "triceps"];
 
+// Module scope on purpose. Declared inside the sheet they were new component
+// types on every render, so React unmounted and remounted all ~137 rows (and
+// re-requested every thumbnail) on each keystroke and each chip tap.
+type PickFn = (e: PoolItem, surface?: "picker") => void;
+const Row = ({ e, surface, onPick }: { e: PoolItem; surface?: "picker"; onPick: PickFn }) => (
+  // Off-screen rows are skipped by the engine: each thumbnail carries a
+  // five-stage CSS filter, the expensive part of this list in WKWebView.
+  <li style={{ contentVisibility: "auto", containIntrinsicSize: "auto 64px" }}>
+    <button type="button" onClick={() => onPick(e, surface)} className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
+      <Thumb slug={e.slug} name={e.name} />
+      <span className="flex-1 min-w-0">
+        <span className="block text-note font-bold leading-tight truncate">{e.name}</span>
+        <span className="block text-meta text-muted-foreground mt-0.5 truncate">
+          {PATTERN_LABEL[e.pattern]} · {e.focus.map((f) => FOCUS_LABEL[f]).join(", ")}
+        </span>
+      </span>
+    </button>
+  </li>
+);
+const Section = ({ label, items, surface, onPick }: { label: string; items: PoolItem[]; surface?: "picker"; onPick: PickFn }) =>
+  items.length === 0 ? null : (
+    <section>
+      <h3 className="text-label font-bold text-muted-foreground mb-1">{label}</h3>
+      <ul className="divide-y divide-border/35 border-y border-border/35">
+        {items.map((e) => <Row key={e.slug} e={e} surface={surface} onPick={onPick} />)}
+      </ul>
+    </section>
+  );
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -65,7 +94,10 @@ const ExercisePickerSheet = ({ open, onClose, title, current, exclude, onPick }:
   }, [engine, input.seed, input.experience, exclude.join("|"), current?.slug, neglected.join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = query.trim().toLowerCase();
-  const filtered = all.filter((e) => (!focus || e.focus.includes(focus)) && (!q || e.name.toLowerCase().includes(q)));
+  const filtered = useMemo(
+    () => all.filter((e) => (!focus || e.focus.includes(focus)) && (!q || e.name.toLowerCase().includes(q))),
+    [all, focus, q],
+  );
   const browsing = !focus && !q;
 
   const pick = (e: PoolItem, surface?: "picker") => {
@@ -76,29 +108,6 @@ const ExercisePickerSheet = ({ open, onClose, title, current, exclude, onPick }:
     onPick(engine.prescribe(e, input), { sameKind: !!cur && (cur.tier < 3) === (e.tier < 3), focus: e.focus });
     onClose();
   };
-
-  const Row = ({ e, surface }: { e: PoolItem; surface?: "picker" }) => (
-    <li>
-      <button type="button" onClick={() => pick(e, surface)} className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
-        <Thumb slug={e.slug} name={e.name} />
-        <span className="flex-1 min-w-0">
-          <span className="block text-note font-bold leading-tight truncate">{e.name}</span>
-          <span className="block text-meta text-muted-foreground mt-0.5 truncate">
-            {PATTERN_LABEL[e.pattern]} · {e.focus.map((f) => FOCUS_LABEL[f]).join(", ")}
-          </span>
-        </span>
-      </button>
-    </li>
-  );
-  const Section = ({ label, items, surface }: { label: string; items: PoolItem[]; surface?: "picker" }) =>
-    items.length === 0 ? null : (
-      <section>
-        <h3 className="text-label font-bold text-muted-foreground mb-1">{label}</h3>
-        <ul className="divide-y divide-border/35 border-y border-border/35">
-          {items.map((e) => <Row key={e.slug} e={e} surface={surface} />)}
-        </ul>
-      </section>
-    );
 
   return (
     <BottomSheet
@@ -139,9 +148,9 @@ const ExercisePickerSheet = ({ open, onClose, title, current, exclude, onPick }:
         </div>
       ) : (
         <div className="space-y-5 pb-2">
-          {browsing && <Section label="Same movement" items={same} />}
-          {browsing && <Section label={`For balance: ${neglected.map((f) => FOCUS_LABEL[f].toLowerCase()).join(", ")}`} items={balance} surface="picker" />}
-          <Section label={browsing ? "All movements" : `${filtered.length} movement${filtered.length === 1 ? "" : "s"}`} items={filtered} />
+          {browsing && <Section label="Same movement" items={same} onPick={pick} />}
+          {browsing && <Section label={`For balance: ${neglected.map((f) => FOCUS_LABEL[f].toLowerCase()).join(", ")}`} items={balance} surface="picker" onPick={pick} />}
+          <Section label={browsing ? "All movements" : `${filtered.length} movement${filtered.length === 1 ? "" : "s"}`} items={filtered} onPick={pick} />
           {filtered.length === 0 && (
             <p className="py-10 text-center text-note text-muted-foreground">
               Nothing fits that. Clear the search, or add equipment in your profile.

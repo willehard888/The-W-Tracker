@@ -103,7 +103,7 @@ import { fetchFeedPosts } from "@/lib/feed-query";
 import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/leaderboard-query";
 import { fetchMyTribeMembership, fetchTribesPage } from "@/lib/tribes-query";
 import { fetchVaultArticleSummaries, vaultArticlesKey } from "@/hooks/use-vault-articles";
-import { afterIdle } from "@/lib/idle";
+import { afterIdle, onIdle } from "@/lib/idle";
 
 // Paths reachable WITHOUT an active subscription/trial — the paywall itself,
 // onboarding, the username picker, and legal pages — so a gated user can
@@ -449,16 +449,22 @@ const TabPrefetcher = () => {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
         const userId = data.session.user.id;
-        // Route chunks — kills the Suspense skeleton flash on first tap.
-        void import("./pages/Squad");
-        void import("./pages/Leaderboard");
-        void import("./pages/Profile");
-        void import("./pages/DailyCheckin");
-        void import("./pages/TribeDetail");
-        // Reached from the Today card, the diary door and the library door —
-        // each was a Suspense skeleton on first tap.
-        void import("./pages/Coach");
-        void import("./pages/nutrition/NutritionDiary");
+        // Route chunks — kills the Suspense skeleton flash on first tap. One
+        // per idle slot: seven imports in one tick were a ~400 kB parse spike
+        // about five seconds in, right as the member starts scrolling Home.
+        // TribeDetail is two taps away and no longer rides along.
+        const chunks = [
+          () => import("./pages/Squad"),
+          () => import("./pages/Leaderboard"),
+          () => import("./pages/Profile"),
+          () => import("./pages/DailyCheckin"),
+          // Reached from the Today card, the diary door and the library door —
+          // each was a Suspense skeleton on first tap.
+          () => import("./pages/Coach"),
+          () => import("./pages/nutrition/NutritionDiary"),
+        ];
+        const next = () => { const load = chunks.shift(); if (load) void load().catch(() => {}).finally(() => onIdle(next, 1500)); };
+        next();
         // Not Exercises: its chunk drags ExerciseIllustration (165 kB) and
         // ExerciseCoachingBlock (137 kB) — a main-thread parse spike while the
         // user is reading Home, for a screen reached from the Library shelf.

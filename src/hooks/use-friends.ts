@@ -68,7 +68,9 @@ export const usePendingFriendCount = () => {
     queryKey: ["friend-request-count", user?.id],
     enabled: !!user,
     staleTime: 15_000,
-    refetchInterval: 60_000,
+    // A foregrounded native app is never "hidden", so this polls for as long as
+    // the screen is open: five minutes, not one.
+    refetchInterval: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("pending_friend_request_count");
       if (error) throw error;

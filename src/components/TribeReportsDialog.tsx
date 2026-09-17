@@ -252,6 +252,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                         src={r.post.image_url}
                         width={320}
                         alt=""
+                        placeholderAspect="4 / 5"
                         className="rounded-md max-h-32 w-full object-cover border border-border/40"
                       />
                     )}

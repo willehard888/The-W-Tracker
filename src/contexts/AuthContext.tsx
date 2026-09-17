@@ -291,7 +291,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!checkSubUserId) return;
     checkSubscription();
-    const interval = setInterval(checkSubscription, 5 * 60_000);
+    // A safety net under realtime and the resume handler, not the mechanism:
+    // every tick is a 40-column profile read and a radio wake. 15 minutes.
+    const interval = setInterval(checkSubscription, 15 * 60_000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkSubUserId]);

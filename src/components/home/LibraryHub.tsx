@@ -85,8 +85,8 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
       </div>
     );
   }
-  // The Vault's own mark, drawn for this size — the crown-in-a-tinted-tile
-  // read as a sticker next to a photo and a drawing.
+  // The Vault's own mark, drawn for this size: a vault door in the app's
+  // glossy gold, so it holds its place next to a photo and a drawing.
   return (
     <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-gold/25">
       <VaultThumb className="h-full w-full" />

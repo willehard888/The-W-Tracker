@@ -25,6 +25,8 @@ import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
 import { sportName, sportBreakdown } from "../_shared/sports.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 import { programWeekState } from "../_shared/program-week.ts";
+import { todaysFocusSession } from "../_shared/today-session.ts";
+import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -466,10 +468,14 @@ Deno.serve(async (req) => {
     if (program?.plan_json?.weeks) {
       const now = new Date();
       const weekIdx = programWeekState({ startedOn: program.started_on, weeks: program.weeks, logs: allLogs, now }).currentWeek;
-      const dayIdx = (now.getDay() + 6) % 7;
+      // The member's weekday, not the server's UTC one.
+      const dayIdx = (localWeekday(clampTzOffset(tzOffset), now.getTime()) + 6) % 7;
       const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
       todaySession = wk?.days?.[dayIdx] ?? null;
     }
+    // A session built for today leads, as it does on Home: with one in
+    // progress the coach used to answer "rest day" from the program.
+    todaySession = (await todaysFocusSession(supabase, userId, localDayKey(clampTzOffset(tzOffset))).catch(() => null)) ?? todaySession;
     // The seeded post-check-in chat used to arrive as an unexplained
     // assistant turn — the model didn't know the conversation continues
     // straight from the check-in the athlete JUST submitted.

@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { withNetworkRetry } from "@/lib/retry";
 import { toast } from "sonner";
+import { dayFocus } from "@/lib/training/session";
+import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { useCoachProgram, todaySessionOf, type CoachProgram } from "@/hooks/use-coach-program";
 import { useDailyPlan } from "@/hooks/use-daily-plan";
 import AthleteProfileOnboarding from "@/components/coach/AthleteProfileOnboarding";
@@ -226,9 +228,15 @@ const CoachShell = ({
 
   // Opening beat: the week and today's session, or the invitation.
   const today = todaySessionOf(program, currentWeek, todayDayIndex);
-  const beat = !program
-    ? "Tell me the goal. I build the week."
-    : `Week ${currentWeek}. ${!today ? "Your week is set" : today.isRest ? "Rest day" : today.focus}.`;
+  // A session built for today leads, as on Home: with a Chest session in
+  // progress this beat used to say "Rest day" from the program's week.
+  const { session: focusSession } = useTodayFocusSession();
+  const focusDay = focusSession?.program.plan_json?.weeks?.[0]?.days?.find((d) => d.blocks.length > 0);
+  const beat = focusDay
+    ? `Today. ${dayFocus(focusDay) || "Your session"}.`
+    : !program
+      ? "What are you training today?"
+      : `Week ${currentWeek}. ${!today ? "Your week is set" : today.isRest ? "Rest day" : today.focus}.`;
 
   return (
     <div className="min-h-full">

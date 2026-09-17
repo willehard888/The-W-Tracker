@@ -10,6 +10,7 @@ import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
 import { programWeekState } from "../_shared/program-week.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
+import { todaysFocusSession } from "../_shared/today-session.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,6 +93,8 @@ Deno.serve(async (req) => {
       const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
       todaySession = wk?.days?.[dayIdx] ?? null;
     }
+    // A session built for today leads, as it does on Home.
+    todaySession = (await todaysFocusSession(sb, uid, today).catch(() => null)) ?? todaySession;
 
     const last = checkins[0];
     const lastSleep = last?.sleep_hours ?? null;

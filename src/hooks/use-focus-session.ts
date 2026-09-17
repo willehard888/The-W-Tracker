@@ -121,9 +121,26 @@ const call = async <T,>(body: object): Promise<T> => {
   return data as T;
 };
 
+/**
+ * The morning brief is cached for the day and names the session that was on
+ * deck when it was written: after a new program, or a session built for today,
+ * it kept announcing "today's Upper session" over a Chest day. Written again
+ * once, against what is true now (the function caps these per member per day).
+ * ponytail: a hand edit of today's day does not refresh it; call this from
+ * useEditProgram if that contradiction shows up.
+ */
+const rewriteBrief = (qc: ReturnType<typeof useQueryClient>, userId: string | undefined) => {
+  if (!userId) return;
+  void supabase.functions
+    .invoke("coach-daily-brief", { body: { tz_offset_minutes: new Date().getTimezoneOffset(), force: true } })
+    .then(({ data }) => { if (data?.brief) qc.setQueryData(["coach-brief", userId, localDateKey()], data.brief); })
+    .catch(() => { /* the cached brief stays; tomorrow's is written fresh */ });
+};
+
 /** The one call: preview (`commit: false`) or store (`commit: true`, with the preview's slugs after swaps). */
 export const useBuildFocusSession = () => {
   const qc = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: async (args: BuildArgs): Promise<BuildResult> => {
       const res = await call<BuildResult>(args);
@@ -131,7 +148,9 @@ export const useBuildFocusSession = () => {
       return res;
     },
     onSuccess: (res) => {
-      if (res.program) void qc.invalidateQueries({ queryKey: ["focus-session"] });
+      if (!res.program) return;
+      void qc.invalidateQueries({ queryKey: ["focus-session"] });
+      rewriteBrief(qc, user?.id);
     },
   });
 };
@@ -262,6 +281,7 @@ export const useCreateProgram = () => {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["coach-program"] });
       void qc.invalidateQueries({ queryKey: ["coach-program-logs"] });
+      rewriteBrief(qc, user?.id);
     },
   });
 };

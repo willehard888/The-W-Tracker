@@ -6,8 +6,8 @@
  * "Is today a rest day?" was answered in four different places, and one of them
  * answered it differently:
  *
- *   TodaySessionCard.tsx     day.focus.toLowerCase() === "rest"
- *   ProgramWeekAccordion.tsx (day.focus ?? "").toLowerCase() === "rest"
+ *   DaySessionCard.tsx       day.focus.toLowerCase() === "rest"
+ *   ProgramWeekView.tsx      (day.focus ?? "").toLowerCase() === "rest"
  *   WeekStrip.tsx            d.focus.toLowerCase() === "rest"
  *   v2/ProgramCard.tsx       day.rest === true          ← the odd one out
  *

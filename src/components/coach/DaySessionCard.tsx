@@ -1,10 +1,10 @@
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Loader2, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
+import type { CoachProgram, ProgramBlock, ProgramLog } from "@/hooks/use-coach-program";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -18,20 +18,30 @@ const RPE_SCALE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 const LABEL = "text-label font-bold text-muted-foreground";
 
+const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
 interface Props {
   program: CoachProgram;
-  currentWeek: number;
-  todayDayIndex: number;
+  week: number;
+  dayIndex: number;
+  isToday: boolean;
+  /** The runner opens sessions of the week the athlete is in, not of a later one. */
+  isCurrentWeek: boolean;
   logs: ProgramLog[];
   onLogged: () => void;
+  /** Hand edits, offered per movement while nothing is logged for it. */
+  onSwap?: (block: ProgramBlock) => void;
+  onRemove?: (slug: string) => void;
+  /** The day's own doors (add, rest, build), under everything else. */
+  children?: ReactNode;
 }
 
 /**
- * Today's session: the page's one hero surface. The beat above already says
- * the week, so this card says the day — its focus, its length, and the way
- * into the runner.
+ * One day of the program: the page's one hero surface. The strip above picks
+ * the day, so this card says it once: its name, its focus, its length, the way
+ * into the runner, and the ways to change it by hand.
  */
-const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged }: Props) => {
+const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, isToday, isCurrentWeek, logs, onLogged, onSwap, onRemove, children }: Props) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -52,7 +62,8 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
 
   if (!day) return null;
   const isRest = isRestDay(day);
-  const canStart = !isRest && !todayLog && day.blocks.length > 0;
+  const inProgress = logs.some((l) => l.week === currentWeek && l.day_index === todayDayIndex && !l.completed && l.status === "in_progress");
+  const canStart = isCurrentWeek && !isRest && !todayLog && day.blocks.length > 0;
   const recovery = week?.recovery;
   // On a rest day the card's second line points forward — the next session
   // this week, wrapping to Monday — instead of saying "Rest" twice.
@@ -116,6 +127,9 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
 
   return (
     <div className="surface-card p-4">
+      <p className="text-label font-bold text-muted-foreground mb-1">
+        {DAY_NAMES[todayDayIndex] ?? day.day}{isToday ? " · Today" : ""}
+      </p>
       <h2 className="font-display font-black text-head leading-[1.1] tracking-tight">
         {isRest ? "Rest day" : dayFocus(day) || "Today's session"}
       </h2>
@@ -127,7 +141,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           below stays for anyone who wants to see the session first. */}
       {canStart && (
         <Button
-          variant="ember"
+          variant={isToday ? "ember" : "outline"}
           size="lg"
           className="w-full mt-4"
           onClick={() => {
@@ -135,7 +149,7 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
             navigate(`/coach/session/${currentWeek}/${todayDayIndex}`);
           }}
         >
-          <Play size={16} aria-hidden /> Start workout
+          <Play size={16} aria-hidden /> {inProgress ? "Continue workout" : "Start workout"}
         </Button>
       )}
 
@@ -153,11 +167,14 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           <ul className="space-y-1.5 py-1">
             {day.blocks.map((b, i) => (
               <ExerciseRow
-                key={i}
+                key={b.slug ?? i}
                 block={b}
                 programId={program.id}
                 week={currentWeek}
                 dayIndex={todayDayIndex}
+                loggable={isCurrentWeek || !!todayLog}
+                onSwap={onSwap && b.slug ? () => onSwap(b) : undefined}
+                onRemove={onRemove && b.slug ? () => onRemove(b.slug!) : undefined}
               />
             ))}
             {day.conditioning && (
@@ -183,22 +200,29 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
         </p>
       ) : null}
 
-      {/* Done. Quiet while Start leads; the ember when it is the only act. */}
-      <Button
-        variant={alreadyLogged ? "secondary" : canStart ? "outline" : "ember"}
-        size="lg"
-        disabled={alreadyLogged || saving}
-        onClick={markDone}
-        className="w-full font-black mt-4"
-      >
-        {saving ? <Loader2 aria-hidden size={16} className="animate-spin" />
-          : alreadyLogged ? <><Check aria-hidden size={16} /> Done · today</>
-          : <><Check aria-hidden size={16} /> {isRest ? "Mark rest" : "Done"}</>}
-      </Button>
+      {/* Done belongs to today. Quiet while Start leads; on another day a
+          finished session simply says so. */}
+      {isToday ? (
+        <Button
+          variant={alreadyLogged ? "secondary" : canStart ? "outline" : "ember"}
+          size="lg"
+          disabled={alreadyLogged || saving}
+          onClick={markDone}
+          className="w-full font-black mt-4"
+        >
+          {saving ? <Loader2 aria-hidden size={16} className="animate-spin" />
+            : alreadyLogged ? <><Check aria-hidden size={16} /> Done · today</>
+            : <><Check aria-hidden size={16} /> {isRest ? "Mark rest" : "Done"}</>}
+        </Button>
+      ) : alreadyLogged ? (
+        <p className="mt-4 flex items-center gap-1.5 text-dense font-bold text-xp-green">
+          <Check aria-hidden size={14} /> Session logged
+        </p>
+      ) : null}
 
       {/* Effort — only after a real session is logged, and only until it's
           answered. A rest day has no effort worth rating. */}
-      {alreadyLogged && !isRest && todayLog?.perceived_rpe == null && (
+      {isToday && alreadyLogged && !isRest && todayLog?.perceived_rpe == null && (
         <div className="mt-4">
           <p className="text-dense font-bold mb-2">How hard was it?</p>
           {/* 5 across, so each target clears the 44pt floor — ten in one row
@@ -228,6 +252,8 @@ const TodaySessionCard = ({ program, currentWeek, todayDayIndex, logs, onLogged 
           </p>
         </div>
       )}
+
+      {children && <div className="mt-4 border-t border-border/35 divide-y divide-border/35">{children}</div>}
     </div>
   );
 };
@@ -251,4 +277,4 @@ const CollapseRow = ({
   </button>
 );
 
-export default TodaySessionCard;
+export default DaySessionCard;

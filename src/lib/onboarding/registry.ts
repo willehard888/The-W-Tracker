@@ -112,7 +112,7 @@ export const ONBOARDING_EVENTS: Record<OnboardingEventId, OnboardingEventDef> = 
     id: "TRAINING_PROGRAM_READY",
     presentation: "sheet",
     title: "Your program is built",
-    body: "Four weeks, shaped around your goal and your days. Any day or movement can be changed by hand.",
+    body: "Shaped around your goal and your days. Any day or movement can be changed by hand.",
     cta: "Show me",
     fallback: "sheet",
     backdropDismiss: true,

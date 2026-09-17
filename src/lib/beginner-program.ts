@@ -18,7 +18,7 @@ import { normalizeInjuries, type InjuryTag } from "@/lib/training/injuries";
  *
  * The whole trick here is that it emits the SAME `plan_json` shape the AI
  * generator emits. Because of that, the beginner path renders in
- * `ProgramWeekAccordion`, `TodaySessionCard`, `CoachProgramDetail` and
+ * `ProgramWeekView`, `DaySessionCard`, `CoachProgramDetail` and
  * `ExerciseRow` with no UI work at all, set logging works from day one, and
  * the progression chart draws itself. Nothing downstream needs to know
  * whether a program was written or generated.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PlanJson, ProgramBlock, ProgramDay } from "@/hooks/use-coach-program";
-import { addBlock, isAutoLabel, removeBlock, repeatWeek, replaceBlock, sessionMinutes, setRest, setTraining } from "../plan-edit";
+import { addBlock, isAutoLabel, isRepeatingWeek, removeBlock, repeatWeek, replaceBlock, sessionMinutes, setRest, setTraining } from "../plan-edit";
 import { sessionMinutes as engineMinutes } from "../../../../supabase/functions/_shared/session-builder";
 
 const block = (slug: string, sets = 3): ProgramBlock => ({ slug, name: slug.replace(/_/g, " "), sets, reps: "8-12", rpe: 8, rest_sec: 60 });
@@ -87,6 +87,18 @@ describe("plan-edit", () => {
     expect(weeks.map((w) => w.week)).toEqual([1, 2, 3, 4]);
     expect(weeks[2].days).toEqual(week(7).days);
     expect(weeks[0].days).not.toBe(weeks[1].days);
+  });
+
+  it("calls a week repeating only while every week ahead is the same seven days", () => {
+    const same = plan();
+    expect(isRepeatingWeek(same)).toBe(true);
+    // One week rested by hand: the weeks now differ, so there is something ahead to show.
+    const oneOff = setRest(same, { week: 1, day: 3, scope: "week" });
+    expect(isRepeatingWeek(oneOff)).toBe(false);
+    // The past does not count: from week 2 on, the weeks still repeat.
+    expect(isRepeatingWeek(oneOff, 2)).toBe(true);
+    // An edit that reaches every later week keeps the week repeating.
+    expect(isRepeatingWeek(setRest(same, { week: 1, day: 3, scope: "remaining" }))).toBe(true);
   });
 
   it("knows a label the app wrote from one a coach wrote, and times a session like the builder", () => {

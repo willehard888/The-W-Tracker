@@ -94,3 +94,14 @@ export const removeBlock = (plan: PlanJson, at: At, slug: string, label?: string
 /** One week laid out n times, numbered from 1: a repeating week the logs can still tell apart. */
 export const repeatWeek = (week: ProgramWeek, n = 4): ProgramWeek[] =>
   Array.from({ length: n }, (_, i) => ({ ...clone(week), week: i + 1 }));
+
+/**
+ * True when every week from `fromWeek` on is the same seven days: a week that
+ * simply repeats. Nobody planned ahead, so the page shows one week and no
+ * week switcher; a block that progresses, or a member's one-week change,
+ * makes the weeks differ and brings the switcher back.
+ */
+export const isRepeatingWeek = (plan: PlanJson, fromWeek = 1): boolean => {
+  const ahead = (plan.weeks ?? []).filter((w) => w.week >= fromWeek).map((w) => JSON.stringify(w.days));
+  return ahead.every((d) => d === ahead[0]);
+};

@@ -7,9 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
-import WeekStrip from "@/components/coach/WeekStrip";
-import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
-import TodaySessionCard from "@/components/coach/TodaySessionCard";
+import ProgramWeekView from "@/components/coach/ProgramWeekView";
 import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
 import ProgramReveal from "@/components/coach/ProgramReveal";
 import FocusSessionSheet from "@/components/coach/FocusSessionSheet";
@@ -18,6 +16,7 @@ import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useCreateProgram } from "@/hooks/use-focus-session";
 import { friendlyError } from "@/lib/error-copy";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { isRepeatingWeek } from "@/lib/training/plan-edit";
 import type { ProgramWeekState } from "@/lib/training/program-week";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { loadExerciseLibrary } from "@/lib/exercise-library";
@@ -95,6 +94,9 @@ const CoachProgramDetail = () => {
   // photos resolve immediately instead of after a 600KB chunk loads on first row.
   useEffect(() => { loadExerciseLibrary(); }, []);
 
+  // A week that repeats is "your week"; only a planned block counts its weeks.
+  const repeating = !!program && isRepeatingWeek(program.plan_json, currentWeek);
+
   const onRegenerated = () => { setShowRegen(false); setJustGenerated(true); refetch(); };
 
   // A week of your own and a repeat need no reveal: the athlete knows what is
@@ -122,7 +124,9 @@ const CoachProgramDetail = () => {
           <header className="home-rise">
             <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
               {program
-                ? <>Week <span className="text-gold glow-gold-text tabular-nums">{currentWeek}</span> of {program.weeks}.</>
+                ? repeating
+                  ? "Your week."
+                  : <>Week <span className="text-gold glow-gold-text tabular-nums">{currentWeek}</span> of {program.weeks}.</>
                 : "What are you training today?"}
             </h2>
             <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
@@ -178,31 +182,20 @@ const CoachProgramDetail = () => {
                 action, so it sits up here as the ember. */}
             {weekState.readyForNext && hasAccess && !showRegen && (
               <Button variant="ember" size="lg" className="w-full" disabled={createProgram.isPending} onClick={() => create({ kind: "repeat", from: program })}>
-                Run these four weeks again
+                {repeating ? "Keep this week going" : "Run these four weeks again"}
               </Button>
             )}
 
-            <TodaySessionCard
+            {/* One week, one selector, one day: the strip picks, the card
+                shows. The "plan adapts" spotlight lands on the strip. */}
+            <ProgramWeekView
+              key={program.id}
               program={program}
               currentWeek={currentWeek}
               todayDayIndex={todayDayIndex}
               logs={logs}
               onLogged={() => refetch()}
-            />
-            {/* The week strip is what "next week is built from what you
-                logged" is pointing at, so the spotlight lands on it. */}
-            <div ref={adaptsTargetRef}>
-              <WeekStrip
-                program={program}
-                currentWeek={currentWeek}
-                todayDayIndex={todayDayIndex}
-                logs={logs}
-              />
-            </div>
-            <ProgramWeekAccordion
-              program={program}
-              currentWeek={currentWeek}
-              logs={logs}
+              stripRef={adaptsTargetRef}
             />
 
             {/* Start over: both doors replace the running program. */}

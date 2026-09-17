@@ -1,3 +1,4 @@
+import { isRepeatingWeek } from "@/lib/training/plan-edit";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
@@ -68,7 +69,7 @@ const ProgramReveal = ({
       <p className="mt-2 text-dense text-muted-foreground">
         <N>{fmtInt(n)}</N> {n === 1 ? "session" : "sessions"}
         {avgMin > 0 && <> · ~<N>{fmtInt(avgMin)}</N> min</>}
-        {" · "}week <N>{fmtInt(currentWeek)}</N> of {fmtInt(program.weeks ?? 4)}
+        {!isRepeatingWeek(program.plan_json) && <>{" · "}week <N>{fmtInt(currentWeek)}</N> of {fmtInt(program.weeks ?? 4)}</>}
         {todayIsRest && firstDay && <> · first session {firstDay}</>}
       </p>
       {focusList.length > 0 && (

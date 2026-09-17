@@ -143,7 +143,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     <div className="px-1 pt-2 pb-8">
       <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Build my week</h2>
       <p className="text-sm text-muted-foreground mt-1 mb-5 leading-relaxed">
-        One session for each of your training days. It runs for four weeks, and the loads follow what you log.
+        One session for each of your training days. The week repeats, and the loads follow what you log.
       </p>
 
       <div className="rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-gradient-to-b from-[hsl(var(--gold)/0.06)] to-card/40 p-4 mb-5">

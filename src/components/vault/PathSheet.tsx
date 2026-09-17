@@ -1,4 +1,4 @@
-import { Check, ChevronRight } from "lucide-react";
+import { Check } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
@@ -6,6 +6,7 @@ import { pathProgress } from "@/lib/vault-loop";
 import { DIMENSION_LABEL, type VaultPath } from "@/data/vault-paths";
 import { MASTER_BY_SLUG } from "@/data/vault-masters";
 import type { VaultArticleSummary } from "@/hooks/use-vault-articles";
+import VaultPieceRow, { pieceMeta } from "./VaultPieceRow";
 
 /**
  * One path: its thesis, then the walk. Each step is a beat verb, the piece,
@@ -51,40 +52,39 @@ const PathSheet = ({
           const master = a?.master_slug ? MASTER_BY_SLUG[a.master_slug] : undefined;
           return (
             <li key={slug}>
-              <button
-                type="button"
+              <VaultPieceRow
+                lead={
+                  <span
+                    aria-hidden
+                    className="mt-0.5 h-5 w-5 rounded-full shrink-0 flex items-center justify-center border text-label font-black"
+                    style={
+                      done
+                        ? { background: accent, borderColor: accent, color: "hsl(var(--background))" }
+                        : next
+                          ? { borderColor: accent, color: accent }
+                          : { borderColor: "hsl(var(--border) / 0.6)", color: "hsl(var(--muted-foreground) / 0.75)" }
+                    }
+                  >
+                    {done ? <Check size={11} strokeWidth={3.5} /> : i + 1}
+                  </span>
+                }
+                kicker={
+                  <span className={cn("block text-label font-bold", !next && "text-muted-foreground")} style={next ? { color: accent } : undefined}>
+                    {path.beats[i]}
+                    {next ? " · next" : ""}
+                  </span>
+                }
+                title={a?.title ?? slug}
+                meta={a ? pieceMeta(a, done, master?.name) : undefined}
+                done={done}
+                accent={accent}
+                dimmed={!done && !next}
                 disabled={!a}
                 onClick={() => {
                   hapticImpact("light");
                   onOpenSlug(slug);
                 }}
-                className="w-full flex items-start gap-3 py-3.5 text-left disabled:opacity-50"
-              >
-                <span
-                  aria-hidden
-                  className="mt-0.5 h-5 w-5 rounded-full shrink-0 flex items-center justify-center border text-label font-black"
-                  style={
-                    done
-                      ? { background: accent, borderColor: accent, color: "hsl(var(--background))" }
-                      : next
-                        ? { borderColor: accent, color: accent }
-                        : { borderColor: "hsl(var(--border) / 0.6)", color: "hsl(var(--muted-foreground) / 0.75)" }
-                  }
-                >
-                  {done ? <Check size={11} strokeWidth={3.5} /> : i + 1}
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className={cn("block text-label font-bold", next ? "" : "text-muted-foreground")} style={next ? { color: accent } : undefined}>
-                    {path.beats[i]}
-                    {next ? " · next" : ""}
-                  </span>
-                  <span className={cn("block font-display text-dense font-black tracking-tight leading-tight mt-0.5", !done && !next && "text-foreground/80")}>
-                    {a?.title ?? slug}
-                  </span>
-                  {master && <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{master.name}</span>}
-                </span>
-                <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-1.5" aria-hidden />
-              </button>
+              />
             </li>
           );
         })}

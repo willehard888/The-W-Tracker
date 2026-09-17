@@ -17,7 +17,8 @@ import type { VaultPath } from "@/data/vault-paths";
  */
 export interface TodaysPractice {
   article: VaultArticleSummary;
-  path: VaultPath;
+  /** Null once every path is walked and the pick comes from the wider shelf. */
+  path: VaultPath | null;
   master: VaultMaster | null;
   reason: string;
   /** A practice was recorded today (local day) — the ritual is done. */
@@ -51,10 +52,10 @@ export const useTodaysPractice = (): { pick: TodaysPractice | null; loading: boo
       if (isLocalToday(p.practiced_at)) doneToday = true;
     }
     const signals = signalsFromCheckins(checkins ?? [], profile?.streak ?? 0, practicedSlugs);
-    const picked = pickTodaysPractice(signals, localDayIndex());
+    const picked = pickTodaysPractice(signals, localDayIndex(), articles.map((a) => a.slug));
     const article = picked ? bySlug.get(picked.slug) : undefined;
     if (!picked || !article) return { pick: null, loading: false };
-    const pp = pathProgress(picked.path.steps, practicedSlugs);
+    const pp = picked.path ? pathProgress(picked.path.steps, practicedSlugs) : { done: 0, total: 0 };
     return {
       loading: false,
       pick: {

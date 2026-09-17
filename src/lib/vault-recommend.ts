@@ -75,15 +75,24 @@ export const recommendPath = (s: VaultSignals, dayIndex: number): PathPick => {
 };
 
 /**
- * Today's practice: the next unpractised step of the recommended path. When
- * the recommended path is finished, the first open path in rotation.
+ * Today's practice: the next unpractised step of the recommended path. Once
+ * every path is walked, the rest of the library takes over, one unpractised
+ * piece a day from any shelf (`path` is then null); only when nothing at all
+ * is left does a walked path come round again.
  */
 export const pickTodaysPractice = (
   s: VaultSignals,
   dayIndex: number,
-): { path: VaultPath; slug: string; reason: string } | null => {
+  librarySlugs: readonly string[] = [],
+): { path: VaultPath | null; slug: string; reason: string } | null => {
   const rec = recommendPath(s, dayIndex);
-  const slug = nextStep(rec.path, s.practicedSlugs) ?? rec.path.steps[dayIndex % rec.path.steps.length];
+  const step = nextStep(rec.path, s.practicedSlugs);
+  if (step) return { path: rec.path, slug: step, reason: rec.reason };
+  const rest = librarySlugs.filter((x) => !s.practicedSlugs.has(x));
+  if (rest.length) {
+    return { path: null, slug: rest[dayIndex % rest.length], reason: "Every path walked. The rest of the shelf, one piece a day." };
+  }
+  const slug = rec.path.steps[dayIndex % rec.path.steps.length];
   return slug ? { path: rec.path, slug, reason: rec.reason } : null;
 };
 

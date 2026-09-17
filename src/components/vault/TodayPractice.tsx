@@ -41,8 +41,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
       <span aria-hidden className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />
       <p className="text-label font-bold text-muted-foreground">
         {doneToday ? "Today's practice is run" : "Today in the Vault"}
-        {" · "}
-        {path.title}
+        {path ? ` · ${path.title}` : ""}
         {progress.total > 0 ? ` · ${progress.done} of ${progress.total}` : ""}
       </p>
       <p className="mt-2 font-display text-subhead leading-[1.3] tracking-tight text-foreground/90">{lens}</p>
@@ -60,7 +59,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
         <ChevronRight aria-hidden size={12} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
       </p>
       <p className="mt-1 text-label text-muted-foreground/75 leading-snug">{reason}</p>
-      <span className="sr-only">{DIMENSION_LABEL[path.dimension]}</span>
+      {path && <span className="sr-only">{DIMENSION_LABEL[path.dimension]}</span>}
     </button>
   );
 };

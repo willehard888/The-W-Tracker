@@ -63,9 +63,23 @@ describe("pickTodaysPractice + nextStep", () => {
   it("today's practice is the first unpractised step of the recommended path", () => {
     const p = PATH_BY_SLUG.discipline;
     const r = pickTodaysPractice({ ...base, checkinDays: 2, practicedSlugs: new Set([p.steps[0]]) }, 0)!;
-    expect(r.path.slug).toBe("discipline");
+    expect(r.path?.slug).toBe("discipline");
     expect(r.slug).toBe(p.steps[1]);
     expect(nextStep(p, new Set(p.steps))).toBeNull();
+  });
+
+  it("every path walked: the rest of the library takes over, from any shelf, until nothing is left", () => {
+    const walked = new Set(VAULT_PATHS.flatMap((x) => x.steps));
+    const library = [...walked, "zone-2-cardio", "sleep-7-9-hours"];
+    const r = pickTodaysPractice({ ...base, practicedSlugs: walked }, 0, library)!;
+    expect(r.path).toBeNull();
+    expect(r.slug).toBe("zone-2-cardio");
+    expect(pickTodaysPractice({ ...base, practicedSlugs: walked }, 1, library)!.slug).toBe("sleep-7-9-hours");
+    // Nothing left anywhere: a walked path comes round again rather than an empty card.
+    const all = new Set(library);
+    const again = pickTodaysPractice({ ...base, practicedSlugs: all }, 0, library)!;
+    expect(again.path).not.toBeNull();
+    expect(again.path!.steps).toContain(again.slug);
   });
 });
 

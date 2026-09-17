@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { ShieldCheck, Sparkles, FlaskConical } from "lucide-react";
 
@@ -10,38 +11,26 @@ export const EVIDENCE_LABEL: Record<Tier, string> = {
   speculative: "Speculative",
 };
 
-const TIER_META: Record<Tier, { label: string; Icon: typeof ShieldCheck; classes: string }> = {
-  strong: {
-    label: EVIDENCE_LABEL.strong,
-    Icon: ShieldCheck,
-    classes: "border-xp-green/40 bg-xp-green/10 text-xp-green",
-  },
-  promising: {
-    label: EVIDENCE_LABEL.promising,
-    Icon: Sparkles,
-    classes: "border-amber/40 bg-amber/10 text-amber-light",
-  },
-  speculative: {
-    label: EVIDENCE_LABEL.speculative,
-    Icon: FlaskConical,
-    classes: "border-rose/40 bg-rose/10 text-rose-light",
-  },
+const TIER_META: Record<Tier, { Icon: typeof ShieldCheck; classes: string }> = {
+  strong: { Icon: ShieldCheck, classes: "border-xp-green/40 bg-xp-green/10 text-xp-green" },
+  promising: { Icon: Sparkles, classes: "border-amber/40 bg-amber/10 text-amber-light" },
+  speculative: { Icon: FlaskConical, classes: "border-rose/40 bg-rose/10 text-rose-light" },
 };
 
-const EvidenceChip = ({ tier, size = "sm" }: { tier: Tier; size?: "sm" | "md" }) => {
-  const m = TIER_META[tier];
-  const Icon = m.Icon;
+/** The one chip shape of the Vault: sentence case, the label rung, a hairline. */
+export const VaultChip = ({ children, className, style }: { children: ReactNode; className?: string; style?: CSSProperties }) => (
+  <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label font-bold", className)} style={style}>
+    {children}
+  </span>
+);
+
+const EvidenceChip = ({ tier }: { tier: Tier }) => {
+  const { Icon, classes } = TIER_META[tier];
   return (
-    <span
-      className={cn(
-        "text-label font-bold text-muted-foreground inline-flex items-center gap-1 rounded-full border",
-        m.classes,
-        size === "sm" ? "px-1.5 py-0.5 text-label" : "px-2 py-1 text-label",
-      )}
-    >
-      <Icon size={size === "sm" ? 8 : 10} strokeWidth={3} />
-      {m.label}
-    </span>
+    <VaultChip className={classes}>
+      <Icon aria-hidden size={10} strokeWidth={3} />
+      {EVIDENCE_LABEL[tier]}
+    </VaultChip>
   );
 };
 

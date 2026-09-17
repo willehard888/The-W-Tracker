@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Lock, Play, Square } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import LessonQuiz from "./LessonQuiz";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
@@ -32,14 +34,12 @@ const PracticeLoop = ({
   article,
   accent,
   progress,
-  quizScore,
   onPracticed,
   onOpenSlug,
 }: {
   article: VaultArticle;
   accent: string;
   progress: VaultProgressRow | undefined;
-  quizScore: number | null;
   /** The practice landed: XP, and maybe a badge for the page to show once the sheet closes. */
   onPracticed?: (r: PracticeResult) => void;
   onOpenSlug?: (slug: string) => void;
@@ -51,6 +51,11 @@ const PracticeLoop = ({
   const path = pathOfArticle(article.slug);
   const master = article.master_slug ? MASTER_BY_SLUG[article.master_slug] : undefined;
   const props = { slug: article.slug, master: article.master_slug ?? null, path: path?.slug ?? null };
+
+  // The check lives inside Understand: optional, and its score rides along
+  // with the completion when it was taken.
+  const [quizScore, setQuizScore] = useState<number | null>(null);
+  const [checkOpen, setCheckOpen] = useState(false);
 
   const complete = useCompleteLesson();
   const save = useSaveReflection(article.id);
@@ -121,18 +126,22 @@ const PracticeLoop = ({
           accent={accent}
           doneLine="Understood."
         >
-          <p className="text-meta text-muted-foreground leading-relaxed">
-            The idea is above. Take the check if you want it; then say you have it.
+          <p className="text-note text-muted-foreground leading-relaxed">
+            The idea is above. Take the check if you want it, then say you have it.
           </p>
-          <button
-            type="button"
-            onClick={understand}
-            disabled={complete.isPending}
-            className="press mt-3 w-full rounded-2xl py-3 text-label font-bold disabled:opacity-60"
-            style={{ background: accent, color: "hsl(var(--background))", boxShadow: `0 8px 24px ${accent}40` }}
-          >
+          {article.quiz?.length > 0 &&
+            (checkOpen ? (
+              <div className="mt-4">
+                <LessonQuiz quiz={article.quiz} accent={accent} onScore={setQuizScore} />
+              </div>
+            ) : (
+              <Button variant="outline" className="mt-3 min-h-11" onClick={() => setCheckOpen(true)}>
+                Take the check · {article.quiz.length} questions
+              </Button>
+            ))}
+          <Button variant="ember" size="lg" className="mt-4 w-full" onClick={understand} disabled={complete.isPending}>
             {complete.isPending ? "Saving…" : "I understand this"}
-          </button>
+          </Button>
         </Stage>
 
         {/* 2 · Reflect */}
@@ -204,19 +213,14 @@ const PracticeLoop = ({
       {state.stage === "done" && (
         <div className="pt-4">
           <p className="font-display text-subhead font-black tracking-tight leading-tight">Loop closed.</p>
-          <p className="text-meta text-muted-foreground mt-1 leading-relaxed">
+          <p className="text-note text-muted-foreground mt-1 leading-relaxed">
             {master ? `${master.name}'s lens is yours to use now. ` : ""}
             {nextSlug && path ? `Next on ${path.title}:` : "Pick the next piece on the map."}
           </p>
           {nextSlug && onOpenSlug && (
-            <button
-              type="button"
-              onClick={() => onOpenSlug(nextSlug)}
-              className="press mt-3 w-full rounded-2xl py-3 text-label font-bold border"
-              style={{ color: accent, borderColor: `${accent}66`, background: `${accent}14` }}
-            >
+            <Button variant="ember-outline" size="lg" className="mt-3 w-full" onClick={() => onOpenSlug(nextSlug)}>
               Open the next piece
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -251,7 +255,7 @@ const Stage = ({
       <div className="flex items-start gap-3">
         <span
           aria-hidden
-          className="mt-[3px] h-4 w-4 rounded-full shrink-0 flex items-center justify-center border"
+          className="mt-0.5 h-4 w-4 rounded-full shrink-0 flex items-center justify-center border"
           style={
             state === "done"
               ? { background: accent, borderColor: accent, color: "hsl(var(--background))" }
@@ -323,8 +327,9 @@ const AnswerBox = ({
       />
       <div className="mt-2 flex items-center justify-between gap-3">
         <span className="text-label text-muted-foreground/75 tabular-nums">{text.length > 900 ? `${1200 - text.length} left` : ""}</span>
-        <button
-          type="button"
+        <Button
+          variant="ember"
+          className="min-h-11 px-5"
           disabled={!dirty || saving || !text.trim()}
           onClick={async () => {
             hapticImpact("light");
@@ -334,11 +339,9 @@ const AnswerBox = ({
               toast.error("Could not save", { description: e instanceof Error ? e.message : undefined });
             }
           }}
-          className="press rounded-full px-4 py-2 text-label font-bold disabled:opacity-50 transition-opacity"
-          style={{ background: accent, color: "hsl(var(--background))" }}
         >
           {saving ? "Saving…" : cta}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -388,9 +391,9 @@ const PracticeBox = ({
       <p className="text-label font-bold text-muted-foreground">{practiceLength(minutes)}</p>
       <ol className="mt-2 space-y-2">
         {steps.map((step, i) => (
-          <li key={i} className="flex items-start gap-2.5 text-meta">
+          <li key={i} className="flex items-start gap-2.5 text-dense">
             <span
-              className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-label font-black"
+              className="mt-px h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-label font-black"
               style={{ background: `${accent}25`, color: accent, border: `1px solid ${accent}55` }}
             >
               {i + 1}
@@ -403,14 +406,9 @@ const PracticeBox = ({
       {timed && (
         <div className="mt-4 flex items-center gap-3">
           {left == null ? (
-            <button
-              type="button"
-              onClick={start}
-              className="press inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-label font-bold"
-              style={{ color: accent, borderColor: `${accent}66` }}
-            >
+            <Button variant="outline" size="pill" className="min-h-11" onClick={start}>
               <Play size={12} aria-hidden /> Start {minutes} min
-            </button>
+            </Button>
           ) : (
             <>
               <span
@@ -430,15 +428,9 @@ const PracticeBox = ({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onDone}
-        disabled={pending}
-        className="press mt-4 w-full rounded-2xl py-3 text-label font-bold disabled:opacity-60"
-        style={{ background: accent, color: "hsl(var(--background))", boxShadow: `0 8px 24px ${accent}40` }}
-      >
+      <Button variant="ember" size="lg" className="mt-4 w-full" onClick={onDone} disabled={pending}>
         {pending ? "Recording…" : `I ran the practice · +${PRACTICE_XP} XP`}
-      </button>
+      </Button>
     </div>
   );
 };

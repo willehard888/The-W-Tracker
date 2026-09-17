@@ -2,18 +2,7 @@ import { backOr } from "@/lib/nav";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Utensils,
-  Dumbbell,
-  Moon,
-  Brain,
-  Wind as WindIcon,
-  Sparkles,
-  Hourglass,
-  Check,
-  ChevronRight,
-  BookOpen,
-} from "lucide-react";
+import { Utensils, ChevronRight, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
 import EmptyState from "@/components/ui/empty-state";
@@ -24,118 +13,23 @@ import { useVaultArticles, type VaultArticleSummary } from "@/hooks/use-vault-ar
 import { useVaultProgress } from "@/hooks/use-vault-progress";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import type { PracticeResult } from "@/hooks/use-vault-practice";
-import { EVIDENCE_LABEL } from "@/components/vault/EvidenceChip";
 import { RECIPE_COUNT } from "@/data/library-counts";
 import VaultArticleSheet from "@/components/vault/VaultArticleSheet";
 import VaultCover from "@/components/vault/VaultCover";
 import TodayPractice from "@/components/vault/TodayPractice";
 import PathSheet from "@/components/vault/PathSheet";
 import MasterSheet from "@/components/vault/MasterSheet";
-import { VAULT_PATHS, PATH_BY_SLUG, DIMENSION_LABEL, type VaultDimension, type VaultPath } from "@/data/vault-paths";
+import VaultPieceRow, { pieceMeta } from "@/components/vault/VaultPieceRow";
+import { CATEGORIES, DIMENSION_ACCENT, WISDOM_ACCENT, accentOf, type VaultCategory } from "@/components/vault/categories";
+import { VAULT_PATHS, PATH_BY_SLUG, DIMENSION_LABEL, type VaultPath } from "@/data/vault-paths";
 import { VAULT_MASTERS, MASTER_BY_SLUG, type VaultMaster } from "@/data/vault-masters";
 import { pathProgress } from "@/lib/vault-loop";
 import { track, FUNNEL } from "@/lib/analytics";
 import { hapticImpact } from "@/lib/haptics";
 
-interface VaultCategory {
-  id: string;
-  title: string;
-  tagline: string;
-  description: string;
-  icon: typeof Utensils;
-  accent: string;
-}
-
-const CATEGORIES: VaultCategory[] = [
-  {
-    id: "wisdom",
-    title: "Wisdom",
-    tagline: "Twenty-one thinkers, one loop",
-    description:
-      "The ideas that changed how people live, each with a private reflection, a short practice and a question afterwards. The nine-source course, then Frankl, the Stoics, Aristotle, Campbell, Nietzsche, Greene, Goggins, Thich Nhat Hanh, Kabat-Zinn, Attia, Robbins and two Jung pieces. The chip rates the practice, never the worldview.",
-    icon: BookOpen,
-    accent: "hsl(350 60% 64%)",
-  },
-  {
-    id: "inner-work",
-    title: "Inner Work",
-    tagline: "Identity, energy, self-talk",
-    description:
-      "The honest version of manifestation, energy and self-image work: what research supports (mental contrasting, imagery, self-talk), what is speculative, and how to use both to become who you are training to be.",
-    icon: Sparkles,
-    accent: "hsl(45 90% 58%)",
-  },
-  {
-    id: "longevity",
-    title: "Longevity",
-    tagline: "Healthspan, the long game",
-    description:
-      "The 100-Year Athlete: healthspan over lifespan, ranked by mortality evidence. Aerobic fitness, strength, protein, sleep, metabolic health and connection, with an honest walk through the supplement graveyard.",
-    icon: Hourglass,
-    accent: "hsl(168 70% 45%)",
-  },
-  {
-    id: "recovery",
-    title: "Recovery and Sleep",
-    tagline: "Sleep, light, cold, heat",
-    description:
-      "What recovery is made of: the sleep window, the morning light that times it, the caffeine cut-off that protects it, and cold and heat used at the right hour.",
-    icon: Moon,
-    accent: "hsl(220 80% 65%)",
-  },
-  {
-    id: "training",
-    title: "Strength and Conditioning",
-    tagline: "Lifts, zone 2, VO₂max",
-    description:
-      "Programming principles that hold across decades of research: progressive overload, a zone 2 base, the 4×4 interval, planned deloads, the daily step floor and eight minutes of mobility.",
-    icon: Dumbbell,
-    accent: "hsl(var(--ember))",
-  },
-  {
-    id: "mind",
-    title: "Mind and Emotional Skill",
-    tagline: "Breath, reframing, focus",
-    description:
-      "Practical, well-evidenced tools for the mind: the physiological sigh, box breathing, mindfulness, cognitive reframing, deep work and a five-minute journal.",
-    icon: Brain,
-    accent: "hsl(280 70% 65%)",
-  },
-  {
-    id: "nervous-system",
-    title: "Nervous System",
-    tagline: "Polyvagal, NSDR, HRV",
-    description:
-      "Down-regulate a nervous system that runs hot: the polyvagal map, NSDR, coherent breathing at the resonance frequency, the dive reflex, and four self-hypnosis scripts.",
-    icon: WindIcon,
-    accent: "hsl(190 80% 60%)",
-  },
-  {
-    id: "recipes",
-    title: "Nutrition",
-    tagline: "Protein, fuel, timing",
-    description:
-      "Evidence-led performance nutrition: protein dosing, fuelling around training, the Mediterranean pattern, caffeine timing, hydration and the gut. The meal-prep recipes live one row down.",
-    icon: Utensils,
-    accent: "hsl(152 68% 50%)",
-  },
-];
-
-const WISDOM_ACCENT = "hsl(350 60% 64%)";
-
-/** Each dimension borrows the accent of the shelf it is closest to; gold stays the hero's. */
-const DIMENSION_ACCENT: Record<VaultDimension, string> = {
-  body: "hsl(168 70% 45%)",
-  mind: "hsl(280 70% 65%)",
-  discipline: "hsl(var(--ember))",
-  character: WISDOM_ACCENT,
-  purpose: "hsl(220 80% 65%)",
-  mastery: "hsl(190 80% 60%)",
-};
-
 /**
  * The Vault: a map, then a library. Today's practice opens it (one thinker,
- * one piece, one question); the six paths and the twenty masters are the
+ * one piece, one question); the six paths and the masters are the
  * map; the covers below are the shelf as it was. Pieces open in a sheet;
  * paths and masters open in their own sheets and hand off to the piece.
  */
@@ -167,7 +61,7 @@ const Vault = () => {
   const [unlockedBadge, setUnlockedBadge] = useState<PracticeResult["newBadge"]>(null);
 
   // One cached query for the beat and every category (react-query dedups).
-  const { data: allVaultArticles, isLoading } = useVaultArticles();
+  const { data: allVaultArticles, isLoading, error: loadError, refetch } = useVaultArticles();
   const { data: progress } = useVaultProgress();
   const readIds = useMemo(() => new Set((progress ?? []).map((p) => p.article_id)), [progress]);
   const practicedSlugs = useMemo(() => {
@@ -188,11 +82,6 @@ const Vault = () => {
     if (hasVaultAccess) void track(FUNNEL.vaultOpened);
   }, [hasVaultAccess]);
 
-  const accentFor = useCallback(
-    (a: VaultArticleSummary) => CATEGORIES.find((c) => c.id === a.category_id)?.accent ?? "hsl(45 90% 58%)",
-    [],
-  );
-
   /** Open a piece by slug from anywhere: today's door, a path, a master, a deep link. */
   const openBySlug = useCallback(
     (slug: string) => {
@@ -201,9 +90,9 @@ const Vault = () => {
       setOpenPath(null);
       setOpenMaster(null);
       setPoppedId(null);
-      setOpenArticle({ article, accent: accentFor(article), wasRead: readIdsRef.current.has(article.id) });
+      setOpenArticle({ article, accent: accentOf(article.category_id), wasRead: readIdsRef.current.has(article.id) });
     },
-    [allVaultArticles, accentFor],
+    [allVaultArticles],
   );
 
   // ?lesson= / ?path= / ?master= deep links (Home, the coach, the next-piece
@@ -285,6 +174,12 @@ const Vault = () => {
           </p>
         </header>
 
+        {loadError && !allVaultArticles ? (
+          <div className="mt-8">
+            <ErrorState title="Couldn't load the Vault" onRetry={refetch} />
+          </div>
+        ) : (
+        <>
         {/* Today — one thinker, one piece, one question. The hero. */}
         <div className="home-rise home-rise-1 mt-6">
           <TodayPractice onOpen={openBySlug} />
@@ -327,7 +222,7 @@ const Vault = () => {
         {/* Masters — the thinkers as lenses. Type only; a name and its tradition. */}
         <section className="home-rise home-rise-3 mt-7" aria-label="Masters">
           <h3 className="font-display text-head font-black tracking-tight leading-none">Masters</h3>
-          <p className="text-meta text-muted-foreground mt-1">Twenty thinkers, each a lens. Tap a name for their ideas and what kind of claim they make.</p>
+          <p className="text-meta text-muted-foreground mt-1">{VAULT_MASTERS.length} thinkers, each a lens. Tap a name for their ideas and what kind of claim they make.</p>
           <ul className="mt-2 grid grid-cols-2 gap-x-5">
             {VAULT_MASTERS.map((m) => {
               const mine = (allVaultArticles ?? []).filter((a) => a.master_slug === m.slug);
@@ -354,26 +249,30 @@ const Vault = () => {
         </section>
 
         {/* The shelf — covers are the categories. No frame, no strip below. */}
-        <section className="mt-8" aria-label="The shelf">
+        <section className="home-rise home-rise-4 mt-8" aria-label="The shelf">
           <h3 className="font-display text-head font-black tracking-tight leading-none">The shelf</h3>
           <p className="text-meta text-muted-foreground mt-1">Every piece is graded by evidence tier and cites its research.</p>
           <div className="mt-4 space-y-3">
-            {CATEGORIES.map((cat, i) => (
-              <div key={cat.id} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${120 + i * 45}ms` } : undefined}>
-                <VaultCategoryBlock
-                  category={cat}
-                  poppedId={poppedId}
-                  practicedSlugs={practicedSlugs}
-                  onOpenArticle={(a) => {
-                    hapticImpact("light");
-                    setPoppedId(null);
-                    setOpenArticle({ article: a, accent: cat.accent, wasRead: readIds.has(a.id) });
-                  }}
-                />
-              </div>
+            {CATEGORIES.map((cat) => (
+              <VaultCategoryBlock
+                key={cat.id}
+                category={cat}
+                articles={(allVaultArticles ?? []).filter((a) => a.category_id === cat.id)}
+                loading={isLoading}
+                readIds={readIds}
+                poppedId={poppedId}
+                practicedSlugs={practicedSlugs}
+                onOpenArticle={(a) => {
+                  hapticImpact("light");
+                  setPoppedId(null);
+                  setOpenArticle({ article: a, accent: cat.accent, wasRead: readIds.has(a.id) });
+                }}
+              />
             ))}
           </div>
         </section>
+        </>
+        )}
 
         {/* No hardcoded price — a US/UK member paid a different number than the
             euro list price, and the store price is the only truth. */}
@@ -413,11 +312,18 @@ const Vault = () => {
 
 const VaultCategoryBlock = ({
   category,
+  articles,
+  loading,
+  readIds,
   poppedId,
   practicedSlugs,
   onOpenArticle,
 }: {
   category: VaultCategory;
+  /** This shelf's pieces, filtered from the page's one cached query. */
+  articles: VaultArticleSummary[];
+  loading: boolean;
+  readIds: ReadonlySet<string>;
   poppedId: string | null;
   practicedSlugs: ReadonlySet<string>;
   onOpenArticle: (a: VaultArticleSummary) => void;
@@ -425,13 +331,8 @@ const VaultCategoryBlock = ({
   const Icon = category.icon;
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
-  // Fetch all articles once (cached) and filter locally — avoids per-category refetches
-  // and ensures content is ready the moment the user expands a category.
-  const { data: allArticles, isLoading, error, refetch } = useVaultArticles();
-  const { data: progress } = useVaultProgress();
-  const articles = (allArticles ?? []).filter((a) => a.category_id === category.id);
-  const readIds = new Set((progress ?? []).map((p) => p.article_id));
   const readCount = articles.filter((a) => readIds.has(a.id)).length;
+  const panelId = `vault-shelf-${category.id}`;
 
   return (
     <div>
@@ -443,6 +344,7 @@ const VaultCategoryBlock = ({
           setExpanded((v) => !v);
         }}
         aria-expanded={expanded}
+        aria-controls={panelId}
         className="relative block w-full aspect-[16/7] rounded-2xl overflow-hidden text-left"
       >
         <VaultCover id={category.id} accent={category.accent} />
@@ -468,75 +370,54 @@ const VaultCategoryBlock = ({
       </button>
 
       {expanded && (
-        <div className="px-1 divide-y divide-border/35">
-          <p className="py-3 text-meta text-muted-foreground leading-snug">{category.description}</p>
+        <div id={panelId} className="px-1 divide-y divide-border/35">
+          <p className="py-3 text-dense text-muted-foreground leading-snug">{category.description}</p>
 
           {/* Recipes category → the full meal-prep recipe collection (poster
               style + batch scaler). A quiet row leading the pieces. */}
           {category.id === "recipes" && (
-            <button type="button" onClick={() => navigate("/recipes")} className="w-full flex items-center gap-3 py-3 text-left">
+            <button type="button" onClick={() => navigate("/recipes")} className="w-full flex items-center gap-3 py-3.5 text-left">
               <Utensils size={16} className="text-muted-foreground shrink-0" aria-hidden />
               <span className="flex-1 min-w-0">
-                <span className="block text-dense font-bold leading-tight">Meal-prep recipes</span>
+                <span className="block font-display text-dense font-black tracking-tight leading-tight">Meal-prep recipes</span>
                 <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
-                  {RECIPE_COUNT} high-protein recipes · scale 1×–5× · storage &amp; reheat
+                  {RECIPE_COUNT} high-protein recipes · scale 1×–5× · storage and reheat
                 </span>
               </span>
               <ChevronRight size={14} className="text-muted-foreground shrink-0" aria-hidden />
             </button>
           )}
 
-          {isLoading &&
+          {loading &&
             [0, 1, 2].map((i) => (
-              <div key={i} className="py-3">
+              <div key={i} className="py-3.5">
                 <div className="h-9 rounded-lg bg-card/40 skeleton-block" />
               </div>
             ))}
 
-          {!isLoading && error && (
-            <ErrorState size="compact" title="Couldn't load articles" onRetry={refetch} />
-          )}
+          {!loading && articles.length === 0 && <EmptyState size="compact" icon={BookOpen} title="No articles yet" />}
 
-          {!isLoading && !error && articles.length === 0 && (
-            <EmptyState size="compact" icon={BookOpen} title="No articles yet" />
-          )}
-
-          {!isLoading &&
+          {!loading &&
             articles.map((a) => {
-              const isRead = readIds.has(a.id);
-              const isPracticed = practicedSlugs.has(a.slug);
               const master = a.master_slug ? MASTER_BY_SLUG[a.master_slug] : undefined;
               return (
-                <button
+                <VaultPieceRow
                   key={a.id}
-                  type="button"
+                  lead={
+                    a.lesson_number != null ? (
+                      <span className="w-5 shrink-0 font-display text-dense font-black tabular-nums leading-tight" style={{ color: category.accent }}>
+                        {a.lesson_number}
+                      </span>
+                    ) : undefined
+                  }
+                  title={a.title}
+                  subtitle={a.subtitle}
+                  meta={pieceMeta(a, practicedSlugs.has(a.slug), master?.name)}
+                  done={readIds.has(a.id)}
+                  accent={category.accent}
+                  className={poppedId === a.id ? "commit-pop" : undefined}
                   onClick={() => onOpenArticle(a)}
-                  className={cn("w-full flex items-start gap-3 py-3 text-left", poppedId === a.id && "commit-pop")}
-                >
-                  {a.lesson_number != null && (
-                    <span
-                      className="w-5 shrink-0 font-display text-dense font-black tabular-nums leading-tight"
-                      style={{ color: category.accent }}
-                    >
-                      {a.lesson_number}
-                    </span>
-                  )}
-                  <span className="flex-1 min-w-0">
-                    <span className="block font-display text-dense font-black tracking-tight leading-tight">{a.title}</span>
-                    {a.subtitle && (
-                      <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{a.subtitle}</span>
-                    )}
-                    <span className="text-label font-bold text-muted-foreground block mt-1.5" style={isRead ? { color: category.accent } : undefined}>
-                      {isPracticed ? "Practised" : `${EVIDENCE_LABEL[a.evidence_tier]} · ${a.read_time_min} min`}
-                      {master ? ` · ${master.name}` : ""}
-                    </span>
-                  </span>
-                  {isRead ? (
-                    <Check size={14} className="shrink-0 mt-0.5" style={{ color: category.accent }} aria-hidden />
-                  ) : (
-                    <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
-                  )}
-                </button>
+                />
               );
             })}
         </div>

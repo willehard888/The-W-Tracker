@@ -1,44 +1,24 @@
-import { useEffect, useState } from "react";
+import { Children, isValidElement, useEffect, type ReactElement, type ReactNode } from "react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
+import { ErrorState } from "@/components/ui/error-state";
 import ReactMarkdown from "react-markdown";
-import {
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  BookMarked,
-  Target,
-  Lightbulb,
-  Zap,
-  ListChecks,
-} from "lucide-react";
-import EvidenceChip from "./EvidenceChip";
-import LessonQuiz from "./LessonQuiz";
+import { Clock, CheckCircle2, AlertTriangle, BookMarked, Target, Lightbulb, ListChecks, Library } from "lucide-react";
+import EvidenceChip, { VaultChip } from "./EvidenceChip";
+import SectionHeader from "./SectionHeader";
 import PracticeLoop from "./PracticeLoop";
 import { useVaultArticle, useVaultArticles, type VaultArticle, type VaultArticleSummary } from "@/hooks/use-vault-articles";
-import { useCompleteLesson, useVaultProgress } from "@/hooks/use-vault-progress";
+import { useVaultProgress } from "@/hooks/use-vault-progress";
 import type { PracticeResult } from "@/hooks/use-vault-practice";
-import { hasLoop } from "@/lib/vault-loop";
 import { MASTER_BY_SLUG } from "@/data/vault-masters";
 import { pathOfArticle } from "@/data/vault-paths";
 import { track, FUNNEL } from "@/lib/analytics";
-import { hapticImpact } from "@/lib/haptics";
-import { toast } from "sonner";
 
 /**
- * VaultArticleSheet — bulletproof bottom sheet rendered via React Portal
- * directly into document.body.
- *
- * Why a custom portal instead of Radix Sheet:
- *  - Radix's focus trap + body scroll lock can race with the parent
- *    ModalStack's framer-motion <motion.div> transforms, occasionally
- *    swallowing the open state on iOS Safari.
- *  - Rendering straight into <body> (with z-[var(--z-top)]) guarantees the sheet
- *    sits above the TabHost, BottomNav, and any push-route stack regardless
- *    of containing-block / transform ancestors.
- *
- * A piece with a reflection and an integration question runs the practice
- * loop (PracticeLoop) instead of the bare Mark complete; every other piece
- * keeps the button.
+ * One piece, top to bottom: what it is (hero), why it matters, the dose (the
+ * one card), the reading, what to keep, what it gives and where it stops, then
+ * the loop that turns it into a practice, and the sources. The shelf's accent
+ * marks identity (chip, subtitle, section marks); every action is one of the
+ * app's buttons, the same on every shelf.
  */
 
 const EMPTY_FULL: Omit<VaultArticle, keyof VaultArticleSummary> = {
@@ -52,6 +32,33 @@ const EMPTY_FULL: Omit<VaultArticle, keyof VaultArticleSummary> = {
   key_takeaways: [],
   quiz: [],
   integrate_prompt: null,
+};
+
+/**
+ * Bodies are written as a bold line, a newline, then the paragraph
+ * (docs/VAULT_VOICE.md). That bold line is a section heading, so it renders as
+ * one; a bold term inside a sentence stays inline.
+ */
+export const BodyParagraph = ({ children }: { children?: ReactNode }) => {
+  const [first, second, ...rest] = Children.toArray(children);
+  const heading =
+    isValidElement(first) &&
+    first.type === "strong" &&
+    (second === undefined || (typeof second === "string" && second.startsWith("\n")));
+  if (!heading) return <p>{children}</p>;
+  return (
+    <>
+      <h4 className="font-display text-read font-black tracking-tight text-foreground mt-6 mb-1 first:mt-0">
+        {(first as ReactElement<{ children?: ReactNode }>).props.children}
+      </h4>
+      {second !== undefined && (
+        <p>
+          {(second as string).replace(/^\n/, "")}
+          {rest}
+        </p>
+      )}
+    </>
+  );
 };
 
 const VaultArticleSheet = ({
@@ -72,350 +79,193 @@ const VaultArticleSheet = ({
 }) => {
   // The index carries titles and summaries only; the body, protocol, quiz and
   // references arrive by id when a piece opens (see use-vault-articles.ts).
-  // Until they land the heavy sections are empty and the body shows a
-  // skeleton — the header paints from the summary at once.
-  const { data: full, isLoading: bodyLoading } = useVaultArticle(summary?.id);
+  // Until they land the header paints from the summary and the body shows a
+  // skeleton.
+  const { data: full, isLoading: bodyLoading, isError: bodyFailed, refetch } = useVaultArticle(summary?.id);
   const article: VaultArticle | null = summary
     ? full && full.id === summary.id
       ? full
       : { ...summary, ...EMPTY_FULL }
     : null;
   const { data: progress } = useVaultProgress();
-  const completeLesson = useCompleteLesson();
-  const [quizScore, setQuizScore] = useState<number | null>(null);
 
-  // Course length for the "Lesson N of M" badge — counted from the cached
-  // library (react-query dedups with the Vault page's query).
+  // Course length for the "Lesson N of M" chip, counted from the cached library.
   const { data: allArticles } = useVaultArticles();
   const courseTotal = article
-    ? (allArticles ?? []).filter(
-        (a) => a.category_id === article.category_id && a.lesson_number != null,
-      ).length
+    ? (allArticles ?? []).filter((a) => a.category_id === article.category_id && a.lesson_number != null).length
     : 0;
 
   const progressRow = progress?.find((p) => p.article_id === article?.id);
-  const isCompleted = !!progressRow;
-  const loop = !!article && hasLoop(article);
   const master = article?.master_slug ? MASTER_BY_SLUG[article.master_slug] : undefined;
   const path = article ? pathOfArticle(article.slug) : undefined;
   const isIdea = article?.category_id === "wisdom" || article?.category_id === "inner-work";
+  const loaded = !!full && full.id === summary?.id;
+  const protocol = article?.protocol;
+  const hasProtocol = !!(protocol?.duration || protocol?.intensity || protocol?.frequency || protocol?.prerequisites);
 
-  // Reset quiz score whenever a new article opens; one open event per piece.
+  // One open event per piece.
   useEffect(() => {
-    setQuizScore(null);
     if (open && summary) {
       void track(FUNNEL.lessonOpened, { slug: summary.slug, master: summary.master_slug ?? null, path: pathOfArticle(summary.slug)?.slug ?? null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [summary?.id, open]);
 
-  // Escape-to-close (the BottomSheet owns the scroll lock)
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  const handleComplete = async () => {
-    if (!article) return;
-    hapticImpact("medium");
-    try {
-      await completeLesson.mutateAsync({ articleId: article.id, quizScore });
-      void track(FUNNEL.lessonCompleted, { slug: article.slug, quiz: quizScore });
-      toast.success("Lesson complete", {
-        description: quizScore != null ? `Quiz: ${quizScore}/${article.quiz.length}` : undefined,
-      });
-    } catch (e: unknown) {
-      toast.error("Could not save progress", { description: e instanceof Error ? e.message : undefined });
-    }
-  };
-
   return (
     <BottomSheet open={open && !!article} onClose={onClose} label={article?.title ?? "Article"} height="tall">
       {article && (
         <>
-            {/* Hero */}
-            <div
-              className="relative -mx-4 px-5 pt-3 pb-4 border-b border-border/40"
-              style={{
-                background: `linear-gradient(180deg, ${accent}22 0%, transparent 100%)`,
-              }}
-            >
-
-              <div className="flex items-center gap-1.5 flex-wrap mb-2 pr-10">
-                {article.lesson_number && (
-                  <span
-                    className="text-label font-bold text-muted-foreground inline-flex items-center px-2 py-0.5 rounded-full"
-                    style={{
-                      background: `${accent}22`,
-                      color: accent,
-                      border: `1px solid ${accent}55`,
-                    }}
-                  >
-                    {`Lesson ${article.lesson_number}${courseTotal ? ` of ${courseTotal}` : ""}${
-                      article.course_role === "foundations" ? " · Foundations" : ""
-                    }`}
-                  </span>
-                )}
-                <EvidenceChip tier={article.evidence_tier} />
-                <span className="eyebrow-sm inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card/80 border border-border/50 text-muted-foreground">
-                  <Clock aria-hidden size={10} strokeWidth={3} />
-                  {article.read_time_min} min
-                </span>
-              </div>
-
-              <h2 className="font-display text-title leading-[1.05] font-black tracking-tight pr-8">
-                {article.title}
-              </h2>
-              {article.subtitle && (
-                <p className="text-meta mt-1.5 font-medium" style={{ color: accent }}>
-                  {article.subtitle}
-                </p>
+          {/* Hero */}
+          <header
+            className="relative -mx-4 px-4 pt-3 pb-5 border-b border-border/40"
+            style={{ background: `linear-gradient(180deg, ${accent}22 0%, transparent 100%)` }}
+          >
+            <div className="flex items-center gap-1.5 flex-wrap mb-2.5 pr-10">
+              {article.lesson_number && (
+                <VaultChip style={{ background: `${accent}22`, color: accent, borderColor: `${accent}55` }}>
+                  {`Lesson ${article.lesson_number}${courseTotal ? ` of ${courseTotal}` : ""}${
+                    article.course_role === "foundations" ? " · Foundations" : ""
+                  }`}
+                </VaultChip>
               )}
-              <p className="text-meta text-muted-foreground mt-2 leading-relaxed">
-                {article.summary}
-              </p>
-              {(master || path) && (
-                <p className="text-label font-bold text-muted-foreground mt-2">
-                  {master ? `${master.name} · ${master.tradition}` : ""}
-                  {master && path ? " · " : ""}
-                  {path ? path.title : ""}
-                </p>
-              )}
+              <EvidenceChip tier={article.evidence_tier} />
+              <VaultChip className="border-border/50 bg-card/80 text-muted-foreground tabular-nums">
+                <Clock aria-hidden size={10} strokeWidth={3} />
+                {article.read_time_min} min
+              </VaultChip>
             </div>
 
-            {/* Scrollable body */}
-            <div
-              className="py-5 space-y-5"
-              style={{
-                WebkitOverflowScrolling: "touch",
-                paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)",
-              }}
-            >
-              {article.why_it_matters && (
-                <section
-                  className="rounded-2xl border p-4"
-                  style={{
-                    background: `linear-gradient(135deg, ${accent}14, hsl(var(--card)) 80%)`,
-                    borderColor: `${accent}40`,
-                  }}
-                >
-                  <SectionHeader Icon={Lightbulb} label="Why it matters" color={accent} />
-                  <p className="text-meta text-foreground/90 leading-relaxed">
-                    {article.why_it_matters}
-                  </p>
-                </section>
-              )}
+            <h2 className="font-display text-title leading-[1.08] font-black tracking-tight pr-8 text-balance">{article.title}</h2>
+            {article.subtitle && (
+              <p className="text-dense mt-1.5 font-medium leading-snug" style={{ color: accent }}>
+                {article.subtitle}
+              </p>
+            )}
+            <p className="text-note text-muted-foreground mt-2.5 leading-relaxed">{article.summary}</p>
+            {(master || path) && (
+              <p className="text-label font-bold text-muted-foreground mt-2.5">
+                {[master ? `${master.name} · ${master.tradition}` : "", path?.title ?? ""].filter(Boolean).join(" · ")}
+              </p>
+            )}
+          </header>
 
-              {(article.protocol?.duration ||
-                article.protocol?.intensity ||
-                article.protocol?.frequency ||
-                article.protocol?.prerequisites) && (
-                <section
-                  className="rounded-2xl border p-4"
-                  style={{
-                    background: `linear-gradient(135deg, ${accent}18, hsl(var(--card)) 80%)`,
-                    borderColor: `${accent}55`,
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <Target aria-hidden size={13} style={{ color: accent }} strokeWidth={2.6} />
-                    <p
-                      className="text-label font-bold text-muted-foreground"
-                      style={{ color: accent }}
-                    >
-                      Protocol
-                    </p>
-                  </div>
-                  <dl className="space-y-2 text-meta">
-                    {article.protocol.duration && (
-                      <ProtocolRow label="Duration" value={article.protocol.duration} />
-                    )}
-                    {article.protocol.intensity && (
-                      <ProtocolRow label="Intensity / dose" value={article.protocol.intensity} />
-                    )}
-                    {article.protocol.frequency && (
-                      <ProtocolRow label="Frequency" value={article.protocol.frequency} />
-                    )}
-                    {article.protocol.prerequisites && (
-                      <ProtocolRow label="Prerequisites" value={article.protocol.prerequisites} />
-                    )}
-                  </dl>
-                </section>
-              )}
-
-              {article.benefits.length > 0 && (
-                <section>
-                  <SectionHeader Icon={CheckCircle2} label={isIdea ? "What it gives you" : "Expected benefits"} color="hsl(152 68% 50%)" />
-                  <ul className="space-y-1.5">
-                    {article.benefits.map((b, i) => (
-                      <li key={i} className="flex items-start gap-2 text-meta">
-                        <CheckCircle2 aria-hidden
-                          size={13}
-                          className="mt-[3px] shrink-0 text-xp-green"
-                          strokeWidth={2.6}
-                        />
-                        <span className="text-foreground/90">{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              {article.risks.length > 0 && (
-                <section>
-                  <SectionHeader Icon={AlertTriangle} label={isIdea ? "Where it is honest about its limits" : "Risks & limits"} color="hsl(35 90% 60%)" />
-                  <ul className="space-y-1.5">
-                    {article.risks.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-meta">
-                        <AlertTriangle aria-hidden
-                          size={13}
-                          className="mt-[3px] shrink-0 text-amber-400"
-                          strokeWidth={2.6}
-                        />
-                        <span className="text-foreground/90">{r}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
+          <div className="pt-6 pb-2 space-y-7">
+            {article.why_it_matters && (
               <section>
-                <SectionHeader Icon={BookMarked} label={isIdea ? "The idea" : "The science"} color={accent} />
-                {bodyLoading && !article.body_md ? (
-                  <div className="space-y-2" aria-hidden>
-                    {[92, 100, 84, 96, 60].map((w, i) => (
-                      <div key={i} className="h-3.5 rounded skeleton-block bg-secondary/30" style={{ width: `${w}%` }} />
-                    ))}
-                  </div>
-                ) : (
-                  <article className="prose prose-invert prose-sm max-w-none prose-headings:font-display prose-headings:tracking-tight prose-h2:text-copy prose-h2:mt-5 prose-h2:mb-2 prose-h3:text-note prose-p:my-2 prose-p:leading-relaxed vault-body prose-li:my-0.5 prose-strong:text-foreground prose-table:text-meta prose-th:font-black prose-th:text-foreground prose-th:bg-card/60 prose-th:px-2 prose-th:py-1 prose-td:px-2 prose-td:py-1 prose-td:border-border/40">
-                    <ReactMarkdown>{article.body_md}</ReactMarkdown>
-                  </article>
-                )}
+                <SectionHeader Icon={Lightbulb} label="Why it matters" color={accent} />
+                <p className="text-note text-foreground/90 leading-relaxed">{article.why_it_matters}</p>
               </section>
+            )}
 
-              {/* Without the loop, the practice is a list to read; with it, the
-                  steps live inside the Practise stage below. */}
-              {!loop && article.try_today?.length > 0 && (
-                <section
-                  className="rounded-2xl border p-4"
-                  style={{
-                    background: `linear-gradient(135deg, ${accent}14, hsl(var(--card)) 80%)`,
-                    borderColor: `${accent}55`,
-                  }}
-                >
-                  <SectionHeader Icon={Zap} label="Try this today" color={accent} />
-                  <ol className="space-y-2">
-                    {article.try_today.map((step, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-meta">
-                        <span
-                          className="mt-[1px] h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-label font-black"
-                          style={{
-                            background: `${accent}25`,
-                            color: accent,
-                            border: `1px solid ${accent}55`,
-                          }}
-                        >
-                          {i + 1}
-                        </span>
-                        <span className="text-foreground/95 leading-snug">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-              )}
+            {/* The dose: the one card on the sheet. */}
+            {hasProtocol && protocol && (
+              <section className="rounded-2xl border border-border/50 bg-card/40 p-4">
+                <SectionHeader Icon={Target} label="Protocol" color={accent} />
+                <dl className="space-y-2.5">
+                  {protocol.duration && <ProtocolRow label="Duration" value={protocol.duration} />}
+                  {protocol.intensity && <ProtocolRow label="Intensity / dose" value={protocol.intensity} />}
+                  {protocol.frequency && <ProtocolRow label="Frequency" value={protocol.frequency} />}
+                  {protocol.prerequisites && <ProtocolRow label="Prerequisites" value={protocol.prerequisites} />}
+                </dl>
+              </section>
+            )}
 
-              {article.key_takeaways?.length > 0 && (
-                <section>
-                  <SectionHeader Icon={ListChecks} label="Key takeaways" color={accent} />
-                  <ul className="space-y-1.5">
-                    {article.key_takeaways.map((k, i) => (
-                      <li key={i} className="flex items-start gap-2 text-meta">
-                        <span
-                          className="mt-[7px] h-1.5 w-1.5 rounded-full shrink-0"
-                          style={{ background: accent }}
-                        />
-                        <span className="text-foreground/90 leading-snug">{k}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              {article.quiz?.length > 0 && (
-                <LessonQuiz quiz={article.quiz} accent={accent} onScore={setQuizScore} />
-              )}
-
-              {loop && !bodyLoading && (
-                <div className="pt-2 border-t border-border/30">
-                  <PracticeLoop
-                    article={article}
-                    accent={accent}
-                    progress={progressRow}
-                    quizScore={quizScore}
-                    onPracticed={onPracticed}
-                    onOpenSlug={onOpenSlug}
-                  />
+            <section>
+              <SectionHeader Icon={BookMarked} label={isIdea ? "The idea" : "The science"} color={accent} />
+              {bodyFailed && !article.body_md ? (
+                <ErrorState size="compact" title="Couldn't load this piece" onRetry={refetch} />
+              ) : bodyLoading && !article.body_md ? (
+                <div className="space-y-2.5" aria-hidden>
+                  {[92, 100, 84, 96, 60].map((w, i) => (
+                    <div key={i} className="h-4 rounded skeleton-block bg-card/40" style={{ width: `${w}%` }} />
+                  ))}
                 </div>
+              ) : (
+                <article className="vault-body text-read leading-relaxed text-foreground/90">
+                  <ReactMarkdown components={{ p: BodyParagraph }}>{article.body_md}</ReactMarkdown>
+                </article>
               )}
+            </section>
 
-              {article.references_json?.length > 0 && (
-                <section className="pt-2 border-t border-border/30">
-                  <p className="text-label font-bold text-muted-foreground mb-2">
-                    References
-                  </p>
-                  <ol className="space-y-1.5 text-meta text-muted-foreground/90 list-decimal list-inside">
-                    {article.references_json.map((r, i) => (
-                      <li key={i} className="leading-snug">
-                        <span className="text-foreground/85 font-semibold">{r.author}</span>
-                        {r.year ? ` (${r.year < 0 ? `${-r.year} BC` : r.year})` : ""}{": "}
-                        {r.url ? (
-                          <a
-                            href={r.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-gold underline-offset-2 hover:underline"
-                          >
-                            {r.title}
-                          </a>
-                        ) : (
-                          <span className="italic">{r.title}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-              )}
+            {article.key_takeaways?.length > 0 && (
+              <section>
+                <SectionHeader Icon={ListChecks} label="Key takeaways" color={accent} />
+                <ul className="space-y-2">
+                  {article.key_takeaways.map((k, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-dense">
+                      <span aria-hidden className="mt-2 h-1.5 w-1.5 rounded-full shrink-0" style={{ background: accent }} />
+                      <span className="text-foreground/90 leading-snug">{k}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-              {!loop && (
-                <button
-                  type="button"
-                  onClick={handleComplete}
-                  disabled={completeLesson.isPending || isCompleted}
-                  className="press text-label font-bold text-muted-foreground w-full rounded-2xl py-3 transition-[color,opacity] disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{
-                    background: isCompleted ? `${accent}20` : accent,
-                    color: isCompleted ? accent : "hsl(var(--background))",
-                    border: `1px solid ${accent}66`,
-                    boxShadow: isCompleted ? "none" : `0 8px 24px ${accent}40`,
-                  }}
-                >
-                  {isCompleted
-                    ? "✓ Lesson complete"
-                    : completeLesson.isPending
-                      ? "Saving…"
-                      : "Mark lesson complete"}
-                </button>
-              )}
+            {article.benefits.length > 0 && (
+              <section>
+                <SectionHeader Icon={CheckCircle2} label={isIdea ? "What it gives you" : "Expected benefits"} />
+                <ul className="space-y-2">
+                  {article.benefits.map((b, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-dense">
+                      <CheckCircle2 aria-hidden size={13} className="mt-0.5 shrink-0 text-xp-green" strokeWidth={2.6} />
+                      <span className="text-foreground/90 leading-snug">{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-              <p className="text-label text-muted-foreground/75 text-center pt-1">
-                Educational content — not a substitute for medical advice.
-              </p>
-            </div>
+            {article.risks.length > 0 && (
+              <section>
+                <SectionHeader Icon={AlertTriangle} label={isIdea ? "Where it is honest about its limits" : "Risks and limits"} />
+                <ul className="space-y-2">
+                  {article.risks.map((r, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-dense">
+                      <AlertTriangle aria-hidden size={13} className="mt-0.5 shrink-0 text-amber-light" strokeWidth={2.6} />
+                      <span className="text-foreground/90 leading-snug">{r}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {loaded && (
+              <div className="pt-6 border-t border-border/30">
+                <PracticeLoop
+                  key={article.id}
+                  article={article}
+                  accent={accent}
+                  progress={progressRow}
+                  onPracticed={onPracticed}
+                  onOpenSlug={onOpenSlug}
+                />
+              </div>
+            )}
+
+            {article.references_json?.length > 0 && (
+              <section className="pt-6 border-t border-border/30">
+                <SectionHeader Icon={Library} label="References" />
+                <ol className="space-y-1.5 text-meta text-muted-foreground list-decimal list-inside">
+                  {article.references_json.map((r, i) => (
+                    <li key={i} className="leading-snug">
+                      <span className="text-foreground/85 font-semibold">{r.author}</span>
+                      {r.year ? ` (${r.year < 0 ? `${-r.year} BC` : r.year})` : ""}
+                      {": "}
+                      {r.url ? (
+                        <a href={r.url} target="_blank" rel="noreferrer" className="text-gold underline-offset-2 hover:underline">
+                          {r.title}
+                        </a>
+                      ) : (
+                        <span className="italic">{r.title}</span>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
+            <p className="text-label text-muted-foreground/75 text-center">Educational content, not a substitute for medical advice.</p>
+          </div>
         </>
       )}
     </BottomSheet>
@@ -423,28 +273,9 @@ const VaultArticleSheet = ({
 };
 
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col">
-    <dt className="text-label font-bold text-muted-foreground/80">
-      {label}
-    </dt>
-    <dd className="text-foreground/95 leading-snug">{value}</dd>
-  </div>
-);
-
-const SectionHeader = ({
-  Icon,
-  label,
-  color,
-}: {
-  Icon: typeof CheckCircle2;
-  label: string;
-  color: string;
-}) => (
-  <div className="flex items-center gap-2 mb-2">
-    <Icon size={13} style={{ color }} strokeWidth={2.6} />
-    <p className="text-label font-bold text-muted-foreground" style={{ color }}>
-      {label}
-    </p>
+  <div className="flex flex-col gap-0.5">
+    <dt className="text-label font-bold text-muted-foreground">{label}</dt>
+    <dd className="text-dense text-foreground/95 leading-snug">{value}</dd>
   </div>
 );
 

@@ -76,6 +76,15 @@ export const BottomSheet = ({
   footer?: ReactNode;
 }) => {
   useScrollLock(open);
+  // Escape closes every sheet (keyboard and desktop web; iOS has no such key).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
   const reduced = useReducedMotion();
   const viewport = useVisualViewport();
   const rise = reduced

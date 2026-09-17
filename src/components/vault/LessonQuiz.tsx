@@ -1,140 +1,101 @@
 import { useMemo, useState } from "react";
-import { CheckCircle2, XCircle, HelpCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { VaultQuizQ } from "@/hooks/use-vault-articles";
 
-const LessonQuiz = ({
-  quiz,
-  accent,
-  onScore,
-}: {
-  quiz: VaultQuizQ[];
-  accent: string;
-  onScore: (score: number) => void;
-}) => {
+/**
+ * The check inside the Understand stage: two or three questions, answered,
+ * then marked with the reason. Optional; it never gates the loop. The pick
+ * wears the shelf's accent; right and wrong wear the app's own tokens, so a
+ * green shelf can never be mistaken for a correct answer.
+ */
+const LessonQuiz = ({ quiz, accent, onScore }: { quiz: VaultQuizQ[]; accent: string; onScore: (score: number) => void }) => {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
 
   const allAnswered = quiz.every((_, i) => answers[i] !== undefined);
-  const score = useMemo(
-    () => quiz.reduce((acc, q, i) => (answers[i] === q.correct ? acc + 1 : acc), 0),
-    [answers, quiz],
-  );
+  const score = useMemo(() => quiz.reduce((acc, q, i) => (answers[i] === q.correct ? acc + 1 : acc), 0), [answers, quiz]);
 
   if (!quiz?.length) return null;
 
   return (
-    <section
-      className="rounded-2xl border p-4"
-      style={{
-        background: `linear-gradient(135deg, ${accent}10, hsl(var(--card)) 80%)`,
-        borderColor: `${accent}44`,
-      }}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <HelpCircle aria-hidden size={13} style={{ color: accent }} strokeWidth={2.6} />
-        <p
-          className="text-label font-bold text-muted-foreground"
-          style={{ color: accent }}
-        >
-          Comprehension check
-        </p>
-      </div>
-
-      <div className="space-y-4">
+    <div>
+      <div className="space-y-5">
         {quiz.map((q, qi) => {
           const picked = answers[qi];
           return (
-            <div key={qi}>
-              <p className="text-meta font-semibold leading-snug mb-2">
+            <fieldset key={qi} disabled={submitted}>
+              <legend className="text-dense font-semibold leading-snug mb-2">
                 {qi + 1}. {q.q}
-              </p>
-              <div className="space-y-1.5">
+              </legend>
+              <div className="space-y-2">
                 {q.choices.map((choice, ci) => {
                   const isPicked = picked === ci;
                   const isCorrect = q.correct === ci;
-                  const showState = submitted && (isPicked || isCorrect);
+                  const marked = submitted && (isPicked || isCorrect);
                   return (
                     <button
                       key={ci}
                       type="button"
-                      disabled={submitted}
+                      aria-pressed={isPicked}
                       onClick={() => setAnswers((p) => ({ ...p, [qi]: ci }))}
-                      className="press w-full text-left rounded-xl border px-3 py-2 text-meta flex items-start gap-2 transition-colors disabled:"
-                      style={{
-                        background: showState
+                      className={cn(
+                        "press w-full min-h-11 text-left rounded-xl border px-3 py-2.5 text-dense flex items-start gap-2.5 transition-colors",
+                        marked
                           ? isCorrect
-                            ? "hsl(152 68% 50% / 0.12)"
-                            : "hsl(0 75% 60% / 0.10)"
-                          : isPicked
-                            ? `${accent}18`
-                            : "hsl(var(--background) / 0.4)",
-                        borderColor: showState
-                          ? isCorrect
-                            ? "hsl(152 68% 50% / 0.55)"
-                            : "hsl(0 75% 60% / 0.45)"
-                          : isPicked
-                            ? `${accent}66`
-                            : "hsl(var(--border) / 0.5)",
-                      }}
+                            ? "border-xp-green/55 bg-xp-green/10"
+                            : "border-destructive/45 bg-destructive/10"
+                          : !isPicked && "border-border/50 bg-background/40",
+                      )}
+                      style={!marked && isPicked ? { background: `${accent}18`, borderColor: `${accent}66` } : undefined}
                     >
-                      <span
-                        className="mt-[2px] h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0"
-                        style={{
-                          borderColor: isPicked ? accent : "hsl(var(--border))",
-                          background: isPicked ? accent : "transparent",
-                        }}
-                      >
-                        {showState && isCorrect && (
-                          <CheckCircle2 aria-hidden size={11} className="text-xp-green" />
-                        )}
-                        {showState && isPicked && !isCorrect && (
-                          <XCircle aria-hidden size={11} className="text-rose-300" />
-                        )}
-                      </span>
+                      {marked ? (
+                        isCorrect ? (
+                          <CheckCircle2 aria-hidden size={16} className="mt-0.5 shrink-0 text-xp-green" />
+                        ) : (
+                          <XCircle aria-hidden size={16} className="mt-0.5 shrink-0 text-destructive" />
+                        )
+                      ) : (
+                        <span
+                          aria-hidden
+                          className="mt-0.5 h-4 w-4 rounded-full border shrink-0"
+                          style={isPicked ? { borderColor: accent, background: accent } : { borderColor: "hsl(var(--border))" }}
+                        />
+                      )}
                       <span className="text-foreground/95 leading-snug">{choice}</span>
                     </button>
                   );
                 })}
               </div>
               {submitted && (
-                <p className="mt-2 text-meta text-muted-foreground leading-snug pl-1">
+                <p className="mt-2 text-meta text-muted-foreground leading-snug">
                   <span className="font-black text-foreground/85">Why:</span> {q.explain}
                 </p>
               )}
-            </div>
+            </fieldset>
           );
         })}
       </div>
 
       {!submitted ? (
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          className="mt-4 w-full min-h-11"
           disabled={!allAnswered}
           onClick={() => {
             setSubmitted(true);
             onScore(score);
           }}
-          className="text-label font-bold text-muted-foreground mt-4 w-full rounded-xl py-2.5 disabled:opacity-40 disabled:cursor-not-allowed transition-[color,opacity]"
-          style={{
-            background: accent,
-            color: "hsl(var(--background))",
-          }}
         >
           Check answers
-        </button>
+        </Button>
       ) : (
-        <div
-          className="mt-4 rounded-xl px-3 py-2.5 text-center text-meta font-black"
-          style={{
-            background: `${accent}18`,
-            border: `1px solid ${accent}55`,
-            color: accent,
-          }}
-        >
-          Score: {score} / {quiz.length}
-        </div>
+        <p className="mt-4 text-dense font-black tabular-nums" aria-live="polite">
+          {score} of {quiz.length} right.
+        </p>
       )}
-    </section>
+    </div>
   );
 };
 

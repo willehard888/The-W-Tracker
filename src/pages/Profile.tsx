@@ -1,3 +1,6 @@
+import GridMedia from "@/components/feed/GridMedia";
+import ImageLightbox from "@/components/ImageLightbox";
+import type { StatusTier } from "@/lib/status-tiers";
 import AiConsentRow from "@/components/consent/AiConsentRow";
 import { WEB_ORIGIN } from "@/lib/universal-link";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -12,7 +15,7 @@ import AppImage from "@/components/ui/app-image";
 import { downscaleImage } from "@/lib/downscale-image";
 import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 import { friendlyError } from "@/lib/error-copy";
-import { hapticSelection } from "@/lib/haptics";
+import { hapticSelection, hapticImpact } from "@/lib/haptics";
 import BadgeVault from "@/components/BadgeVault";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -245,6 +248,11 @@ const Profile = () => {
   });
   const userPosts = userPostsData?.posts;
   const userPostsTotal = userPostsData?.total ?? 0;
+  // Media rides in the grid, words stay as rows: two silhouettes, not one
+  // list of mixed cards.
+  const mediaPosts = (userPosts ?? []).filter((p) => p.image_url || p.video_url);
+  const textPosts = (userPosts ?? []).filter((p) => !p.image_url && !p.video_url);
+  const [lightbox, setLightbox] = useState<{ url: string; post: (typeof mediaPosts)[number] } | null>(null);
 
   const { data: kudosReceived } = useQuery({
     queryKey: ["kudos-received", profile?.user_id],
@@ -574,13 +582,34 @@ const Profile = () => {
       {userPosts && userPosts.length > 0 && (
         <div>
           <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPostsTotal})</h2>
+
+          {/* Proof first, as a grid — the same one another member sees on your
+              profile. It used to render image_url only, so a video post showed
+              as a caption with nothing in it. */}
+          {mediaPosts.length > 0 && (
+            <div className="-mx-4 mb-3 grid grid-cols-3 gap-[2px]">
+              {mediaPosts.map((post) => {
+                const isVideo = !!post.video_url;
+                const src = (post.image_url || post.video_url) as string;
+                return (
+                  <button
+                    type="button"
+                    key={post.id}
+                    onClick={() => { hapticImpact("light"); setLightbox({ url: src, post }); }}
+                    aria-label={post.content || (isVideo ? "Open video post" : "Open photo post")}
+                    className="group relative aspect-square overflow-hidden bg-secondary"
+                  >
+                    <GridMedia src={src} isVideo={isVideo} alt={post.content || "Your post"} />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div className="space-y-3">
-            {userPosts.map((post) => (
+            {textPosts.map((post) => (
               <div key={post.id} className="surface-card surface-card-quiet p-4">
                 {post.content && <p className="text-base mb-2">{post.content}</p>}
-                {post.image_url && (
-                  <AppImage src={post.image_url} width={600} placeholderAspect="4 / 5" alt={post.content || "Post image"} className="w-full rounded-lg object-cover max-h-48 mb-2" />
-                )}
                 <div className="flex items-center gap-3 text-label text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart aria-hidden size={12} /> {post.likes_count}</span>
                   <span className="flex items-center gap-1"><Trophy aria-hidden size={12} /> {post.kudos_count}</span>
@@ -756,6 +785,21 @@ const Profile = () => {
 
         </div>
       )}
+      <ImageLightbox
+        open={!!lightbox}
+        imageUrl={lightbox?.url ?? null}
+        isVideo={!!lightbox?.post.video_url}
+        username={profile.username}
+        avatarUrl={profile.avatar_url}
+        tier={tier as StatusTier}
+        level={profile.level}
+        streak={profile.streak}
+        likes={lightbox?.post.likes_count}
+        comments={lightbox?.post.comments_count}
+        kudos={lightbox?.post.kudos_count}
+        caption={lightbox?.post.content}
+        onClose={() => setLightbox(null)}
+      />
     </div>
   );
 };

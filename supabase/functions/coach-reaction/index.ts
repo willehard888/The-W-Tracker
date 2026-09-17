@@ -9,6 +9,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { SHARED_HABIT_BY_KEY, isBonusHabit } from "../_shared/checkin-habits.ts";
 import { gatherHabitGaps } from "../_shared/habit-gaps.ts";
+import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,8 +70,14 @@ Deno.serve(async (req) => {
 
     // Membership gate (coach feature) — client silently falls back to the
     // deterministic template on 403, so free users lose nothing they had.
-    const { data: hasAccess } = await supabase.rpc("has_active_access", { _user_id: user.id });
+    const [{ data: hasAccess }, consent] = await Promise.all([
+      supabase.rpc("has_active_access", { _user_id: user.id }),
+      hasAiConsent(supabase, user.id),
+    ]);
     if (hasAccess !== true) return json({ error: "Active membership required" }, 403);
+    // AI consent (App Review 5.1.2(i)): same silent fallback to the template on
+    // the client, and refused before bump_ai_usage so it never costs quota.
+    if (!consent) return json({ error: AI_CONSENT_REQUIRED }, 403);
 
     if (!OPENROUTER_API_KEY) return json({ error: "not_configured" }, 500);
 
@@ -142,13 +149,9 @@ Deno.serve(async (req) => {
     const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: 20, p_kind: "reaction" });
     if (allowed === false) return json({ error: "limit" }, 429);
 
-    const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const aiResp = await openrouterFetch(
+      OPENROUTER_API_KEY,
+      {
         model: "google/gemini-3-flash-preview",
         messages: [
           {
@@ -169,8 +172,9 @@ Rules:
         ],
         tools: [reactionTool],
         tool_choice: { type: "function", function: { name: "emit_reaction" } },
-      }),
-    });
+      },
+      { consent },
+    );
 
     if (!aiResp.ok) {
       console.error("coach-reaction upstream:", aiResp.status, await aiResp.text().catch(() => ""));

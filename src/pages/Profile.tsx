@@ -1,3 +1,4 @@
+import AiConsentRow from "@/components/consent/AiConsentRow";
 import { WEB_ORIGIN } from "@/lib/universal-link";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { fmtDate, fmtInt, fmtRelative } from "@/lib/format";
@@ -645,6 +646,7 @@ const Profile = () => {
             <SettingsRow icon={Utensils} label="Nutrition targets" sub="Calories and macros your diary measures against" onClick={() => navigate("/nutrition/targets")} />
             <SettingsRow icon={Brain} label="Coach memory" sub="What the coach remembers about you" onClick={() => navigate("/coach/memory")} />
             <SettingsRow icon={Bell} label="Notifications" sub="What reaches your lock screen, and when" onClick={() => navigate("/settings/notifications")} />
+            <AiConsentRow />
           </SettingsGroup>
 
           <SettingsGroup title="Sharing & friends">

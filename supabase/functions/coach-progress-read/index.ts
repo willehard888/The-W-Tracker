@@ -1,5 +1,6 @@
 // coach-progress-read — Premium-only. Generates a short coach read of last 7d progress vs program targets.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,9 +47,20 @@ Deno.serve(async (req) => {
     // the app lets a trialist walk the whole product, but has_premium is
     // paid-only — so a day-1 trialist tapping the most advertised feature hit a
     // 403 they were never warned about. coach-daily-plan already gates this way.
-    const { data: hasAccess } = await supabase.rpc("has_active_access", { _user_id: userId });
+    const [{ data: hasAccess }, consent] = await Promise.all([
+      supabase.rpc("has_active_access", { _user_id: userId }),
+      hasAiConsent(supabase, userId),
+    ]);
     if (!hasAccess) {
       return new Response(JSON.stringify({ error: "Active membership required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // AI consent (App Review 5.1.2(i)): the read sends the member's week to the
+    // model. Refused here, before bump_ai_usage, so a refusal never costs quota.
+    if (!consent) {
+      return new Response(JSON.stringify({ error: AI_CONSENT_REQUIRED }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -105,13 +117,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const aiResp = await openrouterFetch(
+      OPENROUTER_API_KEY,
+      {
         model: "openai/gpt-5-mini",
         messages: [
           {
@@ -121,8 +129,9 @@ Deno.serve(async (req) => {
           },
           { role: "user", content: summary },
         ],
-      }),
-    });
+      },
+      { consent },
+    );
 
     if (!aiResp.ok) {
       const t = await aiResp.text();
@@ -153,7 +162,8 @@ Deno.serve(async (req) => {
   } catch (e) {
     console.error("coach-progress-read error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      // The real error is in the log line above: e.message can name tables and the provider.
+      JSON.stringify({ error: "The coach read is unavailable right now. Try again in a moment." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

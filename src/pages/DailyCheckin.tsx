@@ -1,6 +1,7 @@
 import { backOr } from "@/lib/nav";
 import { useSessionDoneToday } from "@/hooks/use-session-done-today";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
+import { getEffectiveStreak } from "@/lib/streak";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
@@ -141,7 +142,7 @@ const CUSTOM = new Set(["sleep", "workout", "hydration"]);
 
 const DailyCheckin = () => {
   const navigate = useNavigate();
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, isElite } = useAuth();
   const pushControls = usePushControls();
   const { profile: athlete } = useAthleteProfile();
   const why = athlete?.i_am?.trim();
@@ -380,14 +381,15 @@ const DailyCheckin = () => {
   const checkinState = { sleepOptimal: isOptimalSleep, workout, hydration, completed };
   const habitDone = (h: CheckinHabit): boolean => isHabitDone(h, checkinState);
 
-  const { baseXp, totalXp, completedCount } = computeCheckinXp({
+  const xpArgs = {
     habits: chosenHabits,
     state: checkinState,
     sportXp: selectedSport.xp,
     hasProof: !!proofFile,
     sleepMultiplier,
     questBonusXp,
-  });
+  };
+  const { baseXp, totalXp, completedCount } = computeCheckinXp(xpArgs);
   const maxCount = chosenHabits.length;
 
   // Habits grouped by pillar, excluding the ones with custom widgets
@@ -456,16 +458,29 @@ const DailyCheckin = () => {
           setSubmitting(false);
           return;
         }
-        const upload = await downscaleImage(proofFile, { maxDim: 2048, quality: 0.9 });
-        const ext = upload.name.split(".").pop();
-        const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, upload, {
-          cacheControl: "3600", upsert: false, contentType: upload.type,
-        });
-        if (uploadErr) throw new Error(`Photo upload failed: ${uploadErr.message}`);
-        const { data: urlData } = supabase.storage.from("proof-photos").getPublicUrl(path);
-        proof_photo_url = urlData.publicUrl;
+        // The photo is a bonus, the day is the point. This upload used to throw
+        // before record_checkin ran, so a storage hiccup (or no signal) threw
+        // away the whole check-in: the streak day was lost and nothing was
+        // queued offline. It now fails the way the feed post below does.
+        try {
+          const upload = await downscaleImage(proofFile, { maxDim: 2048, quality: 0.9 });
+          const ext = upload.name.split(".").pop();
+          const path = `${user.id}/${Date.now()}.${ext}`;
+          const { error: uploadErr } = await supabase.storage.from("proof-photos").upload(path, upload, {
+            cacheControl: "3600", upsert: false, contentType: upload.type,
+          });
+          if (uploadErr) throw uploadErr;
+          proof_photo_url = supabase.storage.from("proof-photos").getPublicUrl(path).data.publicUrl;
+        } catch (e) {
+          console.warn("proof upload", e);
+          captureException(e, { where: "checkin.proofUpload" });
+          toast("Photo didn't upload. Your day is still locked in.", { duration: 5000 });
+        }
       }
+      // No photo on the server means no +30: claim only what was earned.
+      const xpToSend = proofFile && !proof_photo_url
+        ? computeCheckinXp({ ...xpArgs, hasProof: false }).totalXp
+        : totalXp;
 
       // Build the jsonb of completions for personalized habits that don't map
       // to a legacy column (new evidence-based habits). Column-backed habits
@@ -493,7 +508,7 @@ const DailyCheckin = () => {
         p_no_phone_morning: done("no_phone_am"),
         p_no_phone_evening: done("no_phone_pm"),
         p_reading: done("reading"),
-        p_xp_earned: totalXp,
+        p_xp_earned: xpToSend,
         p_proof_photo_url: proof_photo_url ?? undefined,
         p_journal_entry: done("journaling") ? "logged" : undefined,
         p_tz_offset_minutes: tzOffsetMinutes,
@@ -573,12 +588,20 @@ const DailyCheckin = () => {
           });
           // Lock the form so it reads as done (optimistic summary; the real values
           // land on reconnect via the offline replay).
-          const xp = profile?.xp ?? 0; const lvl = profile?.level ?? 1;
-          const xpIntoLevel = xp - (lvl - 1) * 500;
+          // The bar was drawn from the OLD xp beside a total that included
+          // today's (so it could read past 100 %), and the streak added 1 to a
+          // chain that may have broken days ago. Both now describe the same
+          // moment: xp after today, and the streak as it stands (0 once a day
+          // was missed without a shield) plus this one.
+          const lvl = profile?.level ?? 1;
+          const newXp = (profile?.xp ?? 0) + xpToSend;
+          const newLvl = Math.max(lvl, Math.floor(newXp / 500) + 1);
+          const xpIntoLevel = newXp - (newLvl - 1) * 500;
           setSummary({
-            xpEarned: totalXp, newTotalXp: xp + totalXp, oldLevel: lvl, newLevel: lvl,
+            xpEarned: xpToSend, newTotalXp: newXp, oldLevel: lvl, newLevel: newLvl,
             xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
-            newStreak: (profile?.streak ?? 0) + 1, streakBroken: false, completedCount, maxCount,
+            newStreak: getEffectiveStreak(profile?.streak ?? 0, lastCheckin?.checked_in_at, profile?.streak_shields ?? 0) + 1,
+            streakBroken: false, completedCount, maxCount,
           });
           setSubmitted(true);
           setSubmitting(false);
@@ -711,7 +734,9 @@ const DailyCheckin = () => {
           }
         } catch { /* non-critical */ }
         try {
-          if (proof_photo_url) {
+          // Trial members cannot post (see the proof row's copy): do not try,
+          // the insert only ever produced the apology toast below.
+          if (proof_photo_url && isElite) {
             const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
             const content = sportLabel
               ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
@@ -736,6 +761,9 @@ const DailyCheckin = () => {
         }
         try { await refreshProfile(); } catch (e) { console.warn("refresh profile", e); }
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
+        // Rank sits in the header, Home, Profile and Ranks behind a 5-minute
+        // staleTime: without this it kept the pre-check-in number everywhere.
+        queryClient.invalidateQueries({ queryKey: ["my-rank"] });
         queryClient.invalidateQueries({ queryKey: ["user-badges"] });
         queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
         queryClient.invalidateQueries({ queryKey: ["recent-checkins"] });
@@ -880,7 +908,7 @@ const DailyCheckin = () => {
               <span className={cn("block text-sm font-bold", sickToday && "text-teal")}>Sick today</span>
               <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
                 {sickToday
-                  ? "Recovery mode on — rest counts. The coach won't push training today, and missed habits don't count against you."
+                  ? "Recovery mode on. The coach switches to recovery and won't push training today."
                   : "Feeling ill? Logging still keeps your streak — the coach switches to recovery mode."}
               </span>
             </span>
@@ -1228,7 +1256,9 @@ const DailyCheckin = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera aria-hidden size={20} /></div>
                 <div className="text-left flex-1">
                   <p className="font-semibold text-sm">Add proof photo</p>
-                  <p className="text-xs text-muted-foreground">Posted to the Elite Feed · earns <span className="font-bold text-foreground/80">+30 bonus XP</span></p>
+                  {/* Posting needs a paid membership (the feed INSERT policy). Trial
+                      members were promised a post here, then got an apology toast. */}
+                  <p className="text-xs text-muted-foreground">{isElite ? "Posted to the Feed. Earns " : "Earns "}<span className="font-bold text-foreground/80">+30 bonus XP</span></p>
                 </div>
                 {proofFile && <span className="text-label font-bold tabular-nums text-muted-foreground">+30 XP</span>}
                 {/* No `capture` attr: iOS then offers Take Photo AND Photo Library

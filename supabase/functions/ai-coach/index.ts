@@ -27,6 +27,7 @@ import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 import { programWeekState } from "../_shared/program-week.ts";
 import { todaysFocusSession } from "../_shared/today-session.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
+import { AI_CONSENT_REQUIRED, consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -315,7 +316,7 @@ Deno.serve(async (req) => {
     ] = await Promise.all([
       supabase
         .from("profiles")
-        .select("username, xp, level, streak, longest_streak, status_tier, is_elite, membership_credits_until")
+        .select("username, xp, level, streak, longest_streak, status_tier, is_elite, membership_credits_until, ai_consent_version")
         .eq("user_id", userId)
         .maybeSingle(),
       supabase.rpc("has_active_access", { _user_id: userId }),
@@ -400,6 +401,16 @@ Deno.serve(async (req) => {
     // The Coach is part of the paid app, not an Elite-only perk.
     if (accessRes.error || !accessRes.data) {
       return new Response(JSON.stringify({ error: "Active membership required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // AI consent (App Review 5.1.2(i)): nothing about the member goes to the
+    // model before they have opted in. Refused before bump_ai_usage so a
+    // refusal never costs a message from today's quota.
+    if (!consentOk(profile?.ai_consent_version)) {
+      return new Response(JSON.stringify({ error: AI_CONSENT_REQUIRED }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -603,13 +614,9 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
     );
     console.log("ai-coach", light ? "light" : "full", "sys≈", Math.round(systemPrompt.length / 4), "tok");
 
-    const upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const upstream = await openrouterFetch(
+      OPENROUTER_API_KEY,
+      {
         // Premium coach = the model is the product. gpt-5 for quality, with a
         // fast/cheap fallback so a transient upstream hiccup (rate limit /
         // timeout / 5xx) auto-recovers instead of surfacing an error.
@@ -627,11 +634,11 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
         // effort-low reasoning is small, 1500 still fits a full session).
         verbosity: goDeep ? "medium" : "low",
         max_tokens: goDeep ? 4000 : 1500,
-      }),
+      },
       // Hard deadline so a hung upstream never leaves the user on an
       // infinite spinner (client shows the failed bubble + retry).
-      signal: AbortSignal.timeout(55_000),
-    });
+      { consent: true, timeoutMs: 55_000 },
+    );
 
     if (!upstream.ok) {
       // The provider's body stays in the function log: it names the account,
@@ -640,12 +647,12 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
       const upstreamBody = await upstream.text().catch(() => "<unreadable>");
       console.error("OpenRouter error:", upstream.status, upstreamBody);
 
-      let friendly = "AI gateway error";
-      if (upstream.status === 429) friendly = "Rate limit exceeded. Try again in a moment.";
-      else if (upstream.status === 402) friendly = "OpenRouter credits exhausted. Top up at openrouter.ai/credits.";
-      else if (upstream.status === 401) friendly = "OpenRouter API key invalid. Reset OPENROUTER_API_KEY secret and redeploy.";
-      else if (upstream.status === 400) friendly = "OpenRouter rejected the request (model name or payload). See upstream below.";
-      else if (upstream.status === 404) friendly = "OpenRouter model not found. Check the model id in the edge function.";
+      // One calm sentence for every provider failure. The per-status sentences
+      // told a member to top up credits and reset an API key: the provider's
+      // name, our billing state and a secret's name, in the chat bubble.
+      const friendly = upstream.status === 429
+        ? "Rate limit exceeded. Try again in a moment."
+        : "The coach is unavailable right now. Try again in a moment.";
 
       return new Response(
         JSON.stringify({
@@ -662,7 +669,8 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
   } catch (e) {
     console.error("ai-coach error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      // The real error is in the log line above: e.message can name tables and the provider.
+      JSON.stringify({ error: "The coach is unavailable right now. Try again in a moment." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

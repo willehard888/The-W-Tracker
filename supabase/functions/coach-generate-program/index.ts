@@ -5,6 +5,7 @@ import { validateProgram, normalizeInjuries } from "./movements.ts";
 import { EXERCISE_CATALOG, filterCatalog } from "../_shared/exercise-catalog.ts";
 import { PRIORITY_SLUGS } from "../_shared/illustrated-catalog.ts";
 import { bannedSlugs, stripUnallowedBlocks, thinDays } from "../_shared/program-safety.ts";
+import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,9 +204,21 @@ Deno.serve(async (req) => {
     // the app lets a trialist walk the whole product, but has_premium is
     // paid-only — so a day-1 trialist tapping the most advertised feature hit a
     // 403 they were never warned about. coach-daily-plan already gates this way.
-    const { data: hasAccess } = await supabase.rpc("has_active_access", { _user_id: userId });
+    const [{ data: hasAccess }, consent] = await Promise.all([
+      supabase.rpc("has_active_access", { _user_id: userId }),
+      hasAiConsent(supabase, userId),
+    ]);
     if (!hasAccess) {
       return new Response(JSON.stringify({ error: "Active membership required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // AI consent (App Review 5.1.2(i)): the athlete file goes to the model, so
+    // it waits for the opt-in. Before bump_ai_usage: a refusal never costs one
+    // of the day's six builds.
+    if (!consent) {
+      return new Response(JSON.stringify({ error: AI_CONSENT_REQUIRED }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -451,18 +464,11 @@ the overload every week and explain it. Address the athlete in their preferred v
       // Hard timeout so a slow generation returns a clear error instead of
       // hanging until the platform/gateway kills it (which surfaces as an
       // opaque "non-2xx" with no body on the client).
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 120_000);
       let aiResp: Response;
       try {
-        aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          signal: ctrl.signal,
-          headers: {
-            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        aiResp = await openrouterFetch(
+          OPENROUTER_API_KEY,
+          {
             // gpt-5-mini follows the schema (all 7 days/week, min exercises)
             // far better than 4o-mini. Now that the schema is slim, its output
             // fits well under the token budget without truncating.
@@ -471,19 +477,20 @@ the overload every week and explain it. Address the athlete in their preferred v
             max_tokens: 16000,
             tools: [TOOL],
             tool_choice: { type: "function", function: { name: "emit_program" } },
-          }),
-        });
+          },
+          { consent, timeoutMs: 120_000 },
+        );
       } catch (err) {
-        clearTimeout(timer);
-        if ((err as any)?.name === "AbortError") {
-          return { parsed: null, rawErr: "AI timed out (>75s). Try again — generation can be heavy." };
+        // AbortSignal.timeout rejects with TimeoutError, a controller with AbortError.
+        if (["TimeoutError", "AbortError"].includes((err as any)?.name)) {
+          return { parsed: null, rawErr: "model call timed out (120 s)" };
         }
         throw err;
       }
-      clearTimeout(timer);
       if (!aiResp.ok) {
         if (aiResp.status === 429) throw new Response(JSON.stringify({ error: "Rate limited. Try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-        if (aiResp.status === 402) throw new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        // Same status as before; the sentence no longer tells a member about our billing.
+        if (aiResp.status === 402) throw new Response(JSON.stringify({ error: "The coach is unavailable right now. Try again in a moment." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         const t = await aiResp.text();
         return { parsed: null, rawErr: `AI gateway ${aiResp.status}: ${t.slice(0, 300)}` };
       }
@@ -555,8 +562,10 @@ the overload every week and explain it. Address the athlete in their preferred v
     }
 
     if (!parsed) {
+      // lastErr stays in the log: it can carry 300 characters of the provider's
+      // error body, which used to be printed inside the member's toast.
       console.error("Program generation failed:", lastErr);
-      return new Response(JSON.stringify({ error: `Coach couldn't finalize a clean program (${lastErr}). Try again.` }), {
+      return new Response(JSON.stringify({ error: "Coach couldn't finalize a clean program. Try again." }), {
         status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -596,7 +605,7 @@ the overload every week and explain it. Address the athlete in their preferred v
 
     if (insertErr) {
       console.error("Insert error:", insertErr);
-      return new Response(JSON.stringify({ error: insertErr.message }), {
+      return new Response(JSON.stringify({ error: "Could not save the program. Try again." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -608,7 +617,8 @@ the overload every week and explain it. Address the athlete in their preferred v
   } catch (e) {
     console.error("coach-generate-program error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      // The real error is in the log line above: e.message can name tables and the provider.
+      JSON.stringify({ error: "Could not build the program right now. Try again in a moment." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

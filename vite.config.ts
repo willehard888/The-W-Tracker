@@ -30,6 +30,11 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       target: "es2020",
+      // "hidden": maps are written next to the chunks but no chunk carries a
+      // sourceMappingURL comment, so browsers and the WebView never fetch
+      // them. They exist to be uploaded to Sentry (docs/RELEASE.md); without
+      // them every production stack trace is minified.
+      sourcemap: "hidden",
       cssCodeSplit: true,
       chunkSizeWarningLimit: 1200,
       rollupOptions: {

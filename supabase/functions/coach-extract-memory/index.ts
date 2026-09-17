@@ -1,6 +1,7 @@
 // Extract durable user facts from a recent chat exchange via OpenRouter.
 // Persists distilled facts to coach_chat_memory via append_chat_memory_batch RPC.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,9 +69,19 @@ Deno.serve(async (req) => {
 
     // Membership gate + daily cap (this function had neither — any
     // authenticated user could pump the LLM indefinitely).
-    const { data: access } = await supabase.rpc("has_active_access", { _user_id: u.user.id });
+    const [{ data: access }, consent] = await Promise.all([
+      supabase.rpc("has_active_access", { _user_id: u.user.id }),
+      hasAiConsent(supabase, u.user.id),
+    ]);
     if (!access) {
       return new Response(JSON.stringify({ error: "Active membership required" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // AI consent (App Review 5.1.2(i)): the transcript goes to the model, so it
+    // waits for the opt-in. Before bump_ai_usage: a refusal never costs quota.
+    if (!consent) {
+      return new Response(JSON.stringify({ error: AI_CONSENT_REQUIRED }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -93,13 +104,9 @@ Deno.serve(async (req) => {
       .map((m: any) => `${m.role === "user" ? "ATHLETE" : "COACH"}: ${String(m.content ?? "").slice(0, 800)}`)
       .join("\n");
 
-    const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const aiResp = await openrouterFetch(
+      OPENROUTER_API_KEY,
+      {
         model: "google/gemini-2.5-flash-lite",
         messages: [
           {
@@ -114,8 +121,9 @@ Deno.serve(async (req) => {
         ],
         tools: [TOOL],
         tool_choice: { type: "function", function: { name: "emit_facts" } },
-      }),
-    });
+      },
+      { consent },
+    );
 
     if (!aiResp.ok) {
       console.warn("memory ai non-ok", aiResp.status);
@@ -137,7 +145,8 @@ Deno.serve(async (req) => {
     const { data: inserted, error } = await supabase.rpc("append_chat_memory_batch", { _facts: facts });
     if (error) {
       console.error("append_chat_memory_batch", error);
-      return new Response(JSON.stringify({ error: error.message }), {
+      // Logged above; the Postgres message names the function and its columns.
+      return new Response(JSON.stringify({ error: "Could not save the coach's notes." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -147,7 +156,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("coach-extract-memory error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+    return new Response(JSON.stringify({ error: "Could not save the coach's notes." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

@@ -34,6 +34,9 @@ import AmbientParticles from "@/components/AmbientParticles";
 import BottomNav from "@/components/BottomNav";
 import StatusHeader from "@/components/StatusHeader";
 import TierPromotionCelebration from "@/components/TierPromotionCelebration";
+
+// Lazy: the sheet is asked for once, and it must not ride in the boot chunk.
+const AiConsentSheet = lazy(() => import("@/components/consent/AiConsentSheet"));
 import Index from "./pages/Index";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
@@ -410,6 +413,9 @@ const AppRoutes = () => {
       </ScrollContainerProvider>
       <BottomNav />
       {user && <TierPromotionCelebration />}
+      {/* The one place the app asks to send what a member logs to an AI model.
+          It registers with the consent gate; every AI surface asks through it. */}
+      {user && <Suspense fallback={null}><AiConsentSheet /></Suspense>}
       <PushPrimingSheet open={needsPriming} context={primingContext} onEnable={enablePush} onDismiss={dismissPriming} />
     </div>
     </OnboardingProvider>

@@ -1,3 +1,5 @@
+import { AI_CONSENT_REQUIRED, aiConsentState } from "@/lib/ai-consent";
+import { ensureAiConsent } from "@/lib/ai-consent-gate";
 import { backOr } from "@/lib/nav";
 import CoachSkeleton from "@/components/coach/CoachSkeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -47,7 +49,16 @@ const Coach = () => {
   // `isElite` and `loading`. Reading missing fields meant `!isPremium` was
   // always truthy and EVERY user saw the upsell — including paying Elite
   // users. The correct names are used now.
-  const { session, loading } = useAuth();
+  const { session, loading, profile } = useAuth();
+
+  // Asked once, here: Coach is where the AI is the product, so this is the
+  // honest moment to explain what leaves the phone. `unasked` only — a member
+  // who said no is not nagged on every visit (the composer's door still asks).
+  useEffect(() => {
+    if (aiConsentState(profile?.ai_consent_version) === "unasked") void ensureAiConsent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.ai_consent_version]);
+
   const navigate = useNavigate();
   // Seeded from the day's coach feedback → go straight to the chat shell; a
   // user who tapped "ask the coach about today" shouldn't hit the profile wall.
@@ -531,8 +542,15 @@ const ChatSheet = ({
         if (typeof console !== "undefined") console.error("Coach request failed:", summary);
 
         if (resp.status === 403) {
-          // Membership gate (has_active_access) — retrying can never succeed;
-          // send them to the paywall like TodaysPlanCard does.
+          // Two different 403s. The coach refuses without the member's AI
+          // consent (App Review 5.1.2(i)): ask for it instead of showing a
+          // failure, and let them send again. Otherwise it is the membership
+          // gate (has_active_access), where retrying can never succeed.
+          if (detail.includes(AI_CONSENT_REQUIRED)) {
+            if (await ensureAiConsent()) toast.success("AI coaching is on. Send that again.");
+            else toast("AI coaching stays off. Everything else works as before.");
+            return;
+          }
           navigate("/paywall");
           return;
         }

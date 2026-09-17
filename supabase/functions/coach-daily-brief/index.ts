@@ -11,6 +11,7 @@ import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
 import { programWeekState } from "../_shared/program-week.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
 import { todaysFocusSession } from "../_shared/today-session.ts";
+import { AI_CONSENT_REQUIRED, consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,11 +65,16 @@ Deno.serve(async (req) => {
     // Gather context in parallel
     const sevenAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
     const [profileRes, athleteRes, programRes, checkinsRes] = await Promise.all([
-      sb.from("profiles").select("username, status_tier, streak, longest_streak, level, xp").eq("user_id", uid).maybeSingle(),
+      sb.from("profiles").select("username, status_tier, streak, longest_streak, level, xp, ai_consent_version").eq("user_id", uid).maybeSingle(),
       sb.from("coach_athlete_profile" as any).select("*").eq("user_id", uid).maybeSingle(),
       sb.from("coach_programs").select("*").eq("user_id", uid).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       sb.from("daily_checkins").select("checked_in_at, sleep_hours, hydration_liters, workout, sport, protein_intake, healthy_food, xp_earned").eq("user_id", uid).gte("checked_in_at", sevenAgo).order("checked_in_at", { ascending: false }).limit(7),
     ]);
+
+    // AI consent (App Review 5.1.2(i)): a brief already written today is served
+    // above, a NEW one sends the member's week to the model, so it waits for
+    // their opt-in. Before bump_ai_usage: a refusal never costs quota.
+    if (!consentOk(profileRes.data?.ai_consent_version)) return json({ error: AI_CONSENT_REQUIRED }, 403);
 
     const profile = profileRes.data ?? {};
     const athlete: any = athleteRes.data ?? {};
@@ -181,10 +187,9 @@ Also produce:
     const { data: allowed } = await sb.rpc("bump_ai_usage", { p_limit: 12, p_kind: "brief" });
     if (allowed === false) return json({ error: "Today's brief limit is reached. It resets at midnight UTC." }, 429);
 
-    const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const aiResp = await openrouterFetch(
+      OPENROUTER_API_KEY,
+      {
         model: "google/gemini-2.5-flash",
         messages: [{ role: "system", content: systemPrompt }, { role: "user", content: "Generate today's brief." }],
         tools: [{
@@ -213,8 +218,9 @@ Also produce:
           },
         }],
         tool_choice: { type: "function", function: { name: "emit_brief" } },
-      }),
-    });
+      },
+      { consent: true },
+    );
 
     if (!aiResp.ok) {
       if (aiResp.status === 429) return json({ error: "Rate limited" }, 429);
@@ -250,7 +256,8 @@ Also produce:
     return json({ brief: payload, cached: false });
   } catch (e) {
     console.error("coach-daily-brief", e);
-    return json({ error: e instanceof Error ? e.message : "Unknown" }, 500);
+    // The real error is in the log line above: e.message can name tables and the provider.
+    return json({ error: "Today's brief is unavailable right now. Try again in a moment." }, 500);
   }
 });
 

@@ -138,6 +138,10 @@ Deno.serve(async (req) => {
       why ? `Their WHY (who they're becoming): "${why}"` : null,
     ].filter(Boolean).join("\n");
 
+    // Per-member daily cap before the model call (same counter as the chat coach).
+    const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: 20, p_kind: "reaction" });
+    if (allowed === false) return json({ error: "limit" }, 429);
+
     const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {

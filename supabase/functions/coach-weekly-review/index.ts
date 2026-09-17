@@ -115,7 +115,9 @@ Deno.serve(async (req) => {
     let next_week_focus = "Hold the line — stack one extra workout if energy stays >3.5.";
     let program_tweak: string | null = null;
 
-    if (OPENROUTER_API_KEY) {
+    // Per-member daily cap: over it, the review is the computed one below.
+    const { data: modelAllowed } = await supabase.rpc("bump_ai_usage", { p_limit: 6, p_kind: "weekly_review" });
+    if (OPENROUTER_API_KEY && modelAllowed !== false) {
       try {
         const prompt = `Last 7 days for athlete (${athlete?.i_am ?? "no identity"}, goal: ${athlete?.primary_goal ?? "general"}, tone: ${athlete?.tone_pref ?? "calm_mentor"}).
 

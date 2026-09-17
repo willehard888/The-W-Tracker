@@ -82,7 +82,11 @@ Deno.serve(async (req) => {
     const avgSleep = n ? (checks!.reduce((s: number, c: any) => s + Number(c.sleep_hours ?? 0), 0) / n) : 0;
     const avgHydr = n ? (checks!.reduce((s: number, c: any) => s + Number(c.hydration_liters ?? 0), 0) / n) : 0;
     const sessionsLogged = logs?.filter((l: any) => l.completed).length ?? 0;
-    const targets = (program?.plan_json as any)?.weekly_check_targets ?? null;
+    // plan_json is member-written now (hand edits): targets reach the prompt as numbers only.
+    const rawTargets = (program?.plan_json as any)?.weekly_check_targets ?? null;
+    const targets = rawTargets
+      ? { workouts: Number(rawTargets.workouts) || 0, sleep_avg_h: Number(rawTargets.sleep_avg_h) || 0, hydration_l: Number(rawTargets.hydration_l) || 0 }
+      : null;
 
     const summary = `Last 7 days:
 - Check-ins: ${n}/7
@@ -91,6 +95,15 @@ Deno.serve(async (req) => {
 - Avg sleep: ${avgSleep.toFixed(1)} h${targets ? ` (target ${targets.sleep_avg_h})` : ""}
 - Avg hydration: ${avgHydr.toFixed(1)} L${targets ? ` (target ${targets.hydration_l})` : ""}
 - Goal: ${program?.goal ?? "n/a"}`;
+
+    // Per-member daily cap before the model call (same counter as the chat coach).
+    const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: 12, p_kind: "progress" });
+    if (allowed === false) {
+      return new Response(JSON.stringify({ error: "Today's limit is reached. It resets at midnight UTC." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

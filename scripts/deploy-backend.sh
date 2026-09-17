@@ -24,6 +24,13 @@ if ! command -v supabase >/dev/null 2>&1; then
   exit 1
 fi
 
+# DEBUG_ALLOW_SANDBOX=true turns every free Apple sandbox purchase into a real
+# entitlement (revenuecat-webhook). It belongs to a TestFlight session, never
+# to a normal deploy: say so loudly when the secret exists at all.
+if supabase secrets list --project-ref "$PROJECT_REF" 2>/dev/null | grep -q "DEBUG_ALLOW_SANDBOX"; then
+  printf "\033[33m⚠ DEBUG_ALLOW_SANDBOX is set on %s. Unset it unless a sandbox test is running right now.\033[0m\n" "$PROJECT_REF"
+fi
+
 bold "▶ Deploying ALL edge functions to $PROJECT_REF …"
 # No function slug = deploy every function under supabase/functions/.
 supabase functions deploy --project-ref "$PROJECT_REF"

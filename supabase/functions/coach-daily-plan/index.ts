@@ -178,7 +178,8 @@ const buildPrompt = (
     : "No check-in yesterday.";
 
   const sessionLine = todayDay
-    ? `Program calls for: ${todayDay.focus} (${todayDay.duration_min} min, ${todayDay.blocks?.length ?? 0} blocks)`
+    // plan_json is member-written now (hand edits): bound its strings here.
+    ? `Program calls for: ${String(todayDay.focus ?? "").slice(0, 120)} (${Number(todayDay.duration_min) || 0} min, ${todayDay.blocks?.length ?? 0} blocks)`
     : "No program session scheduled today.";
 
   // Personalization block
@@ -679,7 +680,9 @@ Deno.serve(async (req) => {
     let rationale: string | null = null;
     let missions: any[] = [];
 
-    if (OPENROUTER_API_KEY) {
+    // Per-member daily cap: over it, the plan is the rule-based one below.
+    const { data: modelAllowed } = await supabase.rpc("bump_ai_usage", { p_limit: 12, p_kind: "daily_plan" });
+    if (OPENROUTER_API_KEY && modelAllowed !== false) {
       try {
         // Last night's recovery signals → let the plan account for under-recovery.
         const nightSignals = await gatherNightSignals(supabase, userId).catch(() => ({ hasData: false }));

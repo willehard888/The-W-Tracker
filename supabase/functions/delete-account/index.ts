@@ -140,13 +140,18 @@ Deno.serve(async (req) => {
     try { await serviceClient.from("foods").delete().eq("owner_id", user.id); }
     catch (e) { console.warn("delete-account: foods skipped", e); }
 
-    // Storage: the user's proof photos + avatars survived deletion in the
-    // (now enumeration-locked) buckets. Purge both folders.
-    for (const bucket of ["proof-photos", "feed-images", "meal-photos"]) {
+    // Storage: everything under the member's folder in every bucket they
+    // write to. `avatars` is PUBLIC, so a face left behind stayed fetchable
+    // forever; list() returns 100 names by default, so it is paged until a
+    // short page (removal shrinks the folder, the offset stays at zero).
+    for (const bucket of ["proof-photos", "feed-images", "meal-photos", "avatars"]) {
       try {
-        const { data: files } = await serviceClient.storage.from(bucket).list(user.id);
-        if (files && files.length > 0) {
-          await serviceClient.storage.from(bucket).remove(files.map((f) => `${user.id}/${f.name}`));
+        for (let page = 0; page < 50; page++) {
+          const { data: files } = await serviceClient.storage.from(bucket).list(user.id, { limit: 1000 });
+          const names = (files ?? []).filter((f) => f.id).map((f) => `${user.id}/${f.name}`);
+          if (names.length === 0) break;
+          await serviceClient.storage.from(bucket).remove(names);
+          if (names.length < 1000) break;
         }
       } catch (e) { console.warn(`delete-account: storage ${bucket} skipped`, e); }
     }

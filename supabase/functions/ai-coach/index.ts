@@ -146,7 +146,8 @@ const buildSystemPrompt = (
     : "";
 
   const sessionBlock = todaySession
-    ? `\n\nToday's prescribed session: ${todaySession.focus} · ${todaySession.duration_min ?? "?"} min · ${todaySession.blocks?.length ?? 0} blocks${todaySession.blocks?.[0]?.name ? ` (lead: ${todaySession.blocks[0].name})` : ""}.`
+    // plan_json is member-written now (hand edits): bound its strings here.
+    ? `\n\nToday's prescribed session: ${String(todaySession.focus ?? "").slice(0, 120)} · ${Number(todaySession.duration_min) || "?"} min · ${todaySession.blocks?.length ?? 0} blocks${todaySession.blocks?.[0]?.name ? ` (lead: ${String(todaySession.blocks[0].name).slice(0, 120)})` : ""}.`
     : "";
 
   const reflectionsBlock = reflections.length
@@ -627,9 +628,9 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
     });
 
     if (!upstream.ok) {
-      // Surface the actual OpenRouter response body to the client so the
-      // user can diagnose without dashboard access. Generic "AI gateway
-      // error" copy hid the real cause through multiple debug rounds.
+      // The provider's body stays in the function log: it names the account,
+      // the model routing and the provider, and any member who can trigger a
+      // non-2xx could read it. The status and the line below name the failure.
       const upstreamBody = await upstream.text().catch(() => "<unreadable>");
       console.error("OpenRouter error:", upstream.status, upstreamBody);
 
@@ -644,7 +645,6 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
         JSON.stringify({
           error: friendly,
           upstream_status: upstream.status,
-          upstream_body: upstreamBody.slice(0, 1200),
         }),
         { status: upstream.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

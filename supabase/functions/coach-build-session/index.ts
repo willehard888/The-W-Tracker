@@ -18,6 +18,17 @@ const corsHeaders = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+/**
+ * The one day a stored focus session holds. Found by its content, not by
+ * today's weekday: after midnight the index has moved on, and a swap in a
+ * session started the evening before answered "not in today's session".
+ */
+type DayBlocks = { blocks?: { slug: string; sets: number }[] };
+const sessionDay = (plan: { weeks?: { days?: DayBlocks[] }[] } | null | undefined, todayIndex: number): DayBlocks | undefined => {
+  const days = plan?.weeks?.[0]?.days ?? [];
+  return days[todayIndex]?.blocks?.length ? days[todayIndex] : days.find((d) => (d.blocks?.length ?? 0) > 0);
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -102,7 +113,7 @@ Deno.serve(async (req) => {
           .maybeSingle();
         if (!data) return json({ error: "Session not found" }, 404);
         stored = data as typeof stored;
-        const todays = stored!.plan_json?.weeks?.[0]?.days?.[dayIndex]?.blocks ?? [];
+        const todays = sessionDay(stored!.plan_json, dayIndex)?.blocks ?? [];
         exclude = todays.map((b) => b.slug);
         sets = todays.find((b) => b.slug === current)?.sets;
       }
@@ -111,7 +122,7 @@ Deno.serve(async (req) => {
       if (!programId || !stored) return json({ block, dayIndex });
 
       const plan = stored.plan_json;
-      const blocks = plan.weeks?.[0]?.days?.[dayIndex]?.blocks ?? [];
+      const blocks = sessionDay(plan, dayIndex)?.blocks ?? [];
       const at = blocks.findIndex((b) => b.slug === current);
       if (at < 0) return json({ error: "That movement is not in today's session" }, 409);
       blocks[at] = block;

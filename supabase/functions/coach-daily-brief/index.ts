@@ -9,7 +9,7 @@ import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
 import { programWeekState } from "../_shared/program-week.ts";
-import { clampTzOffset, localDayKey } from "../_shared/local-day.ts";
+import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -87,7 +87,8 @@ Deno.serve(async (req) => {
         .eq("program_id", program.id);
       const now = new Date();
       weekIdx = programWeekState({ startedOn: program.started_on, weeks: program.weeks, logs: (logs ?? []) as any[], now }).currentWeek;
-      dayIdx = (now.getDay() + 6) % 7;
+      // The member's weekday, not the server's UTC one (coach-daily-plan does the same).
+      dayIdx = (localWeekday(clampTzOffset(body?.tz_offset_minutes), now.getTime()) + 6) % 7;
       const wk = program.plan_json.weeks.find((w: any) => w.week === weekIdx);
       todaySession = wk?.days?.[dayIdx] ?? null;
     }
@@ -105,7 +106,8 @@ Deno.serve(async (req) => {
     const lang = athlete?.language_pref ?? "en";
 
     const sessionLine = todaySession
-      ? `${todaySession.focus} · ${todaySession.duration_min ?? "?"} min · ${todaySession.blocks?.length ?? 0} blocks${todaySession.blocks?.[0]?.name ? ` (lead: ${todaySession.blocks[0].name})` : ""}`
+      // plan_json is member-written now (hand edits): bound its strings here.
+      ? `${String(todaySession.focus ?? "").slice(0, 120)} · ${Number(todaySession.duration_min) || "?"} min · ${todaySession.blocks?.length ?? 0} blocks${todaySession.blocks?.[0]?.name ? ` (lead: ${String(todaySession.blocks[0].name).slice(0, 120)})` : ""}`
       : "No session prescribed today.";
 
     // Cross-domain situation (tribe, battles, rank) — best-effort, fail-open.
@@ -169,6 +171,12 @@ Also produce:
 - ribbon: ≤10 words ("Week N · Goal · status")
 - prescriptions: 3 short label/value pairs (sleep target, protein target, today's intent — fitted to the user)
 - suggested_questions: 3 sharp questions the user might ask, tailored to today.`;
+
+    // Per-member daily cap before the model call (same atomic counter as the
+    // chat coach). A cached brief above never counts; `force` skips the cache,
+    // never this.
+    const { data: allowed } = await sb.rpc("bump_ai_usage", { p_limit: 12, p_kind: "brief" });
+    if (allowed === false) return json({ error: "Today's brief limit is reached. It resets at midnight UTC." }, 429);
 
     const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

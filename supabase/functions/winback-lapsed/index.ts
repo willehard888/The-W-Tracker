@@ -11,17 +11,12 @@ const corsHeaders = {
 // match OR any JWT whose role claim is service_role (verify_jwt defaults to true,
 // so the signature is already validated) — robust to key rotation / whitespace.
 function isServiceRole(token: string, envKey: string): boolean {
-  if (!token) return false;
-  if (envKey && token === envKey) return true;
-  try {
-    const seg = token.split(".")[1];
-    if (!seg) return false;
-    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
-    return JSON.parse(atob(padded))?.role === "service_role";
-  } catch {
-    return false;
-  }
+  // Exact service-role key match only, like notify-social / notify-referral /
+  // tribe-notify. The old fallback read the role out of a JWT payload it never
+  // verified: one verify_jwt=false line in config.toml away from a full
+  // bypass. Every caller (cron, triggers) sends the vault's service key, the
+  // same one the hardened three already accept.
+  return !!token && !!envKey && token === envKey;
 }
 
 // Tiered win-back: the message escalates the longer someone has been gone. Each

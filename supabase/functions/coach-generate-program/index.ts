@@ -211,6 +211,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Per-member daily cap: a full four-week generation is the most expensive
+    // call in the app, and nothing else bounded it.
+    const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: 6, p_kind: "program" });
+    if (allowed === false) {
+      return new Response(JSON.stringify({ error: "You've built enough programs for today. Try again tomorrow." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ── Pull full personal context ───────────────────────────────────────────
     const [profileRes, checksRes, reflectionsRes, goalsRes] = await Promise.all([
       supabase.from("coach_athlete_profile").select("*").eq("user_id", userId).maybeSingle(),

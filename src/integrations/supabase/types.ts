@@ -2348,6 +2348,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ai_consent_at: string | null
+          ai_consent_version: number | null
           apex_credits_until: string | null
           apex_subscription_started_at: string | null
           avatar_url: string | null
@@ -2390,6 +2392,8 @@ export type Database = {
           xp: number
         }
         Insert: {
+          ai_consent_at?: string | null
+          ai_consent_version?: number | null
           apex_credits_until?: string | null
           apex_subscription_started_at?: string | null
           avatar_url?: string | null
@@ -2432,6 +2436,8 @@ export type Database = {
           xp?: number
         }
         Update: {
+          ai_consent_at?: string | null
+          ai_consent_version?: number | null
           apex_credits_until?: string | null
           apex_subscription_started_at?: string | null
           avatar_url?: string | null

@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAnon } from "@/lib/analytics";
@@ -330,6 +330,12 @@ const Auth = () => {
               {mode === "login" ? "Create account" : "Sign in"}
             </span>
           </button>
+          {/* Said before the account exists, for both Apple and email. */}
+          <p className="mt-3 px-6 text-label text-muted-foreground/75 leading-snug">
+            By continuing you agree to our{" "}
+            <Link to="/terms" className="underline text-foreground/80">Terms of Use</Link> and{" "}
+            <Link to="/privacy" className="underline text-foreground/80">Privacy Policy</Link>.
+          </p>
         </div>
       </div>
     </div>

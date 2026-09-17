@@ -11,7 +11,7 @@ const TermsOfUse = () => {
 
       <div className="home-rise px-4 pt-3 pb-6">
       <header className="mb-6">
-        <p className="eyebrow">Last updated: March 23, 2026</p>
+        <p className="eyebrow">Last updated: September 20, 2026</p>
         <h1 className="mt-1.5 font-display font-black text-beat leading-[1.04] tracking-tight">Terms of Use</h1>
       </header>
 
@@ -28,37 +28,44 @@ const TermsOfUse = () => {
 
         <section>
           <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">3. Subscriptions</h2>
-          <p>Elite subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period. Payment is charged to your Apple ID account or payment method on file. You can manage and cancel subscriptions in your device's Settings → Subscriptions (iOS) or through your account settings (web).</p>
+          <p>New accounts get full access free for 14 days. It needs no payment details and does not turn into a paid subscription by itself.</p>
+          <p className="mt-2">After that, Whealth Factory Premium is an auto-renewing subscription, monthly or yearly, bought through Apple. The price is shown in the app before you buy and varies by region. Payment is charged to your Apple Account when you confirm the purchase, and the subscription renews automatically unless you cancel it at least 24 hours before the end of the current period. Manage or cancel it in Settings on your iPhone: tap your name, then Subscriptions. Refunds are handled by Apple at reportaproblem.apple.com.</p>
+          <p className="mt-2">Apple's Licensed Application End User License Agreement also applies to the iOS app.</p>
         </section>
 
         <section>
           <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">4. User Conduct</h2>
-          <p>There is zero tolerance for objectionable content or abusive behavior. You agree not to post content that is offensive, harmful, harassing, or otherwise inappropriate, and not to harass or abuse other users. You can report objectionable content and block abusive users from within the app. We review reports and act on them — typically within 24 hours — by removing violating content and ejecting the users responsible. We reserve the right to remove any content and suspend or terminate accounts that violate these terms.</p>
+          <p>There is zero tolerance for objectionable content or abusive behavior. You agree not to post content that is offensive, harmful, harassing, or otherwise inappropriate, and not to harass or abuse other users. Photos, videos and text are screened automatically before they are published. You can report objectionable content and block abusive users from within the app; reports reach the Whealth Factory team, not other members. We review reports and act on them, typically within 24 hours, by removing violating content and ejecting the users responsible. We reserve the right to remove any content and suspend or terminate accounts that violate these terms.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">5. Intellectual Property</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">5. AI features and health content</h2>
+          <p>The coach and the other AI features are optional and off until you turn them on in the app. They are automated: they can be wrong, and nothing they say is medical advice. Whealth Factory is not a medical device and does not diagnose or treat anything. Talk to a doctor before changing how you train or eat if you have a condition, are pregnant, or are unsure. If you may be in danger, contact your local emergency number.</p>
+        </section>
+
+        <section>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">6. Intellectual Property</h2>
           <p>All content, branding, and features of Whealth Factory are owned by us. You retain ownership of content you create (check-in data, posts, photos).</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">6. Limitation of Liability</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">7. Limitation of liability</h2>
           <p>Whealth Factory is provided "as is" without warranties. We are not liable for any damages arising from use of the app. The app does not provide medical or health advice.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">7. Termination</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">8. Termination</h2>
           <p>We may terminate or suspend your account at any time for violation of these terms. You may delete your account at any time from your profile settings.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">8. Changes to Terms</h2>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">9. Changes to these terms</h2>
           <p>We may update these terms from time to time. Continued use of the app constitutes acceptance of the updated terms.</p>
         </section>
 
         <section>
-          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">9. Contact</h2>
-          <p>For questions about these Terms, contact us at support@wtracker.app.</p>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">10. Contact</h2>
+          <p>Questions about these terms: <a href="mailto:support@whealthfactory.com" className="text-foreground/85 underline">support@whealthfactory.com</a>.</p>
         </section>
       </div>
       </div>

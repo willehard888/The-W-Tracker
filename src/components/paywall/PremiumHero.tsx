@@ -113,10 +113,12 @@ const PremiumHero = ({
   // No "free trial" language here: the 14-day trial is in-app and already
   // running (or spent) by the time this screen shows, and the store product
   // has no introductory offer. Claiming a store trial risks App Review.
-  // "Cancel anytime" is said once, here.
+  // Automatic renewal has to be said on the screen that takes the money
+  // (App Review 3.1.2), not only in the Terms: renews until cancelled, and
+  // where to cancel. "Price locked" is the product's own promise, kept.
   const footnote = native
-    ? `${activePrice}${cadence} · price locked while subscribed · Cancel anytime`
-    : "Subscribe in the iOS app · Cancel anytime";
+    ? `${activePrice}${cadence}. Renews automatically until cancelled, price locked while you stay subscribed. Cancel any time in your Apple Account settings.`
+    : "Subscribe in the iOS app. Renews automatically until cancelled; cancel any time in your Apple Account settings.";
 
   return (
     <div>

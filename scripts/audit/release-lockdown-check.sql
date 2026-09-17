@@ -46,3 +46,46 @@ BEGIN
   ASSERT EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'archives-retention'), 'no archive retention job';
   RAISE NOTICE 'all lockdown assertions passed';
 END $$;
+
+-- ── The one that could have broken the app ───────────────────────────────
+-- Dropping the direct INSERT policies is only safe if a SECURITY DEFINER
+-- function owned by the table owner still writes. This reproduces exactly that
+-- shape: RLS on, force off, owner = the function owner, no INSERT policy.
+CREATE OR REPLACE FUNCTION public.proof_record_checkin() RETURNS uuid
+ LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $f$
+DECLARE v_id uuid;
+BEGIN
+  INSERT INTO public.daily_checkins (user_id) VALUES (auth.uid()) RETURNING id INTO v_id;
+  RETURN v_id;
+END $f$;
+GRANT EXECUTE ON FUNCTION public.proof_record_checkin() TO authenticated;
+GRANT SELECT, INSERT ON public.daily_checkins TO authenticated;
+DROP POLICY IF EXISTS "Users can view own checkins" ON public.daily_checkins;
+CREATE POLICY "Users can view own checkins" ON public.daily_checkins FOR SELECT USING (auth.uid() = user_id);
+TRUNCATE public.daily_checkins;
+
+DO $$ BEGIN
+  ASSERT NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='daily_checkins' AND cmd='INSERT'),
+    'the fixture still has an INSERT policy — this proof would be meaningless';
+  ASSERT (SELECT relrowsecurity AND NOT relforcerowsecurity FROM pg_class WHERE oid='public.daily_checkins'::regclass),
+    'RLS shape does not match production';
+END $$;
+
+SET request.uid = '00000000-0000-0000-0000-00000000000a';
+SET ROLE authenticated;
+DO $$
+DECLARE v text; before int; after int;
+BEGIN
+  SELECT count(*) INTO before FROM public.daily_checkins;
+  BEGIN
+    INSERT INTO public.daily_checkins (user_id) VALUES ('00000000-0000-0000-0000-00000000000a');
+    v := 'ok';
+  EXCEPTION WHEN OTHERS THEN v := SQLSTATE; END;
+  ASSERT v = '42501', 'a member could still write the table directly: ' || v;
+  PERFORM public.proof_record_checkin();
+  SELECT count(*) INTO after FROM public.daily_checkins;
+  ASSERT after = before + 1, format('the RPC no longer writes (%s -> %s): check-ins would be dead', before, after);
+  RAISE NOTICE 'definer path intact: direct insert refused 42501, the RPC wrote a row the member can read';
+END $$;
+RESET ROLE;

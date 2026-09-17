@@ -1,3 +1,4 @@
+import { WEB_ORIGIN } from "@/lib/universal-link";
 import { fmtUnit } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
 import { backOr } from "@/lib/nav";
@@ -233,7 +234,7 @@ const UserProfile = () => {
   const friendState = areFriends ? "friends" : incoming ? "incoming" : sent ? "sent" : "none";
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/u/${profile.username}`;
+    const url = `${WEB_ORIGIN}/u/${profile.username}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: `@${profile.username} on Whealth Factory`, url });

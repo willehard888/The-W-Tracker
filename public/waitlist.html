@@ -18,6 +18,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    // A password-recovery email that could not return to /reset-password (the
+    // redirect was not on the allow-list) lands on the site root, which comes
+    // here. Pass it on with its tokens instead of stranding it on a signup page.
+    if (/type=recovery/.test(location.hash)) location.replace("/reset-password" + location.hash);
+  </script>
   <style>
     /* Tokens + utilities lifted 1:1 from the app (src/index.css) so this page
        is pixel-faithful to Landing.tsx while staying fully standalone. */

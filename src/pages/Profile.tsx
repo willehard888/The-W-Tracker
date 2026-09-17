@@ -1,3 +1,4 @@
+import { WEB_ORIGIN } from "@/lib/universal-link";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { fmtDate, fmtInt, fmtRelative } from "@/lib/format";
 import { localDateKey } from "@/lib/date";
@@ -165,7 +166,7 @@ const Profile = () => {
   // public /u/ link (vercel routes it to the OG shim for crawlers).
   const handleShareProfile = async () => {
     if (!profile?.username) return;
-    const url = `https://whealthfactory.com/u/${profile.username}`;
+    const url = `${WEB_ORIGIN}/u/${profile.username}`;
     const text = `@${profile.username} on Whealth Factory — Lv ${profile.level ?? 1} · ${fmtInt(profile.xp ?? 0)} XP · ${profile.streak ?? 0}d streak`;
     try {
       if (navigator.share) {

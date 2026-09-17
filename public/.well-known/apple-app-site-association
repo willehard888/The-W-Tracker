@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TY6T95YVU9.app.lovable.wtracker"],
+        "components": [
+          { "/": "/reset-password" },
+          { "/": "/u/*" },
+          { "/": "/tribes/*" }
+        ]
+      }
+    ]
+  }
+}

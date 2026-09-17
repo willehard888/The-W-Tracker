@@ -1,3 +1,4 @@
+import { authRedirectOrigin } from "@/lib/universal-link";
 import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -340,7 +341,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       password,
       options: {
         data: { username },
-        emailRedirectTo: window.location.origin,
+        // The public site from inside the app: app://localhost is no address for an email.
+        emailRedirectTo: authRedirectOrigin(),
       },
     });
     return { error };

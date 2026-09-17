@@ -1,3 +1,4 @@
+import { WEB_ORIGIN } from "@/lib/universal-link";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { fmtDate, fmtInt } from "@/lib/format";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -586,7 +587,7 @@ const TribeDetail = () => {
   // clipboard everywhere else. The link is the web origin so recipients
   // without the app still land somewhere real.
   const handleShare = async () => {
-    const url = `https://whealthfactory.com/tribes/${id}`;
+    const url = `${WEB_ORIGIN}/tribes/${id}`;
     const text = collectiveStreak > 0
       ? `Join ${tribe?.name ?? "my tribe"} on Whealth Factory — ${collectiveStreak} day${collectiveStreak === 1 ? "" : "s"} of collective fire 🔥`
       : `Join ${tribe?.name ?? "my tribe"} on Whealth Factory`;

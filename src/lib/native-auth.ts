@@ -1,3 +1,4 @@
+import { authRedirectOrigin } from "@/lib/universal-link";
 import { Capacitor } from "@capacitor/core";
 import { SignInWithApple, type SignInWithAppleResponse } from "@capacitor-community/apple-sign-in";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
@@ -28,10 +29,7 @@ const APPLE_CLIENT_ID = "app.lovable.wtracker";
 // Web fallback — when running in a browser (no Capacitor native context),
 // SignInWithApple uses Apple JS SDK and requires a real https redirect URI.
 // We send to a dedicated callback path served by the Vercel deploy.
-const WEB_REDIRECT_URI =
-  typeof window !== "undefined"
-    ? `${window.location.origin}/auth/callback`
-    : "https://wtracker.app/auth/callback";
+const WEB_REDIRECT_URI = `${authRedirectOrigin()}/auth/callback`;
 
 // ────────────────────────────────────────────────────────────────────
 // Nonce helpers — raw uuid sent to Supabase, sha256(raw) sent to Apple.

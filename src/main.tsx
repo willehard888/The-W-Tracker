@@ -1,3 +1,5 @@
+import { navigateSafely } from "@/lib/router-bridge";
+import { universalLinkRoute } from "@/lib/universal-link";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -135,6 +137,16 @@ if (Capacitor.isNativePlatform()) {
     platform: Capacitor.getPlatform(),
   });
 
+  // A universal link (a shared profile, a tribe, the password-reset page) is a
+  // route: hand it to the router, which also queues it on a cold start. The
+  // reset page applies a recovery link's tokens itself, so they stay in the
+  // hash. Anything else is the OAuth callback path, as before.
+  const openIncomingUrl = (url: string, source: "launch" | "appUrlOpen") => {
+    const route = universalLinkRoute(url);
+    if (route) navigateSafely(route);
+    else void handleOAuthUrl(url, source);
+  };
+
   import("@capacitor/app")
     .then(({ App: CapApp }) => {
       CapApp.getLaunchUrl()
@@ -143,9 +155,7 @@ if (Capacitor.isNativePlatform()) {
             hasUrl: Boolean(data?.url),
             summary: data?.url ? summarizeUrl(data.url) : null,
           });
-          if (data?.url) {
-            void handleOAuthUrl(data.url, "launch");
-          }
+          if (data?.url) openIncomingUrl(data.url, "launch");
         })
         .catch((err) => {
           pushIosDebugLog("DeepLink", "getLaunchUrl failed", {
@@ -157,7 +167,7 @@ if (Capacitor.isNativePlatform()) {
         pushIosDebugLog("DeepLink", "appUrlOpen fired", {
           summary: summarizeUrl(data.url),
         });
-        void handleOAuthUrl(data.url, "appUrlOpen");
+        openIncomingUrl(data.url, "appUrlOpen");
       });
 
       CapApp.addListener("resume", async () => {

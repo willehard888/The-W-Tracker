@@ -1,3 +1,4 @@
+import { WEB_ORIGIN } from "@/lib/universal-link";
 import { avatarUrl } from "@/lib/img";
 import { backOr } from "@/lib/nav";
 import { useState } from "react";
@@ -40,7 +41,7 @@ const Referrals = () => {
 
   // Hardcoded canonical origin — window.location.origin is capacitor://localhost
   // inside the native shell, which made every shared link dead on arrival.
-  const referralLink = `https://whealthfactory.com/auth?ref=${profile.referral_code || profile.username}`;
+  const referralLink = `${WEB_ORIGIN}/auth?ref=${profile.referral_code || profile.username}`;
 
   const handleCopy = async () => {
     try {

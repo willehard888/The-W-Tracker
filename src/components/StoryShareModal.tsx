@@ -1,3 +1,4 @@
+import { WEB_ORIGIN } from "@/lib/universal-link";
 import { fmtInt } from "@/lib/format";
 import { useRef, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
@@ -387,14 +388,14 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
 
   const shareCaption =
     variant === "referral"
-      ? `Train with me on Whealth Factory — daily check-ins, AI coach, the full system. Use my invite code ${(referralCode || profile.username).toUpperCase()}: ${referralLink || "https://whealthfactory.com"}`
+      ? `Train with me on Whealth Factory — daily check-ins, AI coach, the full system. Use my invite code ${(referralCode || profile.username).toUpperCase()}: ${referralLink || WEB_ORIGIN}`
       : variant === "streak"
-      ? `🔥 ${profile.streak}-day streak on Whealth Factory. ${profile.streak >= 30 ? "30 days strong." : "Beat my streak!"} https://whealthfactory.com/u/${profile.username}`
+      ? `🔥 ${profile.streak}-day streak on Whealth Factory. ${profile.streak >= 30 ? "30 days strong." : "Beat my streak!"} ${WEB_ORIGIN}/u/${profile.username}`
       : variant === "badge" && badgeData
-      ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory! https://whealthfactory.com/u/${profile.username}`
+      ? `Just unlocked ${badgeData.name} ${badgeData.icon} (${badgeData.rarity.toUpperCase()}) on Whealth Factory! ${WEB_ORIGIN}/u/${profile.username}`
       : variant === "whealth" && whealthData
-      ? `Whealth Index ${whealthData.overall}/100 on Whealth Factory — one number for sleep, recovery, movement, nutrition, mind & inner work. https://whealthfactory.com/u/${profile.username}`
-      : `${fmtInt(profile.xp)} XP · ${tierConfig.label} on Whealth Factory. https://whealthfactory.com/u/${profile.username}`;
+      ? `Whealth Index ${whealthData.overall}/100 on Whealth Factory — one number for sleep, recovery, movement, nutrition, mind & inner work. ${WEB_ORIGIN}/u/${profile.username}`
+      : `${fmtInt(profile.xp)} XP · ${tierConfig.label} on Whealth Factory. ${WEB_ORIGIN}/u/${profile.username}`;
 
   const handleDownload = async () => {
     setDownloading(true);

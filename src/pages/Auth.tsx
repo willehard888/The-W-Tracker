@@ -1,3 +1,4 @@
+import { authRedirectOrigin } from "@/lib/universal-link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React, { useState, useEffect } from "react";
@@ -309,7 +310,7 @@ const Auth = () => {
               onClick={async () => {
                 if (!email) { toast.error("Enter your email first"); return; }
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                  redirectTo: `${window.location.origin}/reset-password`,
+                  redirectTo: `${authRedirectOrigin()}/reset-password`,
                 });
                 if (error) toast.error(error.message);
                 else toast.success("Password reset link sent! Check your email.");

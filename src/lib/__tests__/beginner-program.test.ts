@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { buildBeginnerPlan, nextBeginnerBlock, createBeginnerProgram, BLOCK_EXPERIENCE, type BeginnerBlock } from "@/lib/beginner-program";
+import { buildBeginnerPlan, nextBeginnerBlock, createBeginnerProgram, insertActiveProgram, BLOCK_EXPERIENCE, type BeginnerBlock } from "@/lib/beginner-program";
 
 const db = vi.hoisted(() => ({ update: vi.fn(), insert: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({
@@ -194,5 +194,19 @@ describe("createBeginnerProgram", () => {
   it("defaults the goal and equipment when none is known", async () => {
     await createBeginnerProgram({ userId: "u1", block: 1 });
     expect(db.insert.mock.calls[0][0]).toMatchObject({ goal: "all", equipment: "Full gym", experience: BLOCK_EXPERIENCE[1] });
+  });
+});
+
+describe("insertActiveProgram", () => {
+  beforeEach(() => { db.update.mockClear(); db.insert.mockClear(); });
+
+  it("supersedes the running program before it inserts, and hands the new row back", async () => {
+    const row = await insertActiveProgram({
+      user_id: "u1", goal: "all", experience: "intermediate", days_per_week: 4, weeks: 4,
+      plan_json: { weeks: [] }, generated_with: "week_builder_v1", started_on: "2026-09-17",
+    });
+    expect(db.update).toHaveBeenCalledWith({ status: "superseded" });
+    expect(db.update.mock.invocationCallOrder[0]).toBeLessThan(db.insert.mock.invocationCallOrder[0]);
+    expect(row).toMatchObject({ id: "p1", generated_with: "week_builder_v1" });
   });
 });

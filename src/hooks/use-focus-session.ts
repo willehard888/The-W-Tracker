@@ -3,7 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { localDateKey } from "@/lib/date";
 import { track, FUNNEL } from "@/lib/analytics";
-import type { CoachProgram } from "@/hooks/use-coach-program";
+import { PROGRAM_COLUMNS, type CoachProgram, type PlanJson, type ProgramWeek } from "@/hooks/use-coach-program";
+import { useAthleteProfile, type AthleteProfile } from "@/hooks/use-athlete-profile";
+import { useRecentWorkoutLogs } from "@/hooks/use-workout-log";
+import { normalizeInjuries } from "@/lib/training/injuries";
+import { repeatWeek } from "@/lib/training/plan-edit";
+import type { Json } from "@/integrations/supabase/types";
 
 /**
  * Today's session by focus — a one-day `coach_programs` row with
@@ -20,9 +25,6 @@ export interface BuiltSession {
   duration_min: number;
   blocks: { slug: string; name: string; sets: number; reps: string; rpe: number; rest_sec: number }[];
 }
-
-const PROGRAM_COLUMNS =
-  "id, user_id, status, goal, experience, days_per_week, equipment, body_focus, constraints, weeks, plan_json, ai_summary, started_on, created_at";
 
 /** One program by id, any status — the runner's door into a focus session. */
 export const useProgramById = (id?: string | null) => {
@@ -87,12 +89,13 @@ export const useTodayFocusSession = () => {
 export type SessionBlock = BuiltSession["blocks"][number];
 
 /** Duration under the builder's own model — the preview recomputes it after a swap. */
-export const sessionMinutes = (blocks: { sets: number; rest_sec: number }[]) =>
-  Math.round(10 + blocks.reduce((t, b) => t + (b.sets * (45 + b.rest_sec)) / 60, 0));
+export { sessionMinutes } from "@/lib/training/plan-edit";
 
-interface BuildArgs { focus: Focus[]; minutes: number; seed?: string; commit: boolean; slugs?: string[] }
+export type Feel = "light" | "normal" | "hard";
+
+interface BuildArgs { focus: Focus[]; minutes: number; feel?: Feel; seed?: string; commit: boolean; slugs?: string[] }
 interface BuildResult { day?: BuiltSession; program?: CoachProgram; dayIndex: number }
-interface SwapArgs { focus: Focus[]; minutes: number; seed?: string; slug: string; sets?: number; exclude?: string[]; program_id?: string }
+interface SwapArgs { focus: Focus[]; minutes: number; feel?: Feel; seed?: string; slug: string; sets?: number; exclude?: string[]; program_id?: string }
 interface SwapResult { block: SessionBlock; program?: CoachProgram; dayIndex: number }
 
 const call = async <T,>(body: object): Promise<T> => {
@@ -124,7 +127,7 @@ export const useBuildFocusSession = () => {
   return useMutation({
     mutationFn: async (args: BuildArgs): Promise<BuildResult> => {
       const res = await call<BuildResult>(args);
-      void track(FUNNEL.sessionBuilt, { focus: args.focus, minutes: args.minutes, commit: args.commit });
+      void track(FUNNEL.sessionBuilt, { focus: args.focus, minutes: args.minutes, feel: args.feel ?? "normal", commit: args.commit });
       return res;
     },
     onSuccess: (res) => {
@@ -147,6 +150,108 @@ export const useSwapExercise = () => {
         qc.setQueryData(["coach-program", "by-id", res.program.id], res.program);
         void qc.invalidateQueries({ queryKey: ["focus-session"] });
       }
+    },
+  });
+};
+
+// ── The engine on the client ─────────────────────────────────────────────
+//
+// The session builder (the pool, its safety rules, the swap ranking, the week
+// split, the balance read) is one module, shared with the edge function. It
+// is imported here, never copied, and only ever dynamically: this file is in
+// Home's import graph and the module carries the 90 kB exercise catalog.
+export const loadEngine = () => import("../../supabase/functions/_shared/session-builder.ts");
+export type Engine = Awaited<ReturnType<typeof loadEngine>>;
+
+/** The athlete's profile in the shape the engine builds from. */
+export const engineInput = (profile: AthleteProfile | null | undefined, minutes?: number) => ({
+  minutes: Math.min(120, Math.max(20, minutes ?? profile?.preferred_session_length_min ?? 45)),
+  goal: profile?.primary_goal ?? null,
+  experience: profile?.training_experience ?? null,
+  equipment: profile?.equipment ?? [],
+  injuries: normalizeInjuries(profile?.injuries),
+  seed: `${localDateKey()}:${profile?.user_id ?? ""}`,
+});
+
+/** The engine plus the athlete's input, loaded when a picker or a builder opens. */
+export const useEngine = (enabled: boolean) => {
+  const { profile } = useAthleteProfile();
+  const q = useQuery({ queryKey: ["training-engine"], enabled, staleTime: Infinity, gcTime: Infinity, queryFn: loadEngine });
+  return { engine: q.data ?? null, input: engineInput(profile), isLoading: q.isLoading };
+};
+
+/** The muscle groups the athlete has been avoiding (last 28 days of logs); empty until there is enough to say. */
+export const useMuscleBalance = (enabled = true): Focus[] => {
+  const logs = useRecentWorkoutLogs();
+  const { engine } = useEngine(enabled && (logs.data?.length ?? 0) > 0);
+  if (!engine || !logs.data) return [];
+  return engine.neglectedFocuses(logs.data, localDateKey());
+};
+
+type CreateKind = { kind: "week" } | { kind: "manual" } | { kind: "repeat"; from: CoachProgram };
+
+/**
+ * A program written on the client, the way the beginner path is: the coach's
+ * week (one session per training day from the split, instant, no model), an
+ * empty week for a member's own program, or the running weeks once more. Four
+ * numbered copies of the week, because logs are unique per week and day.
+ */
+export const useCreateProgram = () => {
+  const { user } = useAuth();
+  const { profile } = useAthleteProfile();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (arg: CreateKind): Promise<CoachProgram> => {
+      if (!user?.id) throw new Error("Not signed in");
+      // Both loaded on demand: this file is in Home's import graph, and the
+      // beginner path's written programme rides along with its module.
+      const [engine, { insertActiveProgram }] = await Promise.all([loadEngine(), import("@/lib/beginner-program")]);
+      let week: ProgramWeek;
+      let targets: PlanJson["weekly_check_targets"];
+      let trainingDays = 0;
+      if (arg.kind === "repeat") {
+        const weeks = arg.from.plan_json.weeks;
+        week = [...weeks].sort((a, b) => b.week - a.week)[0];
+        targets = arg.from.plan_json.weekly_check_targets;
+        trainingDays = week.days.filter((d) => d.blocks.length > 0).length;
+      } else {
+        // The profile counts days from Sunday; a plan counts them from Monday.
+        const days = arg.kind === "week" ? (profile?.training_days_pref?.length ? profile.training_days_pref : [1, 2, 4, 5]).map((d) => (d + 6) % 7) : [];
+        const built = arg.kind === "week" ? engine.buildWeek(engineInput(profile), days) : engine.DAY_NAMES.map(() => null);
+        trainingDays = built.filter(Boolean).length;
+        if (arg.kind === "week" && trainingDays === 0) {
+          throw new Error("Not enough safe movements for your equipment. Add equipment in your profile, or build your own week.");
+        }
+        const plan = engine.weekPlan(built, {
+          theme: arg.kind === "week" ? "Your week" : "Your own week",
+          nutritionNote: "Protein at every meal. Eat to the training day.",
+          progressionNote: "Beat last week by one rep or one small plate.",
+        });
+        week = plan.weeks[0] as ProgramWeek;
+        targets = plan.weekly_check_targets;
+      }
+      const plan: PlanJson = { weekly_check_targets: targets, weeks: repeatWeek(week, 4) };
+      const row = await insertActiveProgram({
+        user_id: user.id,
+        goal: profile?.primary_goal ?? "all",
+        experience: profile?.training_experience ?? "unknown",
+        days_per_week: Math.max(1, trainingDays),
+        equipment: (profile?.equipment ?? []).join(", ") || "Full gym",
+        body_focus: [],
+        constraints: null,
+        weeks: 4,
+        plan_json: plan as unknown as Json,
+        ai_summary: null,
+        generated_with: arg.kind === "week" ? "week_builder_v1" : arg.kind === "manual" ? "manual_v1" : "repeat_v1",
+        started_on: localDateKey(),
+      });
+      if (arg.kind === "week") void track(FUNNEL.weekBuilt, { days: trainingDays, minutes: engineInput(profile).minutes });
+      else void track(FUNNEL.programEdited, { op: arg.kind === "manual" ? "manual_start" : "repeat", scope: "remaining", source: "program", via: "manual" });
+      return row as unknown as CoachProgram;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["coach-program"] });
+      void qc.invalidateQueries({ queryKey: ["coach-program-logs"] });
     },
   });
 };

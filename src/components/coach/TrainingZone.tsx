@@ -126,7 +126,7 @@ const TrainingZone = () => {
             <p className={LABEL}>Training</p>
             <p className="text-note font-bold leading-tight">No program yet</p>
             <p className="text-meta text-muted-foreground leading-snug mt-0.5">
-              Pick a focus for a session now, or build a 4-week program.
+              Train today by focus, have your week built, or build your own.
             </p>
           </button>
           <div className="pr-2 shrink-0">

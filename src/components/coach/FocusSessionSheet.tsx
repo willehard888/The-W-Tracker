@@ -13,13 +13,15 @@ import { resolveIllustration } from "@/lib/exercise-match";
 import { illustrationThumb } from "@/data/exercises-illustrated";
 import { GOLD_LINES } from "@/components/coach/gold-lines";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import { sessionMinutes, useBuildFocusSession, useSwapExercise, type BuiltSession, type Focus } from "@/hooks/use-focus-session";
+import { sessionMinutes, useBuildFocusSession, useMuscleBalance, useSwapExercise, type BuiltSession, type Feel, type Focus } from "@/hooks/use-focus-session";
+import { track, FUNNEL } from "@/lib/analytics";
 
 /**
- * Train today — pick the muscles, get the session. Builds in a moment from
- * the same drawable pool the 4-week program uses; the preview costs nothing,
- * Start stores a one-day program row and opens the runner on it. The 4-week
- * program is untouched either way.
+ * Train today — say what you want (the muscles, the minutes, how it should
+ * feel) and get the session. Builds in a moment from the safe, drawable pool;
+ * the preview costs nothing, Start stores a one-day program row and opens the
+ * runner on it. With `onUse` the same sheet fills a day of a program instead:
+ * the preview is handed back and nothing is stored here.
  */
 
 const FOCUS: { key: Focus; label: string }[] = [
@@ -38,13 +40,19 @@ const PRESETS: { label: string; focus: Focus[] }[] = [
   { label: "Full body", focus: ["chest", "back", "legs"] },
 ];
 const MINUTES = [30, 45, 60, 75, 90] as const;
+const FEEL: { key: Feel; label: string }[] = [
+  { key: "light", label: "Light" },
+  { key: "normal", label: "Normal" },
+  { key: "hard", label: "Hard" },
+];
+const labelOf = (f: Focus) => FOCUS.find((x) => x.key === f)?.label ?? f;
 const MAX_PICK = 3;
 const nearestMinutes = (m: number) =>
   MINUTES.reduce((best, x) => (Math.abs(x - m) < Math.abs(best - m) ? x : best), 45 as number);
 
 const sameSet = (a: Focus[], b: Focus[]) => a.length === b.length && a.every((f) => b.includes(f));
 
-const Thumb = ({ slug, name }: { slug: string; name: string }) => {
+export const Thumb = ({ slug, name }: { slug: string; name: string }) => {
   const ill = resolveIllustration(slug, name);
   return (
     <div className="h-11 w-11 rounded-lg overflow-hidden shrink-0 bg-black border border-border flex items-center justify-center">
@@ -57,9 +65,15 @@ const Thumb = ({ slug, name }: { slug: string; name: string }) => {
   );
 };
 
-interface Props { open: boolean; onClose: () => void }
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  /** Fill a program day instead of starting a session: the preview is handed back, nothing is stored. */
+  onUse?: (day: BuiltSession) => void;
+  title?: string;
+}
 
-const FocusSessionSheet = ({ open, onClose }: Props) => {
+const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Props) => {
   const navigate = useNavigate();
   const { profile } = useAthleteProfile();
   const build = useBuildFocusSession();
@@ -69,6 +83,10 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
     const m = Number(profile?.preferred_session_length_min);
     return m > 0 ? nearestMinutes(m) : 45;
   });
+  const [feel, setFeel] = useState<Feel>("normal");
+  // The muscle groups the athlete has been skipping: offered, never imposed.
+  const neglected = useMuscleBalance(open);
+  const novice = profile?.training_experience === "never_trained";
   const [seed, setSeed] = useState(1);
   const [preview, setPreview] = useState<BuiltSession | null>(null);
   const [dayIndex, setDayIndex] = useState(0);
@@ -100,7 +118,7 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
     if (focus.length === 0) return;
     hapticImpact("light");
     try {
-      const res = await build.mutateAsync({ focus, minutes, seed: seedKey(n), commit: false });
+      const res = await build.mutateAsync({ focus, minutes, feel, seed: seedKey(n), commit: false });
       if (res.day) { setPreview(res.day); setDayIndex(res.dayIndex); }
     } catch (e) { fail(e); }
   };
@@ -113,7 +131,7 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
     setSwapping(slug);
     try {
       const cur = preview.blocks.find((b) => b.slug === slug);
-      const res = await swap.mutateAsync({ focus, minutes, seed: seedKey(seed), slug, sets: cur?.sets, exclude: preview.blocks.map((b) => b.slug) });
+      const res = await swap.mutateAsync({ focus, minutes, feel, seed: seedKey(seed), slug, sets: cur?.sets, exclude: preview.blocks.map((b) => b.slug) });
       setPreview((cur) => {
         if (!cur) return cur;
         const blocks = cur.blocks.map((b) => (b.slug === slug ? res.block : b));
@@ -126,9 +144,14 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
 
   const start = async () => {
     hapticImpact("medium");
+    if (onUse && preview) {
+      onUse(preview);
+      onClose();
+      return;
+    }
     try {
       const slugs = preview?.blocks.map((b) => b.slug);
-      const res = await build.mutateAsync({ focus, minutes, seed: seedKey(seed), commit: true, slugs });
+      const res = await build.mutateAsync({ focus, minutes, feel, seed: seedKey(seed), commit: true, slugs });
       if (!res.program) throw new Error("No session came back");
       hapticNotification("success");
       onClose();
@@ -142,8 +165,8 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
     <BottomSheet
       open={open}
       onClose={onClose}
-      label="Train today"
-      title="Train today"
+      label={title}
+      title={title}
       subtitle="Pick what you want to hit. The session builds itself."
       height="tall"
     >
@@ -165,6 +188,20 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
             ))}
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
+            {neglected.length > 0 && (
+              <Button
+                type="button"
+                size="pill"
+                variant={sameSet(focus, neglected) ? "gold-outline" : "ghost"}
+                className="text-muted-foreground"
+                onClick={() => {
+                  preset(neglected);
+                  void track(FUNNEL.balanceSuggestionUsed, { focus: neglected, surface: "sheet" });
+                }}
+              >
+                Catch up
+              </Button>
+            )}
             {PRESETS.map((p) => (
               <Button
                 key={p.label}
@@ -178,6 +215,11 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
               </Button>
             ))}
           </div>
+          {neglected.length > 0 && (
+            <p className="text-meta text-muted-foreground mt-2 leading-snug">
+              Not trained lately: {neglected.map(labelOf).join(", ").toLowerCase()}. Catch up picks them.
+            </p>
+          )}
         </div>
 
         <div>
@@ -198,6 +240,30 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
               </button>
             ))}
           </div>
+        </div>
+
+        <div>
+          <p className="text-label font-bold text-muted-foreground mb-2">How it should feel</p>
+          <div className={SEGMENT_TRACK}>
+            {FEEL.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                aria-pressed={feel === f.key}
+                disabled={f.key === "hard" && novice}
+                onClick={() => { hapticSelection(); setPreview(null); setFeel(f.key); }}
+                className={cn(
+                  "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 rounded-lg text-meta font-black transition-colors disabled:opacity-40",
+                  feel === f.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-meta text-muted-foreground mt-2 leading-snug">
+            {feel === "light" ? "One set fewer, well short of failure." : feel === "hard" ? "Same movements, a notch closer to failure." : "The dose your goal calls for."}
+          </p>
         </div>
 
         {!preview && (
@@ -221,7 +287,7 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
                   <span className="flex-1 min-w-0">
                     <span className="block text-note font-bold leading-tight truncate">{b.name}</span>
                     <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums">
-                      {b.sets} × {b.reps} · rest {formatRest(b.rest_sec)}
+                      {b.sets} × {b.reps} · RPE {b.rpe} · rest {formatRest(b.rest_sec)}
                     </span>
                   </span>
                   <Button
@@ -243,7 +309,7 @@ const FocusSessionSheet = ({ open, onClose }: Props) => {
                 <Shuffle aria-hidden size={16} /> Shuffle
               </Button>
               <Button variant="ember" size="lg" className="flex-1" disabled={busy} onClick={start}>
-                {busy ? <Loader2 aria-hidden size={16} className="animate-spin" /> : "Start session"}
+                {busy ? <Loader2 aria-hidden size={16} className="animate-spin" /> : onUse ? "Use this session" : "Start session"}
               </Button>
             </div>
           </div>

@@ -89,6 +89,12 @@ export const FUNNEL = {
   pushOpened: "push_opened",
   // Today's session by focus (coach-build-session): { focus, minutes, commit }.
   sessionBuilt: "session_built",
+  // The coach's week, built on the client from the split: { days, minutes }.
+  weekBuilt: "week_built",
+  // A hand edit to a program: { op: rest|train|swap|add|remove|manual_start|repeat, scope, source: program|runner, via: coach|manual }.
+  programEdited: "program_edited",
+  // A neglected muscle group was taken up: { focus, surface: sheet|picker }.
+  balanceSuggestionUsed: "balance_suggestion_used",
   // The Vault's practice loop: a piece opened, understood (Mark complete),
   // its reflection answered, its practice run (server-recorded, +XP), its
   // integration answered; and a path walked to the end. Props carry

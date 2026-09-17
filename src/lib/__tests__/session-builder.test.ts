@@ -1,11 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   SESSION_POOL,
   DROPPED_FROM_POOL,
   buildSession,
+  buildWeek,
+  neglectedFocuses,
   prescribeSlugs,
+  primaryFocuses,
   sessionPlan,
   swapBlock,
+  swapCandidates,
+  weekPlan,
+  weekSplit,
   type Focus,
 } from "../../../supabase/functions/_shared/session-builder";
 import { PRIORITY_SLUGS } from "../../../supabase/functions/_shared/illustrated-catalog";
@@ -105,10 +113,110 @@ describe("session builder", () => {
     expect(again).toEqual(day.blocks);
   });
 
+  it("the one-tap swap is the first of the ranked candidates, same movement before same muscle", () => {
+    const day = build(["back", "biceps"]);
+    const exclude = day.blocks.map((b) => b.slug);
+    const first = day.blocks[0];
+    const o = { ...base, focus: ["back", "biceps"] as Focus[], current: first.slug, exclude };
+    const ranked = swapCandidates(o);
+    expect(ranked.length).toBeGreaterThan(1);
+    expect(new Set(ranked.map((e) => e.slug)).size).toBe(ranked.length);
+    expect(swapBlock(o)!.slug).toBe(ranked[0].slug);
+    const firstOther = ranked.findIndex((e) => e.pattern !== patternOf(first.slug));
+    if (firstOther >= 0) expect(ranked.slice(firstOther).every((e) => e.pattern !== patternOf(first.slug) || e.focus[0] !== SESSION_POOL[first.slug].focus[0])).toBe(true);
+    expect(swapCandidates({ ...o, current: "Not_A_Movement" })).toEqual([]);
+  });
+
+  it("the day's feel changes the dose, never the movements", () => {
+    const normal = build(["legs"], { minutes: 60 });
+    const light = build(["legs"], { minutes: 60, feel: "light" });
+    const hard = build(["legs"], { minutes: 60, feel: "hard" });
+    expect(light.blocks.map((b) => b.slug)).toEqual(normal.blocks.map((b) => b.slug));
+    expect(hard.blocks.map((b) => b.slug)).toEqual(normal.blocks.map((b) => b.slug));
+    normal.blocks.forEach((b, i) => {
+      expect(light.blocks[i].sets).toBe(Math.max(2, b.sets - 1));
+      expect(light.blocks[i].rpe).toBe(Math.max(5, b.rpe - 1.5));
+      expect(hard.blocks[i].rpe).toBe(Math.min(9.5, b.rpe + 1));
+      expect(hard.blocks[i].sets).toBe(b.sets);
+    });
+    expect(light.duration_min).toBeLessThan(normal.duration_min);
+    // hard is never offered to someone who has not trained
+    const novice = build(["legs"], { minutes: 60, experience: "never_trained" });
+    expect(build(["legs"], { minutes: 60, experience: "never_trained", feel: "hard" })).toEqual(novice);
+  });
+
+  it("splits a week by the number of training days", () => {
+    expect(weekSplit(1).map((d) => d.name)).toEqual(["Full body"]);
+    expect(weekSplit(3).map((d) => d.name)).toEqual(["Full body", "Full body", "Full body"]);
+    expect(weekSplit(4).map((d) => d.name)).toEqual(["Upper", "Lower", "Upper", "Lower"]);
+    expect(weekSplit(5).map((d) => d.name)).toEqual(["Push", "Pull", "Legs", "Upper", "Lower"]);
+    expect(weekSplit(6).map((d) => d.name)).toEqual(["Push", "Pull", "Legs", "Push", "Pull", "Legs"]);
+    expect(weekSplit(7)).toEqual(weekSplit(6));
+    expect(weekSplit(0)).toEqual(weekSplit(1));
+  });
+
+  it("builds a week on the athlete's days: deterministic, banned movements out, repeated days different", () => {
+    const injuries = new Set<InjuryTag>(["knee"]);
+    const banned = bannedSlugs(EXERCISE_CATALOG, injuries, "experienced");
+    const o = { ...base, minutes: 45, injuries };
+    const week = buildWeek(o, [0, 1, 3, 4]);
+    expect(week).toEqual(buildWeek(o, [4, 3, 1, 0, 0]));
+    expect(week.map((d) => d?.focus ?? "Rest")).toEqual(["Upper", "Lower", "Rest", "Upper", "Lower", "Rest", "Rest"]);
+    for (const d of week) for (const b of d?.blocks ?? []) expect(banned.has(b.slug), b.slug).toBe(false);
+    expect(week[0]!.blocks.map((b) => b.slug)).not.toEqual(week[3]!.blocks.map((b) => b.slug));
+    // the week's plan and the one-session plan are the same shape
+    const plan = weekPlan(week, { theme: "Your week", nutritionNote: "n", progressionNote: "p" });
+    expect(plan.weeks[0].days).toHaveLength(7);
+    expect(plan.weeks[0].days[2]).toEqual(sessionPlan(week[0]!, 0).weeks[0].days[2]);
+    expect(plan.weekly_check_targets.workouts).toBe(4);
+    expect(sessionPlan(week[0]!, 0).weekly_check_targets.workouts).toBe(1);
+  });
+
+  it("names a hand-built day by the muscles it mostly trains", () => {
+    const of = (f: Focus, n: number) => Object.keys(SESSION_POOL).filter((s) => SESSION_POOL[s].focus[0] === f).slice(0, n);
+    expect(primaryFocuses([...of("back", 3), ...of("biceps", 2), ...of("core", 1)])).toEqual(["back", "biceps", "core"]);
+    // a tie goes to the bigger muscle group
+    expect(primaryFocuses([...of("triceps", 1), ...of("legs", 1)])).toEqual(["legs", "triceps"]);
+    expect(primaryFocuses(["Not_A_Movement"])).toEqual([]);
+  });
+
+  it("names the muscle groups the athlete has been avoiding, and says nothing too early", () => {
+    const chest = Object.keys(SESSION_POOL).filter((s) => SESSION_POOL[s].focus[0] === "chest").slice(0, 3);
+    const on = (slug: string | null, logged_on: string) => ({ exercise_slug: slug, logged_on });
+    const today = "2026-09-17";
+    expect(neglectedFocuses([], today)).toEqual([]);
+    // two training days: too early to say anything
+    expect(neglectedFocuses([on(chest[0], "2026-09-16"), on(chest[1], "2026-09-15")], today)).toEqual([]);
+    // a chest-only lifter is told about the big groups first
+    const rows = ["2026-09-16", "2026-09-14", "2026-09-12", "2026-09-10"].flatMap((d) => chest.map((s) => on(s, d)));
+    expect(neglectedFocuses(rows, today)).toEqual(["legs", "back", "glutes"]);
+    // the same exercise twice on a day counts once; unknown slugs count the day, not a muscle
+    expect(neglectedFocuses([...rows, ...rows, on("Not_A_Movement", "2026-09-16"), on(null, "2026-09-16")], today)).toEqual(["legs", "back", "glutes"]);
+    // older than 28 days, or dated in the future, is ignored
+    expect(neglectedFocuses(rows.map((r) => ({ ...r, logged_on: "2026-08-01" })), today)).toEqual([]);
+    // training legs takes legs off the list
+    const legs = Object.keys(SESSION_POOL).filter((s) => SESSION_POOL[s].focus[0] === "legs").slice(0, 3);
+    const mixed = [...rows, ...["2026-09-15", "2026-09-11"].flatMap((d) => legs.map((s) => on(s, d)))];
+    expect(neglectedFocuses(mixed, today)).not.toContain("legs");
+  });
+
   it("is stable for a seed and different for another", () => {
     expect(build(["chest", "triceps"])).toEqual(build(["chest", "triceps"]));
     const a = build(["chest", "triceps"]).blocks.map((b) => b.slug).join("|");
     const b = build(["chest", "triceps"], { seed: "u" }).blocks.map((b) => b.slug).join("|");
     expect(a).not.toBe(b);
+  });
+});
+
+// The engine carries the exercise catalog. One static import from app code
+// and it rides in Home's bundle; `loadEngine()` is the only door.
+describe("the engine stays out of the boot path", () => {
+  const walk = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? (e.name === "__tests__" ? [] : walk(join(dir, e.name))) : /\.tsx?$/.test(e.name) && !/\.test\./.test(e.name) ? [join(dir, e.name)] : []);
+
+  it("no app file imports supabase/functions statically", () => {
+    const offenders = walk("src").filter((f) => /^\s*(import|export)\s[^;]*from\s+["'][^"']*supabase\/functions/m.test(readFileSync(f, "utf8")));
+    expect(offenders).toEqual([]);
   });
 });

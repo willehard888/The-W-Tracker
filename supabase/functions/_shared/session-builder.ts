@@ -210,6 +210,10 @@ export const SCHEMES: Record<string, { compound: Rx; isolation: Rx }> = {
 export interface SessionBlock { slug: string; name: string; sets: number; reps: string; rpe: number; rest_sec: number }
 export interface BuiltSession { focus: string; duration_min: number; blocks: SessionBlock[] }
 
+/** How the day should feel: the athlete's own call, given with the muscles and the minutes. */
+export type Feel = "light" | "normal" | "hard";
+export const FEELS: Feel[] = ["light", "normal", "hard"];
+
 export interface BuildInput {
   focus: Focus[];
   minutes: number;
@@ -218,7 +222,19 @@ export interface BuildInput {
   equipment: string[] | null | undefined;
   injuries: Set<InjuryTag>;
   seed: string;
+  feel?: Feel;
 }
+
+/**
+ * The day's feel, applied after the session is laid out, so the movements
+ * never change with it: light is one set fewer and well short of failure;
+ * hard is one notch closer to it, and never for someone who has not trained.
+ */
+export const withFeel = <B extends { sets: number; rpe: number }>(b: B, feel: Feel | undefined, experience?: string | null): B => {
+  if (feel === "light") return { ...b, sets: Math.max(2, b.sets - 1), rpe: Math.max(5, b.rpe - 1.5) };
+  if (feel === "hard" && experience !== "never_trained") return { ...b, rpe: Math.min(9.5, b.rpe + 1) };
+  return b;
+};
 
 /** Coaching order: heavy compounds first, then secondary, isolation, arms, core. */
 const ORDER: Pattern[] = [
@@ -245,10 +261,10 @@ export const focusLabel = (focus: Focus[]): string => focus.map(cap).join(" & ")
 /** A warm-up plus every set and its rest — the beginner path's model. */
 export const blockMinutes = (b: { sets: number; rest_sec: number }): number => (b.sets * (45 + b.rest_sec)) / 60;
 
-type PoolItem = CatalogItem & PoolEntry;
+export type PoolItem = CatalogItem & PoolEntry;
 
 /** Sets / reps / RPE / rest for one movement, from the goal and the athlete. */
-const prescribe = (e: PoolItem, o: Pick<BuildInput, "goal" | "experience" | "minutes">): SessionBlock => {
+export const prescribe = (e: PoolItem, o: Pick<BuildInput, "goal" | "experience" | "minutes">): SessionBlock => {
   const scheme = SCHEMES[o.goal ?? "all"] ?? SCHEMES.all;
   const novice = o.experience === "never_trained";
   const rpeAdj = novice ? -1 : o.experience === "under_6_months" ? -0.5 : 0;
@@ -258,7 +274,7 @@ const prescribe = (e: PoolItem, o: Pick<BuildInput, "goal" | "experience" | "min
 };
 
 /** The athlete's safe, drawable, equipment-matched pool for the picked muscles. */
-const poolFor = (o: Pick<BuildInput, "focus" | "experience" | "equipment" | "injuries">): PoolItem[] => {
+export const poolFor = (o: Pick<BuildInput, "focus" | "experience" | "equipment" | "injuries">): PoolItem[] => {
   const focus = [...new Set(o.focus)];
   const novice = o.experience === "never_trained";
   const banned = bannedSlugs(EXERCISE_CATALOG, o.injuries, o.experience ?? null);
@@ -277,24 +293,32 @@ const poolFor = (o: Pick<BuildInput, "focus" | "experience" | "equipment" | "inj
  * the same primary muscle in any pattern; never one already in the session,
  * never one the athlete's profile bans. Null when the pool has nothing else.
  */
-export function swapBlock(o: BuildInput & { current: string; exclude: string[]; sets?: number }): SessionBlock | null {
+export function swapCandidates(
+  o: Pick<BuildInput, "focus" | "experience" | "equipment" | "injuries" | "seed"> & { current: string; exclude: string[] },
+): PoolItem[] {
   const cur = SESSION_POOL[o.current];
-  if (!cur) return null;
+  if (!cur) return [];
   const taken = new Set([...o.exclude, o.current]);
   const items = poolFor(o).filter((e) => !taken.has(e.slug));
   const order = (a: PoolItem, b: PoolItem) => fnv(o.seed + a.slug) - fnv(o.seed + b.slug);
   const same = items.filter((e) => e.pattern === cur.pattern && e.focus[0] === cur.focus[0]).sort(order);
   const pattern = items.filter((e) => e.pattern === cur.pattern).sort(order);
   const muscle = items.filter((e) => e.focus[0] === cur.focus[0]).sort(order);
-  const pick = same[0] ?? pattern[0] ?? muscle[0];
-  if (!pick) return null;
+  return [...new Set([...same, ...pattern, ...muscle])];
+}
+
+/** The first candidate, prescribed: the one-tap swap. */
+export function swapBlock(o: BuildInput & { current: string; exclude: string[]; sets?: number }): SessionBlock | null {
+  const cur = SESSION_POOL[o.current];
+  const pick = swapCandidates(o)[0];
+  if (!cur || !pick) return null;
   const block = prescribe(pick, o);
   // A long session has grown its sets; the replacement inherits them when it
   // is the same kind of movement (compound for compound), within the cap.
   const sameKind = (pick.tier < 3) === (cur.tier < 3);
   const cap = block.sets + (pick.tier < 3 ? 2 : 1);
   if (sameKind && o.sets && o.sets > block.sets) block.sets = Math.min(cap, Math.floor(o.sets));
-  return block;
+  return withFeel(block, o.feel, o.experience);
 }
 
 /** Duration of a block list under the same model the builder fits with. */
@@ -313,7 +337,7 @@ export function prescribeSlugs(slugs: string[], o: BuildInput): SessionBlock[] {
     if (e) out.push(prescribe(e, o));
   }
   densify(out, o.minutes);
-  return out;
+  return out.map((b) => withFeel(b, o.feel, o.experience));
 }
 
 export function buildSession(o: BuildInput): BuiltSession {
@@ -364,7 +388,8 @@ export function buildSession(o: BuildInput): BuiltSession {
   }
 
   densify(blocks, o.minutes);
-  return { focus: focusLabel(focus), duration_min: sessionMinutes(blocks), blocks };
+  const felt = blocks.map((b) => withFeel(b, o.feel, o.experience));
+  return { focus: focusLabel(focus), duration_min: sessionMinutes(felt), blocks: felt };
 }
 
 // A long session at the gym is more sets on the same movements before it is
@@ -393,20 +418,122 @@ export const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /**
  * The exact plan_json the runner, Home and the coach functions read: one
- * week, seven days, only today's slot carrying blocks. Rest days are
- * `focus: "Rest"` with no blocks — the one shape every reader agrees on.
+ * week of seven days. A day without a session is a rest day, `focus: "Rest"`
+ * with no blocks: the one shape every reader agrees on.
  */
-export const sessionPlan = (day: BuiltSession, dayIndex: number) => ({
-  weekly_check_targets: { workouts: 1, sleep_avg_h: 7.5, hydration_l: 2.5, perfect_days: 1 },
-  weeks: [{
-    week: 1,
+export const weekPlan = (days: (BuiltSession | null)[], o: { theme: string; nutritionNote: string; progressionNote: string }) => {
+  const training = days.filter(Boolean).length;
+  return {
+    weekly_check_targets: { workouts: Math.max(1, training), sleep_avg_h: 7.5, hydration_l: 2.5, perfect_days: Math.max(1, training) },
+    weeks: [{
+      week: 1,
+      theme: o.theme,
+      days: DAY_NAMES.map((d, i) => {
+        const day = days[i];
+        return day
+          ? { day: d, focus: day.focus, duration_min: day.duration_min, blocks: day.blocks, conditioning: "" }
+          : { day: d, focus: "Rest", duration_min: 0, blocks: [] as SessionBlock[], conditioning: "" };
+      }),
+      nutrition: { protein_g_per_kg: 1.6, daily_kcal_band: "Maintenance", notes: o.nutritionNote },
+      recovery: { sleep_target_h: 7.5, mobility_min: 10, breathwork: "Five slow breaths before the first set." },
+      progression_note: o.progressionNote,
+    }],
+  };
+};
+
+/** One session on one day of an otherwise empty week: today by focus. */
+export const sessionPlan = (day: BuiltSession, dayIndex: number) =>
+  weekPlan(DAY_NAMES.map((_, i) => (i === dayIndex ? day : null)), {
     theme: day.focus,
-    days: DAY_NAMES.map((d, i) =>
-      i === dayIndex
-        ? { day: d, focus: day.focus, duration_min: day.duration_min, blocks: day.blocks, conditioning: "" }
-        : { day: d, focus: "Rest", duration_min: 0, blocks: [], conditioning: "" }),
-    nutrition: { protein_g_per_kg: 1.6, daily_kcal_band: "Maintenance", notes: "One session. Eat normally, protein at every meal." },
-    recovery: { sleep_target_h: 7.5, mobility_min: 10, breathwork: "Five slow breaths before the first set." },
-    progression_note: "Beat last time by one rep or one small plate.",
-  }],
-});
+    nutritionNote: "One session. Eat normally, protein at every meal.",
+    progressionNote: "Beat last time by one rep or one small plate.",
+  });
+
+// ── A whole week ─────────────────────────────────────────────────────────
+
+const FULL_BODY: Focus[][] = [["legs", "chest", "back"], ["legs", "back", "shoulders"], ["glutes", "chest", "back"]];
+const SPLIT = {
+  upper: { name: "Upper", focus: ["chest", "back", "shoulders"] as Focus[] },
+  lower: { name: "Lower", focus: ["legs", "glutes", "core"] as Focus[] },
+  push: { name: "Push", focus: ["chest", "shoulders", "triceps"] as Focus[] },
+  pull: { name: "Pull", focus: ["back", "biceps"] as Focus[] },
+  legs: { name: "Legs", focus: ["legs", "glutes", "core"] as Focus[] },
+};
+
+/** The split for n training days: full body up to three, upper/lower at four, push/pull/legs from five. */
+export const weekSplit = (n: number): { name: string; focus: Focus[] }[] => {
+  const days = Math.max(1, Math.min(6, Math.floor(n) || 1));
+  if (days <= 3) return FULL_BODY.slice(0, days).map((focus) => ({ name: "Full body", focus }));
+  if (days === 4) return [SPLIT.upper, SPLIT.lower, SPLIT.upper, SPLIT.lower];
+  if (days === 5) return [SPLIT.push, SPLIT.pull, SPLIT.legs, SPLIT.upper, SPLIT.lower];
+  return [SPLIT.push, SPLIT.pull, SPLIT.legs, SPLIT.push, SPLIT.pull, SPLIT.legs];
+};
+
+/**
+ * A week from the athlete's training days (0 = Mon): one session per day from
+ * the split, each seeded apart so a repeated day is still a different session.
+ * A day the safe pool cannot fill (under two movements) stays a rest day.
+ */
+export function buildWeek(o: Omit<BuildInput, "focus">, trainDays: number[]): (BuiltSession | null)[] {
+  const days = [...new Set(trainDays)].filter((d) => Number.isInteger(d) && d >= 0 && d <= 6).sort((a, b) => a - b).slice(0, 6);
+  const split = weekSplit(days.length);
+  return DAY_NAMES.map((_, i) => {
+    const at = days.indexOf(i);
+    if (at < 0) return null;
+    const day = buildSession({ ...o, focus: split[at].focus, seed: `${o.seed}:${at}` });
+    return day.blocks.length >= 2 ? { ...day, focus: split[at].name } : null;
+  });
+}
+
+// ── What a hand-built day is, and what the athlete has been skipping ─────
+
+const BIG_FIRST: Focus[] = ["legs", "back", "chest", "glutes", "shoulders", "core", "biceps", "triceps"];
+
+/** The muscles a list of movements mostly trains, biggest share first (at most three): a hand-built day's name. */
+export const primaryFocuses = (slugs: string[]): Focus[] => {
+  const count = new Map<Focus, number>();
+  for (const slug of slugs) {
+    const f = SESSION_POOL[slug]?.focus[0];
+    if (f) count.set(f, (count.get(f) ?? 0) + 1);
+  }
+  return [...count.entries()]
+    .sort((a, b) => b[1] - a[1] || BIG_FIRST.indexOf(a[0]) - BIG_FIRST.indexOf(b[0]))
+    .slice(0, 3)
+    .map(([f]) => f);
+};
+
+/**
+ * The muscle groups the athlete has been avoiding, from what they logged in
+ * the last 28 days. An exercise on a day counts once: 1 for its primary
+ * muscle, 0.5 for a secondary. Nothing is said before three training days.
+ * Neglected = under 40% of the median of the muscles they do train (the
+ * median of the trained ones, so a chest-only lifter is still told about
+ * legs). Lowest first, big groups before small, at most three.
+ * ponytail: frequency, not volume (the log feed is one row per exercise-day);
+ * add a set-count query if volume balance is ever wanted.
+ */
+export function neglectedFocuses(rows: { exercise_slug: string | null; logged_on: string }[], today: string): Focus[] {
+  const from = new Date(`${today}T00:00:00Z`).getTime() - 27 * 86_400_000;
+  const days = new Set<string>();
+  const seen = new Set<string>();
+  const score = new Map<Focus, number>(FOCUSES.map((f) => [f, 0]));
+  for (const r of rows) {
+    const t = new Date(`${r.logged_on}T00:00:00Z`).getTime();
+    if (!(t >= from) || r.logged_on > today) continue;
+    days.add(r.logged_on);
+    const entry = r.exercise_slug ? SESSION_POOL[r.exercise_slug] : undefined;
+    const key = `${r.exercise_slug}|${r.logged_on}`;
+    if (!entry || seen.has(key)) continue;
+    seen.add(key);
+    entry.focus.forEach((f, i) => score.set(f, (score.get(f) ?? 0) + (i === 0 ? 1 : 0.5)));
+  }
+  if (days.size < 3) return [];
+  const trained = [...score.values()].filter((v) => v > 0).sort((a, b) => a - b);
+  if (!trained.length) return [];
+  const mid = trained.length / 2;
+  const median = trained.length % 2 ? trained[Math.floor(mid)] : (trained[mid - 1] + trained[mid]) / 2;
+  return FOCUSES
+    .filter((f) => (score.get(f) ?? 0) < 0.4 * median)
+    .sort((a, b) => (score.get(a) ?? 0) - (score.get(b) ?? 0) || BIG_FIRST.indexOf(a) - BIG_FIRST.indexOf(b))
+    .slice(0, 3);
+}

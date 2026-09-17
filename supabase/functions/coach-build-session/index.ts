@@ -6,7 +6,7 @@
 // another of the same pattern — in a preview (returns the block) or in a
 // stored session (`program_id`: rewrites today's blocks, returns the program).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { buildSession, prescribeSlugs, sessionMinutes, sessionPlan, swapBlock, FOCUSES, type Focus } from "../_shared/session-builder.ts";
+import { buildSession, prescribeSlugs, sessionMinutes, sessionPlan, swapBlock, FEELS, FOCUSES, type Feel, type Focus } from "../_shared/session-builder.ts";
 import { normalizeInjuries } from "../_shared/injuries.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
 
@@ -72,6 +72,8 @@ Deno.serve(async (req) => {
       equipment: Array.isArray(profile.equipment) ? profile.equipment : [],
       injuries,
       seed,
+      // The day's feel (light / normal / hard); old builds send nothing.
+      feel: (FEELS as string[]).includes(body?.feel) ? (body.feel as Feel) : undefined,
     };
     const strs = (v: unknown, cap: number) =>
       (Array.isArray(v) ? v : []).filter((x): x is string => typeof x === "string").slice(0, cap);

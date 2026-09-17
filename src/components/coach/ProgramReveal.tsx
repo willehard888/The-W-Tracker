@@ -22,10 +22,10 @@ import { isTrainingDay, dayFocus } from "@/lib/training/session";
  * The summary is 3–4 sentences in the athlete's voice. Its first sentence is
  * the display line when it fits one; the rest follows quietly underneath.
  */
-const splitLead = (summary: string | null): [string, string] => {
+const splitLead = (summary: string | null, fallback: string): [string, string] => {
   const m = summary?.match(/^\s*([^.!?]+[.!?])\s*([\s\S]*)$/);
   if (m && m[1].length <= 100) return [m[1], m[2].trim()];
-  return ["Your program is ready.", summary?.trim() ?? ""];
+  return [fallback, summary?.trim() ?? ""];
 };
 
 const N = ({ children }: { children: ReactNode }) => (
@@ -58,7 +58,7 @@ const ProgramReveal = ({
     : 0;
 
   const focusList = [...new Set(trainingDays.map((d) => dayFocus(d)).filter(Boolean))];
-  const [lead, rest] = splitLead(program.ai_summary);
+  const [lead, rest] = splitLead(program.ai_summary, program.generated_with === "week_builder_v1" ? "Your week is ready." : "Your program is ready.");
 
   return (
     <section>

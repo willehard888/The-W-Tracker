@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import {
   PATH_MOVEMENTS,
   PATH_SUBSTITUTIONS,
@@ -176,22 +177,7 @@ export const createBeginnerProgram = async (opts: {
   injuries?: string[] | null;
 }) => {
   const { userId, block } = opts;
-
-  // Checked, because a silent failure here plus a successful insert below
-  // leaves the athlete with two `status = 'active'` programs and every
-  // downstream lookup then picks one at random. Half-applied is worse than
-  // not applied — the caller's catch gets it either way.
-  const { error: supersedeError } = await supabase
-    .from("coach_programs")
-    .update({ status: "superseded" })
-    .eq("user_id", userId)
-    .eq("status", "active");
-
-  if (supersedeError) throw supersedeError;
-
-  const { data, error } = await supabase
-    .from("coach_programs")
-    .insert({
+  return insertActiveProgram({
       user_id: userId,
       goal: opts.goal ?? "all",
       // The column has existed since the first migration and every row until
@@ -206,10 +192,27 @@ export const createBeginnerProgram = async (opts: {
       plan_json: buildBeginnerPlan(block, normalizeInjuries(opts.injuries)),
       ai_summary: SUMMARY[block],
       generated_with: "written_beginner_path_v1",
-    })
-    .select()
-    .single();
+  });
+};
 
+/**
+ * The one way a program becomes the athlete's active one from the client:
+ * supersede whatever was active, then insert. Shared by the beginner path, the
+ * week builder and a member's own program.
+ */
+export const insertActiveProgram = async (row: TablesInsert<"coach_programs">) => {
+  // Checked, because a silent failure here plus a successful insert below
+  // leaves the athlete with two `status = 'active'` programs and every
+  // downstream lookup then picks one at random. Half-applied is worse than
+  // not applied — the caller's catch gets it either way.
+  const { error: supersedeError } = await supabase
+    .from("coach_programs")
+    .update({ status: "superseded" })
+    .eq("user_id", row.user_id)
+    .eq("status", "active");
+  if (supersedeError) throw supersedeError;
+
+  const { data, error } = await supabase.from("coach_programs").insert(row).select().single();
   if (error) throw error;
   return data;
 };

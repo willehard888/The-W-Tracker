@@ -63,7 +63,7 @@ const ProgramCard = () => {
           >
             <CalendarDays size={16} className="text-muted-foreground shrink-0" aria-hidden />
             <span className="flex-1 min-w-0">
-              <span className="block text-note font-bold leading-tight truncate">Your 4-week program</span>
+              <span className="block text-note font-bold leading-tight truncate">Your program</span>
               <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">Week {currentWeek}</span>
             </span>
             <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
@@ -91,9 +91,9 @@ const ProgramCard = () => {
   if (!program) {
     return (
       <div className="surface-card surface-card-quiet p-4">
-        <p className="text-note font-bold leading-snug">Generate your 4-week training program</p>
+        <p className="text-note font-bold leading-snug">Your training, your way</p>
         <p className="text-meta text-muted-foreground leading-snug mt-0.5">
-          Two-minute setup. The plan adapts each week from your logs.
+          Train today by focus, have your week built, or build your own.
         </p>
         <Button variant="secondary" onClick={() => navigate("/coach/program")} className="w-full mt-3">
           Build my program

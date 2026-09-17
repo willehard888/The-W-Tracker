@@ -2,16 +2,22 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { backOr } from "@/lib/nav";
-import { Crown, RefreshCw } from "lucide-react";
+import { CalendarDays, Crown, Dumbbell, PencilLine, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import WeekStrip from "@/components/coach/WeekStrip";
 import ProgramWeekAccordion from "@/components/coach/ProgramWeekAccordion";
 import TodaySessionCard from "@/components/coach/TodaySessionCard";
 import ProgramOnboarding from "@/components/coach/ProgramOnboarding";
 import ProgramReveal from "@/components/coach/ProgramReveal";
+import FocusSessionSheet from "@/components/coach/FocusSessionSheet";
 import { DoorRow } from "@/components/coach/rows";
 import { useCoachProgram } from "@/hooks/use-coach-program";
+import { useCreateProgram } from "@/hooks/use-focus-session";
+import { friendlyError } from "@/lib/error-copy";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import type { ProgramWeekState } from "@/lib/training/program-week";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { loadExerciseLibrary } from "@/lib/exercise-library";
@@ -46,8 +52,10 @@ const standingLine = (s: ProgramWeekState, weeks: number): string => {
  *
  * Three states:
  *   1) Loading       → skeleton
- *   2) No program    → for Elite, generation flow; for Free, paywall door
- *   3) Has program   → beat · today's session (the hero) · week strip · the weeks
+ *   2) No program    → three doors: train today (the default), the coach's
+ *                      week, a week of your own; for Free, the paywall door
+ *   3) Has program   → beat · today's session (the hero) · week strip · the
+ *                      weeks, every one of them editable by hand
  *
  * Never blank — every state shows a substantial UI.
  */
@@ -58,6 +66,9 @@ const CoachProgramDetail = () => {
   // that tap with a paywall. The server gate now agrees (has_active_access).
   const { hasAccess } = useTrialAccess();
   const [showRegen, setShowRegen] = useState(false);
+  const [trainToday, setTrainToday] = useState(false);
+  const [askEmpty, setAskEmpty] = useState(false);
+  const createProgram = useCreateProgram();
   // Set the moment generation returns; cleared when the athlete starts. Local
   // state on purpose — the durable "has seen the reveal" version arrives with
   // the TRAINING_PROGRAM_READY onboarding event.
@@ -86,6 +97,19 @@ const CoachProgramDetail = () => {
 
   const onRegenerated = () => { setShowRegen(false); setJustGenerated(true); refetch(); };
 
+  // A week of your own and a repeat need no reveal: the athlete knows what is
+  // in them. The page simply becomes the new program.
+  const create = (arg: Parameters<typeof createProgram.mutate>[0]) => {
+    hapticImpact("medium");
+    createProgram.mutate(arg, {
+      onSuccess: () => { hapticNotification("success"); setShowRegen(false); },
+      onError: (e) => {
+        if (/row-level security/i.test(e instanceof Error ? e.message : "")) navigate("/paywall");
+        else toast.error(friendlyError(e, "Couldn't start the program. Try again."));
+      },
+    });
+  };
+
   return (
     <div className="min-h-full">
       <PageBar title="Training program" onBack={() => backOr(navigate, "/coach")} />
@@ -99,14 +123,12 @@ const CoachProgramDetail = () => {
             <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
               {program
                 ? <>Week <span className="text-gold glow-gold-text tabular-nums">{currentWeek}</span> of {program.weeks}.</>
-                : "Tell me the goal. I build the week."}
+                : "What are you training today?"}
             </h2>
             <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
               {program
                 ? standingLine(weekState, program.weeks)
-                : hasAccess
-                  ? "Four progressive weeks from your athlete profile. Two-minute setup; the plan adapts each week."
-                  : "Periodised by an AI coach against your goal, equipment and time. Adapts each week from your logs."}
+                : "Pick the muscles, the minutes and how hard. Or have the whole week built, or build your own."}
             </p>
           </header>
         )}
@@ -114,22 +136,26 @@ const CoachProgramDetail = () => {
         {/* No trial, no membership, no program — the paywall door */}
         {!isLoading && !program && !hasAccess && (
           <div className="home-rise home-rise-1 mt-4 border-t border-border/35">
-            <DoorRow icon={Crown} label="Build your 4-week training program" sub="Premium" onClick={() => navigate("/paywall")} />
+            <DoorRow icon={Crown} label="Sessions and weeks built for you" sub="Premium" onClick={() => navigate("/paywall")} />
           </div>
         )}
 
-        {/* Trial or member, no program — generation flow */}
-        {!isLoading && !program && hasAccess && (
-          <div className="home-rise home-rise-1 mt-2">
-            <ProgramOnboarding
-              onGenerated={() => {
-                // The reveal is the payoff for a 25-second wait. Without it the
-                // athlete lands straight in a collapsed four-week accordion
-                // with nothing telling them what was built or where to start.
-                setJustGenerated(true);
-                refetch();
-              }}
-            />
+        {/* Trial or member, no program. Today is the default; the week and
+            a week of your own are the two quieter doors under it. */}
+        {!isLoading && !program && hasAccess && !showRegen && (
+          <div className="home-rise home-rise-1 mt-5">
+            <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticImpact("light"); setTrainToday(true); }}>
+              <Dumbbell aria-hidden size={16} /> Train today
+            </Button>
+            <div className="mt-4 border-t border-border/35 divide-y divide-border/35">
+              <DoorRow icon={CalendarDays} label="Build my week" sub="A session for each of your training days. Instant." onClick={() => setShowRegen(true)} />
+              <DoorRow icon={PencilLine} label="Build my own" sub="An empty week and the exercise library." onClick={() => create({ kind: "manual" })} />
+            </div>
+          </div>
+        )}
+        {!isLoading && !program && hasAccess && showRegen && (
+          <div className="home-rise mt-2">
+            <ProgramOnboarding onGenerated={onRegenerated} />
           </div>
         )}
 
@@ -148,11 +174,11 @@ const CoachProgramDetail = () => {
             {/* While the reveal speaks, nothing else does — the today card's
                 own ember would otherwise sit right under the reveal's. */}
             {!justGenerated && (<>
-            {/* The block is over: the next one is the screen's action, so it
-                sits up here as the ember and the quiet door below stays away. */}
+            {/* The four weeks are over: running them again is the screen's
+                action, so it sits up here as the ember. */}
             {weekState.readyForNext && hasAccess && !showRegen && (
-              <Button variant="ember" size="lg" className="w-full" onClick={() => setShowRegen(true)}>
-                Build my next block
+              <Button variant="ember" size="lg" className="w-full" disabled={createProgram.isPending} onClick={() => create({ kind: "repeat", from: program })}>
+                Run these four weeks again
               </Button>
             )}
 
@@ -179,21 +205,31 @@ const CoachProgramDetail = () => {
               logs={logs}
             />
 
-            {/* Regenerate — build a fresh 4-week block (supersedes the current). */}
-            {hasAccess && !showRegen && !weekState.readyForNext && (
-              <div className="border-t border-border/35">
-                <DoorRow icon={RefreshCw} label="Generate a new block" onClick={() => setShowRegen(true)} />
+            {/* Start over: both doors replace the running program. */}
+            {hasAccess && !showRegen && (
+              <div className="border-t border-border/35 divide-y divide-border/35">
+                <DoorRow icon={RefreshCw} label="Build a new week" sub="The coach builds it from your profile." onClick={() => setShowRegen(true)} />
+                <DoorRow icon={PencilLine} label="Start from an empty week" sub="Build your own from the exercise library." onClick={() => setAskEmpty(true)} />
               </div>
             )}
             {hasAccess && showRegen && (
-              // A new block earns the same reveal — it is a different plan, and
-              // "what changed and why" is the whole question there too.
+              // A new week earns the same reveal: it is a different plan.
               <ProgramOnboarding onGenerated={onRegenerated} />
             )}
             </>)}
           </div>
         )}
       </div>
+
+      {trainToday && <FocusSessionSheet open onClose={() => setTrainToday(false)} />}
+      <ConfirmDialog
+        open={askEmpty}
+        onOpenChange={setAskEmpty}
+        title="Start from an empty week?"
+        description="It replaces this program. Your logged sets stay in your history."
+        actionLabel="Start empty"
+        onConfirm={() => { setAskEmpty(false); create({ kind: "manual" }); }}
+      />
     </div>
   );
 };

@@ -1,21 +1,29 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { dayFocus, blockCount, isRestDay } from "@/lib/training/session";
 import { programWeekState } from "@/lib/training/program-week";
 
-export interface ProgramBlock {
+// Type aliases, not interfaces: plan_json is a `Json` column, and only aliases
+// get the implicit index signature that writing it back requires. One block
+// shape for every reader (the week card, the exercise row, the editor); the
+// runner keeps its own looser shape on purpose, since it reads raw Json.
+export type ProgramBlock = {
+  /** The catalog slug: logging, illustrations and swaps all key on it. */
+  slug?: string | null;
   name: string;
   sets: number;
-  reps: string;
-  rpe?: number;
-  notes?: string;
-  rest_sec?: number;
-  tempo?: string;
-  alt?: string;
-}
-export interface ProgramDay {
+  reps: string | number;
+  rpe?: number | null;
+  notes?: string | null;
+  rest_sec?: number | null;
+  tempo?: string | null;
+  alt?: string | null;
+};
+export type ProgramDay = {
   day: string;
   focus: string;
   duration_min: number;
@@ -23,16 +31,16 @@ export interface ProgramDay {
   conditioning?: string;
   warmup?: string;
   cooldown?: string;
-}
-export interface ProgramWeek {
+};
+export type ProgramWeek = {
   week: number;
   theme: string;
   days: ProgramDay[];
   nutrition: { protein_g_per_kg: number; daily_kcal_band: string; notes: string };
   recovery: { sleep_target_h: number; mobility_min: number; breathwork: string };
   progression_note?: string;
-}
-export interface PlanJson {
+};
+export type PlanJson = {
   weeks: ProgramWeek[];
   weekly_check_targets: {
     workouts: number;
@@ -41,7 +49,7 @@ export interface PlanJson {
     perfect_days: number;
   };
   coach_signature?: string;
-}
+};
 export interface CoachProgram {
   id: string;
   user_id: string;
@@ -57,7 +65,12 @@ export interface CoachProgram {
   ai_summary: string | null;
   started_on: string;
   created_at: string;
+  /** Who wrote it: the week builder, the member (manual), the beginner path, the session builder, or the old AI block. */
+  generated_with?: string | null;
 }
+
+export const PROGRAM_COLUMNS =
+  "id, user_id, status, goal, experience, days_per_week, equipment, body_focus, constraints, weeks, plan_json, ai_summary, started_on, created_at, generated_with";
 
 /**
  * Today's session in the current week, or null.
@@ -114,7 +127,7 @@ export const useCoachProgram = () => {
       // Home mounts this too (TrainingZone): name the columns, not "*".
       const { data, error } = await supabase
         .from("coach_programs")
-        .select("id, user_id, status, goal, experience, days_per_week, equipment, body_focus, constraints, weeks, plan_json, ai_summary, started_on, created_at")
+        .select(PROGRAM_COLUMNS)
         .eq("user_id", user!.id)
         .eq("status", "active")
         .order("created_at", { ascending: false })
@@ -183,4 +196,43 @@ export const useCoachProgram = () => {
       logsQuery.refetch();
     },
   };
+};
+
+/**
+ * Hand edits to a program (src/lib/training/plan-edit.ts): the edit is applied
+ * to the newest cached plan, shown at once in both caches (the active program
+ * and the by-id row the runner reads), then written. Edits run one at a time,
+ * so two quick taps never write over each other.
+ * ponytail: last write wins across devices; add an updated_at guard if
+ * multi-device editing ever appears.
+ */
+export const useEditProgram = (program: CoachProgram | null) => {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    scope: { id: "program-edit" },
+    mutationFn: async (edit: (plan: PlanJson) => PlanJson) => {
+      if (!program || !user?.id) throw new Error("No program to edit");
+      const keys = [["coach-program", user.id], ["coach-program", "by-id", program.id]];
+      const cached = keys
+        .map((k) => qc.getQueryData<CoachProgram | null>(k))
+        .find((p) => p?.id === program.id);
+      const next = edit((cached ?? program).plan_json);
+      for (const k of keys) {
+        qc.setQueryData<CoachProgram | null>(k, (old) => (old && old.id === program.id ? { ...old, plan_json: next } : old));
+      }
+      const { error } = await supabase
+        .from("coach_programs")
+        .update({ plan_json: next as unknown as Json })
+        .eq("id", program.id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return next;
+    },
+    onError: (e: unknown) => {
+      void qc.invalidateQueries({ queryKey: ["coach-program"] });
+      toast.error("Could not save the change", { description: e instanceof Error ? e.message : undefined });
+    },
+    onSettled: () => void qc.invalidateQueries({ queryKey: ["focus-session"] }),
+  });
 };

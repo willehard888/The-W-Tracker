@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { ChevronDown, Check, Loader2 } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -16,17 +17,8 @@ import { resolveIllustration } from "@/lib/exercise-match";
 import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
 import Sparkline from "@/components/coach/Sparkline";
 
-export interface ProgramBlock {
-  slug?: string | null;
-  name: string;
-  sets: number;
-  reps: string | number;
-  rpe?: number | null;
-  notes?: string | null;
-  alt?: string | null;
-  rest_sec?: number | null;
-  tempo?: string | null;
-}
+import type { ProgramBlock } from "@/hooks/use-coach-program";
+export type { ProgramBlock };
 
 interface Props {
   block: ProgramBlock;
@@ -35,6 +27,9 @@ interface Props {
   dayIndex: number;
   /** When false, logging inputs are hidden (e.g. browsing a future week). */
   loggable?: boolean;
+  /** Hand edits, offered only while nothing is logged for this movement. */
+  onSwap?: () => void;
+  onRemove?: () => void;
 }
 
 const daysAgo = (iso: string) => {
@@ -47,7 +42,7 @@ const daysAgo = (iso: string) => {
  * step-by-step instructions and an inline "log your set" row (weight × reps).
  * The logged result is what the AI coach reads to progress the next block.
  */
-const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Props) => {
+const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap, onRemove }: Props) => {
   const libReady = useExerciseLibrary();
   const ex = libReady ? resolveExercise(block.slug, block.name) : null;
   const [open, setOpen] = useState(false);
@@ -93,7 +88,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
   // in a session that looked like it came from somewhere else.
   const illustrated = resolveIllustration(block.slug, block.name) ?? (ex ? resolveIllustration(null, ex.name) : null);
   const group = resolveGroup(block.name, ex?.primary);
-  const hasMore = !!(ex || illustrated || block.notes || block.alt || block.rest_sec || block.tempo);
+  const hasMore = !!(ex || illustrated || block.notes || block.alt || block.rest_sec || block.tempo || onSwap || onRemove);
 
   const save = async () => {
     const w = weight.trim() === "" ? null : Number(weight);
@@ -212,6 +207,20 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true }: Prop
             </p>
           )}
           {block.notes && <p className="text-meta text-muted-foreground leading-snug">{block.notes}</p>}
+          {!logged && (onSwap || onRemove) && (
+            <div className="flex gap-2">
+              {onSwap && (
+                <Button type="button" variant="outline" size="sm" onClick={onSwap}>
+                  <ArrowLeftRight aria-hidden size={13} /> Swap
+                </Button>
+              )}
+              {onRemove && (
+                <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={onRemove}>
+                  Remove
+                </Button>
+              )}
+            </div>
+          )}
           {block.alt && (
             <p className="text-meta text-muted-foreground/85">
               <span className="text-label font-bold text-muted-foreground mr-1">Swap</span>{block.alt}

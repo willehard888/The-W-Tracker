@@ -1,6 +1,6 @@
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Sparkles, Zap, Settings2 } from "lucide-react";
+import { Loader2, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
@@ -9,13 +9,10 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import { createBeginnerProgram, nextBeginnerBlock } from "@/lib/beginner-program";
+import { useCreateProgram } from "@/hooks/use-focus-session";
+import { BLOCK_EXPERIENCE, createBeginnerProgram, nextBeginnerBlock } from "@/lib/beginner-program";
 
 interface Props { onGenerated: () => void }
-
-const DRAFT_KEY = "w_coach_program_brief_v2";
-
-const FOCUS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Glutes", "Conditioning"];
 
 const GOAL_LABEL: Record<string, string> = {
   all: "All-around",
@@ -29,41 +26,29 @@ const GOAL_LABEL: Record<string, string> = {
 
 const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"]; // Sun..Sat
 
-const loadDraft = (): any | null => {
-  try { const raw = localStorage.getItem(DRAFT_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
-};
-
-// The one generation failure the athlete can fix themselves: coach-generate-
-// program returns 400 "Complete athlete profile first" when the profile row
-// isn't onboarded. That answer deserves a door, not a stack trace.
-const isProfileGate = (msg: string) => /athlete profile/i.test(msg);
-
 const SESSION_MINUTES = [30, 45, 60, 75, 90] as const;
 
+/**
+ * The coach's week: one session for each training day in the profile, built
+ * on the phone by the same engine that builds a single day. Instant, no model,
+ * and every day and movement in it can be changed by hand afterwards.
+ */
 const ProgramOnboarding = ({ onGenerated }: Props) => {
   const navigate = useNavigate();
   const { profile, isLoading, upsert } = useAthleteProfile();
-  const [generating, setGenerating] = useState(false);
+  const createProgram = useCreateProgram();
+  const [building, setBuilding] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
-  const [draft, setDraft] = useState<any>(() => loadDraft() ?? { bodyFocus: [] as string[], notes: "" });
-
-  useEffect(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch {} }, [draft]);
-
-  const toggleFocus = (f: string) => {
-    hapticImpact("light");
-    const arr: string[] = draft.bodyFocus ?? [];
-    setDraft({ ...draft, bodyFocus: arr.includes(f) ? arr.filter(x => x !== f) : [...arr, f] });
-  };
 
   const goalLabel = GOAL_LABEL[profile?.primary_goal ?? "all"] ?? "All-around";
   const days = profile?.training_days_pref ?? [1, 2, 4, 5];
   const sessionMin = profile?.preferred_session_length_min ?? 45;
-  const equipment = (profile?.equipment ?? []).join(", ") || "Bodyweight";
+  // Presets are stored as keys ("full_gym"); the summary reads them as words.
+  const equipment = (profile?.equipment ?? []).join(", ").replace(/_/g, " ") || "Bodyweight";
   const injuries = profile?.injuries ?? [];
-  const horizon = profile?.target_horizon_weeks ?? 12;
 
-  // Saved to the athlete profile at once: the generator reads it from there,
-  // and so does the focus-session sheet's default.
+  // Saved to the athlete profile at once: the week builder reads it from
+  // there, and so does the focus-session sheet's default.
   const setSessionLength = (m: number) => {
     if (m === sessionMin) return;
     hapticImpact("light");
@@ -71,27 +56,26 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
   };
 
   const generate = async () => {
-    setGenerating(true);
+    setBuilding(true);
     setLastError(null);
     hapticImpact("medium");
     try {
-      // A first-timer gets the written 8-week path instead of a generated
-      // block. The AI is told to build 4–6 loaded exercises every training day
-      // and not to lean on bodyweight, which is the right instruction for
-      // someone who already lifts and the wrong one for someone new to a
-      // barbell. This also returns instantly — no model round trip.
+      // A first-timer gets the written 8-week path instead of a built week:
+      // the same few movements, loaded slowly, is the right start for someone
+      // new to a barbell.
       if (profile?.training_experience === "never_trained") {
-        // Read the most recent program rather than holding it in state, so
-        // block 2 is offered correctly even if the row changed on another
-        // device since this screen mounted.
-        const { data: lastProgram } = await supabase
+        // The newest BEGINNER block, not the newest program: a session for
+        // today or a hand-built week in between used to send a beginner back
+        // to block one.
+        const { data: lastBlock } = await supabase
           .from("coach_programs")
           .select("experience")
           .eq("user_id", profile.user_id)
+          .in("experience", Object.values(BLOCK_EXPERIENCE))
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        const block = nextBeginnerBlock(lastProgram?.experience);
+        const block = nextBeginnerBlock(lastBlock?.experience);
         if (block) {
           await createBeginnerProgram({
             userId: profile.user_id,
@@ -100,70 +84,30 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
             equipment: profile.equipment,
             injuries: profile.injuries,
           });
-          try { localStorage.removeItem(DRAFT_KEY); } catch {}
           hapticNotification("success");
           toast.success(block === 1 ? "Your first block is ready." : "Block two is ready.");
           onGenerated();
           return;
         }
-        // Both written blocks are behind them — fall through to the coach,
-        // which now has eight weeks of their own logged sets to work from.
+        // Both written blocks are behind them: the week builder takes over,
+        // still under the novice rules.
       }
-
-      const { data, error } = await supabase.functions.invoke("coach-generate-program", {
-        body: {
-          body_focus: draft.bodyFocus,
-          block_notes: draft.notes,
-        },
-      });
-      if (error) {
-        // supabase-js collapses any non-2xx into a generic "non-2xx status
-        // code" message and hides the response body — dig out the real reason.
-        // Read the body as TEXT first (a gateway timeout returns non-JSON, so
-        // .json() throws and we'd otherwise lose the real cause), then try to
-        // parse it. Prefix the HTTP status so 504 (timeout) is unmistakable.
-        let reason = error.message;
-        const ctx = (error as any).context;
-        if (ctx && typeof ctx.text === "function") {
-          try {
-            const raw = (await ctx.text())?.trim();
-            if (raw) {
-              try { reason = JSON.parse(raw)?.error || raw; }
-              catch { reason = raw.slice(0, 200); }
-            }
-          } catch { /* keep generic */ }
-        }
-        const status = ctx?.status ? `[${ctx.status}] ` : "";
-        throw new Error(`${status}${reason}`);
-      }
-      if ((data as any)?.error) throw new Error((data as any).error);
-      try { localStorage.removeItem(DRAFT_KEY); } catch {}
+      await createProgram.mutateAsync({ kind: "week" });
       hapticNotification("success");
-      toast.success("Your personal block is ready.");
       onGenerated();
-    } catch (e: any) {
+    } catch (e) {
       hapticNotification("error");
-      const msg: string = e?.message ?? "";
-      // Program generation is a Premium feature — route there instead of
-      // showing a dead-end error toast.
-      if (/premium/i.test(msg)) {
-        toast.error("Personal program building is a Premium feature.", {
+      const msg = e instanceof Error ? e.message : "";
+      // The INSERT policy is has_active_access: a lapsed trial lands here.
+      if (/row-level security|premium/i.test(msg)) {
+        toast.error("Building a week is a Premium feature.", {
           action: { label: "Unlock", onClick: () => navigate("/paywall") },
         });
-      } else if (isProfileGate(msg)) {
-        // Same treatment as Premium: the failure names a screen, so send them
-        // to it instead of printing the coach's 400 at them.
-        setLastError(msg);
-        toast.error("Coach needs your athlete profile first.", {
-          action: { label: "Set up", onClick: () => navigate("/coach/profile") },
-        });
       } else {
-        // Keep the exact reason on-screen (toasts vanish) so it's easy to read.
-        setLastError(msg || "Couldn't generate program. Try again.");
-        toast.error(msg || "Couldn't generate program. Try again.");
+        setLastError(friendlyError(e, "Couldn't build the week. Try again."));
       }
     } finally {
-      setGenerating(false);
+      setBuilding(false);
     }
   };
 
@@ -178,16 +122,14 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     );
   }
 
-  // Nothing to confirm yet. The summary below is built from the profile, and
-  // with no profile every value in it is a default the coach never agreed to —
-  // "Coach already knows you" over invented answers, ending in the 400 above.
-  // Say what's missing and open the setup instead.
+  // Nothing to build from yet. The summary below is the profile, and with no
+  // profile every value in it is a default the athlete never chose.
   if (!profile?.onboarded) {
     return (
       <div className="px-1 pt-2 pb-8">
         <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Coach needs to meet you first</h2>
         <p className="text-sm text-muted-foreground mt-1 mb-6 leading-relaxed">
-          Your goal, the days you train, what you lift with, anything that hurts. Two minutes, once. Every block after
+          Your goal, the days you train, what you lift with, anything that hurts. Two minutes, once. Every week after
           that is built from it.
         </p>
         <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticImpact("light"); navigate("/coach/profile"); }}>
@@ -197,30 +139,11 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     );
   }
 
-  if (generating) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-        <div className="relative mb-6">
-          <div aria-hidden className="absolute -inset-6 rounded-full"
-            style={{ background: "radial-gradient(circle, hsl(var(--gold)/0.28) 0%, transparent 70%)" }} />
-          <div className="relative h-20 w-20 rounded-3xl flex items-center justify-center bg-gradient-to-br from-[hsl(var(--gold-light))] via-gold to-[hsl(var(--gold-dark))] shadow-[0_8px_28px_hsl(var(--gold)/0.5)]">
-            <Sparkles aria-hidden size={32} className="text-background animate-pulse" strokeWidth={2.6} />
-          </div>
-        </div>
-        <h2 className="font-display text-2xl font-black mb-2">Coach is designing your block</h2>
-        <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-          Tailoring 4 progressive weeks to your goal, body, schedule and last 30 days. ~25 seconds.
-        </p>
-        <Loader2 aria-hidden size={20} className="animate-spin text-gold mt-6" />
-      </div>
-    );
-  }
-
   return (
     <div className="px-1 pt-2 pb-8">
-      <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Design my next block</h2>
-      <p className="text-sm text-muted-foreground mt-1 mb-5">
-        Coach already knows you. Just confirm and add anything specific to this 4-week block.
+      <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Build my week</h2>
+      <p className="text-sm text-muted-foreground mt-1 mb-5 leading-relaxed">
+        One session for each of your training days. It runs for four weeks, and the loads follow what you log.
       </p>
 
       <div className="rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-gradient-to-b from-[hsl(var(--gold)/0.06)] to-card/40 p-4 mb-5">
@@ -233,9 +156,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         </div>
         <dl className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
           <Row k="Goal"      v={goalLabel} />
-          <Row k="Horizon"   v={`${horizon} week${horizon === 1 ? "" : "s"}`} />
-          <Row k="Schedule"  v={`${days.length} day${days.length === 1 ? "" : "s"}/wk`} extra={<DayDots active={days} />} />
           <Row k="Session"   v={`${sessionMin} min`} />
+          <Row k="Schedule"  v={`${days.length} day${days.length === 1 ? "" : "s"}/wk`} extra={<DayDots active={days} />} wide />
           <Row k="Equipment" v={equipment} wide />
           {injuries.length > 0 && <Row k="Injuries" v={injuries.join(", ")} wide />}
         </dl>
@@ -250,59 +172,18 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         <p className="text-label text-muted-foreground/75 mt-1.5">Every training day is planned to fit this.</p>
       </Field>
 
-      <div className="mt-5" />
-      <Field label="Body emphasis (optional)">
-        <div className="flex flex-wrap gap-1.5">
-          {FOCUS.map(f => (
-            <Chip key={f} active={draft.bodyFocus.includes(f)} onClick={() => toggleFocus(f)}>{f}</Chip>
-          ))}
-        </div>
-      </Field>
+      {lastError && (
+        <p role="alert" className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5 text-dense text-foreground/90 leading-snug">
+          {lastError}
+        </p>
+      )}
 
-      <div className="mt-5">
-        <Field label="Anything new this block? (optional)">
-          <textarea
-            value={draft.notes}
-            onChange={e => setDraft({ ...draft, notes: e.target.value.slice(0, 200) })}
-            placeholder="e.g. travel week 3, lower-back tweak, want more conditioning"
-            rows={3}
-            className="w-full resize-none rounded-2xl border border-border/50 bg-card/60 px-3.5 py-3 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
-          />
-          <p className="text-label text-muted-foreground/75 mt-1 text-right">{(draft.notes ?? "").length}/200</p>
-        </Field>
-      </div>
-
-      {lastError && (isProfileGate(lastError) ? (
-        // The coach's own gate, in the app's voice, with the screen that lifts it.
-        <div className="mt-5 rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-[hsl(var(--gold)/0.06)] p-4">
-          <p className="text-sm font-bold">Coach needs your athlete profile first</p>
-          <p className="text-dense text-muted-foreground leading-snug mt-1">
-            Goal, days, equipment. Two minutes, then this block builds.
-          </p>
-          <Button variant="outline" size="sm" className="mt-3 min-h-11" onClick={() => navigate("/coach/profile")}>
-            Set up my athlete profile
-          </Button>
-        </div>
-      ) : (
-        <div className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5">
-          <p className="text-sm font-bold text-destructive mb-1">
-            Coach couldn't build this block
-          </p>
-          <p className="text-dense text-foreground/90 leading-snug mb-1.5">
-            Try again. It's usually the model, not you.
-          </p>
-          {/* The raw reason still ships, just no longer as the headline. */}
-          <p className="text-label text-muted-foreground leading-snug break-words font-mono">
-            {lastError}
-          </p>
-        </div>
-      ))}
-
-      <Button variant="ember" size="lg" className="w-full mt-6" onClick={generate}>
-        <Zap aria-hidden size={16} /> Design my block
+      <Button variant="ember" size="lg" className="w-full mt-6" disabled={building} onClick={generate}>
+        {building && <Loader2 aria-hidden size={16} className="animate-spin" />}
+        Build my week
       </Button>
       <p className="text-label text-muted-foreground/75 text-center mt-3">
-        Coach will use your profile, last 30 days of check-ins, and recent reflections to personalize every session.
+        Any day can become a rest day, and any movement can be swapped, after it is built.
       </p>
     </div>
   );

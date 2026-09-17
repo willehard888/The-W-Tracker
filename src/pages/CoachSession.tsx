@@ -18,8 +18,11 @@ import {
   markWorkoutWriteDeclined,
   writeWorkoutToHealth,
 } from "@/lib/health/workout-write";
-import { useCoachProgram } from "@/hooks/use-coach-program";
-import { useProgramById, useSwapExercise, type Focus } from "@/hooks/use-focus-session";
+import { useCoachProgram, useEditProgram } from "@/hooks/use-coach-program";
+import { useProgramById } from "@/hooks/use-focus-session";
+import { replaceBlock } from "@/lib/training/plan-edit";
+import ExercisePickerSheet from "@/components/coach/ExercisePickerSheet";
+import { track, FUNNEL } from "@/lib/analytics";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from "@/hooks/use-workout-log";
 import { useCommitPop } from "@/hooks/use-commit-pop";
@@ -238,7 +241,8 @@ const CoachSession = () => {
   const program = sessionId ? byId.program : active.program;
   const programLoading = sessionId ? byId.isLoading : active.isLoading;
   const isFocusSession = program?.status === "session";
-  const swap = useSwapExercise();
+  const editProgram = useEditProgram(program);
+  const [swapOpen, setSwapOpen] = useState(false);
   const { session, isLoading: sessionLoading, start, finish, isFinishing } = useWorkoutSession(program?.id, week, day);
   const { data: daySets } = useDaySets(program?.id, week, day);
   const { data: recent } = useRecentWorkoutLogs();
@@ -583,31 +587,18 @@ const CoachSession = () => {
                 <h2 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight">
                   {current.name}
                 </h2>
-                {/* A focus session is the athlete's own pick: any movement
-                    with nothing logged yet can be traded for its sibling. */}
-                {isFocusSession && sessionId && (logged[current.slug] ?? []).length === 0 && (
+                {/* Any movement with nothing logged yet can be traded by hand,
+                    on every kind of program. This week only: later weeks are
+                    edited from the program page. */}
+                {(logged[current.slug] ?? []).length === 0 && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     className="shrink-0 mt-1 text-muted-foreground"
-                    disabled={swap.isPending}
-                    onClick={async () => {
-                      hapticImpact("light");
-                      try {
-                        await swap.mutateAsync({
-                          focus: (program?.body_focus ?? []) as Focus[],
-                          minutes: planDay?.duration_min || 45,
-                          slug: current.slug,
-                          program_id: sessionId,
-                        });
-                        hapticNotification("success");
-                      } catch (e) {
-                        toast.error(friendlyError(e, "No other movement fits here."));
-                      }
-                    }}
+                    onClick={() => { hapticImpact("light"); setSwapOpen(true); }}
                   >
-                    {swap.isPending ? <Loader2 aria-hidden size={14} className="animate-spin" /> : <ArrowLeftRight aria-hidden size={14} />}
+                    <ArrowLeftRight aria-hidden size={14} />
                     Swap
                   </Button>
                 )}
@@ -718,6 +709,20 @@ const CoachSession = () => {
         description="Your logged sets are saved."
         actionLabel="Finish"
         onConfirm={() => { setFinishAsk(false); setShowSummary(true); }}
+      />
+      <ExercisePickerSheet
+        open={swapOpen}
+        onClose={() => setSwapOpen(false)}
+        title="Swap movement"
+        current={current ? { slug: current.slug, name: current.name } : undefined}
+        exclude={plan.map((e) => e.slug)}
+        onPick={(block, info) => {
+          if (!current) return;
+          const slug = current.slug;
+          setSwapOpen(false);
+          editProgram.mutate((p) => replaceBlock(p, { week, day, scope: "week" }, slug, block, info.sameKind));
+          void track(FUNNEL.programEdited, { op: "swap", scope: "week", source: "runner", via: "manual" });
+        }}
       />
     </div>
   );

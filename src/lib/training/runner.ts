@@ -198,9 +198,11 @@ export const formatRest = (seconds: number): string => {
 };
 
 /** Total volume (kg × reps) across logged sets — the session summary's headline. */
-export const sessionVolume = (logged: Record<string, LoggedSet[]>): number => {
+export const sessionVolume = (logged: Record<string, LoggedSet[]>, slugs?: ReadonlySet<string>): number => {
   let total = 0;
-  for (const sets of Object.values(logged ?? {})) {
+  for (const [slug, sets] of Object.entries(logged ?? {})) {
+    // Sets of a movement since removed from the day are history, not this session.
+    if (slugs && !slugs.has(slug)) continue;
     for (const s of sets ?? []) {
       if (s.weight != null && s.reps != null) total += s.weight * s.reps;
     }
@@ -208,11 +210,24 @@ export const sessionVolume = (logged: Record<string, LoggedSet[]>): number => {
   return Math.round(total);
 };
 
-const asNumber = (v: string | number | null | undefined): number => {
-  if (v == null || v === "") return 0;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
+/**
+ * A typed weight or rep count as a number, or null when there is none.
+ * Accepts the comma a Finnish (or most European) keypad types: the fields
+ * used to be `type="number"`, where "62," is not a number, so WebKit handed
+ * back "" and the controlled input wiped the 62 the athlete had just typed.
+ */
+export const parseDecimal = (v: string | number | null | undefined): number | null => {
+  if (v == null) return null;
+  const s = String(v).trim().replace(",", ".");
+  if (s === "") return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
 };
+
+/** What a numeric text field may hold while it is being typed. */
+export const decimalInput = (raw: string) => raw.replace(/[^\d.,]/g, "");
+
+const asNumber = (v: string | number | null | undefined): number => parseDecimal(v) ?? 0;
 
 /** One plate-pair step. Never below zero; float-clean (60 + 2.5 stays 62.5). */
 export const stepWeight = (v: string | number | null | undefined, dir: 1 | -1): number =>

@@ -103,5 +103,6 @@ export const repeatWeek = (week: ProgramWeek, n = 4): ProgramWeek[] =>
  */
 export const isRepeatingWeek = (plan: PlanJson, fromWeek = 1): boolean => {
   const ahead = (plan.weeks ?? []).filter((w) => w.week >= fromWeek).map((w) => JSON.stringify(w.days));
-  return ahead.every((d) => d === ahead[0]);
+  // No week from here on is not "a week that repeats": it would hide the only way off a stale week.
+  return ahead.length > 0 && ahead.every((d) => d === ahead[0]);
 };

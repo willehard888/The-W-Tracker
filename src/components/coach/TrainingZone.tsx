@@ -146,6 +146,8 @@ const TrainingZone = () => {
     (l) => l.week === currentWeek && l.day_index === todayDayIndex && l.completed,
   );
 
+  const emptyOwnWeek = (week?.days ?? []).length > 0 && (week?.days ?? []).every((d) => isRestDay(d)) && program.generated_with === "manual_v1";
+
   const open = () => go("/coach/program");
   // Start goes straight into the runner — the whole point is removing the
   // steps between "I have a session" and "I am doing it".
@@ -166,6 +168,14 @@ const TrainingZone = () => {
           // The plan exists but today's slot is missing — a truncated
           // generation. Say something true instead of rendering a blank row.
           <p className="text-note font-bold leading-tight">Your week is ready</p>
+        ) : emptyOwnWeek ? (
+          // "Build my own" starts as seven empty days. Nobody prescribed them:
+          // calling today a rest day congratulated the athlete on a choice
+          // they never made, every day, until the week was filled in.
+          <>
+            <p className="text-note font-bold leading-tight">Your week is empty</p>
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5">Open it and add your first session.</p>
+          </>
         ) : isRestDay(day) ? (
           <>
             <p className="text-note font-bold leading-tight">Rest day</p>

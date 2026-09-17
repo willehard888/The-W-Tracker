@@ -22,7 +22,10 @@ import { cn } from "@/lib/utils";
  * the input under the keys. Following visualViewport's height and offset
  * keeps the sheet on screen and the footer above the keyboard.
  */
-const useVisualViewport = () => {
+/** Open sheets, bottom to top: Escape belongs to the last one. */
+const OPEN_SHEETS: object[] = [];
+
+const useVisualViewport = (active: boolean) => {
   const read = () => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
     return {
@@ -33,12 +36,18 @@ const useVisualViewport = () => {
   const [box, setBox] = useState(read);
   useEffect(() => {
     const vv = window.visualViewport;
-    if (!vv) return;
-    const sync = () => setBox(read());
+    // Only while open: three sheets sit closed on Home, and each used to
+    // re-render on every keyboard frame app-wide.
+    if (!vv || !active) return;
+    const sync = () => setBox((prev) => {
+      const next = read();
+      return prev.height === next.height && prev.offsetTop === next.offsetTop ? prev : next;
+    });
+    sync();
     vv.addEventListener("resize", sync);
     vv.addEventListener("scroll", sync);
     return () => { vv.removeEventListener("resize", sync); vv.removeEventListener("scroll", sync); };
-  }, []);
+  }, [active]);
   return box;
 };
 
@@ -76,17 +85,25 @@ export const BottomSheet = ({
   footer?: ReactNode;
 }) => {
   useScrollLock(open);
-  // Escape closes every sheet (keyboard and desktop web; iOS has no such key).
+  // Escape closes the TOPMOST sheet (keyboard and desktop web; iOS has no such
+  // key). Every open sheet listens, so without the stack one keystroke closed
+  // a picker and the sheet under it together.
   useEffect(() => {
     if (!open) return;
+    const token = {};
+    OPEN_SHEETS.push(token);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && OPEN_SHEETS[OPEN_SHEETS.length - 1] === token) onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      const i = OPEN_SHEETS.indexOf(token);
+      if (i >= 0) OPEN_SHEETS.splice(i, 1);
+    };
   }, [open, onClose]);
   const reduced = useReducedMotion();
-  const viewport = useVisualViewport();
+  const viewport = useVisualViewport(open);
   const rise = reduced
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.18 } }
     : { initial: { y: "100%" }, animate: { y: 0 }, exit: { y: "100%" }, transition: { type: "spring" as const, stiffness: 380, damping: 38 } };

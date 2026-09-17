@@ -201,18 +201,21 @@ export const createBeginnerProgram = async (opts: {
  * week builder and a member's own program.
  */
 export const insertActiveProgram = async (row: TablesInsert<"coach_programs">) => {
-  // Checked, because a silent failure here plus a successful insert below
-  // leaves the athlete with two `status = 'active'` programs and every
-  // downstream lookup then picks one at random. Half-applied is worse than
-  // not applied — the caller's catch gets it either way.
+  // Insert first. The other order superseded the running program and THEN
+  // inserted: a dropped connection (or a lapsed membership, which blocks only
+  // the insert) between the two left the athlete with no program at all and a
+  // "couldn't start" toast. Two active rows for a moment is harmless: every
+  // reader takes the newest.
+  const { data, error } = await supabase.from("coach_programs").insert(row).select().single();
+  if (error) throw error;
+
   const { error: supersedeError } = await supabase
     .from("coach_programs")
     .update({ status: "superseded" })
     .eq("user_id", row.user_id)
-    .eq("status", "active");
-  if (supersedeError) throw supersedeError;
-
-  const { data, error } = await supabase.from("coach_programs").insert(row).select().single();
-  if (error) throw error;
+    .eq("status", "active")
+    .neq("id", data.id);
+  // Not thrown: the new program exists and leads. The next create retires both.
+  if (supersedeError) console.warn("insertActiveProgram: supersede failed", supersedeError.message);
   return data;
 };

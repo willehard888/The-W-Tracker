@@ -189,7 +189,10 @@ const CoachProgramDetail = () => {
             {/* One week, one selector, one day: the strip picks, the card
                 shows. The "plan adapts" spotlight lands on the strip. */}
             <ProgramWeekView
-              key={program.id}
+              // Also on the week and the day: they are seeded once inside, and
+              // when the first log of a late week moved currentWeek on, the view
+              // stayed on a week it could no longer start or edit.
+              key={`${program.id}:${currentWeek}:${todayDayIndex}`}
               program={program}
               currentWeek={currentWeek}
               todayDayIndex={todayDayIndex}

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Database } from "@/integrations/supabase/types";
+import { localDateKey } from "@/lib/date";
 
 export interface WorkoutSetLog {
   id: string;
@@ -112,9 +113,13 @@ export const useDaySets = (programId?: string | null, week?: number, day?: numbe
  * The heaviest set per exercise per day, newest first (one RPC). The runner's
  * summary compares today against these to call a personal record.
  */
-export const useRecentWorkoutLogs = () =>
-  useQuery<WorkoutSetLog[]>({
-    queryKey: ["recent-workout-logs"],
+export const useRecentWorkoutLogs = () => {
+  // Keyed on the member like every sibling query: without it, an account
+  // switch without a reload fed the previous member's top sets into the PRs.
+  const { user } = useAuth();
+  return useQuery<WorkoutSetLog[]>({
+    queryKey: ["recent-workout-logs", user?.id],
+    enabled: !!user?.id,
     staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("recent_workout_logs", { p_limit: 120 });
@@ -122,6 +127,7 @@ export const useRecentWorkoutLogs = () =>
       return (data as WorkoutSetLog[]) ?? [];
     },
   });
+};
 
 export interface LogSetInput {
   programId?: string | null;
@@ -157,6 +163,10 @@ export const useLogSet = () => {
         p_reps: p.reps,
         p_rpe: p.rpe ?? null,
         p_set_index: p.setIndex ?? 1,
+        // The athlete's own day. The server used its UTC date: after midnight
+        // in Helsinki today's sets were dated yesterday and became their own
+        // "previous best", so a PR never fired.
+        p_logged_on: localDateKey(),
       } as unknown as Database["public"]["Functions"]["log_workout_set"]["Args"];
       const { error } = await supabase.rpc("log_workout_set", args);
       if (error) throw error;
@@ -169,7 +179,9 @@ export const useLogSet = () => {
       // nothing, and a freshly logged set never showed in the exercise's
       // history until staleTime lapsed. One device is one user — the bare
       // prefix is exact enough and cannot drift again.
-      qc.invalidateQueries({ queryKey: ["exercise-history"] });
+      // Only the movement that was logged: the bare prefix refetched every
+      // open exercise's history on each set, on gym wifi.
+      qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === "exercise-history" && (p.slug == null || q.queryKey[2] === p.slug) });
       qc.invalidateQueries({ queryKey: ["recent-workout-logs"] });
     },
   });

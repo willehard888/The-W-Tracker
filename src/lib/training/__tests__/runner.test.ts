@@ -8,6 +8,8 @@ import {
   sessionVolume,
   stepWeight,
   stepReps,
+  parseDecimal,
+  decimalInput,
   e1rm,
   sessionPRs,
   DEFAULT_REST_SEC,
@@ -301,5 +303,33 @@ describe("sessionPRs", () => {
   it("falls back to the slug when no row carries a name", () => {
     const history = [{ exercise_slug: "bench", weight: 60, reps: 8, logged_on: "2026-09-01" }];
     expect(sessionPRs(history, { bench: [set(1, 70, 8)] }, today)[0].name).toBe("bench");
+  });
+});
+
+describe("parseDecimal / decimalInput", () => {
+  it("reads the comma a Finnish keypad types", () => {
+    expect(parseDecimal("62,5")).toBe(62.5);
+    expect(parseDecimal("62.5")).toBe(62.5);
+    expect(parseDecimal(" 80 ")).toBe(80);
+    // Mid-typing states are not numbers yet, and never NaN.
+    expect(parseDecimal("62,")).toBe(62);
+    expect(parseDecimal("")).toBeNull();
+    expect(parseDecimal("abc")).toBeNull();
+    expect(parseDecimal(null)).toBeNull();
+  });
+
+  it("keeps a field to digits and one kind of separator while typing", () => {
+    expect(decimalInput("62,5kg")).toBe("62,5");
+    expect(decimalInput("-7")).toBe("7");
+  });
+
+  it("steps a comma weight like any other", () => {
+    expect(stepWeight("62,5", 1)).toBe(65);
+  });
+
+  it("leaves a removed movement's sets out of the session volume", () => {
+    const logged = { squat: [{ set_index: 1, weight: 100, reps: 5 }], gone: [{ set_index: 1, weight: 50, reps: 10 }] };
+    expect(sessionVolume(logged)).toBe(1000);
+    expect(sessionVolume(logged, new Set(["squat"]))).toBe(500);
   });
 });

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { friendlyError } from "@/lib/error-copy";
 import { formatRest } from "@/lib/training/runner";
+import { localDateKey } from "@/lib/date";
 import { resolveIllustration } from "@/lib/exercise-match";
 import { illustrationThumb } from "@/data/exercises-illustrated";
 import { GOLD_LINES } from "@/components/coach/gold-lines";
@@ -112,7 +113,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
     }
   };
 
-  const seedKey = (n: number) => `${new Date().toISOString().slice(0, 10)}:${n}`;
+  const seedKey = (n: number) => `${localDateKey()}:${n}`;
 
   const buildPreview = async (n = seed) => {
     if (focus.length === 0) return;
@@ -308,7 +309,8 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
               <Button variant="ghost" size="lg" className="shrink-0 text-muted-foreground" disabled={busy} onClick={shuffle} aria-label="Shuffle the session">
                 <Shuffle aria-hidden size={16} /> Shuffle
               </Button>
-              <Button variant="ember" size="lg" className="flex-1" disabled={busy} onClick={start}>
+              {/* Not while a swap is in flight: Start would store the list from before it. */}
+              <Button variant="ember" size="lg" className="flex-1" disabled={busy || !!swapping} onClick={start}>
                 {busy ? <Loader2 aria-hidden size={16} className="animate-spin" /> : onUse ? "Use this session" : "Start session"}
               </Button>
             </div>

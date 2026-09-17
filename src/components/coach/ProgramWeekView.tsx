@@ -37,11 +37,18 @@ const recoveryLine = (r: ProgramWeek["recovery"]) =>
     r.breathwork,
   ].filter(Boolean).join(" · ");
 
-/** The day's name from the muscles it mostly trains, by the engine's own map. */
-const labelFor = async (slugs: (string | null | undefined)[]) => {
+/**
+ * Names a day from the muscles it mostly trains, by the engine's own map.
+ * Returns a function of the slugs so the label is computed INSIDE the edit,
+ * from the plan the edit is applied to: two quick removes used to name the
+ * day after the list as it stood before the first one.
+ */
+const loadLabeller = async () => {
   const e = await loadEngine();
-  return e.focusLabel(e.primaryFocuses(slugs.filter((x): x is string => !!x)));
+  return (slugs: (string | null | undefined)[]) => e.focusLabel(e.primaryFocuses(slugs.filter((x): x is string => !!x)));
 };
+const slugsOf = (plan: { weeks: ProgramWeek[] }, week: number, day: number) =>
+  (plan.weeks.find((w) => w.week === week)?.days[day]?.blocks ?? []).map((b) => b.slug);
 
 /**
  * The program, one day at a time: pick the week, pick the day on the strip,
@@ -71,6 +78,9 @@ const ProgramWeekView = ({ program, currentWeek, todayDayIndex, logs, onLogged, 
   // Weeks ahead are shown only when somebody planned them: a week that
   // simply repeats is one week, and four identical rows said nothing.
   const plannedAhead = !isRepeatingWeek(program.plan_json, currentWeek);
+  // In a planned block an add, a swap or a remove reaches the later weeks
+  // too; say so where the athlete decides (a repeating week has no "later").
+  const reach = plannedAhead && week.week < lastWeek ? "Also changes the weeks after this one" : undefined;
   const isCurrentWeek = week.week === currentWeek;
   const isLogged = logs.some((l) => l.week === week.week && l.day_index === dayIndex && l.completed);
   const inProgress = logs.some((l) => l.week === week.week && l.day_index === dayIndex && !l.completed && l.status === "in_progress");
@@ -98,8 +108,9 @@ const ProgramWeekView = ({ program, currentWeek, todayDayIndex, logs, onLogged, 
   };
   const remove = async (slug: string) => {
     hapticImpact("light");
-    const label = await labelFor((day?.blocks ?? []).filter((b) => b.slug !== slug).map((b) => b.slug));
-    edit.mutate((plan) => removeBlock(plan, at(), slug, label));
+    const label = await loadLabeller();
+    const target = at();
+    edit.mutate((plan) => removeBlock(plan, target, slug, label(slugsOf(plan, target.week, target.day).filter((s) => s !== slug))));
     edited("remove", "remaining", "manual");
   };
 
@@ -148,13 +159,13 @@ const ProgramWeekView = ({ program, currentWeek, todayDayIndex, logs, onLogged, 
       >
         {rest && canRest && (
           <>
-            <DoorRow label="Coach builds this day" sub="Pick the muscles, the minutes and the feel" onClick={() => setBuilder(true)} />
+            <DoorRow label="Coach builds this day" sub={reach ?? "Pick the muscles, the minutes and the feel"} onClick={() => setBuilder(true)} />
             <DoorRow label="Build it myself" sub="Choose movements from the library" onClick={() => setPicker({})} />
           </>
         )}
         {!rest && canEdit && (
           <>
-            <DoorRow label="Add exercise" onClick={() => setPicker({})} />
+            <DoorRow label="Add exercise" sub={reach} onClick={() => setPicker({})} />
             {canRest && <DoorRow label="Make this a rest day" sub="This week only" onClick={() => makeRest("week")} />}
             {canRest && week.week < lastWeek && (
               <DoorRow label="Rest on this day every week" sub="From this week on" onClick={() => makeRest("remaining")} />
@@ -199,8 +210,9 @@ const ProgramWeekView = ({ program, currentWeek, todayDayIndex, logs, onLogged, 
             edited("swap", "remaining", "manual");
             return;
           }
-          const label = await labelFor([...(day?.blocks ?? []).map((b) => b.slug), block.slug]);
-          edit.mutate((plan) => addBlock(plan, at(), block, label));
+          const label = await loadLabeller();
+          const target = at();
+          edit.mutate((plan) => addBlock(plan, target, block, label([...slugsOf(plan, target.week, target.day), block.slug])));
           edited(rest ? "train" : "add", "remaining", "manual");
         }}
       />

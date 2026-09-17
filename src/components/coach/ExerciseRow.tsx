@@ -1,3 +1,5 @@
+import { localDateKey } from "@/lib/date";
+import { parseDecimal, decimalInput } from "@/lib/training/runner";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { ArrowLeftRight, ChevronDown, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,8 +34,10 @@ interface Props {
   onRemove?: () => void;
 }
 
-const daysAgo = (iso: string) => {
-  const d = Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000);
+// Whole local days between two day keys. `logged_on` is a date, and parsing
+// it as UTC midnight then rounding called a set logged this evening "1d ago".
+const daysAgo = (day: string) => {
+  const d = Math.round((Date.parse(`${localDateKey()}T00:00:00Z`) - Date.parse(`${day.slice(0, 10)}T00:00:00Z`)) / 86_400_000);
   return d <= 0 ? "today" : d === 1 ? "1d ago" : `${d}d ago`;
 };
 
@@ -91,8 +95,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
   const hasMore = !!(ex || illustrated || block.notes || block.alt || block.rest_sec || block.tempo || onSwap || onRemove);
 
   const save = async () => {
-    const w = weight.trim() === "" ? null : Number(weight);
-    const r = reps.trim() === "" ? null : parseInt(reps, 10);
+    const w = parseDecimal(weight);
+    const rr = parseDecimal(reps);
+    const r = rr == null ? null : Math.trunc(rr);
     if (w == null && r == null) { toast.error("Add a weight or reps first."); return; }
     // Felt RPE beats prescribed RPE. This used to store `block.rpe` — the
     // number the PROGRAM asked for — so workout_set_logs.rpe recorded what the
@@ -266,7 +271,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
                       key={c.label}
                       type="button"
                       onClick={() => fill(c.w, last.reps ?? null)}
-                      className="press rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-label font-bold text-gold transition-transform"
+                      className="press relative before:absolute before:-inset-y-2.5 before:inset-x-0 before:content-[''] rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-label font-bold text-gold transition-transform"
                     >
                       {c.label}
                     </button>
@@ -276,8 +281,8 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <input
-                    type="number" inputMode="decimal" value={weight} placeholder="kg"
-                    onChange={(e) => setWeight(e.target.value)}
+                    type="text" inputMode="decimal" value={weight} placeholder="kg" aria-label="Weight in kilograms"
+                    onChange={(e) => setWeight(decimalInput(e.target.value))}
                     className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-dense text-center outline-none focus:border-gold/50"
                   />
                 </div>

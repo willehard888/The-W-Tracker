@@ -7,7 +7,7 @@ import { PROGRAM_COLUMNS, type CoachProgram, type PlanJson, type ProgramWeek } f
 import { useAthleteProfile, type AthleteProfile } from "@/hooks/use-athlete-profile";
 import { useRecentWorkoutLogs } from "@/hooks/use-workout-log";
 import { normalizeInjuries } from "@/lib/training/injuries";
-import { repeatWeek } from "@/lib/training/plan-edit";
+import { isRepeatingWeek, repeatWeek } from "@/lib/training/plan-edit";
 import type { Json } from "@/integrations/supabase/types";
 
 /**
@@ -163,6 +163,10 @@ export const useSwapExercise = () => {
 export const loadEngine = () => import("../../supabase/functions/_shared/session-builder.ts");
 export type Engine = Awaited<ReturnType<typeof loadEngine>>;
 
+/** The days the athlete trains (0 = Sun, the profile's convention); Mon, Tue, Thu, Fri until they say. */
+export const trainingDaysOf = (profile: AthleteProfile | null | undefined): number[] =>
+  profile?.training_days_pref?.length ? profile.training_days_pref : [1, 2, 4, 5];
+
 /** The athlete's profile in the shape the engine builds from. */
 export const engineInput = (profile: AthleteProfile | null | undefined, minutes?: number) => ({
   minutes: Math.min(120, Math.max(20, minutes ?? profile?.preferred_session_length_min ?? 45)),
@@ -206,17 +210,23 @@ export const useCreateProgram = () => {
       // Both loaded on demand: this file is in Home's import graph, and the
       // beginner path's written programme rides along with its module.
       const [engine, { insertActiveProgram }] = await Promise.all([loadEngine(), import("@/lib/beginner-program")]);
-      let week: ProgramWeek;
+      let week: ProgramWeek | null = null;
+      let carried: ProgramWeek[] | null = null;
       let targets: PlanJson["weekly_check_targets"];
       let trainingDays = 0;
       if (arg.kind === "repeat") {
-        const weeks = arg.from.plan_json.weeks;
-        week = [...weeks].sort((a, b) => b.week - a.week)[0];
+        const weeks = [...(arg.from.plan_json.weeks ?? [])].sort((a, b) => a.week - b.week);
+        if (weeks.length === 0) throw new Error("This program has no week to run again.");
+        // A block that progresses is run again as it is, week for week. Taking
+        // its newest week four times turned "run these four weeks again" into
+        // four copies of the hardest one.
+        if (isRepeatingWeek(arg.from.plan_json)) week = weeks[weeks.length - 1];
+        else carried = weeks.map((w, i) => ({ ...w, week: i + 1 }));
         targets = arg.from.plan_json.weekly_check_targets;
-        trainingDays = week.days.filter((d) => d.blocks.length > 0).length;
+        trainingDays = (week ?? weeks[0]).days.filter((d) => d.blocks.length > 0).length;
       } else {
         // The profile counts days from Sunday; a plan counts them from Monday.
-        const days = arg.kind === "week" ? (profile?.training_days_pref?.length ? profile.training_days_pref : [1, 2, 4, 5]).map((d) => (d + 6) % 7) : [];
+        const days = arg.kind === "week" ? trainingDaysOf(profile).map((d) => (d + 6) % 7) : [];
         const built = arg.kind === "week" ? engine.buildWeek(engineInput(profile), days) : engine.DAY_NAMES.map(() => null);
         trainingDays = built.filter(Boolean).length;
         if (arg.kind === "week" && trainingDays === 0) {
@@ -230,7 +240,7 @@ export const useCreateProgram = () => {
         week = plan.weeks[0] as ProgramWeek;
         targets = plan.weekly_check_targets;
       }
-      const plan: PlanJson = { weekly_check_targets: targets, weeks: repeatWeek(week, 4) };
+      const plan: PlanJson = { weekly_check_targets: targets, weeks: carried ?? repeatWeek(week!, 4) };
       const row = await insertActiveProgram({
         user_id: user.id,
         goal: profile?.primary_goal ?? "all",
@@ -239,7 +249,7 @@ export const useCreateProgram = () => {
         equipment: (profile?.equipment ?? []).join(", ") || "Full gym",
         body_focus: [],
         constraints: null,
-        weeks: 4,
+        weeks: plan.weeks.length,
         plan_json: plan as unknown as Json,
         ai_summary: null,
         generated_with: arg.kind === "week" ? "week_builder_v1" : arg.kind === "manual" ? "manual_v1" : "repeat_v1",

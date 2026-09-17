@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import { useCreateProgram } from "@/hooks/use-focus-session";
+import { trainingDaysOf, useCreateProgram } from "@/hooks/use-focus-session";
 import { BLOCK_EXPERIENCE, createBeginnerProgram, nextBeginnerBlock } from "@/lib/beginner-program";
 
 interface Props { onGenerated: () => void }
@@ -41,7 +41,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
   const [lastError, setLastError] = useState<string | null>(null);
 
   const goalLabel = GOAL_LABEL[profile?.primary_goal ?? "all"] ?? "All-around";
-  const days = profile?.training_days_pref ?? [1, 2, 4, 5];
+  // The same answer the builder uses: an empty list showed "0 days/wk" and then built four.
+  const days = trainingDaysOf(profile);
   const sessionMin = profile?.preferred_session_length_min ?? 45;
   // Presets are stored as keys ("full_gym"); the summary reads them as words.
   const equipment = (profile?.equipment ?? []).join(", ").replace(/_/g, " ") || "Bodyweight";

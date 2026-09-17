@@ -60,7 +60,9 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
   );
   const alreadyLogged = !!todayLog;
 
-  if (!day) return null;
+  // A plan missing this day (a hand-written or cut-short row) still gets its
+  // doors: they are the way to fix it.
+  if (!day) return children ? <div className="surface-card p-4 divide-y divide-border/35">{children}</div> : null;
   const isRest = isRestDay(day);
   const inProgress = logs.some((l) => l.week === currentWeek && l.day_index === todayDayIndex && !l.completed && l.status === "in_progress");
   const canStart = isCurrentWeek && !isRest && !todayLog && day.blocks.length > 0;

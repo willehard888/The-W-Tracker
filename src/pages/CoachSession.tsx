@@ -45,6 +45,8 @@ import {
   sessionPRs,
   stepWeight,
   stepReps,
+  parseDecimal,
+  decimalInput,
 } from "@/lib/training/runner";
 
 /**
@@ -100,12 +102,14 @@ const Stepper = ({
     <Button variant="ghost" size="icon" aria-label={`Remove ${stepLabel}`} onClick={() => onStep(-1)}>
       <Minus size={16} aria-hidden />
     </Button>
+    {/* type="text": a number field rejects the comma a Finnish keypad types
+        and hands back "", which wiped the digits already entered. */}
     <input
-      type="number"
+      type="text"
       inputMode={inputMode}
       value={value}
       aria-label={label}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange(decimalInput(e.target.value))}
       className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-copy font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50"
     />
     <Button variant="ghost" size="icon" aria-label={`Add ${stepLabel}`} onClick={() => onStep(1)}>
@@ -140,8 +144,11 @@ const SetRow = ({
   const [w, setW] = useState(weight);
   const [r, setR] = useState(reps);
   const [editing, setEditing] = useState(false);
-  // Re-seed when the suggestion changes (a new set, or history arriving late).
-  useEffect(() => { setW(weight); setR(reps); }, [weight, reps]);
+  // Re-seed when the suggestion changes (a new set, or history arriving late),
+  // but never over what the athlete has started typing: history lands after
+  // first paint and used to replace a half-typed 82 with last week's 80.
+  const touched = useRef(false);
+  useEffect(() => { if (!touched.current) { setW(weight); setR(reps); } }, [weight, reps]);
   // Springs once, on the set that just landed — never on rows loaded as done.
   const pop = useCommitPop(done);
   const expanded = (isCurrent && !done) || editing;
@@ -197,7 +204,7 @@ const SetRow = ({
           inputMode="decimal"
           label={`Set ${index} weight in kilograms`}
           stepLabel="2.5 kg"
-          onChange={setW}
+          onChange={(v) => { touched.current = true; setW(v); }}
           onStep={(d) => step(() => setW(String(stepWeight(w, d))))}
         />
       </div>
@@ -209,7 +216,7 @@ const SetRow = ({
           inputMode="numeric"
           label={`Set ${index} reps`}
           stepLabel="1 rep"
-          onChange={setR}
+          onChange={(v) => { touched.current = true; setR(v); }}
           onStep={(d) => step(() => setR(String(stepReps(r, d))))}
         />
         <Button
@@ -394,7 +401,7 @@ const CoachSession = () => {
 
   // ── Summary ───────────────────────────────────────────────────────────────
   if (summaryShown) {
-    const volume = sessionVolume(logged);
+    const volume = sessionVolume(logged, new Set(plan.map((e) => e.slug)));
     const mins = session?.duration_sec ? Math.max(1, Math.round(session.duration_sec / 60)) : null;
     const prs = sessionPRs(recent, logged, new Date().toLocaleDateString("en-CA"));
     const acceptHealth = async () => {
@@ -536,8 +543,9 @@ const CoachSession = () => {
 
   const logCurrent = async (setIndex: number, weightStr: string, repsStr: string) => {
     if (!current) return;
-    const w = weightStr.trim() === "" ? null : Number(weightStr);
-    const r = repsStr.trim() === "" ? null : parseInt(repsStr, 10);
+    const w = parseDecimal(weightStr);
+    const rr = parseDecimal(repsStr);
+    const r = rr == null ? null : Math.trunc(rr);
     if (w == null && r == null) { toast.error("Add a weight or reps first."); return; }
     hapticImpact("light");
     setPendingSet(setIndex);

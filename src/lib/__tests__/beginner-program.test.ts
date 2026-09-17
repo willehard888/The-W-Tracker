@@ -5,7 +5,7 @@ const db = vi.hoisted(() => ({ update: vi.fn(), insert: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: () => ({
-      update: (patch: unknown) => ({ eq: () => ({ eq: () => { db.update(patch); return Promise.resolve({ error: null }); } }) }),
+      update: (patch: unknown) => ({ eq: () => ({ eq: () => ({ neq: (_c: string, id: string) => { db.update(patch, id); return Promise.resolve({ error: null }); } }) }) }),
       insert: (row: unknown) => ({ select: () => ({ single: () => { db.insert(row); return Promise.resolve({ data: { id: "p1", ...(row as object) }, error: null }); } }) }),
     }),
   },
@@ -181,7 +181,7 @@ describe("createBeginnerProgram", () => {
 
   it("supersedes the active program and inserts the block with the generator's shape", async () => {
     const row = await createBeginnerProgram({ userId: "u1", block: 2, goal: "strength", equipment: ["barbell", "bench"] });
-    expect(db.update).toHaveBeenCalledWith({ status: "superseded" });
+    expect(db.update).toHaveBeenCalledWith({ status: "superseded" }, "p1");
     const inserted = db.insert.mock.calls[0][0] as Record<string, unknown>;
     expect(inserted).toMatchObject({
       user_id: "u1", goal: "strength", experience: BLOCK_EXPERIENCE[2], days_per_week: 3,
@@ -205,8 +205,10 @@ describe("insertActiveProgram", () => {
       user_id: "u1", goal: "all", experience: "intermediate", days_per_week: 4, weeks: 4,
       plan_json: { weeks: [] }, generated_with: "week_builder_v1", started_on: "2026-09-17",
     });
-    expect(db.update).toHaveBeenCalledWith({ status: "superseded" });
-    expect(db.update.mock.invocationCallOrder[0]).toBeLessThan(db.insert.mock.invocationCallOrder[0]);
+    // Insert first, then retire the OTHERS: the old order left the athlete
+    // with no program when the insert failed after the supersede had landed.
+    expect(db.update).toHaveBeenCalledWith({ status: "superseded" }, "p1");
+    expect(db.insert.mock.invocationCallOrder[0]).toBeLessThan(db.update.mock.invocationCallOrder[0]);
     expect(row).toMatchObject({ id: "p1", generated_with: "week_builder_v1" });
   });
 });

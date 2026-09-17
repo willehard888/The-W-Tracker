@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { isRestDay } from "@/lib/training/session";
+import { dayFocus, isRestDay } from "@/lib/training/session";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import type { ProgramLog, ProgramWeek } from "@/hooks/use-coach-program";
@@ -25,7 +25,7 @@ const NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday
  * day is selected.
  */
 const WeekStrip = ({ week, selected, today, logs, onSelect }: Props) => (
-  <div className="grid grid-cols-7 gap-1.5" role="group" aria-label={`Week ${week.week} days`}>
+  <div className="grid grid-cols-7 gap-1" role="group" aria-label={`Week ${week.week} days`}>
     {week.days.map((d, i) => {
       const done = logs.some((l) => l.week === week.week && l.day_index === i && l.completed);
       const isToday = i === today;
@@ -36,7 +36,7 @@ const WeekStrip = ({ week, selected, today, logs, onSelect }: Props) => (
           key={i}
           type="button"
           aria-pressed={active}
-          aria-label={`${NAMES[i]}${isToday ? ", today" : ""}, ${done ? "done" : isRest ? "rest" : d.focus}`}
+          aria-label={`${NAMES[i]}${isToday ? ", today" : ""}, ${done ? "done" : isRest ? "rest" : dayFocus(d) || "session"}`}
           onClick={() => { if (!active) { hapticSelection(); onSelect(i); } }}
           className={cn(
             "press min-h-12 rounded-xl py-2 text-center border transition-colors",

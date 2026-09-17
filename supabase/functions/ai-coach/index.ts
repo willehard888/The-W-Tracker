@@ -268,7 +268,7 @@ Deno.serve(async (req) => {
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
     if (!OPENROUTER_API_KEY) {
-      return new Response(JSON.stringify({ error: "AI not configured" }), {
+      return new Response(JSON.stringify({ error: "The coach is offline right now. Try again shortly." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

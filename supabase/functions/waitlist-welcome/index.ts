@@ -1,20 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Internal-only: the waitlist AFTER INSERT trigger invokes this with the
-// service-role key (same pattern as notify-referral).
-function isServiceRole(token: string, envKey: string): boolean {
-  // Exact service-role key match only, like notify-social / notify-referral /
-  // tribe-notify. The old fallback read the role out of a JWT payload it never
-  // verified: one verify_jwt=false line in config.toml away from a full
-  // bypass. Every caller (cron, triggers) sends the vault's service key, the
-  // same one the hardened three already accept.
-  return !!token && !!envKey && token === envKey;
-}
 
 // Mirrors the quiz success-card personalization (public/waitlist.html).
 const GOAL_LINES: Record<string, string> = {
@@ -115,6 +105,7 @@ Deno.serve(async (req) => {
         subject: "You're on the list 🔥",
         html: welcomeHtml(goalLine),
       }),
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!resp.ok) {

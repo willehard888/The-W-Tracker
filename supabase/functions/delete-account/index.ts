@@ -94,6 +94,32 @@ Deno.serve(async (req) => {
       );
     }
 
+    // A tribe outlives its owner. Every table under tribes cascades on delete,
+    // so wiping an owned tribe would take every other member's posts, events
+    // and battles with it: hand it to the longest-standing remaining member
+    // instead, and only delete a tribe nobody else is in.
+    try {
+      const { data: owned } = await serviceClient.from("tribes").select("id").eq("owner_id", user.id);
+      for (const t of (owned ?? []) as { id: string }[]) {
+        const { data: heir } = await serviceClient
+          .from("tribe_members")
+          .select("user_id")
+          .eq("tribe_id", t.id)
+          .neq("user_id", user.id)
+          .order("joined_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        const heirId = (heir as { user_id?: string } | null)?.user_id;
+        if (heirId) {
+          await serviceClient.from("tribes").update({ owner_id: heirId }).eq("id", t.id);
+          await serviceClient.from("tribe_members").update({ role: "owner" })
+            .eq("tribe_id", t.id).eq("user_id", heirId);
+        } else {
+          await serviceClient.from("tribes").delete().eq("id", t.id);
+        }
+      }
+    } catch (e) { console.warn("delete-account: owned tribes skipped", e); }
+
     await serviceClient.from("battle_votes").delete().eq("voter_id", user.id);
     await serviceClient.from("daily_checkins").delete().eq("user_id", user.id);
     await serviceClient.from("direct_messages").delete().eq("sender_id", user.id);
@@ -124,9 +150,13 @@ Deno.serve(async (req) => {
       "coach_daily_briefs", "coach_daily_plans", "coach_mission_logs", "coach_reflections",
       "coach_goals", "coach_performance_snapshots", "coach_weekly_reviews", "coach_nudges",
       "weekly_briefings", "vault_lesson_progress", "vault_reflections", "user_habits", "user_habit_logs",
-      "analytics_events", "tribe_members", "tribe_invites", "tribe_event_rsvps",
-      "moderation_queue", "content_moderations", "health_night_metrics", "workout_logs",
-      "health_sync_snapshots",
+      "analytics_events", "tribe_members", "tribe_event_rsvps",
+      "moderation_queue", "health_night_metrics", "workout_set_logs",
+      "health_sync_snapshots", "ai_usage", "coach_preference_signals",
+      "pilot_code_redemptions", "pod_members",
+      // Tribes: the member's own contributions. The tribes they own are
+      // handled above, because deleting one cascades over everybody else's.
+      "tribe_posts", "tribe_post_comments", "tribe_post_reactions",
       // Nutrition engine: diary, targets, recipes, favourites, scan cache
       // (auth.users cascades cover these too — explicit is the house rule).
       "meal_log_items", "meal_logs", "nutrition_targets", "nutrition_recipes",
@@ -136,9 +166,29 @@ Deno.serve(async (req) => {
       try { await serviceClient.from(t).delete().eq("user_id", user.id); }
       catch (e) { console.warn(`delete-account: ${t} skipped`, e); }
     }
-    // Custom foods key on owner_id, not user_id.
-    try { await serviceClient.from("foods").delete().eq("owner_id", user.id); }
-    catch (e) { console.warn("delete-account: foods skipped", e); }
+    // Tables that name the member by something other than user_id. Each pair
+    // is swept on both sides so nothing is left pointing at a deleted account:
+    // an unanswered tribe invite, a block the other side can no longer lift,
+    // kudos on a post that is gone, a notification about a vanished actor.
+    const otherKeys: [string, string][] = [
+      ["foods", "owner_id"],
+      ["pods", "owner_id"],
+      ["notifications", "user_id"], ["notifications", "actor_id"],
+      ["blocked_users", "blocker_id"], ["blocked_users", "blocked_id"],
+      ["tribe_invites", "inviter_id"], ["tribe_invites", "invitee_id"],
+      ["tribe_post_kudos", "giver_id"], ["tribe_post_kudos", "receiver_id"],
+      ["tribe_post_reports", "reporter_id"],
+    ];
+    for (const [t, col] of otherKeys) {
+      try { await serviceClient.from(t).delete().eq(col, user.id); }
+      catch (e) { console.warn(`delete-account: ${t}.${col} skipped`, e); }
+    }
+
+    // The waitlist keys on the email address, not the account.
+    if (user.email) {
+      try { await serviceClient.from("waitlist").delete().eq("email", user.email); }
+      catch (e) { console.warn("delete-account: waitlist skipped", e); }
+    }
 
     // Storage: everything under the member's folder in every bucket they
     // write to. `avatars` is PUBLIC, so a face left behind stayed fetchable

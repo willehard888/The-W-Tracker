@@ -9,28 +9,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { fetchAll } from "../_shared/fetch-all.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Same contract as weekly-briefing-generate: accept the exact env key OR any
-// JWT whose payload role is service_role (the vault-stored key isn't always
-// byte-identical to the function's env var).
-function isServiceRole(token: string, envKey: string): boolean {
-  if (!token) return false;
-  if (envKey && token === envKey) return true;
-  try {
-    const seg = token.split(".")[1];
-    if (!seg) return false;
-    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
-    return JSON.parse(atob(padded))?.role === "service_role";
-  } catch {
-    return false;
-  }
-}
 
 const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString();
 

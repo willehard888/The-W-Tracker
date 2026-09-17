@@ -4,6 +4,7 @@ import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { prefAllows } from "../_shared/push-targets.ts";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -163,23 +164,6 @@ function computeStats(checkins: Checkin[], meals: MealRow[] = [], proteinTargetG
       ? loggedDays.filter((d) => d.protein >= 0.9 * proteinTargetG).length
       : null,
   };
-}
-
-// Internal-only: cron invokes with the service-role key. Without this, ANY
-// project JWT could trigger a full 7-day-context LLM generation per premium
-// user per request (the dedup insert happens AFTER the expensive generation).
-function isServiceRole(token: string, envKey: string): boolean {
-  if (!token) return false;
-  if (envKey && token === envKey) return true;
-  try {
-    const seg = token.split(".")[1];
-    if (!seg) return false;
-    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
-    return JSON.parse(atob(padded))?.role === "service_role";
-  } catch {
-    return false;
-  }
 }
 
 Deno.serve(async (req) => {

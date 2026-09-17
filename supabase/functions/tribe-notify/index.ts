@@ -1,21 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Internal-only: DB triggers invoke this with the service-role key.
-function isServiceRole(token: string, envKey: string): boolean {
-  if (!token) return false;
-  // Exact service-role key match only. The previous fallback decoded the JWT
-  // payload WITHOUT verifying its signature, so any forged token claiming
-  // role=service_role passed — a full auth bypass the moment one of these
-  // functions ever gets verify_jwt=false in config.toml.
-  return !!envKey && token === envKey;
-}
 
 const TIER_NAMES = ["Hot", "Blaze", "Inferno", "Nova", "Diamond", "Legendary", "Firestorm"];
 

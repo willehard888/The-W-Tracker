@@ -1,23 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Internal-only: cron invokes with the service-role key. Accept an exact env
-// match OR any JWT whose role claim is service_role (verify_jwt defaults to true,
-// so the signature is already validated) — robust to key rotation / whitespace.
-function isServiceRole(token: string, envKey: string): boolean {
-  // Exact service-role key match only, like notify-social / notify-referral /
-  // tribe-notify. The old fallback read the role out of a JWT payload it never
-  // verified: one verify_jwt=false line in config.toml away from a full
-  // bypass. Every caller (cron, triggers) sends the vault's service key, the
-  // same one the hardened three already accept.
-  return !!token && !!envKey && token === envKey;
-}
 
 // Tiered win-back: the message escalates the longer someone has been gone. Each
 // tier fires once (exact-day match in users_lapsed), so a user gets at most one

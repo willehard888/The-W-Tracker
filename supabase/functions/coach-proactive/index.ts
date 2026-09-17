@@ -17,6 +17,7 @@ import { fetchAll } from "../_shared/fetch-all.ts";
 import { gatherSituation } from "../_shared/situation.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { prefAllows } from "../_shared/push-targets.ts";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 /** The profile columns the run reads (see the select below). */
 type ProactiveUser = {
@@ -34,22 +35,6 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Internal-only: cron invokes with the service-role key. Without this guard any
-// signed-in user could trigger a proactive push blast.
-function isServiceRole(token: string, envKey: string): boolean {
-  if (!token) return false;
-  if (envKey && token === envKey) return true;
-  try {
-    const seg = token.split(".")[1];
-    if (!seg) return false;
-    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
-    return JSON.parse(atob(padded))?.role === "service_role";
-  } catch {
-    return false;
-  }
-}
 
 const localHour = (tz: string | null): number => {
   try {

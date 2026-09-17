@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
     if (!OPENROUTER_API_KEY) {
-      return new Response(JSON.stringify({ error: "AI not configured" }), {
+      return new Response(JSON.stringify({ error: "The coach is offline right now. Try again shortly." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
     if (!aiResp.ok) {
       const t = await aiResp.text();
       console.error("AI error:", aiResp.status, t);
-      return new Response(JSON.stringify({ error: "AI error" }), {
+      return new Response(JSON.stringify({ error: "The coach is unavailable right now. Try again in a moment." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

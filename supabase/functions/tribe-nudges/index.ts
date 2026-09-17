@@ -1,20 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function isServiceRole(token: string, envKey: string): boolean {
-  // Exact service-role key match only, like notify-social / notify-referral /
-  // tribe-notify. The old fallback read the role out of a JWT payload it never
-  // verified: one verify_jwt=false line in config.toml away from a full
-  // bypass. Every caller (cron, triggers) sends the vault's service key, the
-  // same one the hardened three already accept.
-  return !!token && !!envKey && token === envKey;
-}
 
 // Runs hourly. Every run: event reminders (T-24h and T-1h windows).
 // At 17:00 UTC (evening in the core market): the fire-at-risk nudge —

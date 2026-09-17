@@ -2,6 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -40,7 +42,7 @@ Deno.serve(async (req) => {
     }
 
     const { receiver_id } = await req.json();
-    if (!receiver_id) {
+    if (typeof receiver_id !== "string" || !UUID.test(receiver_id)) {
       return new Response(JSON.stringify({ error: "receiver_id required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -66,6 +68,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    // A block ends the conversation both ways. The DM rows that authorise this
+    // call are older than the block, so without this check the person who was
+    // blocked can still ring the other one's phone.
+    const { count: blockCount } = await serviceClient
+      .from("blocked_users")
+      .select("blocker_id", { count: "exact", head: true })
+      .in("blocker_id", [user.id, receiver_id])
+      .in("blocked_id", [user.id, receiver_id]);
+
+    if (blockCount && blockCount > 0) {
+      return new Response(
+        JSON.stringify({ error: "Not authorized to notify this user" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Look up sender username from DB instead of trusting request body
     const { data: senderProfile } = await serviceClient
       .from("profiles")
@@ -80,13 +98,31 @@ Deno.serve(async (req) => {
     // name. Read the actual latest message for this pair from the DB.
     const { data: latestMsg } = await serviceClient
       .from("direct_messages")
-      .select("content")
+      .select("id, content")
       .eq("sender_id", user.id)
       .eq("receiver_id", receiver_id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     const previewText = (latestMsg?.content ?? "").toString().slice(0, 100) || "You have a new message";
+
+    // One notification per message. Nothing stopped a sender who had written a
+    // single DM from calling this endpoint in a loop: same text every time, but
+    // an unbounded stream of pushes and inbox rows. The message id is the key,
+    // so a resend after a dropped response is a no-op rather than a second buzz.
+    if (latestMsg?.id) {
+      const { count: alreadySent } = await serviceClient
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("kind", "message")
+        .eq("ref_id", latestMsg.id);
+      if (alreadySent && alreadySent > 0) {
+        return new Response(JSON.stringify({ message: "Already notified" }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // In-app inbox row (the bell) — written even when the receiver has no
     // push tokens; tapping opens the thread.
@@ -97,6 +133,7 @@ Deno.serve(async (req) => {
       body: previewText,
       route: `/chat/${user.id}`,
       actor_id: user.id,
+      ref_id: latestMsg?.id ?? null,
     });
 
     // Get receiver's push tokens (skipped entirely if they muted Social —

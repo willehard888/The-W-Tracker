@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
-    if (!OPENROUTER_API_KEY) return json({ error: "AI not configured" }, 500);
+    if (!OPENROUTER_API_KEY) return json({ error: "The coach is offline right now. Try again shortly." }, 500);
 
     const sb = createClient(SUPABASE_URL, ANON, { global: { headers: { Authorization: auth } } });
     const { data: ud, error: uErr } = await sb.auth.getUser();
@@ -223,11 +223,11 @@ Also produce:
     );
 
     if (!aiResp.ok) {
-      if (aiResp.status === 429) return json({ error: "Rate limited" }, 429);
-      if (aiResp.status === 402) return json({ error: "AI credits exhausted" }, 402);
+      if (aiResp.status === 429) return json({ error: "The coach is busy right now. Try again in a moment." }, 429);
+      if (aiResp.status === 402) return json({ error: "The coach is offline right now. Try again shortly." }, 402);
       const t = await aiResp.text();
       console.error("AI error", aiResp.status, t);
-      return json({ error: "AI gateway error" }, 500);
+      return json({ error: "The coach is unavailable right now. Try again in a moment." }, 500);
     }
 
     const aiData = await aiResp.json();

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { fetchAll } from "../_shared/fetch-all.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { isServiceRole } from "../_shared/service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,26 +9,6 @@ const corsHeaders = {
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-// Accept the internal caller: an exact match on the env service key, OR any JWT
-// whose role claim is service_role. verify_jwt (default true for this function)
-// means Supabase already validated the signature, so trusting the decoded role
-// is safe — and it tolerates key rotation / stray whitespace that would break an
-// exact string compare.
-function isServiceRole(token: string, envKey: string): boolean {
-  if (!token) return false;
-  if (envKey && token === envKey) return true;
-  try {
-    const seg = token.split(".")[1];
-    if (!seg) return false;
-    const b64 = seg.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = b64.length % 4 ? b64 + "=".repeat(4 - (b64.length % 4)) : b64;
-    const payload = JSON.parse(atob(padded));
-    return payload?.role === "service_role";
-  } catch {
-    return false;
-  }
-}
 
 const json = (body: Record<string, unknown>, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -52,9 +33,6 @@ serve(async (req) => {
     // The previous version required a USER JWT via getUser(), which the cron's
     // service-role key fails — so streak decay silently never ran.
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-    // isServiceRole (not exact equality): the JWT-role fallback is what makes
-    // key rotation safe — the strict compare silently 401'd the cron after a
-    // rotation and streak decay stopped without any signal.
     if (!serviceKey || !isServiceRole(token, serviceKey)) {
       return json({ error: "Unauthorized" }, 401);
     }

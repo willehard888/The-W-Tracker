@@ -135,6 +135,9 @@ export async function sendApnsPush(
       ...(payload.collapseId ? { "apns-collapse-id": payload.collapseId } : {}),
     },
     body: JSON.stringify(apsBody),
+    // A hung APNs connection used to hold the whole batch — and the function's
+    // wall clock — open until the platform killed it.
+    signal: AbortSignal.timeout(10_000),
   });
 
   let reason: string | undefined;

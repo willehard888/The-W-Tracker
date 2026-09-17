@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,17 +42,20 @@ const LABEL = "text-label font-bold text-muted-foreground/75 mb-0.5";
  * "Train today by focus" — the door under the row and the sheet it opens.
  * Same silhouette as the row; mounted only while open so Home pays nothing.
  */
-const FocusDoor = ({ label = "Pick a different focus" }: { label?: string }) => {
+const FocusDoor = ({ label = "Pick a different focus", aside }: { label?: string; aside?: ReactNode }) => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button
-        type="button"
-        onClick={() => { hapticSelection(); setOpen(true); }}
-        className="press w-full min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
-      >
-        {label} <ChevronRight aria-hidden size={13} />
-      </button>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => { hapticSelection(); setOpen(true); }}
+          className="press flex-1 min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
+        >
+          {label} <ChevronRight aria-hidden size={13} />
+        </button>
+        {aside}
+      </div>
       {open && <Suspense fallback={null}><FocusSessionSheet open onClose={() => setOpen(false)} /></Suspense>}
     </>
   );
@@ -91,7 +94,20 @@ const TrainingZone = () => {
             </div>
           )}
         </div>
-        <FocusDoor />
+        {/* On a day with its own session the program had no door on Home at
+            all: the row above opens the session, and the only way to the week
+            was through the Coach page. */}
+        <FocusDoor
+          aside={program ? (
+            <button
+              type="button"
+              onClick={() => { hapticImpact("light"); navigate("/coach/program"); }}
+              className="press shrink-0 min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
+            >
+              Your program <ChevronRight aria-hidden size={13} />
+            </button>
+          ) : undefined}
+        />
       </div>
     );
   }

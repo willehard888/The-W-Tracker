@@ -53,21 +53,56 @@ export const initNativeShell = async (): Promise<void> => {
   // inside a dialog (the sheet's own body scroller handles those).
   const vv = typeof window !== "undefined" ? window.visualViewport : null;
   if (vv) {
+    // A third thing learned: WebKit reveals a focused field by PANNING the
+    // whole page (visualViewport.offsetTop > 0), whether or not the field
+    // needed it. The app draws under the status bar, so the pan dragged the
+    // page bar up into the clock: "Today · Chest" printed over "16.08" while a
+    // weight was being typed, and the page behind an open sheet did the same.
+    //   1. When the field already fits on screen without the pan, undo it.
+    //   2. While any pan remains (a real keyboard covering the field), a strip
+    //      in the page's own ground colour rides the visual viewport's top edge
+    //      so nothing is ever printed over the status bar.
+    const shield = document.createElement("div");
+    shield.setAttribute("aria-hidden", "true");
+    shield.style.cssText =
+      "position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:hsl(var(--background));" +
+      "z-index:2147483000;pointer-events:none;display:none;will-change:transform;";
+    document.body.appendChild(shield);
+    const syncShield = () => {
+      const off = Math.max(0, vv.offsetTop);
+      shield.style.display = off > 1 ? "block" : "none";
+      if (off > 1) shield.style.transform = `translate3d(0, ${off}px, 0)`;
+    };
+    vv.addEventListener("scroll", syncShield);
+
     let settle: ReturnType<typeof setTimeout> | undefined;
-    vv.addEventListener("resize", () => {
+    const reveal = () => {
       if (settle) clearTimeout(settle);
       settle = setTimeout(() => {
+        syncShield();
         const el = document.activeElement as HTMLElement | null;
         if (!el) return;
         const tag = el.tagName;
         if (tag !== "INPUT" && tag !== "TEXTAREA" && !el.isContentEditable) return;
-        if (el.closest('[role="dialog"]')) return;
         const r = el.getBoundingClientRect();
+        // Rects are in layout coordinates; without the pan the visible band
+        // is [0, vv.height]. 64 clears the status bar and the page bar.
+        const fitsUnpanned = r.top >= 64 && r.bottom <= vv.height - 8;
+        if (vv.offsetTop > 1 && fitsUnpanned) {
+          window.scrollTo(0, 0);
+          syncShield();
+          return;
+        }
+        if (el.closest('[role="dialog"]')) return;
         if (r.bottom > vv.offsetTop + vv.height - 8 || r.top < vv.offsetTop) {
           el.scrollIntoView({ block: "center", behavior: "auto" });
         }
       }, 120);
-    });
+    };
+    vv.addEventListener("resize", () => { syncShield(); reveal(); });
+    // A hardware keyboard (and the simulator) pans without resizing anything.
+    document.addEventListener("focusin", reveal);
+    document.addEventListener("focusout", () => setTimeout(syncShield, 150));
   }
 
   // App lifecycle — when returning from background, nudge the page so any

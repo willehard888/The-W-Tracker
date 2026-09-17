@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { illustrationUrl, illustrationImg, illustrationThumb, type IllustratedExercise } from "@/data/exercises-illustrated";
+import { illustrationUrl, illustrationImg, type IllustratedExercise } from "@/data/exercises-illustrated";
 import { BUNDLED_FRAME_IDS } from "@/data/illustration-frame-ids";
-import { GOLD_LINES } from "./gold-lines";
+import { GOLD_LINES, goldThumb } from "./gold-lines";
 
 const STATES = ["relaxation", "tension"] as const;
 // The blur-up base. One `filter` value: a Tailwind blur class and an inline
 // gold filter both write `filter`, and the inline one won — the base was never
 // blurred, just a 112px thumb scaled up.
-const THUMB_WASH = `blur(6px) ${GOLD_LINES}`;
+// The blur-up base is the baked gold thumbnail: only the blur is left to do.
+const THUMB_WASH = "blur(6px)";
 type FrameState = (typeof STATES)[number];
 
 /**
@@ -88,16 +89,16 @@ export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: {
     style={{ width: size, height: size }}
   >
     <img
-      src={illustrationThumb(ex.idNum)}
+      src={goldThumb(ex.idNum)}
       alt=""
       decoding="async"
       loading={eager ? "eager" : "lazy"}
       className="h-full w-full object-contain p-1"
-      style={{ filter: GOLD_LINES }}
       onError={(e) => {
-        // Bundled file should always exist; network is a two-stage fallback.
+        // Bundled file should always exist; network is a two-stage fallback,
+        // and the network image is the raw drawing, so it gets the filter.
         const img = e.currentTarget;
-        if (!img.dataset.fb) { img.dataset.fb = "1"; img.src = illustrationImg(ex.idNum, "tension", 112); }
+        if (!img.dataset.fb) { img.dataset.fb = "1"; img.style.filter = GOLD_LINES; img.src = illustrationImg(ex.idNum, "tension", 112); }
         else if (img.dataset.fb === "1") { img.dataset.fb = "2"; img.src = illustrationUrl(ex.idNum, "tension"); }
       }}
     />
@@ -162,7 +163,7 @@ export const IllustrationPlayer = ({ ex, className }: { ex: IllustratedExercise;
             the frame or two before the vectors have decoded. */}
         <img
           key={`thumb-${ex.idNum}`}
-          src={illustrationThumb(ex.idNum)}
+          src={goldThumb(ex.idNum)}
           alt=""
           aria-hidden
           decoding="async"
@@ -200,7 +201,7 @@ export const IllustrationHero = ({ ex, className }: { ex: IllustratedExercise; c
             the vector decodes. */}
         <img
           key={`thumb-${ex.idNum}`}
-          src={illustrationThumb(ex.idNum)}
+          src={goldThumb(ex.idNum)}
           alt=""
           aria-hidden
           decoding="async"

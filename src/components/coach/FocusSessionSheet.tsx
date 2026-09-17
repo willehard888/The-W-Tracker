@@ -11,8 +11,7 @@ import { friendlyError } from "@/lib/error-copy";
 import { formatRest } from "@/lib/training/runner";
 import { localDateKey } from "@/lib/date";
 import { resolveIllustration } from "@/lib/exercise-match";
-import { illustrationThumb } from "@/data/exercises-illustrated";
-import { GOLD_LINES } from "@/components/coach/gold-lines";
+import { goldThumb } from "@/components/coach/gold-lines";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { sessionMinutes, useBuildFocusSession, useMuscleBalance, useSwapExercise, type BuiltSession, type Feel, type Focus } from "@/hooks/use-focus-session";
 import { track, FUNNEL } from "@/lib/analytics";
@@ -58,7 +57,7 @@ export const Thumb = ({ slug, name }: { slug: string; name: string }) => {
   return (
     <div className="h-11 w-11 rounded-lg overflow-hidden shrink-0 bg-black border border-border flex items-center justify-center">
       {ill ? (
-        <img src={illustrationThumb(ill.idNum)} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain p-0.5" style={{ filter: GOLD_LINES }} />
+        <img src={goldThumb(ill.idNum)} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain p-0.5" />
       ) : (
         <span className="text-label font-black text-muted-foreground">{name.slice(0, 2).toUpperCase()}</span>
       )}

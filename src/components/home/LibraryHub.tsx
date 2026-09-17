@@ -3,7 +3,6 @@ import { ChevronRight, Utensils } from "lucide-react";
 import VaultThumb from "@/components/vault/VaultThumb";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { RECIPE_COUNT } from "@/data/library-counts";
-import { GOLD_LINES } from "@/components/coach/gold-lines";
 import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
@@ -75,12 +74,11 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
     return (
       <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 bg-black border border-gold/25 flex items-center justify-center">
         <img
-          src="/illustrations/0042.webp"
+          src="/illustrations/gold/0042.webp"
           alt=""
           loading="lazy"
           decoding="async"
           className="h-full w-full object-contain p-0.5"
-          style={{ filter: GOLD_LINES }}
         />
       </div>
     );

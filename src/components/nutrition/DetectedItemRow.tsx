@@ -5,6 +5,7 @@ import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/seg
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { gramChips, liquidGrams, liquidMl } from "@/lib/nutrition/scan-review";
+import { parseQty } from "@/lib/nutrition/resolve-grams";
 import { confidenceTier, type ScanItem } from "@/lib/nutrition/scan-types";
 
 const TIER_LABEL = { solid: null, estimated: "Estimated", check: "Check this" } as const;
@@ -33,6 +34,15 @@ const DetectedItemRow = ({
   onRemove: (id: string) => void;
 }) => {
   const [open, setOpen] = useState(item.needs_user_choice);
+  // What the user is typing, while they are typing it. The field used to read
+  // its value straight back off the model on every keystroke, and the onChange
+  // refused anything that did not parse above zero — so deleting the last digit
+  // was impossible (React put it straight back) and typing over a bad estimate
+  // became a fight the user lost. Reported from a real scan: the model read a
+  // chicken fillet as 2 g, the plate held 350, and the leading digit would not
+  // go away. While `draft` is null the field follows the model, which is what
+  // the quick-pick chips and the pieces stepper need.
+  const [draft, setDraft] = useState<string | null>(null);
   const tier = confidenceTier(item);
   const chosen = item.candidates.find((c) => c.food_id === item.selected_food_id) ?? null;
   const label = TIER_LABEL[tier];
@@ -65,11 +75,12 @@ const DetectedItemRow = ({
           <p className="text-meta text-muted-foreground leading-snug mt-0.5 flex items-center gap-1.5 flex-wrap">
             {!chosen && <span>{item.name}</span>}
             {item.preparation !== "unknown" && <span>{item.preparation}</span>}
-            {range && (
-              <span>
-                ≈ {shown} {unit} ({range})
-              </span>
-            )}
+            {/* The model's plausible range, and only that. It used to read
+                "≈ {shown} {unit} ({range})", which after an edit said things
+                like "≈ 2 g (140–220 g)" — the app quoting a number back at the
+                user as if it had estimated it, next to a range that excluded
+                it. The number the user owns is in the field directly below. */}
+            {range && <span>{range}</span>}
             {label && (
               <span
                 className={cn(
@@ -109,12 +120,14 @@ const DetectedItemRow = ({
           <input
             type="text"
             inputMode="decimal"
-            value={String(shown)}
+            value={draft ?? String(shown)}
             aria-label={`${liquid ? "Millilitres" : "Grams"} for ${item.name}`}
             onChange={(e) => {
-              const n = Number(e.target.value.replace(",", "."));
-              if (Number.isFinite(n) && n > 0) onGramsChange(item.id, toGrams(n));
+              setDraft(e.target.value);
+              const n = parseQty(e.target.value);
+              if (n !== null && n > 0) onGramsChange(item.id, toGrams(n));
             }}
+            onBlur={() => setDraft(null)}
             className="w-20 surface-inset rounded-xl h-11 px-3 text-read font-black tabular-nums outline-none focus:border-gold/50"
           />
         </label>

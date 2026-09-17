@@ -83,6 +83,29 @@ describe("parseScanResponse", () => {
     expect(r?.items[0].grams_low).toBe(150);
   });
 
+  // Seen live: a chicken fillet came back as 2 g while the same item stated a
+  // plausible range of 140–220 g, and the app logged 2 kcal for a full portion.
+  // The range is the considered answer; the lone number is the slip.
+  it("pulls a portion back inside the range the model stated for it", () => {
+    const r = parseScanResponse(response({ items: [item({ grams: 2, grams_low: 140, grams_high: 220 })] }));
+    expect(r?.items[0].grams).toBe(140);
+    expect(r?.items[0].grams_low).toBe(140);
+    expect(r?.items[0].grams_high).toBe(220);
+
+    const over = parseScanResponse(response({ items: [item({ grams: 900, grams_low: 140, grams_high: 220 })] }));
+    expect(over?.items[0].grams).toBe(220);
+  });
+
+  it("sorts a reversed range and leaves a coherent portion alone", () => {
+    const flipped = parseScanResponse(response({ items: [item({ grams: 150, grams_low: 200, grams_high: 100 })] }));
+    expect(flipped?.items[0].grams_low).toBe(100);
+    expect(flipped?.items[0].grams_high).toBe(200);
+    expect(flipped?.items[0].grams).toBe(150);
+
+    const fine = parseScanResponse(response({ items: [item({ grams: 150, grams_low: 100, grams_high: 200 })] }));
+    expect(fine?.items[0].grams).toBe(150);
+  });
+
   it("keeps a not-food response with zero items", () => {
     const r = parseScanResponse(response({ not_food: true, items: [], overall_confidence: 0 }));
     expect(r?.not_food).toBe(true);

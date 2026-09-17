@@ -133,8 +133,21 @@ const parseBox = (v: unknown): ScanBox | null => {
 
 const parseItem = (v: unknown): ScanItem | null => {
   if (!isRecord(v) || typeof v.id !== "string" || typeof v.name !== "string") return null;
-  const grams = num(v.grams, NaN);
-  if (!Number.isFinite(grams) || grams <= 0) return null;
+  const rawGrams = num(v.grams, NaN);
+  if (!Number.isFinite(rawGrams) || rawGrams <= 0) return null;
+  // The model sometimes contradicts itself about the same food: seen live, a
+  // chicken fillet came back as 2 g with its own plausible range stated as
+  // 140–220 g, and the app logged it as 2 kcal. The range is the considered
+  // answer and the lone number is the slip — usually a piece count that landed
+  // in the wrong field — so the number is pulled back inside its own range.
+  // A reversed range is just sorted; a missing one defaults to the number and
+  // therefore always contains it.
+  const bound = [num(v.grams_low, rawGrams), num(v.grams_high, rawGrams)]
+    .filter((n) => Number.isFinite(n) && n > 0)
+    .sort((a, b) => a - b);
+  const gramsLow = bound[0] ?? rawGrams;
+  const gramsHigh = bound[bound.length - 1] ?? rawGrams;
+  const grams = Math.min(gramsHigh, Math.max(gramsLow, rawGrams));
   const candidates = Array.isArray(v.candidates) ? v.candidates.map(parseCandidate).filter((c): c is ScanCandidate => c !== null) : [];
   const selected = typeof v.selected_food_id === "string" ? v.selected_food_id : null;
   const ml = numOrNull(v.ml);
@@ -144,8 +157,8 @@ const parseItem = (v: unknown): ScanItem | null => {
     category: str(v.category, "other"),
     preparation: str(v.preparation, "unknown"),
     grams,
-    grams_low: num(v.grams_low, grams),
-    grams_high: num(v.grams_high, grams),
+    grams_low: gramsLow,
+    grams_high: gramsHigh,
     count: typeof v.count === "number" && Number.isInteger(v.count) ? v.count : null,
     is_liquid: v.is_liquid === true,
     ml: ml != null && ml > 0 ? ml : null,

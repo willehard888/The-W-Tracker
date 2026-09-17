@@ -39,7 +39,7 @@ describe("DetectedItemRow", () => {
   it("shows the chosen database food, the gram range and the preview from that record", () => {
     render(<DetectedItemRow item={item()} onGramsChange={noop} onPickCandidate={noop} onReplace={noop} onRemove={noop} />);
     expect(screen.getByText("Chicken breast, cooked")).toBeInTheDocument();
-    expect(screen.getByText(/≈ 150 g \(100–200 g\)/)).toBeInTheDocument();
+    expect(screen.getByText("100–200 g")).toBeInTheDocument();
     expect(screen.getByText(/248 kcal/)).toBeInTheDocument();
     expect(screen.queryByText("Estimated")).toBeNull();
   });
@@ -75,12 +75,58 @@ describe("DetectedItemRow", () => {
     expect(onGrams).toHaveBeenLastCalledWith("i1", 120);
   });
 
+  // Reported from a real scan: the model read a chicken fillet as 2 g, the plate
+  // held 350, and the amount could not be corrected. The field re-derived its
+  // value from the model on every keystroke and the change handler dropped
+  // anything that did not parse above zero, so React put the last digit
+  // straight back and it could never be deleted.
+  it("lets the amount be cleared and retyped, without the model pushing digits back", () => {
+    const onGrams = vi.fn();
+    render(<DetectedItemRow item={item()} onGramsChange={onGrams} onPickCandidate={noop} onReplace={noop} onRemove={noop} />);
+    const field = screen.getByLabelText(/Grams for/);
+    expect(field).toHaveValue("150");
+
+    fireEvent.change(field, { target: { value: "15" } });
+    fireEvent.change(field, { target: { value: "1" } });
+    fireEvent.change(field, { target: { value: "" } });
+    // The empty field stays empty: nothing is committed, and nothing reappears.
+    expect(field).toHaveValue("");
+    expect(onGrams).not.toHaveBeenCalledWith("i1", 0);
+
+    fireEvent.change(field, { target: { value: "3" } });
+    fireEvent.change(field, { target: { value: "35" } });
+    fireEvent.change(field, { target: { value: "350" } });
+    expect(onGrams).toHaveBeenLastCalledWith("i1", 350);
+    expect(field).toHaveValue("350");
+  });
+
+  it("falls back to the stored amount when an emptied field is left alone, and follows a chip again", () => {
+    const onGrams = vi.fn();
+    const { rerender } = render(<DetectedItemRow item={item()} onGramsChange={onGrams} onPickCandidate={noop} onReplace={noop} onRemove={noop} />);
+    const field = screen.getByLabelText(/Grams for/);
+    fireEvent.change(field, { target: { value: "" } });
+    fireEvent.blur(field);
+    expect(field).toHaveValue("150");
+    // A quick-pick chip writes the model, and the field follows it.
+    fireEvent.click(screen.getByRole("button", { name: "200" }));
+    expect(onGrams).toHaveBeenLastCalledWith("i1", 200);
+    rerender(<DetectedItemRow item={item({ grams: 200 })} onGramsChange={onGrams} onPickCandidate={noop} onReplace={noop} onRemove={noop} />);
+    expect(screen.getByLabelText(/Grams for/)).toHaveValue("200");
+  });
+
+  it("takes a comma decimal, the way every other amount field in the app does", () => {
+    const onGrams = vi.fn();
+    render(<DetectedItemRow item={item()} onGramsChange={onGrams} onPickCandidate={noop} onReplace={noop} onRemove={noop} />);
+    fireEvent.change(screen.getByLabelText(/Grams for/), { target: { value: "92,5" } });
+    expect(onGrams).toHaveBeenLastCalledWith("i1", 92.5);
+  });
+
   it("edits liquids in millilitres and derives grams through the density", () => {
     const onGrams = vi.fn();
     render(<DetectedItemRow item={item({ name: "milk", ml: 200, density_g_per_ml: 1.03, grams: 206, grams_low: 155, grams_high: 258 })} onGramsChange={onGrams} onPickCandidate={noop} onReplace={noop} onRemove={noop} />);
     expect(screen.getByLabelText(/Millilitres for/)).toHaveValue("200");
     expect(screen.getByText("ml")).toBeInTheDocument();
-    expect(screen.getByText(/≈ 200 ml \(150–250 ml\)/)).toBeInTheDocument();
+    expect(screen.getByText("150–250 ml")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Quick millilitres" })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText(/Millilitres for/), { target: { value: "250" } });
     expect(onGrams).toHaveBeenLastCalledWith("i1", 258);

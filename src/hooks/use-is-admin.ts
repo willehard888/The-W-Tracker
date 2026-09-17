@@ -12,8 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
  * Pass the auth user id (`user?.id`) or the profile user id — they're the same
  * value; the hook is null-safe and simply returns false until one is present.
  */
-export const useIsAdmin = (userId: string | undefined) => {
-  const { data } = useQuery({
+export const useAdminAccess = (userId: string | undefined) => {
+  const { data, isPending } = useQuery({
     queryKey: ["user-role-admin", userId],
     queryFn: async () => {
       if (!userId) return false;
@@ -31,5 +31,8 @@ export const useIsAdmin = (userId: string | undefined) => {
     gcTime: 30 * 60_000,
   });
 
-  return !!data;
+  return { isAdmin: !!data, loading: !!userId && isPending };
 };
+
+/** The answer alone, for the many callers that only branch on it. */
+export const useIsAdmin = (userId: string | undefined) => useAdminAccess(userId).isAdmin;

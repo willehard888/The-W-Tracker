@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { hapticImpact } from "@/lib/haptics";
 import { friendlyError } from "@/lib/error-copy";
+import { parseQty } from "@/lib/nutrition/resolve-grams";
 
 const computePace = (g: { baseline_value: number | null; current_value: number | null; target_value: number; deadline: string | null; created_at: string }) => {
   const baseline = g.baseline_value ?? 0;
@@ -38,8 +39,17 @@ const GoalTrackerCard = () => {
   const [draft, setDraft] = useState({ title: "", metric: "custom", unit: "", baseline_value: "", target_value: "", deadline: "" });
 
   const create = async () => {
-    if (!draft.title.trim() || !draft.target_value) {
-      toast.error("Need a title and target");
+    // A Finnish (or French, or German) keypad types "92,5". Number() makes that
+    // NaN and the goal was saved as null, or refused as "Failed", with nothing
+    // on screen explaining why. parseQty is the same reader the food diary uses.
+    const target = parseQty(draft.target_value);
+    const baseline = draft.baseline_value ? parseQty(draft.baseline_value) : null;
+    if (!draft.title.trim() || target === null) {
+      toast.error(draft.title.trim() ? "Target needs to be a number" : "Need a title and target");
+      return;
+    }
+    if (draft.baseline_value && baseline === null) {
+      toast.error("\"Now\" needs to be a number");
       return;
     }
     try {
@@ -47,9 +57,9 @@ const GoalTrackerCard = () => {
         title: draft.title.trim(),
         metric: draft.metric,
         unit: draft.unit,
-        baseline_value: draft.baseline_value ? Number(draft.baseline_value) : null,
-        current_value: draft.baseline_value ? Number(draft.baseline_value) : null,
-        target_value: Number(draft.target_value),
+        baseline_value: baseline,
+        current_value: baseline,
+        target_value: target,
         deadline: draft.deadline || null,
       });
       setDraft({ title: "", metric: "custom", unit: "", baseline_value: "", target_value: "", deadline: "" });
@@ -85,9 +95,9 @@ const GoalTrackerCard = () => {
         {field("Goal", <Input placeholder="Bench 100 kg" value={draft.title}
           onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />)}
         <div className="grid grid-cols-2 gap-2">
-          {field("Now", <Input type="number" inputMode="decimal" value={draft.baseline_value}
+          {field("Now", <Input type="text" inputMode="decimal" value={draft.baseline_value}
             onChange={e => setDraft(d => ({ ...d, baseline_value: e.target.value }))} />)}
-          {field("Target", <Input type="number" inputMode="decimal" value={draft.target_value}
+          {field("Target", <Input type="text" inputMode="decimal" value={draft.target_value}
             onChange={e => setDraft(d => ({ ...d, target_value: e.target.value }))} />)}
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -156,8 +166,8 @@ const GoalTrackerCard = () => {
           onClick={async () => {
             const v = prompt("New current value", String(activeGoal.current_value ?? activeGoal.baseline_value ?? 0));
             if (v == null) return;
-            const n = Number(v);
-            if (!Number.isFinite(n)) return toast.error("Invalid number");
+            const n = parseQty(v);
+            if (n === null) return toast.error("That isn't a number");
             await updateProgress({ id: activeGoal.id, value: n });
             hapticImpact("light");
             toast.success("Progress updated");

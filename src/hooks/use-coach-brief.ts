@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrialAccess } from "@/hooks/use-trial-access";
+import { readEdgeError } from "@/lib/error-copy";
 
 export interface CoachBriefPrescription {
   label: string;
@@ -48,7 +49,9 @@ export const useCoachBrief = () => {
       const { data, error } = await supabase.functions.invoke("coach-daily-brief", {
         body: { tz_offset_minutes: new Date().getTimezoneOffset() },
       });
-      if (error) throw new Error(error.message);
+      // The edge function's own sentence — the daily limit and when it resets,
+      // the consent prompt — lives in the Response, not in error.message.
+      if (error) throw new Error((await readEdgeError(error, "Today's brief is unavailable right now.")).message);
       if (data?.error) throw new Error(data.error);
       return (data?.brief as CoachBrief) ?? null;
     },

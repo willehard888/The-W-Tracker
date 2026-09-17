@@ -5,7 +5,7 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 import { getIosDebugState } from "@/lib/ios-debug";
 import { HARNESS_KEY, shouldForcePaywall } from "@/lib/paywall-harness";
 import { readSession, removeSession, writeSession } from "@/lib/storage";
-import { useRevenueCat } from "@/contexts/RevenueCatContext";
+import { isCancellation, isPaymentPending, useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useNavigate } from "react-router-dom";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import { track, FUNNEL } from "@/lib/analytics";
 const PREMIUM_YEARLY_FALLBACK = "89,99 €";
 const PREMIUM_MONTHLY_FALLBACK = "8,99 €";
 
-type PurchaseStatus = "idle" | "purchasing" | "verifying" | "error";
+type PurchaseStatus = "idle" | "purchasing" | "verifying" | "pending" | "error";
 
 /** The quiet 44 pt text button the footer is made of. */
 const quiet = "press min-h-11 px-3 text-meta text-muted-foreground";
@@ -192,6 +192,13 @@ const Paywall = () => {
         setStatus("idle");
         return;
       }
+      if (outcome?.pending) {
+        // Ask to Buy / SCA: the request left the device and is waiting on
+        // someone else. Nothing to verify and nothing went wrong.
+        hapticNotification("warning");
+        setStatus("pending");
+        return;
+      }
       setStatus("verifying");
       const ok = await pollVerification(8000);
       if (ok) {
@@ -206,16 +213,26 @@ const Paywall = () => {
         }
       } else {
         setStatus("error");
+        // This screen has no pull-to-refresh — it never did, and telling
+        // someone to perform a gesture that does nothing reads as the app
+        // blaming them for its own delay. Restore is the button that works.
         setErrorMessage(
-          "Payment confirmed but we couldn't verify access yet. Pull to refresh in a moment, or tap Restore.",
+          "Payment went through but access hasn't landed yet. Give it a moment, then tap Restore purchases.",
         );
         hapticNotification("warning");
       }
     } catch (e: any) {
-      // User cancellation — silently return to idle
-      if (e?.userCancelled || e?.code === "1" || e?.code === 1) {
+      // Both outcomes normally come back as an outcome, not a throw; this is
+      // the net for any path that throws instead. Same predicates as the
+      // context, so a cancel can never be classified two different ways.
+      if (isCancellation(e)) {
         track(FUNNEL.purchaseCancelled, { plan, platform: "native" });
         setStatus("idle");
+        return;
+      }
+      if (isPaymentPending(e)) {
+        hapticNotification("warning");
+        setStatus("pending");
         return;
       }
       // The reason alone was not diagnosable: every failure in production so

@@ -1,137 +1,204 @@
 -- ───────────────────────────────────────────────────────────────────────
--- recreate-cron-jobs.sql
+-- recreate-cron-jobs.sql — every scheduled job this app has, as it runs.
 --
--- Re-create the scheduled pg_cron jobs that Lovable Cloud's UI set up
--- on the source project. Run this AFTER migrate-from-lovable.sh has
--- moved the schema + data, AND after enabling the pg_cron extension on
--- the destination project (Dashboard → Database → Extensions → enable
--- "pg_cron" + "pg_net").
+-- Generated from the live `cron.job` table, and the place to update when a
+-- schedule changes. Nothing pages when a cron stops: a job that silently
+-- vanished is the failure mode this file exists to make recoverable.
 --
--- Before running, replace these placeholders globally in the file:
---   NEW_REF         → your destination project ref (e.g. gcwuvijcuzhunkcauzom)
---   SERVICE_ROLE_KEY → destination project's service_role key
---                      (Settings → API → "service_role" "secret")
+-- Prerequisites on the destination project:
+--   1. Extensions `pg_cron` and `pg_net` enabled.
+--   2. A vault secret named `service_role_key` holding the service-role key.
+--      Every HTTP job reads it from the vault rather than carrying a copy —
+--      rotating the key then means updating one secret, not fifteen jobs.
 --
--- Then paste the whole file into Dashboard → SQL Editor → Run.
--- pg_cron schedules survive across deploys and are idempotent: re-running
--- with the same job name updates the schedule instead of duplicating.
+-- Run it in the SQL editor. `cron.schedule` is idempotent by job name: the
+-- same name updates the schedule instead of creating a duplicate.
 -- ───────────────────────────────────────────────────────────────────────
 
--- daily-reminder was RETIRED 2026-09-02: the client-side local notification
--- owns the 20:00 streak warning (exact streak count, works offline), so the
--- server push would have doubled every banner. Unschedule if present.
+-- Retired jobs. `daily-reminder` was replaced 2026-09-02 by the client-side
+-- local notification (exact streak count, works offline); the server push
+-- would have doubled every banner. `founder-digest-weekly` became daily.
 DO $do$ BEGIN
   PERFORM cron.unschedule('daily-reminder');
 EXCEPTION WHEN OTHERS THEN NULL;
 END $do$;
+DO $do$ BEGIN
+  PERFORM cron.unschedule('founder-digest-weekly');
+EXCEPTION WHEN OTHERS THEN NULL;
+END $do$;
 
--- Lapsed win-back (push) — daily 16:00 UTC. Tiered messages fire once each at
--- 3 / 7 / 14 days of inactivity (exact-day match, no dedup table needed).
+
+-- Approves posts left pending by the moderation gate so nothing is stuck invisible.
 SELECT cron.schedule(
-  'winback-lapsed',
-  '0 16 * * *',
-  $$
-    SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/winback-lapsed',
-      headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
-    );
-  $$
+  'moderation-sweeper',
+  '*/5 * * * *',
+  $$ SELECT public.approve_stale_pending_posts() $$
 );
 
--- Sync streaks (recompute streak deadlines, decay missed days) — daily 03:00 UTC
+-- Scores and decides finished 1v1 battles, awards the XP.
 SELECT cron.schedule(
-  'sync-streaks',
-  '0 3 * * *',
-  $$
-    SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/sync-streaks',
-      headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
-    );
-  $$
+  'resolve-battles',
+  '*/15 * * * *',
+  $$ SELECT public.resolve_expired_battles() $$
 );
 
--- Resolve 1v1 battles: scored and decided in SQL since 2026-09-18
--- (migration 20260918100000 schedules this itself; kept here for DR).
-SELECT cron.schedule('resolve-battles', '*/15 * * * *', 'SELECT public.resolve_expired_battles()');
+-- Same for tribe battles.
+SELECT cron.schedule(
+  'tribe-battles-resolve',
+  '*/30 * * * *',
+  $$ SELECT public.auto_resolve_expired_tribe_battles() $$
+);
 
--- coach-morning-nudge was deleted in round 10 (2026-09-14): never scheduled on
--- the live project, elite-only, and the in-app brief already owns the morning.
-
--- NOTE: coach-weekly-review is deliberately NOT cron-scheduled. The function
--- authenticates a USER JWT (auth.getUser), so a service-role cron call 401s —
--- it silently failed every Sunday until removed (2026-08-10). The review is
--- generated on-demand from the client (PerformanceOSDashboard).
-
--- Coach proactive — hourly; per-user local-time triggers (recovery crash,
--- streak-at-risk evening save, morning intention) with kind-scoped dedup.
+-- Trigger-ladder outreach: the coach reaches out when the data says to.
 SELECT cron.schedule(
   'coach-proactive-hourly',
   '0 * * * *',
   $$
     SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-proactive',
+      url     := 'https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/coach-proactive',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      ),
+      body := '{}'::jsonb
     );
   $$
 );
 
--- Weekly briefing generate — Sundays 18:00 UTC
+-- Event reminders (T-24h, T-1h) and the evening fire-at-risk nudge.
 SELECT cron.schedule(
-  'weekly-briefing-generate',
-  '0 18 * * 0',
+  'tribe-nudges-hourly',
+  '5 * * * *',
   $$
     SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/weekly-briefing-generate',
+      url     := 'https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/tribe-nudges',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      ),
+      body := '{}'::jsonb
     );
   $$
 );
 
--- Nightly coach insights — 03:15 UTC. NOTE: on the live project this job was
--- originally scheduled inside migration 20260813082928 with the project ref
--- hardcoded; it is repeated here so a project migration doesn't silently
--- lose it (this file is the complete cron inventory).
+-- Streak decay, honouring banked shields. Without it streaks never break.
+SELECT cron.schedule(
+  'sync-streaks',
+  '0 3 * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/sync-streaks',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      ),
+      body := '{}'::jsonb
+    );
+  $$
+);
+
+-- The nightly Whealth Index synthesis. Its newest row is also the app's cron heartbeat.
 SELECT cron.schedule(
   'coach-insights-nightly',
   '15 3 * * *',
   $$
     SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/coach-insights',
+      url     := 'https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/coach-insights',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      ),
+      body := '{}'::jsonb
     );
   $$
 );
 
--- Founder digest — Mondays 06:00 UTC (admins only). Same note as above:
--- originally scheduled in a migration with a hardcoded ref.
+-- Recomputes every tribe's fire tier from the week's activity.
 SELECT cron.schedule(
-  'founder-digest-weekly',
+  'tribe-fire-refresh',
+  '20 3 * * *',
+  $$ SELECT public.refresh_tribe_fire() $$
+);
+
+-- Analytics are kept 180 days and no longer.
+SELECT cron.schedule(
+  'analytics-retention',
+  '30 4 * * *',
+  $$ DELETE FROM public.analytics_events WHERE created_at < now() - interval '180 days' $$
+);
+
+-- Meal photos and their estimates are cached 30 days.
+SELECT cron.schedule(
+  'meal-scan-cache-retention',
+  '40 4 * * *',
+  $$ DELETE FROM public.meal_scan_cache WHERE created_at < now() - interval '30 days' $$
+);
+
+-- A deleted account can be restored for 30 days; after that the archive is only retained personal data.
+SELECT cron.schedule(
+  'archives-retention',
+  '50 4 * * *',
+  $$ DELETE FROM public.deleted_account_archives WHERE archived_at < now() - interval '30 days' $$
+);
+
+-- The morning numbers, plus the three silent-failure checks (money, push, cron).
+SELECT cron.schedule(
+  'founder-digest-daily',
+  '0 6 * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/founder-digest',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      ),
+      body := '{}'::jsonb
+    );
+  $$
+);
+
+-- The Sunday Briefing, delivered Monday morning.
+SELECT cron.schedule(
+  'weekly-briefing-generate',
   '0 6 * * 1',
   $$
     SELECT net.http_post(
-      url     := 'https://NEW_REF.supabase.co/functions/v1/founder-digest',
+      url     := 'https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/weekly-briefing-generate',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer SERVICE_ROLE_KEY',
-        'Content-Type', 'application/json'
-      )
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      ),
+      body := '{}'::jsonb
     );
   $$
 );
 
--- Sanity check — list every job that's now scheduled.
-SELECT jobname, schedule FROM cron.job ORDER BY jobname;
+-- Closes the week's tribe challenges and books the results.
+SELECT cron.schedule(
+  'tribe-challenges-close',
+  '10 0 * * 1',
+  $$ SELECT public.close_tribe_challenges() $$
+);
+
+-- Tiered win-back pushes at 3, 7 and 14 days of silence.
+SELECT cron.schedule(
+  'winback-lapsed',
+  '0 16 * * *',
+  $$
+    SELECT net.http_post(
+      url     := 'https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/winback-lapsed',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      ),
+      body := '{}'::jsonb
+    );
+  $$
+);
+
+
+-- Check the result:
+--   SELECT jobname, schedule FROM cron.job ORDER BY jobname;
+-- and the last runs:
+--   SELECT jobname, status, return_message, start_time
+--     FROM cron.job_run_details ORDER BY start_time DESC LIMIT 20;

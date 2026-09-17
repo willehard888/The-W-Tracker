@@ -77,7 +77,10 @@ export const EmptyState = ({
       {description && (
         <p
           className={cn(
-            "text-muted-foreground/70 leading-relaxed max-w-[260px]",
+            // /75 is the project's contrast floor; this primitive sat one step
+            // under it, on a dashed card that is already low-contrast, in the
+            // ~10 places the app explains what "empty" means.
+            "text-muted-foreground/75 leading-relaxed max-w-[260px]",
             isCompact ? "text-meta" : "text-xs",
           )}
         >

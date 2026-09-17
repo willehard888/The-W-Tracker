@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Sparkline from "@/components/coach/Sparkline";
 import { localDateKey } from "@/lib/date";
 import { toast } from "sonner";
-import { friendlyError } from "@/lib/error-copy";
+import { friendlyError, readEdgeError } from "@/lib/error-copy";
 
 interface Props {
   program: CoachProgram;
@@ -68,7 +68,9 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
       setRead((data as any).read);
       setStats((data as any).stats);
     } catch (e: any) {
-      toast.error(friendlyError(e, "Couldn't read progress."));
+      // A 429 used to read "Couldn't read progress." — the server had already
+      // said when the limit resets.
+      toast.error((await readEdgeError(e, friendlyError(e, "Couldn't read progress."))).message);
     } finally {
       setLoading(false);
     }

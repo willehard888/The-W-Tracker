@@ -144,27 +144,36 @@ CI builds run on Xcode Cloud — see `ios/App/ci_scripts/`. `package-lock.json` 
 
 ## 6. Edge functions cheat sheet
 
-| Function                       | Trigger                | Purpose                                    |
-| ------------------------------ | ---------------------- | ------------------------------------------ |
-| `ai-coach`                     | client (stream)        | Streaming chat coach with safety triage    |
-| `coach-generate-program`       | client                 | Generates 4-week training block            |
-| `coach-daily-plan`             | client                 | Today's mission + reflection prompts       |
-| `coach-extract-memory`         | post-reflection        | Pulls long-term memories from chat history |
-| `coach-morning-nudge`          | cron (07:30 local)     | AI morning cue push                        |
-| `coach-proactive`              | cron (hourly)          | Trigger-ladder outreach (in-app + push)    |
-| `weekly-briefing-generate`     | cron (Sunday)          | Sunday Briefing AI summary + push          |
-| `winback-lapsed`               | cron (daily)           | 3/7/14-day win-back pushes                 |
-| `sync-streaks`                 | cron                   | Recomputes streak state for all users      |
-| `resolve_expired_battles()`    | pg_cron (SQL)          | Scores and decides 1v1 battles, awards XP  |
-| `tribe-nudges` / `tribe-notify`| cron / DB trigger      | Tribe events, fire-at-risk, battle pushes  |
-| `notify-message` / `notify-social` / `notify-referral` | trigger/client | Social APNs pushes |
-| `moderate-content`             | client                 | AI moderation gate (JWT verified)          |
-| `check-subscription`           | client                 | Unifies RevenueCat + Stripe state          |
-| `revenuecat-webhook`           | RevenueCat             | Subscription lifecycle sync                |
-| `stripe-webhook`               | Stripe                 | Web payment lifecycle (dormant)            |
-| `claim-referral`               | client                 | Validates + awards referral rewards        |
-| `delete-account`               | client                 | GDPR-style account deletion                |
-| `og-image` / `og-profile`      | public (no JWT)        | Open Graph share image / profile redirect  |
+| Function | Trigger | Purpose |
+| --- | --- | --- |
+| `ai-coach` | client (stream) | Streaming chat coach with safety triage |
+| `coach-build-session` | client | Builds today's focus session |
+| `coach-daily-brief` | client | The morning brief on Home and Coach |
+| `coach-daily-plan` | client | Today's mission + reflection prompts |
+| `coach-extract-memory` | post-reflection | Pulls long-term memories from chat history |
+| `coach-generate-program` | client | Generates a training week from the profile |
+| `coach-insights` | cron 03:15 | Nightly Whealth Index synthesis per member |
+| `coach-proactive` | cron hourly | Trigger-ladder outreach (in-app + push) |
+| `coach-progress-read` | client | The coach's read of your progress |
+| `coach-reaction` | client | One line back on a finished check-in |
+| `coach-weekly-review` | client | The weekly review, on demand |
+| `weekly-briefing-generate` | cron Mon 06:00 | Sunday Briefing AI summary + push |
+| `winback-lapsed` | cron 16:00 | 3/7/14-day win-back pushes |
+| `sync-streaks` | cron 03:00 | Streak decay, honouring shields |
+| `founder-digest` | cron Mon 06:00 | The founder's weekly numbers |
+| `tribe-nudges` / `tribe-notify` | cron / DB trigger | Tribe events, fire-at-risk, battle pushes |
+| `notify-message` / `notify-social` / `notify-referral` | client / DB trigger | Social APNs pushes |
+| `moderate-content` | client | AI moderation gate (JWT verified) |
+| `nutrition-lookup` / `nutrition-scan` | client | Food search and meal-photo estimation |
+| `revenuecat-webhook` | RevenueCat (no JWT) | Subscription lifecycle → entitlement |
+| `delete-account` | client | GDPR-style account deletion |
+| `waitlist-welcome` | cron / client | Waitlist welcome email (Resend) |
+| `og-image` / `og-profile` | public (no JWT) | Open Graph share image / profile redirect |
+
+SQL-side, not an edge function: `resolve_expired_battles()` scores and decides
+1v1 battles from pg_cron. The table above is the whole of `supabase/functions/`
+— if a function is deployed that is not in this list, it is a leftover and
+should be removed after checking with the founder.
 
 The local 20:00 streak warning is a **client-side** local notification
 (`src/lib/streak-notifications.ts`) — there is deliberately no server twin.

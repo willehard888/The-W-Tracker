@@ -25,3 +25,38 @@ export function friendlyError(err: unknown, fallback = "Something went wrong. Tr
   }
   return fallback;
 }
+
+/** What the server actually said, once the Response has been read. */
+export type EdgeError = { status?: number; code?: string; message: string };
+
+const BY_STATUS: Record<number, string> = {
+  401: "Sign in again to continue.",
+  403: "Your membership doesn't cover this yet.",
+  429: "Slow down a moment and try again.",
+};
+
+/**
+ * `supabase.functions.invoke` rejects any non-2xx as a FunctionsHttpError whose
+ * message is always the same sentence — "Edge Function returned a non-2xx
+ * status code". The function's own words (the daily AI limit and when it
+ * resets, membership required, the consent prompt) sit unread in the Response
+ * hanging off `context`, so the screens that only showed `error.message` told
+ * the member nothing, or showed a blank card. Read the body, keep the code the
+ * caller may want to branch on, and put the sentence through the same copy map
+ * as every other error.
+ */
+export async function readEdgeError(err: unknown, fallback?: string): Promise<EdgeError> {
+  const ctx = (err as { context?: { status?: number; json?: () => Promise<unknown> } } | null)?.context;
+  const status = ctx?.status;
+  let code: string | undefined;
+  try {
+    const body = await ctx?.json?.();
+    if (body && typeof body === "object" && typeof (body as { error?: unknown }).error === "string") {
+      code = (body as { error: string }).error;
+    }
+  } catch {
+    /* no JSON body — the status decides */
+  }
+  const generic = fallback ?? (status !== undefined ? BY_STATUS[status] : undefined) ?? "Something went wrong. Try again.";
+  return { status, code, message: code ? friendlyError(new Error(code), code) : generic };
+}

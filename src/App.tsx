@@ -1,7 +1,7 @@
 import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
 import { shouldGateOnboarding } from "@/lib/onboarding-gate";
 import { HARNESS_KEY, readHarnessParam, shouldForcePaywall } from "@/lib/paywall-harness";
-import { useIsAdmin } from "@/hooks/use-is-admin";
+import { useAdminAccess, useIsAdmin } from "@/hooks/use-is-admin";
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { LazyMotion, MotionConfig } from "framer-motion";
@@ -20,6 +20,7 @@ import { useOfflineCheckinSync } from "@/hooks/use-offline-checkin-sync";
 import { useOfflineNutritionSync } from "@/hooks/use-offline-nutrition-sync";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useActivityHeartbeat } from "@/hooks/use-activity-heartbeat";
+import { useOnline } from "@/hooks/use-online";
 import PushPrimingSheet from "@/components/notifications/PushPrimingSheet";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { cancelLapsedReengagement } from "@/lib/streak-notifications";
@@ -193,6 +194,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 /**
+ * Admin-only routes. The three /admin pages each re-check for themselves and
+ * their RPCs enforce has_role(admin) server-side, but /ios-debug had no gate
+ * at all: any signed-in member who guessed the path read the device
+ * diagnostics and the log buffer. One wrapper so a new admin page cannot
+ * forget.
+ */
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  const { isAdmin, loading } = useAdminAccess(user?.id);
+  if (loading) return <RouteFallback />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
+/**
  * ─────────────────────────────────────────────────────────────────────────
  * ROUTING — THE ONLY ROUTER
  * ─────────────────────────────────────────────────────────────────────────
@@ -243,6 +259,23 @@ const AppRoutes = () => {
   useOfflineCheckinSync();
   useOfflineNutritionSync();
   useActivityHeartbeat();
+  const online = useOnline();
+
+  // Coming back from the background used to show yesterday. refetchOnWindowFocus
+  // is off (a WebView fires focus constantly) and the default staleTime is two
+  // minutes, so a phone unlocked after a night's sleep painted whatever was in
+  // the cache and waited for a navigation to correct itself. Resuming, and
+  // regaining the network, refetch what is on screen AND already stale —
+  // catalogs pinned with a long staleTime are left alone.
+  useEffect(() => {
+    const refresh = () => { void queryClient.refetchQueries({ type: "active", stale: true }); };
+    window.addEventListener("native:resume", refresh);
+    window.addEventListener("online", refresh);
+    return () => {
+      window.removeEventListener("native:resume", refresh);
+      window.removeEventListener("online", refresh);
+    };
+  }, []);
 
   // Win-backs moved server-side (winback-lapsed) — cancel the legacy local
   // +3d/+7d timers once per session so pre-update devices don't get doubles.
@@ -302,6 +335,11 @@ const AppRoutes = () => {
     <OnboardingProvider>
     <div className="max-w-md mx-auto h-[100dvh] flex flex-col relative z-10">
       <StatusHeader />
+      {!online && (
+        <p role="status" className="shrink-0 px-4 py-1.5 text-center text-meta text-muted-foreground/75 bg-muted/40">
+          Offline — showing what's already synced
+        </p>
+      )}
       <ScrollContainerProvider value={scrollContainerRef}>
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden momentum-scroll">
         {/* RouteFallback renders a layout-matched skeleton for the destination
@@ -373,9 +411,9 @@ const AppRoutes = () => {
               should be linkable, and Back should close the detail. */}
           <Route path="/exercises/:slug?" element={<ProtectedRoute><Exercises /></ProtectedRoute>} />
           <Route path="/briefing/:id" element={<ProtectedRoute><WeeklyBriefing /></ProtectedRoute>} />
-          <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
-          <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminLegendInvites /></ProtectedRoute>} />
-          <Route path="/admin/metrics" element={<ProtectedRoute><AdminMetrics /></ProtectedRoute>} />
+          <Route path="/admin/moderation" element={<ProtectedRoute><AdminRoute><AdminModeration /></AdminRoute></ProtectedRoute>} />
+          <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminRoute><AdminLegendInvites /></AdminRoute></ProtectedRoute>} />
+          <Route path="/admin/metrics" element={<ProtectedRoute><AdminRoute><AdminMetrics /></AdminRoute></ProtectedRoute>} />
           {import.meta.env.DEV && <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />}
           <Route path="/feed" element={<Navigate to="/squad" replace />} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
@@ -396,7 +434,7 @@ const AppRoutes = () => {
               expose it on the public prod web build. Native app + dev only,
               and behind auth. */}
           {(import.meta.env.DEV || Capacitor.isNativePlatform()) && (
-            <Route path="/ios-debug" element={<ProtectedRoute><IosDebug /></ProtectedRoute>} />
+            <Route path="/ios-debug" element={<ProtectedRoute><AdminRoute><IosDebug /></AdminRoute></ProtectedRoute>} />
           )}
           <Route path="/~oauth" element={<OAuthCallback />} />
           <Route path="/~oauth/callback" element={<OAuthCallback />} />

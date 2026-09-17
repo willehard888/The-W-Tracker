@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import { Purchases as CapPurchases } from "@revenuecat/purchases-capacitor";
 import { pushIosDebugLog, updateRevenueCatDebug } from "@/lib/ios-debug";
-import { toast } from "sonner";
 import { MONTHLY_PRODUCT_IDS, YEARLY_PRODUCT_IDS } from "@/lib/products";
 
 // ─── Constants ──────────────────────────────────────────
@@ -34,6 +33,14 @@ const PRIMARY_PRODUCT_ID = "WhealthFactory499";
  */
 export interface PurchaseOutcome {
   cancelled: boolean;
+  /**
+   * Ask to Buy (a child account) and SCA both park the payment: StoreKit sent
+   * the request to whoever approves it and will answer later. RevenueCat
+   * rejects with PAYMENT_PENDING_ERROR, which read as a failure here — the
+   * user was told the purchase failed while it was sitting in a parent's
+   * approval queue, and nothing said their membership starts on approval.
+   */
+  pending?: boolean;
   /** true = App Store sandbox, false = money, null = no active entitlement / cancelled. */
   sandbox?: boolean | null;
 }
@@ -184,6 +191,15 @@ function isMonthlyPackage(pkg: any): boolean {
 /** True when user cancelled (not a real error). */
 export function isCancellation(e: any): boolean {
   return e?.code === "1" || e?.code === 1 || !!e?.userCancelled;
+}
+
+/** True when the payment is awaiting someone else's approval — Ask to Buy on a
+ *  child account, or a bank's SCA step. PURCHASES_ERROR_CODE 20. Not a failure:
+ *  the entitlement arrives (via the webhook) if and when it is approved. */
+export function isPaymentPending(e: any): boolean {
+  return (
+    e?.code === "20" || e?.code === 20 || e?.readableErrorCode === "PaymentPendingError"
+  );
 }
 
 function toMessage(err: unknown): string {
@@ -439,11 +455,17 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         return { cancelled: false, sandbox: purchaseSandboxFlag(customerInfo) };
       } catch (e: any) {
         if (isCancellation(e)) return { cancelled: true };
+        if (isPaymentPending(e)) {
+          pushIosDebugLog("RevenueCat", "Package purchase awaiting approval");
+          return { cancelled: false, pending: true, sandbox: null };
+        }
         console.error("[RC] Package purchase error:", e);
         const message = toMessage(e);
         updateRevenueCatDebug({ lastPurchaseError: message });
         pushIosDebugLog("RevenueCat", "Package purchase failed", { message });
-        toast.error("Purchase failed. Please try again.");
+        // No toast here. The Paywall already renders this failure as an inline
+        // alert next to the button that caused it, so a toast on top of it was
+        // the same failure said twice. The context reports, the screen speaks.
         throw e;
       }
     },
@@ -479,12 +501,12 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
           loadedProductIds,
           lastProductFetchError: selectedProduct
             ? null
-            : `Tuotetta ei löydy. Odotettiin yhtä näistä: ${requestedIds.join(", ")}. Store palautti: ${loadedProductIds.join(", ") || "none"}`,
+            : `Product not found. Expected one of: ${requestedIds.join(", ")}. Store returned: ${loadedProductIds.join(", ") || "none"}`,
         });
 
         if (!selectedProduct) {
           throw new Error(
-            `Tuotetta "${id}" ei löydy. Varmista että App Store Connectissa ja RevenueCatissa on sama Product ID (${requestedIds.join(" tai ")}).`,
+            `Product "${id}" is not available from the store. Check that App Store Connect and RevenueCat use the same product id (${requestedIds.join(" or ")}).`,
           );
         }
 
@@ -495,11 +517,15 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
         return { cancelled: false, sandbox: purchaseSandboxFlag(customerInfo) };
       } catch (e: any) {
         if (isCancellation(e)) return { cancelled: true };
+        if (isPaymentPending(e)) {
+          pushIosDebugLog("RevenueCat", "Direct product purchase awaiting approval");
+          return { cancelled: false, pending: true, sandbox: null };
+        }
         console.error("[RC] Product purchase error:", e);
         const message = toMessage(e);
         updateRevenueCatDebug({ lastPurchaseError: message });
         pushIosDebugLog("RevenueCat", "Direct product purchase failed", { message });
-        toast.error("Purchase failed. Please try again.");
+        // See the package path above: the caller owns the one message.
         throw e;
       }
     },

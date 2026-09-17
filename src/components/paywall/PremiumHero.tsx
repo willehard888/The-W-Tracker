@@ -11,9 +11,10 @@ export type BillingPlan = "monthly" | "yearly";
 interface PremiumHeroProps {
   monthlyPriceLabel: string;
   yearlyPriceLabel: string;
-  status?: "idle" | "purchasing" | "verifying" | "error";
+  status?: "idle" | "purchasing" | "verifying" | "pending" | "error";
   errorMessage?: string | null;
   onCta: (plan: BillingPlan) => void;
+  /** Clears whichever notice is showing — the failure or the pending one. */
   onDismissError?: () => void;
   yearlyDiscountPct?: number;
   /** When false, only monthly is offered. */
@@ -113,12 +114,13 @@ const PremiumHero = ({
   // No "free trial" language here: the 14-day trial is in-app and already
   // running (or spent) by the time this screen shows, and the store product
   // has no introductory offer. Claiming a store trial risks App Review.
-  // Automatic renewal has to be said on the screen that takes the money
-  // (App Review 3.1.2), not only in the Terms: renews until cancelled, and
-  // where to cancel. "Price locked" is the product's own promise, kept.
+  // The price line stays a price line. The full renewal terms (App Review
+  // 3.1.2) are the paragraph under the button — saying them twice, once in
+  // half and once in full, read as legal noise stacked on legal noise.
+  // "Price locked" is the product's own promise, kept.
   const footnote = native
-    ? `${activePrice}${cadence}. Renews automatically until cancelled, price locked while you stay subscribed. Cancel any time in your Apple Account settings.`
-    : "Subscribe in the iOS app. Renews automatically until cancelled; cancel any time in your Apple Account settings.";
+    ? `${activePrice}${cadence}. Price locked while you stay subscribed.`
+    : "Subscribe in the iOS app.";
 
   return (
     <div>
@@ -145,6 +147,27 @@ const PremiumHero = ({
             />
           )}
         </div>
+
+        {/* Ask to Buy: the purchase is real and waiting on the account holder,
+            so this is a neutral notice, not the destructive failure block. */}
+        {status === "pending" && (
+          <div role="status" className="mt-3 rounded-xl border border-border/60 bg-muted/40 px-3.5 py-2.5">
+            <p className="text-dense font-bold">Waiting for approval</p>
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5">
+              The request was sent to the account holder. Your membership starts as soon as they approve it —
+              you don't need to buy again.
+            </p>
+            {onDismissError && (
+              <button
+                type="button"
+                onClick={onDismissError}
+                className="min-h-11 text-meta font-bold underline underline-offset-2"
+              >
+                Got it
+              </button>
+            )}
+          </div>
+        )}
 
         {status === "error" && errorMessage && (
           <div role="alert" className="mt-3 rounded-xl border border-destructive/50 bg-destructive/10 px-3.5 py-2.5">
@@ -173,6 +196,14 @@ const PremiumHero = ({
           {ctaLabel}
         </Button>
         <p className="mt-2.5 text-center text-label text-muted-foreground">{footnote}</p>
+        {/* App Review 3.1.2: the auto-renewal terms have to be on the screen
+            the purchase starts from, not only in the Terms link. This is the
+            only such screen in the app — everything else routes here. */}
+        <p className="mt-2 text-center text-label text-muted-foreground leading-snug">
+          The subscription renews automatically. Your Apple Account is charged when you confirm the purchase, and
+          again each period unless you cancel at least 24 hours before the current period ends. Manage or cancel
+          the subscription in your Apple Account settings.
+        </p>
       </div>
 
       {/* WHAT IT UNLOCKS: hairline rows, one icon each. */}

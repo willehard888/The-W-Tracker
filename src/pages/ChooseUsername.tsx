@@ -22,7 +22,7 @@ const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
  */
 const ChooseUsername = () => {
   const navigate = useNavigate();
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile, signOut } = useAuth();
   const [username, setUsername] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -175,6 +175,16 @@ const ChooseUsername = () => {
           <p className="text-center text-meta text-muted-foreground">
             Locked permanently once set. Choose one that feels like you.
           </p>
+          {/* The only door out. Every other route redirects back here while the
+              handle is unset, so without this a member who opened the wrong
+              account had no way to leave it but deleting the app. */}
+          <button
+            type="button"
+            onClick={() => { void signOut(); }}
+            className="press mx-auto block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
+          >
+            Sign out
+          </button>
         </form>
       </div>
     </div>

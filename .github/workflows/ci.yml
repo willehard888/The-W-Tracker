@@ -48,3 +48,13 @@ jobs:
       # in every run's log, so a regression is seen the day it lands.
       - name: Perf snapshot (boot path vs perf/before.json)
         run: npm run perf:snapshot -- --baseline perf/before.json
+
+      # Measures, does not gate — for now. The tree carries ~360 lint errors,
+      # almost all `no-explicit-any` in edge functions that predate the type
+      # rules; turning this red today would only teach everyone to ignore a
+      # red CI. It runs so the count is in every log and a new file's problems
+      # are visible in the diff. Flip `continue-on-error` off once the count
+      # reaches zero, and make it a ratchet the way type-debt.mjs is.
+      - name: Lint (reported, not gated)
+        continue-on-error: true
+        run: npm run lint

@@ -28,7 +28,7 @@ const CoachBriefHero = ({
   onOpenChat: () => void;
   onAsk: (question: string) => void;
 }) => {
-  const { brief, isLoading } = useCoachBrief();
+  const { brief, isLoading, error } = useCoachBrief();
 
   if (isLoading) {
     return (
@@ -81,9 +81,18 @@ const CoachBriefHero = ({
           )}
         </>
       ) : (
-        <p className={cn("text-note font-bold leading-snug", readiness != null && "mt-3")}>
-          I'm your coach. Tell me how today's going and I'll build the next move around your data.
-        </p>
+        <>
+          <p className={cn("text-note font-bold leading-snug", readiness != null && "mt-3")}>
+            I'm your coach. Tell me how today's going and I'll build the next move around your data.
+          </p>
+          {/* A failed brief used to look identical to a first-ever visit, so a
+              member who had hit the daily cap was told nothing at all. */}
+          {error && (
+            <p role="status" className="mt-2 text-meta text-muted-foreground/75">
+              {error instanceof Error ? error.message : "Today's brief is unavailable right now."}
+            </p>
+          )}
+        </>
       )}
 
       <Button variant="ember" size="lg" className="w-full mt-4" onClick={onOpenChat}>

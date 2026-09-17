@@ -251,7 +251,7 @@ const PublicProfile = () => {
               <EmptyState
                 icon={Camera}
                 title="No posts yet"
-                description={`When @${profile.username} drops proof on the Elite Feed, it'll show here.`}
+                description={`When @${profile.username} drops proof, it'll show here.`}
               />
             )}
           </div>

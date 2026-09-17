@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { friendlyError } from "@/lib/error-copy";
+import { friendlyError, readEdgeError } from "@/lib/error-copy";
 import Sparkline from "@/components/coach/Sparkline";
 
 const PerformanceOSDashboard = () => {
@@ -26,7 +26,7 @@ const PerformanceOSDashboard = () => {
       await qc.invalidateQueries({ queryKey: ["coach-weekly-review-latest"] });
       await qc.invalidateQueries({ queryKey: ["coach-performance-snapshots"] });
     } catch (e: any) {
-      toast.error(friendlyError(e, "Failed to generate review"));
+      toast.error((await readEdgeError(e, friendlyError(e, "The weekly review is unavailable right now."))).message);
     } finally {
       setGenerating(false);
     }

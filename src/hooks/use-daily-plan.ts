@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { uniqueChannelName } from "@/lib/realtime";
+import { readEdgeError } from "@/lib/error-copy";
 
 export type MissionKind = "primary" | "recovery" | "focus" | "habit" | "edge";
 export type MissionPriority = "high" | "medium" | "low";
@@ -112,9 +113,8 @@ export const useDailyPlan = () => {
       // Response on `context` — surface the status so the UI can distinguish
       // "membership required" (403) from a real failure instead of showing the
       // raw "non-2xx status code" string to users.
-      const ctx = (error as { context?: { status?: number } }).context;
-      const status = ctx?.status;
-      throw new Error(status === 403 ? "membership_required" : error.message);
+      const edge = await readEdgeError(error, "Today's plan is unavailable right now.");
+      throw new Error(edge.status === 403 && !edge.code ? "membership_required" : (edge.code ?? edge.message));
     }
     interface GeneratePayload {
       error?: string;

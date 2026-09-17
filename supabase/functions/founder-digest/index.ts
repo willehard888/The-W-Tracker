@@ -1,4 +1,4 @@
-// founder-digest — Monday-morning "week in review" push to admin devices.
+// founder-digest — the daily numbers, pushed to admin devices.
 //
 // Computes the headline growth numbers DIRECTLY with the service client (the
 // admin_* RPCs check has_role(auth.uid()) and RAISE under service role — no
@@ -118,11 +118,43 @@ Deno.serve(async (req) => {
     const d1Str = await retention(8, 2, 1, 1);
     const d7Str = await retention(14, 8, 5, 9);
 
-    const title = "📊 Week in review";
+    // ── Health: three things that fail silently ──────────────────────────
+    // Every one of these has broken in production without anybody noticing
+    // for days, because nothing pages and nothing goes red. The digest is
+    // the only alarm this app has, so it carries them.
+
+    // 1. Money. RevenueCat's webhook writes a ledger row; the client writes a
+    //    purchase_completed. If those two counts diverge, one of the halves is
+    //    down — and the half that is down might be the one granting access.
+    const { count: webhookPurchases } = await supabase
+      .from("webhook_events").select("event_id", { count: "exact", head: true })
+      .eq("event_type", "INITIAL_PURCHASE").gte("created_at", daysAgo(7));
+
+    // 2. Push. A send that returns non-200 still writes its row, with ok:false.
+    const { count: pushFailed } = await supabase
+      .from("analytics_events").select("id", { count: "exact", head: true })
+      .eq("event", "push_sent").eq("props->>ok", "false").gte("created_at", daysAgo(7));
+    const failPct = pushSent > 0 ? Math.round((100 * (pushFailed ?? 0)) / pushSent) : 0;
+
+    // 3. Cron. coach-insights writes a snapshot row every night at 03:15; the
+    //    age of the newest one is the cheapest proof the scheduler is alive.
+    const { data: lastSnap } = await supabase
+      .from("coach_performance_snapshots").select("created_at")
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const cronAgeH = lastSnap?.created_at
+      ? Math.floor((Date.now() - new Date(lastSnap.created_at).getTime()) / 3600000)
+      : null;
+    const cronStr = cronAgeH === null ? "cron ?" : cronAgeH <= 30 ? `cron ok` : `cron ${cronAgeH}h ⚠`;
+    const moneyStr = (webhookPurchases ?? 0) === purchases
+      ? `money ok`
+      : `money ${webhookPurchases ?? 0}w/${purchases}c ⚠`;
+
+    const title = "📊 The numbers";
     const body =
       `WAU ${wau} (${deltaStr}) · ${newUsers ?? 0} new · ` +
       `${purchases} purchase${purchases === 1 ? "" : "s"} · ${trials} trials · ` +
-      `D1 ${d1Str} · D7 ${d7Str} · push ${pushSent} sent / ${pushOpened} opened`;
+      `D1 ${d1Str} · D7 ${d7Str} · push ${pushSent} sent / ${pushOpened} opened` +
+      ` · ${moneyStr} · push fail ${failPct}% · ${cronStr}`;
 
     // ── Deliver to every admin's devices ─────────────────────────────────
     const { data: admins, error: adminErr } = await supabase

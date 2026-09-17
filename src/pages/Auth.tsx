@@ -133,6 +133,10 @@ const Auth = () => {
       if (username.length < 3) return fail("Username must be at least 3 characters");
       if (!/^[a-zA-Z0-9_]+$/.test(username)) return fail("Username can only contain letters, numbers, and underscores");
       if (nameStatus === "taken") return fail("That username is taken — pick another.");
+      // The availability check is debounced. Submitting inside that window
+      // sent the signup anyway and the collision came back as a raw unique-key
+      // error after the account had already been created.
+      if (nameStatus === "checking") return fail("Still checking that username — one second.");
       void trackAnon("signup_submitted"); // pre-auth: fires whether or not signUp succeeds
       const { error: err } = await signUp(email, password, username);
       if (err) return fail(friendlyError(err));

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, parseISO } from "date-fns";
-import { Info, Loader2, Target, WifiOff } from "lucide-react";
+import { Info, Loader2, Target } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -134,21 +134,6 @@ async function recipeAsPortionFood(id: string, name: string, gramsPerServing: nu
   };
 }
 
-const useOnline = () => {
-  const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine !== false);
-  useEffect(() => {
-    const on = () => setOnline(true);
-    const off = () => setOnline(false);
-    window.addEventListener("online", on);
-    window.addEventListener("offline", off);
-    return () => {
-      window.removeEventListener("online", on);
-      window.removeEventListener("offline", off);
-    };
-  }, []);
-  return online;
-};
-
 const BodySkeleton = () => (
   <div className="animate-fade-in" aria-busy="true" aria-label="Loading your diary">
     <Block height={28} className="w-3/4 !rounded-lg" />
@@ -164,7 +149,6 @@ const NutritionDiary = () => {
   const qc = useQueryClient();
   const { user } = useAuth();
   const uid = user?.id;
-  const online = useOnline();
   const [params, setParams] = useSearchParams();
 
   // ── Day ──────────────────────────────────────────────────────────────
@@ -544,12 +528,6 @@ const NutritionDiary = () => {
           </>
         }
       />
-
-      {!online && (
-        <p role="status" className="px-4 pt-2.5 text-meta text-muted-foreground inline-flex items-center gap-1.5">
-          <WifiOff size={12} aria-hidden /> Offline — showing what's synced
-        </p>
-      )}
 
       <div className="px-4 pt-4 pb-6">
         {loading ? (

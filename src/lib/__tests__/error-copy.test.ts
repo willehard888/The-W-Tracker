@@ -2,7 +2,7 @@
 // messages and the user's toast. Known signatures map to app-voice copy —
 // including the DB's "clubs" language in an app that calls them Tribes.
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { friendlyError } from "@/lib/error-copy";
+import { friendlyError, readEdgeError } from "@/lib/error-copy";
 
 beforeEach(() => vi.spyOn(console, "error").mockImplementation(() => {}));
 
@@ -40,5 +40,42 @@ describe("friendlyError", () => {
   it("logs the raw detail to console for debugging", () => {
     friendlyError(new Error("secret internal detail"));
     expect(console.error).toHaveBeenCalled();
+  });
+});
+
+// supabase.functions.invoke gives every non-2xx the same useless message and
+// hides the function's own sentence in the Response on `context`.
+const httpError = (status: number, body?: unknown) =>
+  Object.assign(new Error("Edge Function returned a non-2xx status code"), {
+    context: { status, json: async () => { if (body === undefined) throw new SyntaxError("no body"); return body; } },
+  });
+
+describe("readEdgeError", () => {
+  it("surfaces the sentence the function actually sent", async () => {
+    const e = await readEdgeError(httpError(429, { error: "You've reached today's Coach limit. It resets at midnight UTC." }));
+    expect(e.message).toMatch(/today's Coach limit/);
+    expect(e.status).toBe(429);
+  });
+
+  it("keeps the raw code so the caller can branch on it", async () => {
+    const e = await readEdgeError(httpError(403, { error: "ai_consent_required" }));
+    expect(e.code).toBe("ai_consent_required");
+  });
+
+  it("falls back to the status when the body is not JSON", async () => {
+    expect((await readEdgeError(httpError(403))).message).toMatch(/membership/i);
+    expect((await readEdgeError(httpError(401))).message).toMatch(/Sign in/i);
+    expect((await readEdgeError(httpError(429))).message).toMatch(/Slow down/i);
+  });
+
+  it("prefers the caller's fallback over the status line, and survives a non-HTTP error", async () => {
+    expect((await readEdgeError(httpError(500), "Couldn't read progress.")).message).toBe("Couldn't read progress.");
+    expect((await readEdgeError(new Error("boom"))).message).toMatch(/Something went wrong/);
+  });
+
+  it("still scrubs a leaky server message through the copy map", async () => {
+    const e = await readEdgeError(httpError(500, { error: "permission denied for table kudos" }));
+    expect(e.message).toMatch(/access/);
+    expect(e.message).not.toMatch(/kudos/);
   });
 });

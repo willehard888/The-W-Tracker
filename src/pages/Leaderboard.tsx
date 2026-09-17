@@ -261,6 +261,13 @@ const Leaderboard = () => {
   const myMark = me && me.user_id === profile?.user_id ? marks[rank! - 1] : undefined;
   const displayRank = myMark?.position ?? rank;
 
+  // The season row is cached for ten minutes and the board with it, so a
+  // season can end while the tab is open. The countdown said "Season ended"
+  // in the meta line while everything above it still read as a live race —
+  // so past the window the beat states the result instead of the standing.
+  const seasonOver = mode === "season" && !!activeSeason?.ends_at && new Date(activeSeason.ends_at).getTime() <= Date.now();
+  const winner = seasonOver ? currentLeaders[0] : undefined;
+
   // Access is gated globally by AccessGate (8,99 €/mo membership or 14-day trial).
   return (
     <div
@@ -281,7 +288,14 @@ const Leaderboard = () => {
         ) : (
           <>
             <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
-              {hasRank && rank ? (
+              {seasonOver ? (
+                <>
+                  {winner
+                    ? <>Season over. <span className="text-gold">@{winner.username}</span> took it.</>
+                    : "Season over."}
+                  {hasRank && rank ? <> You finished <span className="tabular-nums">#{fmtInt(displayRank!)}</span> of {fmtInt(boardTotal)}.</> : null}
+                </>
+              ) : hasRank && rank ? (
                 <>
                   <span className="text-gold tabular-nums">#{fmtInt(displayRank!)}</span> of {fmtInt(boardTotal)}.
                   {displayRank === 1 && !myMark?.tied
@@ -298,10 +312,14 @@ const Leaderboard = () => {
             </h1>
             <p className="text-label font-bold text-muted-foreground mt-2">
               {mode === "season" ? (
-                <>
-                  {activeSeason?.name || "Season"} · season XP
-                  {activeSeason?.ends_at && <> · <CountdownTimer endsAt={activeSeason.ends_at} /></>}
-                </>
+                seasonOver ? (
+                  <>{activeSeason?.name || "Season"} · final standings</>
+                ) : (
+                  <>
+                    {activeSeason?.name || "Season"} · season XP
+                    {activeSeason?.ends_at && <> · <CountdownTimer endsAt={activeSeason.ends_at} /></>}
+                  </>
+                )
               ) : (
                 "All time · lifetime XP"
               )}

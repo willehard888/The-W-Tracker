@@ -260,20 +260,32 @@ const Notifications = () => {
               {notifications!.map((n, i) => {
                 const Icon = KIND_ICONS[n.kind] ?? Bell;
                 const isUnread = !n.read_at;
+                // A tap either opens something or clears the dot. A read row
+                // with no safe route does neither, so it stops being a button
+                // instead of promising an action it swallows.
+                const tappable = isUnread || isSafeRoute(n.route);
+                const rowClass = "w-full flex items-start gap-3 py-3 text-left";
+                const row = (
+                  <>
+                    <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
+                    <span className="flex-1 min-w-0">
+                      <span className={cn("block text-dense leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
+                        {n.title}
+                      </span>
+                      {n.body && <span className="block text-meta text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
+                      <span className="block text-label text-muted-foreground/75 mt-1">{fmtRelative(n.created_at)}</span>
+                    </span>
+                    {isUnread && <span className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
+                  </>
+                );
                 return (
                   // Entrance on a wrapper: the keyframe pins transform, which would kill the row's press.
                   <div key={n.id} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
-                    <button type="button" onClick={() => openNotification(n)} className="w-full flex items-start gap-3 py-3 text-left">
-                      <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
-                      <span className="flex-1 min-w-0">
-                        <span className={cn("block text-dense leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
-                          {n.title}
-                        </span>
-                        {n.body && <span className="block text-meta text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
-                        <span className="block text-label text-muted-foreground/75 mt-1">{fmtRelative(n.created_at)}</span>
-                      </span>
-                      {isUnread && <span className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
-                    </button>
+                    {tappable ? (
+                      <button type="button" onClick={() => openNotification(n)} className={rowClass}>{row}</button>
+                    ) : (
+                      <div className={rowClass}>{row}</div>
+                    )}
                   </div>
                 );
               })}

@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downscaleImage } from "@/lib/downscale-image";
 import { uniqueChannelName } from "@/lib/realtime";
+import { readLocal, writeLocal } from "@/lib/storage";
 import { backOr } from "@/lib/nav";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
@@ -119,9 +120,29 @@ const Battles = () => {
     staleTime: 60_000,
   });
 
+  // A declined challenge has nowhere to go server-side — participants hold no
+  // UPDATE or DELETE on `battles` — so clearing one is a local act. The ids
+  // live under the member's own key, so a second account on the same device
+  // never inherits them.
+  const dismissKey = profile ? `w_battles_declined_seen_${profile.user_id}` : "";
+  const [dismissedDeclined, setDismissedDeclined] = useState<string[]>([]);
+  useEffect(() => {
+    setDismissedDeclined(dismissKey ? (readLocal(dismissKey) ?? "").split(",").filter(Boolean) : []);
+  }, [dismissKey]);
+  const dismissDeclined = (battleId: string) => {
+    const next = [...dismissedDeclined, battleId];
+    setDismissedDeclined(next);
+    writeLocal(dismissKey, next.join(","));
+  };
+
   const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
   const activeBattles = battles?.filter((b: any) => b.status === "active") || [];
   const myPending = battles?.filter((b: any) => b.status === "pending" && b.challenger_id === profile?.user_id) || [];
+  // The opponent said no. The row used to vanish from the challenger's screen
+  // with the status only ever stored, so the challenge read as lost in transit.
+  const declinedBattles = battles?.filter(
+    (b: any) => b.status === "declined" && b.challenger_id === profile?.user_id && !dismissedDeclined.includes(b.id),
+  ) || [];
   const completedBattles = battles?.filter((b: any) => b.status === "completed") || [];
 
   // The hero is the live battle with the fewest days left; the rest are rows.
@@ -136,26 +157,29 @@ const Battles = () => {
 
   // Realtime: refresh battles the moment a challenge, accept or result lands.
   // NOTE: no unfiltered `profiles` subscription — it delivered EVERY profile
-  // update in the product to every client on this page.
+  // update in the product to every client on this page. `battles` had the same
+  // fault: unfiltered, every battle row anyone wrote woke every client here.
+  // A realtime `filter` carries one condition and the member sits in either
+  // seat, so the fix is two filtered channels, not none.
   const battlesRtUid = profile?.user_id;
   useEffect(() => {
     if (!battlesRtUid) return;
-    const channel = supabase
-      .channel(uniqueChannelName("battles-realtime"))
-      .on(
-        "postgres_changes",
-        // No `filter:` — the user sits in either challenger_id or opponent_id
-        // (realtime takes one column).
-        { event: "*", schema: "public", table: "battles" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["battles"] });
-          queryClient.invalidateQueries({ queryKey: ["battle-scores"] });
-        }
-      )
-      .subscribe();
+    const channels = ["challenger_id", "opponent_id"].map((column) =>
+      supabase
+        .channel(uniqueChannelName("battles-realtime", column))
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "battles", filter: `${column}=eq.${battlesRtUid}` },
+          () => {
+            queryClient.invalidateQueries({ queryKey: ["battles"] });
+            queryClient.invalidateQueries({ queryKey: ["battle-scores"] });
+          }
+        )
+        .subscribe(),
+    );
 
     return () => {
-      supabase.removeChannel(channel);
+      channels.forEach((channel) => supabase.removeChannel(channel));
     };
   }, [battlesRtUid, queryClient]);
 
@@ -282,7 +306,7 @@ const Battles = () => {
     return battle.challenger_id === profile.user_id ? battle.opponent_proof_url : battle.challenger_proof_url;
   };
 
-  const ledgerCount = otherLive.length + myPending.length + completedBattles.length;
+  const ledgerCount = otherLive.length + myPending.length + declinedBattles.length + completedBattles.length;
 
   if (!profile) return null;
 
@@ -410,6 +434,20 @@ const Battles = () => {
                         battle={battle}
                         opponentName={getOpponent(battle).username}
                         typeInfo={battleTypeInfo(battle.battle_type)}
+                      />
+                    ))}
+                  </Ledger>
+                )}
+
+                {declinedBattles.length > 0 && (
+                  <Ledger label="Declined">
+                    {declinedBattles.map((battle: any) => (
+                      <BattlePendingCard
+                        key={battle.id}
+                        battle={battle}
+                        opponentName={getOpponent(battle).username}
+                        typeInfo={battleTypeInfo(battle.battle_type)}
+                        onDismiss={dismissDeclined}
                       />
                     ))}
                   </Ledger>

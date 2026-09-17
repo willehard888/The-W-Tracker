@@ -85,11 +85,10 @@ answering 42501.
    then grep the log for `build N → external group: distributed ✅`. There are
    two same-named TestFlight groups; the external one needs explicit assignment,
    which is what that Action does.
-5. Build numbers are minutes since 2026-01-01 UTC, so "newest build is the one
-   with number ≥ N" is always a true statement to hand over:
-   ```bash
-   echo $(( ($(date -u +%s) - $(date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "2026-01-01T00:00:00Z" +%s)) / 60 ))
-   ```
+5. Build numbers are a plain incrementing counter under Xcode Cloud (1196 →
+   1197), not the minutes-since-epoch they were in the Codemagic era — that
+   old formula now returns a six-digit number and is wrong. Read the real one
+   from `node scratchpad/xc/newest.mjs` and hand that number over.
 
 ## 4. The store page
 

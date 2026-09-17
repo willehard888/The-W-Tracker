@@ -9,6 +9,7 @@
 //   components = { pillars, patterns, observations, focus, engine: "whealth-os" }
 //
 // Cron-only (service role guard, same pattern as weekly-briefing-generate).
+import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { fetchAll } from "../_shared/fetch-all.ts";
 import {
@@ -97,6 +98,9 @@ Deno.serve(async (req) => {
 
     for (const uid of userIds) {
       try {
+        // No consent, no model: the deterministic insight below still lands.
+        const { data: consentRow } = await supabase.from("profiles").select("ai_consent_version").eq("user_id", uid).maybeSingle();
+        const aiOk = consentOk(consentRow?.ai_consent_version);
         const [checkinsR, nightsR, daysR, reflR, habitsR, lessonsR, liftsR, tribesR, friendsR, athleteR, mealsR, targetsR] =
           await Promise.all([
             sb.from("daily_checkins")
@@ -241,10 +245,7 @@ Deno.serve(async (req) => {
               ...result.patterns.map((p) =>
                 `PATTERN ${p.metric}: ${p.avgA}${p.unit} ${p.aLabel} vs ${p.avgB}${p.unit} ${p.bLabel} (n=${p.nA}/${p.nB})`),
             ].join("\n");
-            const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
+            const aiResp = await openrouterFetch(OPENROUTER_API_KEY, {
                 model: "google/gemini-3-flash-preview",
                 messages: [
                   {
@@ -271,9 +272,7 @@ Deno.serve(async (req) => {
                   },
                 }],
                 tool_choice: { type: "function", function: { name: "emit_insights" } },
-              }),
-              signal: AbortSignal.timeout(25_000),
-            });
+              }, { consent: aiOk, timeoutMs: 25_000 });
             if (aiResp.ok) {
               const j = await aiResp.json();
               const args = j.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;

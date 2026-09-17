@@ -11,6 +11,7 @@
 // Shares the coach_nudges one-per-day dedup with coach-morning-nudge, so the two
 // never double-nudge. Every trigger has a deterministic fallback message, so the
 // engine still delivers if the AI provider is unavailable.
+import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { fetchAll } from "../_shared/fetch-all.ts";
 import { gatherSituation } from "../_shared/situation.ts";
@@ -174,7 +175,7 @@ Deno.serve(async (req) => {
       let headline = trigger.headline;
       let content = trigger.content;
       if (OPENROUTER_API_KEY) {
-        const ai = await generate(OPENROUTER_API_KEY, p, trigger).catch(() => null);
+        const ai = await generate(OPENROUTER_API_KEY, p, trigger, consentOk(p?.ai_consent_version)).catch(() => null);
         if (ai?.headline && ai?.content) { headline = ai.headline; content = ai.content; }
       }
 
@@ -329,6 +330,8 @@ async function generate(
   apiKey: string,
   p: any,
   trigger: Trigger,
+  /** The member's AI consent. Without it nothing is sent and the caller keeps its own copy. */
+  consent: boolean,
 ): Promise<{ headline: string; content: string } | null> {
   const intent =
     trigger.kind === "recovery"
@@ -337,10 +340,7 @@ async function generate(
       ? "The user's streak is at risk this evening. Protect it — urge one quick check-in before midnight. Warm, not naggy."
       : "Set today's tone off yesterday's momentum. One concrete action. Confident, not cheesy.";
 
-  const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const resp = await openrouterFetch(apiKey, {
       model: "google/gemini-3-flash-preview",
       messages: [
         {
@@ -355,8 +355,7 @@ Rules: reference the specific signal, prescribe ONE concrete action, max 2 sente
       ],
       tools: [nudgeTool],
       tool_choice: { type: "function", function: { name: "emit_nudge" } },
-    }),
-  });
+    }, { consent: consent, timeoutMs: 25_000 });
   if (!resp.ok) return null;
   const data = await resp.json();
   const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;

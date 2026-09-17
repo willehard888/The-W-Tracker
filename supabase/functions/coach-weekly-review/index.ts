@@ -1,6 +1,7 @@
 // Generate the weekly meta-coach review for the authenticated user.
 // Pulls last 7 days of check-ins, reflections, mission logs and program logs,
 // then asks the AI to identify the driver of the week, wins, frictions, and next-week focus.
+import { hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown } from "../_shared/sports.ts";
 
@@ -117,7 +118,9 @@ Deno.serve(async (req) => {
 
     // Per-member daily cap: over it, the review is the computed one below.
     const { data: modelAllowed } = await supabase.rpc("bump_ai_usage", { p_limit: 6, p_kind: "weekly_review" });
-    if (OPENROUTER_API_KEY && modelAllowed !== false) {
+    // No consent, no model: the computed review below is the answer instead.
+    const aiOk = await hasAiConsent(supabase, userId);
+    if (OPENROUTER_API_KEY && modelAllowed !== false && aiOk) {
       try {
         const prompt = `Last 7 days for athlete (${athlete?.i_am ?? "no identity"}, goal: ${athlete?.primary_goal ?? "general"}, tone: ${athlete?.tone_pref ?? "calm_mentor"}).
 
@@ -130,10 +133,7 @@ COMPUTED PERFORMANCE SCORE: ${performance_score}/100
 
 Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that moved the score this week (positive or negative). next_week_focus = ≤3 sentences of crisp prescription. program_tweak = ONE concrete adjustment if data warrants it (e.g. "Drop Friday VO₂ — RPE creeping above 9").`;
 
-        const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const r = await openrouterFetch(OPENROUTER_API_KEY, {
             model: "google/gemini-2.5-flash",
             messages: [
               { role: "system", content: "You are AI Coach — distill the week into actionable signal. Use the emit_weekly_review tool." },
@@ -141,8 +141,7 @@ Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that move
             ],
             tools: [TOOL],
             tool_choice: { type: "function", function: { name: "emit_weekly_review" } },
-          }),
-        });
+          }, { consent: true, timeoutMs: 25_000 });
         if (r.ok) {
           const jj = await r.json();
           const args = jj.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;

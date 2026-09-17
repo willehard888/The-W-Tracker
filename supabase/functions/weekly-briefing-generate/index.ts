@@ -1,5 +1,6 @@
 // Weekly Briefing Generator — runs Sundays via pg_cron
 // Generates AI-powered weekly summary for each Elite user with ≥3 checkins this week
+import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { prefAllows } from "../_shared/push-targets.ts";
@@ -210,7 +211,7 @@ Deno.serve(async (req) => {
   // gated on is_premium, NOT the earned "elite" status tier).
   const { data: eliteUsers, error: usersErr } = await supabase
     .from("profiles")
-    .select("user_id, username, status_tier, level, xp, streak, longest_streak, notification_prefs")
+    .select("user_id, username, status_tier, level, xp, streak, longest_streak, notification_prefs, ai_consent_version")
     // Paid members OR live membership credits (referral rewards + pilot
     // codes) — a pilot tester paying with a code gets the same briefing.
     .or(`is_premium.eq.true,membership_credits_until.gt.${new Date().toISOString()}`);
@@ -313,13 +314,9 @@ ${(checkins as Checkin[]).map((c) => `${c.checked_in_at.slice(0, 10)}: ${c.xp_ea
 
 ${journalSnippets.length > 0 ? `Journal excerpts:\n${journalSnippets.join("\n")}` : ""}`;
 
-      const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      // No consent, no model (App Review 5.1.2(i)): this member's briefing is skipped.
+      const aiOk = consentOk((p as { ai_consent_version?: number | null }).ai_consent_version);
+      const aiResp = await openrouterFetch(OPENROUTER_API_KEY, {
           model: "google/gemini-3-flash-preview",
           messages: [
             {
@@ -340,8 +337,7 @@ Rules:
           ],
           tools: [briefingTool],
           tool_choice: { type: "function", function: { name: "emit_briefing" } },
-        }),
-      });
+        }, { consent: aiOk, timeoutMs: 25_000 });
 
       if (!aiResp.ok) {
         const t = await aiResp.text();

@@ -1,5 +1,6 @@
 // AI moderator for proof photos and Elite Feed posts.
 // Optimized: client-thumbnail support, hash cache, severity, fail-closed for images.
+import { openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -99,14 +100,7 @@ async function callModerator(
     userContent.push({ type: "image_url", image_url: { url: imageUrl } });
   }
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    signal,
-    headers: {
-      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const response = await openrouterFetch(OPENROUTER_API_KEY, {
       model: MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
@@ -156,8 +150,7 @@ async function callModerator(
         },
       ],
       tool_choice: { type: "function", function: { name: "report_moderation" } },
-    }),
-  });
+    }, { consent: /* the safety screen guideline 1.2 requires: disclosed, never switchable */ true, timeoutMs: 20_000 });
 
   if (!response.ok) {
     const t = await response.text();

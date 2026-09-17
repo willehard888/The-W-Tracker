@@ -3,6 +3,7 @@
 // database via search_foods / nutrition_for_grams. The one exception is the
 // isolated label-transcription tool, whose output is shown as "read from the
 // label" and saved only through the user-food editor. Template: moderate-content.
+import { AI_CONSENT_REQUIRED, consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
   applyCount,
@@ -94,29 +95,15 @@ async function sha256Hex(parts: Uint8Array[]): Promise<string> {
 type UpstreamResult = { kind: "ok"; data: unknown } | { kind: "http"; status: number; text: string } | { kind: "abort" };
 
 async function callOpenRouter(apiKey: string, body: unknown, timeoutMs: number): Promise<UpstreamResult> {
-  const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), timeoutMs);
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      signal: ac.signal,
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://whealthfactory.com",
-        "X-Title": "Whealth Factory",
-      },
-      body: JSON.stringify(body),
-    });
+    // One door for every model call (consent, no-retention routing, timeout).
+    // Consent is checked before the request is built, so it is true here.
+    const res = await openrouterFetch(apiKey, body as Record<string, unknown>, { consent: true, timeoutMs });
     if (!res.ok) return { kind: "http", status: res.status, text: await res.text().catch(() => "") };
     return { kind: "ok", data: await res.json() };
   } catch (e) {
-    if (e instanceof DOMException && e.name === "AbortError") return { kind: "abort" };
-    // Network failure / unparseable JSON — treat as a transient upstream 5xx.
-    console.error("nutrition-scan upstream fetch failed:", e instanceof Error ? e.message : String(e));
-    return { kind: "http", status: 502, text: "" };
-  } finally {
-    clearTimeout(timer);
+    console.error("nutrition-scan upstream aborted:", e instanceof Error ? e.message : e);
+    return { kind: "abort" };
   }
 }
 
@@ -198,7 +185,7 @@ Deno.serve(async (req) => {
       // profiles.id is the row's own uuid; user_id is the auth id. The old .eq("id", uid)
       // matched nothing, so every paying member was capped at the free 15 scans and
       // their plate calibration never applied.
-      userClient.from("profiles").select("is_elite, membership_credits_until, nutrition_prefs").eq("user_id", uid).maybeSingle(),
+      userClient.from("profiles").select("is_elite, membership_credits_until, nutrition_prefs, ai_consent_version").eq("user_id", uid).maybeSingle(),
       localeIn
         ? Promise.resolve(null)
         : userClient.from("coach_athlete_profile").select("language_pref").eq("user_id", uid).maybeSingle(),
@@ -207,6 +194,10 @@ Deno.serve(async (req) => {
     if (accessRes.error || !accessRes.data) return json({ error: "Active membership required" }, 403);
 
     const profile = profileRes.data;
+    // A meal photo is personal data going to a third-party model: no consent,
+    // no upload (App Review 5.1.2(i)). Refused before the daily cap so a
+    // refusal never costs a scan.
+    if (!consentOk(profile?.ai_consent_version)) return json({ error: AI_CONSENT_REQUIRED }, 403);
     const credits = profile?.membership_credits_until;
     const isPaid =
       profile?.is_elite === true ||

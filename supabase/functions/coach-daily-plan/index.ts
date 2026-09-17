@@ -4,6 +4,7 @@
 // 3–5 high-impact missions via tool-calling. Persists to coach_daily_plans via SECURITY
 // DEFINER RPC `upsert_daily_plan`.
 
+import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportName } from "../_shared/sports.ts";
 import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
@@ -508,7 +509,7 @@ Deno.serve(async (req) => {
     const [profileRes, checkinsRes, programRes, athleteRes, goalRes, memoryRes, skipRes, habitsRes, habitLogsRes, habitGaps] = await Promise.all([
       supabase
         .from("profiles")
-        .select("username, status_tier, streak, longest_streak, xp, level")
+        .select("username, status_tier, streak, longest_streak, xp, level, ai_consent_version")
         .eq("user_id", userId)
         .maybeSingle(),
       supabase
@@ -682,7 +683,9 @@ Deno.serve(async (req) => {
 
     // Per-member daily cap: over it, the plan is the rule-based one below.
     const { data: modelAllowed } = await supabase.rpc("bump_ai_usage", { p_limit: 12, p_kind: "daily_plan" });
-    if (OPENROUTER_API_KEY && modelAllowed !== false) {
+    // No consent, no model: the rule-based plan below is the answer instead.
+    const aiOk = consentOk(profile?.ai_consent_version);
+    if (OPENROUTER_API_KEY && modelAllowed !== false && aiOk) {
       try {
         // Last night's recovery signals → let the plan account for under-recovery.
         const nightSignals = await gatherNightSignals(supabase, userId).catch(() => ({ hasData: false }));
@@ -697,13 +700,7 @@ Deno.serve(async (req) => {
         const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext, progressionBlock)
           + (causalBlock ? `\n\n${causalBlock}\n\nIf recovery is clearly suppressed vs baseline, bias today toward recovery/lighter load and say why in the rationale.` : "")
           + (gapsBlock ? `\n\n${gapsBlock}` : "");
-        const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        const aiResp = await openrouterFetch(OPENROUTER_API_KEY, {
             model: "google/gemini-2.5-flash",
             messages: [
               {
@@ -714,8 +711,7 @@ Deno.serve(async (req) => {
             ],
             tools: [TOOL_SCHEMA],
             tool_choice: { type: "function", function: { name: "emit_daily_plan" } },
-          }),
-        });
+          }, { consent: true, timeoutMs: 25_000 });
         if (aiResp.ok) {
           const j = await aiResp.json();
           const call = j.choices?.[0]?.message?.tool_calls?.[0];

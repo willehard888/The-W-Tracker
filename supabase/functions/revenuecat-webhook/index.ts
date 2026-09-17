@@ -3,6 +3,7 @@ import { allowSandboxEvent } from "../_shared/sandbox-rule.ts";
 import { PREMIUM_PRODUCT_IDS } from "../_shared/products.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
+import { activeProducts, decideEntitlement, planTransfer, type LedgerRow, type ProductKind } from "../_shared/rc-entitlement.ts";
 
 // Webhooks are server-to-server — no CORS headers needed.
 const jsonHeaders = { "Content-Type": "application/json" };
@@ -97,6 +98,51 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
 
+    const isUserId = (id: unknown): id is string =>
+      typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const kindOf = (id: string): ProductKind =>
+      APEX_PRODUCT_IDS.includes(id) ? "apex" : PREMIUM_PRODUCT_IDS.includes(id) ? "premium" : "unknown";
+    const ledgerOf = async (ids: string[]): Promise<LedgerRow[]> => {
+      if (ids.length === 0) return [];
+      const { data } = await supabase
+        .from("webhook_events")
+        .select("product_id, event_ts, expires_at")
+        .eq("source", "revenuecat")
+        .in("app_user_id", ids)
+        .order("event_ts", { ascending: false })
+        .limit(50);
+      return (data ?? []).map((r: { product_id: string | null; event_ts: number; expires_at: string | null }) => ({
+        product_id: r.product_id,
+        event_ts: Number(r.event_ts),
+        expires_at_ms: r.expires_at ? Date.parse(r.expires_at) : null,
+      }));
+    };
+
+    // A TRANSFER is the one event with no app_user_id: a subscription moved
+    // between accounts (a restore on a second Apple ID). The function used to
+    // answer 400 here, so RevenueCat retried for hours and the account the
+    // subscription LEFT stayed Premium forever.
+    if (event.type === "TRANSFER") {
+      const from = (Array.isArray(event.transferred_from) ? event.transferred_from : []).filter(isUserId);
+      const to = (Array.isArray(event.transferred_to) ? event.transferred_to : []).filter(isUserId);
+      const sourceRows = await ledgerOf(from);
+      const sourceWasActive = activeProducts(sourceRows, Date.now()).length > 0;
+      const plan = planTransfer(from, to, sourceWasActive, isUserId);
+      for (const id of plan.revoke) {
+        await supabase.from("profiles").update({ is_elite: false, is_premium: false, is_apex_subscriber: false }).eq("user_id", id);
+      }
+      for (const id of plan.grant) {
+        await supabase.from("profiles").update({ is_elite: true, is_premium: true }).eq("user_id", id);
+      }
+      // The ledger follows the subscription, so the next EXPIRATION is decided
+      // against the account that now holds it.
+      if (plan.ledgerTo && from.length > 0) {
+        await supabase.from("webhook_events").update({ app_user_id: plan.ledgerTo }).eq("source", "revenuecat").in("app_user_id", from);
+      }
+      console.log("RevenueCat TRANSFER", JSON.stringify({ from, to, sourceWasActive, plan }));
+      return new Response(JSON.stringify({ ok: true, transfer: plan }), { status: 200, headers: jsonHeaders });
+    }
+
     const appUserId = event.app_user_id;
     if (!appUserId) {
       return new Response(JSON.stringify({ error: "No app_user_id" }), {
@@ -134,16 +180,25 @@ Deno.serve(async (req) => {
     // because bookkeeping did.
     const eventId: string | undefined = event.id;
     const eventTs = Number(event.event_timestamp_ms ?? 0);
-    let staleEvent = false;
+    // The member's recent events, not just the newest timestamp: the decision
+    // below asks "does this member still hold another product?".
+    const rows = await ledgerOf([appUserId]);
+    const decision = decideEntitlement(
+      {
+        type: String(event.type ?? ""),
+        productId: productId ?? null,
+        kind: productId ? kindOf(productId) : isApexProduct ? "apex" : "premium",
+        eventTs,
+        expirationAtMs: Number(event.expiration_at_ms ?? 0) || null,
+        gracePeriodExpirationAtMs: Number(event.grace_period_expiration_at_ms ?? 0) || null,
+        cancelReason: typeof event.cancel_reason === "string" ? event.cancel_reason : null,
+      },
+      rows,
+      Date.now(),
+      kindOf,
+    );
+    let staleEvent = decision.reason === "stale";
     if (eventId) {
-      const { data: newest } = await supabase
-        .from("webhook_events")
-        .select("event_ts")
-        .eq("source", "revenuecat")
-        .eq("app_user_id", appUserId)
-        .order("event_ts", { ascending: false })
-        .limit(1)
-        .maybeSingle();
       const { error: dedupErr } = await supabase.from("webhook_events").insert({
         event_id: eventId,
         source: "revenuecat",
@@ -152,6 +207,7 @@ Deno.serve(async (req) => {
         event_type: String(event.type ?? ""),
         product_id: productId ?? null,
         environment,
+        expires_at: decision.expiresAtMs ? new Date(decision.expiresAtMs).toISOString() : null,
       });
       if (dedupErr) {
         if ((dedupErr as { code?: string }).code === "23505") {
@@ -163,34 +219,16 @@ Deno.serve(async (req) => {
         }
         console.warn("webhook_events insert failed (continuing):", dedupErr.message);
       }
-      if (newest && eventTs > 0 && eventTs < Number(newest.event_ts)) {
-        staleEvent = true;
-      }
     }
 
-    const grantEvents = [
-      "INITIAL_PURCHASE",
-      "RENEWAL",
-      "UNCANCELLATION",
-      "NON_RENEWING_PURCHASE",
-      "SUBSCRIPTION_EXTENDED",
-      "PRODUCT_CHANGE",
-    ];
+    // What this event does to the flags is decided in one tested place
+    // (_shared/rc-entitlement.ts), from the event AND the member's ledger:
+    // which product is expiring, whether another is still live, whether a
+    // cancellation is a refund, and whether the event arrived out of order.
+    const patch = decision.patch;
+    const isElite = patch ? patch.is_elite ?? null : null;
 
-    // NOTE: BILLING_ISSUE is intentionally NOT here. With a billing grace period
-    // enabled, a failed charge must NOT revoke access — the entitlement stays
-    // active while Apple retries. Revoking on BILLING_ISSUE would defeat the
-    // grace period. Access is only revoked on EXPIRATION (fires after the grace
-    // period ends without a successful renewal).
-    const revokeEvents = [
-      "EXPIRATION",
-      "SUBSCRIPTION_PAUSED",
-    ];
-
-    let isElite: boolean | null = null;
-
-    if (grantEvents.includes(event.type)) {
-      isElite = true;
+    if (patch?.is_elite === true) {
       // Server-truth purchase event — the client-side purchase_completed only
       // fires when the app is foregrounded through the whole flow; the webhook
       // is the ledger. INITIAL_PURCHASE only (renewals aren't conversions).
@@ -202,9 +240,9 @@ Deno.serve(async (req) => {
         });
         if (evErr) console.warn("purchase analytics insert failed:", evErr.message);
       }
-    } else if (revokeEvents.includes(event.type)) {
-      isElite = false;
-    } else if (event.type === "CANCELLATION") {
+    }
+
+    if (event.type === "CANCELLATION") {
       // Access correctly continues until EXPIRATION — but the signal must be
       // COUNTED. This was a pure no-op before: churn wasn't even measurable
       // (admin metrics read these events).
@@ -219,23 +257,18 @@ Deno.serve(async (req) => {
         },
       });
       if (evErr) console.warn("cancellation analytics insert failed:", evErr.message);
-      return new Response(JSON.stringify({ success: true, action: "recorded" }), {
-        status: 200,
-        headers: jsonHeaders,
-      });
+      // A voluntary cancellation keeps access to the end of the period, so the
+      // decision's patch is null and there is nothing to write. A REFUND is a
+      // cancellation too, and its patch revokes: fall through for that one.
+      if (!patch) {
+        return new Response(JSON.stringify({ success: true, action: "recorded" }), {
+          status: 200,
+          headers: jsonHeaders,
+        });
+      }
     }
 
-    // A grant for a product we don't recognize must not hand out membership —
-    // any future consumable/tip sold through RevenueCat would otherwise set
-    // is_elite. (Events without product info, e.g. some extensions, pass.)
-    if (isElite === true && productId && !isPremiumProduct && !isApexProduct) {
-      console.warn(`Unknown product ${productId} on ${event.type} — recorded, no entitlement change`);
-      isElite = null;
-    }
-
-    // Out-of-order delivery: a newer event for this user has already been
-    // processed, so this one's entitlement decision is obsolete.
-    if (isElite !== null && staleEvent) {
+    if (staleEvent) {
       console.log(`Stale event ${eventId} (ts ${eventTs}) — recorded, entitlements unchanged`);
       return new Response(JSON.stringify({ ok: true, skipped: "stale" }), {
         status: 200,
@@ -243,24 +276,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (isElite !== null) {
-      const update: Record<string, any> = { is_elite: isElite };
-
-      // Premium flag mirrors any active subscription (premium or legacy apex).
-      if (isPremiumProduct) {
-        update.is_premium = isElite;
-      } else if (!isElite) {
-        update.is_premium = false;
-      }
-
-      if (isApexProduct) {
-        update.is_apex_subscriber = isElite;
-        if (isElite) {
-          update.apex_subscription_started_at = new Date().toISOString();
-        }
-      } else if (!isElite) {
-        update.is_apex_subscriber = false;
-      }
+    if (patch) {
+      const update: Record<string, any> = { ...patch };
+      if (patch.is_apex_subscriber === true) update.apex_subscription_started_at = new Date().toISOString();
+      console.log(`RevenueCat decision: ${decision.reason}`, JSON.stringify(update));
 
       const { data: updated, error: updateError } = await supabase
         .from("profiles")

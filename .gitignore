@@ -54,3 +54,6 @@ ios/App/build-*/
 # Xcode DerivedData that landed in the repo root by accident (b7640719).
 # 474 MB, 8456 files, referenced by nothing — every build regenerates it.
 build-*/
+
+# Impeccable machine-local settings
+.impeccable/config.local.json

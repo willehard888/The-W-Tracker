@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { allowSandboxEvent } from "../_shared/sandbox-rule.ts";
 import { PREMIUM_PRODUCT_IDS } from "../_shared/products.ts";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { getPushTargets } from "../_shared/push-targets.ts";
@@ -151,25 +150,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // SECURITY: sandbox purchases fire the same authentic INITIAL_PURCHASE /
-    // RENEWAL webhooks as production but cost nothing (a free Apple sandbox
-    // account buys the product for €0 and it "renews" every five minutes).
-    // A sandbox event may only move entitlements for the app's own testers —
-    // an app_user_id holding the admin role — or when DEBUG_ALLOW_SANDBOX
-    // opts the project in. Everyone else's sandbox event is acknowledged
-    // and dropped.
+    // Sandbox purchases move entitlements exactly like money does. App Review
+    // always buys in the sandbox: when sandbox events were dropped for anyone
+    // but admins, a reviewer's purchase never unlocked the app and 1.0 would
+    // have been rejected under guideline 2.1. The cost is that a TestFlight
+    // tester can give themselves Premium for free, but a sandbox subscription
+    // stops renewing on its own within days and its EXPIRATION revokes it.
+    // The environment is still recorded on the ledger and the analytics row,
+    // so sandbox never counts as revenue.
     const environment: string = event.environment ?? "PRODUCTION";
-    if (environment !== "PRODUCTION") {
-      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: appUserId, _role: "admin" });
-      if (!allowSandboxEvent({ environment, isAdmin: isAdmin === true, debugAllow: Deno.env.get("DEBUG_ALLOW_SANDBOX") === "true" })) {
-        console.log(`RevenueCat: ignoring ${environment} event ${event.type} for a non-tester`);
-        return new Response(JSON.stringify({ ok: true, skipped: "non-production" }), {
-          status: 200,
-          headers: jsonHeaders,
-        });
-      }
-      console.log(`RevenueCat: ${environment} event ${event.type} accepted for tester ${appUserId}`);
-    }
+    if (environment !== "PRODUCTION") console.log(`RevenueCat: ${environment} event ${event.type} for ${appUserId}`);
 
     // Dedup + ordering guard. RevenueCat retries failed deliveries for hours
     // and makes no ordering promise: an EXPIRATION followed by a retried

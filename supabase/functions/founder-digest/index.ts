@@ -78,7 +78,13 @@ Deno.serve(async (req) => {
       .gte("created_at", daysAgo(7));
 
     // ── Money: purchases + trials this week ──────────────────────────────
-    const purchases = await countEvents(supabase, "purchase_completed", daysAgo(7));
+    // Money is production only. App Review and TestFlight buy in the sandbox,
+    // and those purchases unlock the app too, but they are not revenue.
+    const { count: prodPurchases } = await supabase
+      .from("analytics_events").select("id", { count: "exact", head: true })
+      .eq("event", "purchase_completed").gte("created_at", daysAgo(7))
+      .or("props->>sandbox.is.null,props->>sandbox.neq.true");
+    const purchases = prodPurchases ?? 0;
     const trials = await countEvents(supabase, "trial_started", daysAgo(7));
 
     // ── Reach: did reminders leave the server, did anyone tap one ────────
@@ -128,7 +134,7 @@ Deno.serve(async (req) => {
     //    down — and the half that is down might be the one granting access.
     const { count: webhookPurchases } = await supabase
       .from("webhook_events").select("event_id", { count: "exact", head: true })
-      .eq("event_type", "INITIAL_PURCHASE").gte("created_at", daysAgo(7));
+      .eq("event_type", "INITIAL_PURCHASE").eq("environment", "PRODUCTION").gte("created_at", daysAgo(7));
 
     // 2. Push. A send that returns non-200 still writes its row, with ok:false.
     const { count: pushFailed } = await supabase

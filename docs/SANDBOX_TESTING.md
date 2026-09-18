@@ -14,11 +14,11 @@ was learned setting it up (2026-09-15).
   equalized point in the other 174 territories. The 2026-09-01 reprice had reached only FIN.
 - **RevenueCat**: offering `default` with `$rc_monthly → WhealthFactory499` and
   `$rc_annual → WhealthFactoryYearly`, entitlement `The W Tracker Pro`.
-- **Webhook**: `revenuecat-webhook` accepts a `SANDBOX` event only when the `app_user_id`
-  holds the `admin` role in `user_roles` (or `DEBUG_ALLOW_SANDBOX=true` is set). Everyone
-  else's sandbox events are acknowledged and dropped. The QA account (`@mogger888`) is an
-  admin. The ledger row carries `props.environment`, so `admin_metrics_overview()` counts
-  money only.
+- **Webhook**: `revenuecat-webhook` applies `SANDBOX` events exactly like production
+  ones, for every account. App Review buys in the sandbox, so dropping them (as the
+  webhook once did for non-admins) would leave a reviewer's purchase doing nothing.
+  The ledger row carries `props.environment`, so `admin_metrics_overview()` and the
+  founder digest count money only.
 
 Both ASC scripts take `--key <p8> --key-id <id> --issuer <uuid>` or the
 `ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY` env vars, and are read-only without `--apply`.

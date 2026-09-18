@@ -193,6 +193,10 @@ verify one real call → revoke the old value.
 | `SUPABASE_SERVICE_ROLE_KEY` | every cron-only function, through `_shared/service-auth.ts` |
 | `APP_ORIGIN` | `og-profile` share-card redirect |
 
-`DEBUG_ALLOW_SANDBOX` turns every free Apple sandbox purchase into a real
-entitlement. It belongs to one TestFlight session and nothing else — the deploy
-script warns loudly whenever it exists at all. Unset it the moment the test ends.
+**Sandbox purchases unlock the app, for everyone.** App Review always buys in the
+sandbox, so a webhook that dropped sandbox events (it once did, for anyone who was
+not an admin) makes the reviewer's purchase do nothing and fails review under
+guideline 2.1. The environment is recorded on `webhook_events` and on the
+analytics row, and the digest and `admin_metrics_overview()` count production
+only. `DEBUG_ALLOW_SANDBOX` no longer does anything; if the secret still exists,
+it can be unset.

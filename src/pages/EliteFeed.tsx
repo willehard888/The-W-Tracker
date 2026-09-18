@@ -268,11 +268,11 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       setComposerOpen(false);
       hapticNotification("success");
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
-      toast.success("Posted! 🔥");
+      toast.success("Posted");
     },
     onSettled: () => setUploadPhase(null),
     onError: (error: any) => {
-      toast.error(friendlyError(error, "Failed to create post. Try again."));
+      toast.error(friendlyError(error, "Couldn't post. Try again."));
     },
   });
 
@@ -382,7 +382,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       toast.error(friendlyError(error, "Kudos failed"));
     },
     onSuccess: () => {
-      toast.success("Kudos! 🏆");
+      toast.success("Kudos sent");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feed-user-interactions"] });
@@ -433,7 +433,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
     },
     onError: (_err, _vars, context: any) => {
       if (context?.prevPosts !== undefined) queryClient.setQueryData(postsKey, context.prevPosts);
-      toast.error("Failed to post comment. Try again.");
+      toast.error("Couldn't post the comment. Try again.");
     },
     onSuccess: () => {
       setCommentText("");
@@ -518,7 +518,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
     onError: () => {
-      toast.error("Failed to report post");
+      toast.error("Couldn't report post. Try again.");
     },
   });
 

@@ -403,12 +403,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
       const blob = await generateBlob();
       if (!blob) throw new Error("no blob");
       const outcome = await saveImage(blob, `whealth-factory-${variant}.png`);
-      if (outcome === "downloaded") toast.success("Story card downloaded!");
+      if (outcome === "downloaded") toast.success("Story card saved");
       else if (outcome === "shared") toast.success("Choose “Save Image” in the sheet to save to Photos");
       if (outcome !== "cancelled") void track(FUNNEL.inviteShared, { method: "save", surface: "story", variant });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate image");
+      toast.error("Couldn't generate image. Try again.");
     } finally {
       setDownloading(false);
     }
@@ -447,7 +447,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center px-4 pb-6 sm:pb-0" onClick={onClose}>
+    <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-0" onClick={onClose}>
       <div className="absolute inset-0 bg-background/95" />
 
       <div className="relative flex flex-col items-center gap-3 w-full max-w-[320px]" onClick={(e) => e.stopPropagation()}>
@@ -624,7 +624,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 w-full pb-safe">
+        <div className="flex gap-2 w-full">
           <Button variant="ember" size="default" className="flex-1" onClick={handleDownload} disabled={downloading}>
             <Download aria-hidden size={16} />
             {downloading ? "Saving…" : "Save Image"}

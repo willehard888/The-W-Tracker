@@ -10,6 +10,7 @@ import { useFriendActions } from "@/hooks/use-friends";
 import { Award, Swords, MessageCircle, Clock, GitCompare, UserPlus, UserCheck, UserX, Heart, MessageSquare, Medal, Share2, Ban, Flag, MoreVertical, UserRound } from "lucide-react";
 import { useBlockActions } from "@/hooks/use-blocking";
 import BlockUserDialog from "@/components/BlockUserDialog";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import BattleChallengeModal from "@/components/battles/BattleChallengeModal";
 import ImageLightbox from "@/components/ImageLightbox";
 import GridMedia from "@/components/feed/GridMedia";
@@ -47,6 +48,7 @@ const UserProfile = () => {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxPost, setLightboxPost] = useState<any>(null);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [confirmUnfriend, setConfirmUnfriend] = useState(false);
   // The friend button pops once a choice has landed, never on entrance.
   const [landed, setLanded] = useState(false);
 
@@ -168,10 +170,10 @@ const UserProfile = () => {
     try {
       if (action === "send") {
         await sendRequest(userId);
-        toast.success("Friend request sent! 🤝");
+        toast.success("Friend request sent");
       } else if (action === "accept" && friendship) {
         await acceptRequest(friendship.id);
-        toast.success("Friend request accepted! 🎉");
+        toast.success("You're friends now");
       } else if (action === "decline" && friendship) {
         await declineRequest(friendship.id);
         toast("Request declined");
@@ -187,7 +189,7 @@ const UserProfile = () => {
       queryClient.invalidateQueries({ queryKey: ["friendship"] });
       invalidate();
     } catch (e) {
-      toast.error(friendlyError(e, "Something went wrong"));
+      toast.error(friendlyError(e));
     } finally {
       setFriendBusy(false);
     }
@@ -293,7 +295,7 @@ const UserProfile = () => {
           <div className="home-rise home-rise-2 mt-4 flex items-center gap-1.5">
             <div key={friendState} className={cn("flex-1 min-w-0 flex items-center gap-1.5", landed && "commit-pop")}>
               {friendState === "friends" ? (
-                <Button variant="gold-outline" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => handleFriendAction("remove")}>
+                <Button variant="gold-outline" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => setConfirmUnfriend(true)}>
                   <UserCheck size={15} aria-hidden /> Friends
                 </Button>
               ) : friendState === "incoming" ? (
@@ -373,7 +375,7 @@ const UserProfile = () => {
                   p_duration_days: duration,
                 });
                 if (error) throw error;
-                toast.success(`Challenge sent to @${profile.username}! ⚔️`);
+                toast.success(`Challenge sent to @${profile.username}`);
                 setShowBattleModal(false);
               } catch (e: any) {
                 const key = e?.message?.match(/not_friends|self_battle|battle_exists|unauthorized|health_sync_required|unknown_type|unknown_duration/)?.[0];
@@ -385,7 +387,7 @@ const UserProfile = () => {
                   health_sync_required: "Connect Apple Health and sync today to battle on steps, sleep or calories.",
                   unknown_type: "That discipline is not available. Pick another.",
                   unknown_duration: "Pick 3, 7, 14 or 30 days.",
-                } as Record<string, string>)[key] ?? "Failed to send challenge";
+                } as Record<string, string>)[key] ?? "Couldn't send challenge. Try again.";
                 toast.error(msg);
               }
               setCreating(false);
@@ -515,6 +517,15 @@ const UserProfile = () => {
           setLightboxUrl(null);
           setLightboxPost(null);
         }}
+      />
+
+      <ConfirmDialog
+        open={confirmUnfriend}
+        onOpenChange={setConfirmUnfriend}
+        title={`Remove @${profile.username} as a friend?`}
+        description="You can send a new request later."
+        actionLabel="Remove"
+        onConfirm={() => handleFriendAction("remove")}
       />
 
       <BlockUserDialog

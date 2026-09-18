@@ -21,6 +21,7 @@ import type { ProgramWeekState } from "@/lib/training/program-week";
 import { DetailSkeleton } from "@/components/skeletons/PageSkeleton";
 import { loadExerciseLibrary } from "@/lib/exercise-library";
 import { fmtInt } from "@/lib/format";
+import { ErrorState } from "@/components/ui/error-state";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 /** Small counts read as words inside a sentence: "away two weeks". */
@@ -74,6 +75,7 @@ const CoachProgramDetail = () => {
   const [justGenerated, setJustGenerated] = useState(false);
   const {
     isLoading,
+    error,
     program,
     currentWeek,
     todayDayIndex,
@@ -97,6 +99,10 @@ const CoachProgramDetail = () => {
   // A week that repeats is "your week"; only a planned block counts its weeks.
   const repeating = !!program && isRepeatingWeek(program.plan_json, currentWeek);
 
+  // A failed load is not "no program": the empty branch below offers to build
+  // one, which would replace a program the fetch merely failed to return.
+  const failed = !isLoading && !!error && !program;
+
   const onRegenerated = () => { setShowRegen(false); setJustGenerated(true); refetch(); };
 
   // A week of your own and a repeat need no reveal: the athlete knows what is
@@ -118,9 +124,10 @@ const CoachProgramDetail = () => {
 
       <div className="px-4 pt-4 pb-6">
         {isLoading && <DetailSkeleton />}
+        {failed && <ErrorState title="Couldn't load your program" onRetry={refetch} />}
 
         {/* The reveal carries its own beat, so the page's stays out of its way. */}
-        {!isLoading && !justGenerated && (
+        {!isLoading && !failed && !justGenerated && (
           <header className="home-rise">
             <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
               {program
@@ -138,7 +145,7 @@ const CoachProgramDetail = () => {
         )}
 
         {/* No trial, no membership, no program — the paywall door */}
-        {!isLoading && !program && !hasAccess && (
+        {!isLoading && !failed && !program && !hasAccess && (
           <div className="home-rise home-rise-1 mt-4 border-t border-border/35">
             <DoorRow icon={Crown} label="Sessions and weeks built for you" sub="Premium" onClick={() => navigate("/paywall")} />
           </div>
@@ -146,7 +153,7 @@ const CoachProgramDetail = () => {
 
         {/* Trial or member, no program. Today is the default; the week and
             a week of your own are the two quieter doors under it. */}
-        {!isLoading && !program && hasAccess && !showRegen && (
+        {!isLoading && !failed && !program && hasAccess && !showRegen && (
           <div className="home-rise home-rise-1 mt-5">
             <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticImpact("light"); setTrainToday(true); }}>
               <Dumbbell aria-hidden size={16} /> Train today
@@ -157,7 +164,7 @@ const CoachProgramDetail = () => {
             </div>
           </div>
         )}
-        {!isLoading && !program && hasAccess && showRegen && (
+        {!isLoading && !failed && !program && hasAccess && showRegen && (
           <div className="home-rise mt-2">
             <ProgramOnboarding onGenerated={onRegenerated} />
           </div>

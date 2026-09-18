@@ -1,5 +1,6 @@
 import { fmtRelative } from "@/lib/format";
-import { memo } from "react";
+import { memo, useState } from "react";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import {
   Flame, MessageCircle, Send, Crown, MoreHorizontal,
   AlertTriangle, Trash2, ShieldCheck, Award, Reply, X,
@@ -119,6 +120,8 @@ const FeedPostCard = memo(function FeedPostCard({
   giveKudosPending,
 }: FeedPostCardProps) {
   const isOwn = post.user_id === currentUserId;
+  // Own delete and admin remove share one confirm; the value says which ran.
+  const [confirmDelete, setConfirmDelete] = useState<"own" | "admin" | null>(null);
 
   return (
     <article
@@ -154,7 +157,7 @@ const FeedPostCard = memo(function FeedPostCard({
               Approve
             </button>
             <button
-              onClick={() => onAdminDelete(post.id)}
+              onClick={() => setConfirmDelete("admin")}
               className="px-2 py-1 rounded text-label font-bold bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors"
             >
               Delete
@@ -215,7 +218,7 @@ const FeedPostCard = memo(function FeedPostCard({
           <DropdownMenuContent align="end" className="min-w-[160px]">
             {isOwn && (
               <DropdownMenuItem
-                onClick={() => onDeletePost(post.id)}
+                onClick={() => setConfirmDelete("own")}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 aria-hidden size={14} className="mr-2" />
@@ -236,7 +239,7 @@ const FeedPostCard = memo(function FeedPostCard({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => onAdminDelete(post.id)}
+                  onClick={() => setConfirmDelete("admin")}
                   className="text-destructive focus:text-destructive"
                 >
                   <ShieldCheck aria-hidden size={14} className="mr-2" />
@@ -246,6 +249,18 @@ const FeedPostCard = memo(function FeedPostCard({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        <ConfirmDialog
+          open={confirmDelete !== null}
+          onOpenChange={(open) => { if (!open) setConfirmDelete(null); }}
+          title={confirmDelete === "admin" ? "Remove this post?" : "Delete this post?"}
+          description="It disappears from the feed for everyone."
+          actionLabel={confirmDelete === "admin" ? "Remove" : "Delete"}
+          onConfirm={() => {
+            if (confirmDelete === "admin") onAdminDelete(post.id);
+            else onDeletePost(post.id);
+            setConfirmDelete(null);
+          }}
+        />
       </div>
 
       {/* Caption — reading size; a proof caption is copy, not metadata */}

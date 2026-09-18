@@ -36,6 +36,7 @@ import PageBar from "@/components/ui/page-bar";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 import { dayFocus } from "@/lib/training/session";
 import { fmtInt, fmtUnit, NBSP } from "@/lib/format";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   buildSessionPlan,
   sessionProgress,
@@ -247,6 +248,8 @@ const CoachSession = () => {
   const byId = useProgramById(sessionId);
   const program = sessionId ? byId.program : active.program;
   const programLoading = sessionId ? byId.isLoading : active.isLoading;
+  const programError = sessionId ? byId.error : active.error;
+  const refetchProgram = sessionId ? byId.refetch : active.refetch;
   const isFocusSession = program?.status === "session";
   const editProgram = useEditProgram(program);
   const [swapOpen, setSwapOpen] = useState(false);
@@ -380,6 +383,16 @@ const CoachSession = () => {
   }, [program?.id, plan.length, sessionLoading, session?.started_at, session?.completed]);
 
   if (programLoading) return <SessionSkeleton />;
+
+  // A failed fetch is not an empty day: "Nothing to run here" would send them
+  // away from a session that exists.
+  if (!program && programError) {
+    return (
+      <div className="px-4 pt-10">
+        <ErrorState title="Couldn't load this session" onRetry={refetchProgram} />
+      </div>
+    );
+  }
 
   if (!program || !planDay || plan.length === 0) {
     return (

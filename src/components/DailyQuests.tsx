@@ -119,7 +119,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
                 : "border-border/50 bg-card/50"
             )}
           >
-            <span className="text-lg w-7 text-center">{quest.emoji}</span>
+            <span aria-hidden className="text-lg w-7 text-center">{quest.emoji}</span>
             <div className="flex-1 min-w-0">
               <p className={cn(
                 "text-xs font-bold",

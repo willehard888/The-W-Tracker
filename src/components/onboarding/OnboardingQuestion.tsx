@@ -90,7 +90,7 @@ const OnboardingQuestion = (props: Props) => {
                 : "border-border/40 bg-card/40",
             )}
           >
-            {o.emoji && <span className={dense ? "text-sm" : "text-xl leading-none mt-0.5"}>{o.emoji}</span>}
+            {o.emoji && <span aria-hidden className={dense ? "text-sm" : "text-xl leading-none mt-0.5"}>{o.emoji}</span>}
             <span className="min-w-0">
               <span className={cn("block font-bold text-foreground", dense ? "text-dense" : "text-read")}>
                 {o.label}

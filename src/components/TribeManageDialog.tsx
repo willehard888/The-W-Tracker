@@ -193,7 +193,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       onChanged();
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(friendlyError(e, "Failed to update tribe"));
+      toast.error(friendlyError(e, "Couldn't update tribe. Try again."));
     } finally {
       setSavingMeta(false);
       setUploading(false);
@@ -212,7 +212,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       toast.success(role === "admin" ? "Promoted to admin" : "Removed admin role");
       onChanged();
     } catch (e: any) {
-      toast.error(friendlyError(e, "Failed to update role"));
+      toast.error(friendlyError(e, "Couldn't update role. Try again."));
     } finally {
       setBusyId(null);
     }
@@ -229,7 +229,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       toast.success(`${username} removed`);
       onChanged();
     } catch (e: any) {
-      toast.error(friendlyError(e, "Failed to remove member"));
+      toast.error(friendlyError(e, "Couldn't remove member. Try again."));
     } finally {
       setBusyId(null);
     }

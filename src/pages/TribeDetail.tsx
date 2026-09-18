@@ -542,7 +542,7 @@ const TribeDetail = () => {
       setImageFile(null); setImagePreview(null);
       setVideoFile(null); setVideoPreview(null);
       hapticNotification("success");
-      toast.success("Posted! 🔥");
+      toast.success("Posted");
       invalidateTribe();
     } catch (e: any) {
       toast.error(friendlyError(e, "Could not post. Try again."));
@@ -556,7 +556,7 @@ const TribeDetail = () => {
     const { data, error } = await supabase.rpc("join_tribe", { p_tribe_id: id! });
     if (error) { toast.error(friendlyError(error)); return; }
     if (data === "pending") toast.success("Request sent");
-    else toast.success("Joined!");
+    else toast.success("Joined");
     invalidateTribe();
   };
 
@@ -568,6 +568,7 @@ const TribeDetail = () => {
   };
 
   const [confirmDeleteTribe, setConfirmDeleteTribe] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const handleDelete = () => setConfirmDeleteTribe(true);
   const deleteTribe = async () => {
     const { error } = await supabase.rpc("delete_tribe", { p_tribe_id: id! });
@@ -727,7 +728,7 @@ const TribeDetail = () => {
           onManage={() => setManageOpen(true)}
           onInvite={() => setInviteOpen(true)}
           onDelete={handleDelete}
-          onLeave={handleLeave}
+          onLeave={() => setConfirmLeave(true)}
           onShare={handleShare}
         />
       </div>
@@ -939,6 +940,14 @@ const TribeDetail = () => {
             title="Delete this tribe?"
             description="This cannot be undone."
             onConfirm={() => { setConfirmDeleteTribe(false); void deleteTribe(); }}
+          />
+          <ConfirmDialog
+            open={confirmLeave}
+            onOpenChange={setConfirmLeave}
+            title={`Leave ${tribe?.name ?? "this tribe"}?`}
+            description={tribe?.visibility === "private" ? "It is private, so coming back takes a new request." : "You can join again later."}
+            actionLabel="Leave"
+            onConfirm={() => { setConfirmLeave(false); void handleLeave(); }}
           />
           {isOwner && tribe && profile?.user_id && (
             <TribeManageDialog

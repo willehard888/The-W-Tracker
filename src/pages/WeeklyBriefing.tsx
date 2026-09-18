@@ -142,7 +142,7 @@ const WeeklyBriefing = () => {
       if (outcome === "downloaded") toast.success("Sharing isn't available here — image downloaded instead");
     } catch (e) {
       console.error(e);
-      toast.error("Share failed");
+      toast.error("Couldn't share. Try again.");
     } finally {
       setSharing(false);
     }

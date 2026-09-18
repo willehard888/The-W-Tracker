@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { hapticImpact } from "@/lib/haptics";
 import { friendlyError } from "@/lib/error-copy";
 import { parseQty } from "@/lib/nutrition/resolve-grams";
+import NumField from "@/components/nutrition/NumField";
 
 const computePace = (g: { baseline_value: number | null; current_value: number | null; target_value: number; deadline: string | null; created_at: string }) => {
   const baseline = g.baseline_value ?? 0;
@@ -36,6 +37,9 @@ const GoalTrackerCard = () => {
   const { goals, activeGoal, upsert, updateProgress, remove } = useCoachGoals();
   const [adding, setAdding] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Inline progress entry; replaced a window.prompt (grey system alert, text keyboard).
+  const [logValue, setLogValue] = useState<string | null>(null);
+  const [logError, setLogError] = useState<string | null>(null);
   const [draft, setDraft] = useState({ title: "", metric: "custom", unit: "", baseline_value: "", target_value: "", deadline: "" });
 
   const create = async () => {
@@ -161,17 +165,34 @@ const GoalTrackerCard = () => {
         <p className="text-label text-muted-foreground mt-1">{pct}% of the way</p>
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <Button variant="ghost" size="sm" className="flex-1"
-          onClick={async () => {
-            const v = prompt("New current value", String(activeGoal.current_value ?? activeGoal.baseline_value ?? 0));
-            if (v == null) return;
-            const n = parseQty(v);
-            if (n === null) return toast.error("That isn't a number");
+      {logValue !== null ? (
+        <form
+          className="mt-3 flex items-end gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const n = parseQty(logValue);
+            if (n === null) { setLogError("Enter a number"); return; }
             await updateProgress({ id: activeGoal.id, value: n });
             hapticImpact("light");
+            setLogValue(null);
             toast.success("Progress updated");
-          }}>
+          }}
+        >
+          <NumField
+            label="Current value"
+            unit={activeGoal.unit || undefined}
+            value={logValue}
+            onChange={(v) => { setLogValue(v); setLogError(null); }}
+            error={logError}
+            className="flex-1"
+          />
+          <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={() => setLogValue(null)}>Cancel</Button>
+          <Button type="submit" variant="gold-outline" size="sm" className="min-h-11">Save</Button>
+        </form>
+      ) : (
+      <div className="mt-3 flex gap-2">
+        <Button variant="ghost" size="sm" className="flex-1"
+          onClick={() => { setLogError(null); setLogValue(String(activeGoal.current_value ?? activeGoal.baseline_value ?? 0)); }}>
           <TrendingUp aria-hidden size={14} /> Log progress
         </Button>
         <Button variant="ghost" size="icon-sm"
@@ -179,6 +200,7 @@ const GoalTrackerCard = () => {
           <Trash2 aria-hidden size={14} />
         </Button>
       </div>
+      )}
 
       {goals.filter(g => g.id !== activeGoal.id && g.status === "active").length === 0 && (
         <button type="button"

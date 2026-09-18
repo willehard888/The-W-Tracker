@@ -47,11 +47,11 @@ const Referrals = () => {
     try {
       await navigator.clipboard.writeText(referralLink);
       setCopied(true);
-      toast.success("Link copied!");
+      toast.success("Link copied");
       void track(FUNNEL.inviteShared, { method: "copy" });
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy");
+      toast.error("Couldn't copy. Try again.");
     }
   };
 

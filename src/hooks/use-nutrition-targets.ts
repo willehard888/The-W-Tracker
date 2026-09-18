@@ -42,5 +42,5 @@ export const useNutritionTargets = () => {
     },
   });
 
-  return { targets: q.data ?? null, isLoading: q.isLoading, error: q.error, save: m.mutateAsync, saving: m.isPending };
+  return { targets: q.data ?? null, isLoading: q.isLoading, error: q.error, refetch: q.refetch, save: m.mutateAsync, saving: m.isPending };
 };

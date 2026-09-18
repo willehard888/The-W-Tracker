@@ -7,13 +7,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSignedMediaUrl } from "@/lib/signed-url";
 import { fmtUnit } from "@/lib/format";
+import { fmtInt } from "@/lib/format";
 import type { BattleTypeInfo } from "@/components/battles/types";
 import type { BattleScoreboard, BattleSide } from "@/hooks/use-battle-scores";
 import { battleDay } from "@/components/battles/battle-time";
 
 /** Scores are numeric on the wire: whole numbers stay whole, litres and hours keep one decimal. */
 export const fmtScore = (n: number): string =>
-  Number.isInteger(n) ? n.toLocaleString("en-US") : n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+  Number.isInteger(n) ? fmtInt(n) : String(Math.round(n * 10) / 10);
 
 /** The two sides of a battle from the member's seat, from the live scoreboard or the row's final totals. */
 export const sidesOf = (

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
@@ -40,7 +41,7 @@ const num = (s: string) => parseQty(s);
 const NutritionRecipeEditor = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { recipes, isLoading, save, remove, saving } = useUserRecipes();
+  const { recipes, isLoading, error, refetch, save, remove, saving } = useUserRecipes();
   const { logMeal, pending } = useLogMeal();
   const saved = id ? recipes.find((r) => r.id === id) : undefined;
 
@@ -178,7 +179,11 @@ const NutritionRecipeEditor = () => {
       <div className="min-h-full">
         <PageBar title={title} onBack={() => backOr(navigate, "/nutrition/recipes")} />
         <div className="px-4 pt-6">
-          <EmptyState title="Recipe not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition/recipes", { replace: true })}>All recipes</Button>} />
+          {error ? (
+            <ErrorState title="Couldn't load this recipe" onRetry={refetch} />
+          ) : (
+            <EmptyState title="Recipe not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition/recipes", { replace: true })}>All recipes</Button>} />
+          )}
         </div>
       </div>
     );

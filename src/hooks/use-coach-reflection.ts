@@ -55,8 +55,8 @@ export const useTodayReflection = () => {
       qc.invalidateQueries({ queryKey: ["coach-daily-plan"] });
       toast.success("Reflection logged");
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Failed to save")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't save. Try again.")),
   });
 
-  return { reflection: query.data, isLoading: query.isLoading, submit };
+  return { reflection: query.data, isLoading: query.isLoading, error: query.error, refetch: query.refetch, submit };
 };

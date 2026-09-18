@@ -91,7 +91,7 @@ const TribeNew = () => {
         });
         if (actErr) console.warn("[tribe] set_tribe_activity failed", actErr);
       }
-      toast.success("Tribe created!");
+      toast.success("Tribe created");
       navigate(`/tribes/${data}`);
     } catch (e: any) {
       toast.error(friendlyError(e, "Could not create the tribe. Try again."));

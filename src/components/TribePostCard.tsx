@@ -321,7 +321,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
       onChanged();
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Failed to comment")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't comment. Try again.")),
   });
 
   const editComment = useMutation({
@@ -338,7 +338,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       toast.success("Comment updated");
       queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Failed to update")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't update. Try again.")),
   });
 
   const deleteComment = useMutation({
@@ -352,7 +352,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       queryClient.invalidateQueries({ queryKey: ["tribe-post-comments", post.id] });
       onChanged();
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Failed to delete")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't delete. Try again.")),
   });
 
   const toggleLike = useMutation({
@@ -413,7 +413,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
     onSuccess: () => {
       onChanged();
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Failed to report")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't report. Try again.")),
   });
 
   const [confirmDeletePost, setConfirmDeletePost] = useState(false);
@@ -426,7 +426,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       toast.success("Post deleted");
       onChanged();
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Failed to delete")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't delete. Try again.")),
   });
 
   // Memoize comment tree — avoids rebuilding on every render that doesn't change comments.
@@ -452,7 +452,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               variant="danger-outline"
               size="xs"
               className="relative before:absolute before:-inset-2 before:content-['']"
-              onClick={() => deletePost.mutate()}
+              onClick={() => setConfirmDeletePost(true)}
             >
               Remove
             </Button>
@@ -523,7 +523,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                 {(isAdmin || isOwner) && !isOwn && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => deletePost.mutate()} className="text-destructive focus:text-destructive">
+                    <DropdownMenuItem onClick={() => setConfirmDeletePost(true)} className="text-destructive focus:text-destructive">
                       <ShieldCheck aria-hidden size={14} className="mr-2" /> {isOwner ? "Owner: Remove" : "Admin: Remove"}
                     </DropdownMenuItem>
                   </>

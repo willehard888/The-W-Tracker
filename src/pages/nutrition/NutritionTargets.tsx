@@ -13,6 +13,7 @@ import { hapticSelection } from "@/lib/haptics";
 import { getPlatform } from "@/lib/platform";
 import { disableMealWrite, enableMealWrite, hasMealWriteConsent } from "@/lib/health/meal-write";
 import PageBar from "@/components/ui/page-bar";
+import { ErrorState } from "@/components/ui/error-state";
 import NutritionSheet from "@/components/nutrition/NutritionSheet";
 import NutritionInfoSheet from "@/components/nutrition/NutritionInfoSheet";
 import NumField from "@/components/nutrition/NumField";
@@ -55,7 +56,7 @@ const num = (s: string) => parseQty(s);
 const NutritionTargets = () => {
   const navigate = useNavigate();
   const { profile, isLoading: profileLoading } = useAthleteProfile();
-  const { targets, isLoading: targetsLoading, save, saving } = useNutritionTargets();
+  const { targets, isLoading: targetsLoading, error: targetsError, refetch: refetchTargets, save, saving } = useNutritionTargets();
 
   const [activityChoice, setActivityChoice] = useState<ActivityLevel | null>(null);
   const [fields, setFields] = useState<Fields | null>(null);
@@ -72,6 +73,19 @@ const NutritionTargets = () => {
           <Block height={44} delay={40} className="mt-4" />
           <Block height={52} delay={80} className="mt-4" />
           <Block height={220} delay={120} className="mt-4 !rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  // A failed read is not "no targets yet": the proposal below would save over
+  // the targets the fetch failed to return.
+  if (targetsError && !targets) {
+    return (
+      <div className="min-h-full">
+        <PageBar title="Nutrition targets" onBack={() => backOr(navigate, "/nutrition")} />
+        <div className="px-4 pt-4">
+          <ErrorState title="Couldn't load your targets" onRetry={refetchTargets} />
         </div>
       </div>
     );

@@ -4,6 +4,7 @@ import PageBar from "@/components/ui/page-bar";
 import EveningReflectionCard from "@/components/coach/EveningReflectionCard";
 import { FactRow } from "@/components/coach/rows";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
+import { ErrorState } from "@/components/ui/error-state";
 
 /**
  * /coach/reflect — the evening reflection. Status as the one eyebrow, a
@@ -12,7 +13,9 @@ import { useTodayReflection } from "@/hooks/use-coach-reflection";
  */
 const CoachReflect = () => {
   const navigate = useNavigate();
-  const { reflection, isLoading } = useTodayReflection();
+  const { reflection, isLoading, error, refetch } = useTodayReflection();
+  // A failed check is not "not logged": the form would invite a second entry.
+  const failed = !!error && !reflection;
 
   return (
     <div className="min-h-full">
@@ -20,7 +23,7 @@ const CoachReflect = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <p className="eyebrow">{isLoading ? "Checking" : reflection ? "Logged tonight" : "Not logged yet"}</p>
+          <p className="eyebrow">{isLoading ? "Checking" : failed ? "Couldn't check" : reflection ? "Logged tonight" : "Not logged yet"}</p>
           <h2 className="font-display font-black text-title leading-[1.06] tracking-tight mt-1">Sixty seconds before bed.</h2>
           <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             Rate energy, sleep, mood and effort. Write the win and the friction.
@@ -30,7 +33,7 @@ const CoachReflect = () => {
 
         {/* The form returns null while loading, so the gap holds a skeleton. */}
         <div className="home-rise home-rise-1 mt-4">
-          {isLoading ? <div className="h-32 surface-card skeleton-block" /> : <EveningReflectionCard />}
+          {isLoading ? <div className="h-32 surface-card skeleton-block" /> : failed ? <ErrorState size="compact" title="Couldn't load tonight's reflection" onRetry={refetch} /> : <EveningReflectionCard />}
         </div>
 
         <div className="home-rise home-rise-2 mt-5 divide-y divide-border/35 border-t border-border/35">

@@ -187,7 +187,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
             try {
               await createEvent(e);
               hapticNotification("success");
-              toast.success("Meetup posted 🔥");
+              toast.success("Meetup posted");
               setShowCreate(false);
             } catch (err) { toast.error(errMsg(err)); }
           }}
@@ -195,7 +195,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
             try {
               await createSeries(s);
               hapticNotification("success");
-              toast.success(`${s.sessions.length}-session series posted 🔥`);
+              toast.success(`${s.sessions.length}-session series posted`);
               setShowCreate(false);
             } catch (err) { toast.error(errMsg(err)); }
           }}

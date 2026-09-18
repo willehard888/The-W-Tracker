@@ -322,7 +322,7 @@ const TribeHero = ({
           {tribe.visibility === "private" && (
             <Lock size={13} className="text-muted-foreground shrink-0" aria-label="Private tribe" />
           )}
-          <h1 className="font-display font-black text-xl leading-tight">{tribe.name}</h1>
+          <h1 className="font-display font-black text-xl leading-tight min-w-0 break-words">{tribe.name}</h1>
         </div>
         <p className="text-meta text-muted-foreground/85 mt-1 tabular-nums">
           {memberCount} member{memberCount === 1 ? "" : "s"}

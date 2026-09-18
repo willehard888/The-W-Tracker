@@ -15,5 +15,5 @@ export const useFood = (id: string | null) => {
     placeholderData: () => (uid && id ? (getCachedFood(uid, id) ?? undefined) : undefined),
     queryFn: () => (id ? fetchFood(supabase, id) : null),
   });
-  return { food: q.data ?? null, isLoading: q.isLoading, isPlaceholder: q.isPlaceholderData, error: q.error };
+  return { food: q.data ?? null, isLoading: q.isLoading, isPlaceholder: q.isPlaceholderData, error: q.error, refetch: q.refetch };
 };

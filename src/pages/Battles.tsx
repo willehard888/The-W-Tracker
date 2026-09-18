@@ -189,7 +189,7 @@ const Battles = () => {
   const adminCancelBattle = async (battleId: string) => {
     const { error } = await supabase.from("battles").update({ status: "completed", ended_at: new Date().toISOString(), winner_id: null }).eq("id", battleId);
     if (error) {
-      toast.error("Failed to cancel battle");
+      toast.error("Couldn't cancel battle. Try again.");
       return;
     }
     toast.success("Battle cancelled by admin");
@@ -199,7 +199,7 @@ const Battles = () => {
   const adminDeleteBattle = async (battleId: string) => {
     const { error } = await supabase.from("battles").delete().eq("id", battleId);
     if (error) {
-      toast.error("Failed to delete battle");
+      toast.error("Couldn't delete battle. Try again.");
       return;
     }
     toast.success("Battle deleted by admin");
@@ -224,7 +224,7 @@ const Battles = () => {
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err: any) {
       const key = err?.message?.match(/not_friends|self_battle|battle_exists|unauthorized|health_sync_required|unknown_type|unknown_duration/)?.[0];
-      toast.error(CREATE_ERRORS[key] ?? "Failed to create battle");
+      toast.error(CREATE_ERRORS[key] ?? "Couldn't create battle. Try again.");
     }
     setCreating(false);
   };
@@ -243,7 +243,7 @@ const Battles = () => {
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err: any) {
       const key = err?.message?.match(/health_sync_required/)?.[0];
-      toast.error(key ? CREATE_ERRORS[key] : "Failed to respond to battle");
+      toast.error(key ? CREATE_ERRORS[key] : "Couldn't respond to battle. Try again.");
     } finally {
       setRespondingId(null);
     }
@@ -280,7 +280,7 @@ const Battles = () => {
       queryClient.invalidateQueries({ queryKey: ["battles"] });
     } catch (err) {
       console.error(err);
-      toast.error("Failed to upload proof");
+      toast.error("Couldn't upload proof. Try again.");
     }
     setUploadingProof(null);
     setActiveProofBattleId(null);

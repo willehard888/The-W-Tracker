@@ -44,7 +44,7 @@ export const useProgramById = (id?: string | null) => {
       return (data as unknown as CoachProgram | null);
     },
   });
-  return { program: q.data ?? null, isLoading: q.isLoading };
+  return { program: q.data ?? null, isLoading: q.isLoading, error: q.error, refetch: q.refetch };
 };
 
 export interface FocusSessionLog {

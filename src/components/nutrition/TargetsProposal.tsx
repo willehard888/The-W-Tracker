@@ -1,3 +1,4 @@
+import { fmtInt } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import MacroRow from "@/components/nutrition/MacroRow";
 import type { TargetResult } from "@/lib/nutrition/targets";
@@ -63,7 +64,7 @@ const TargetsProposal = ({
       <div>
         <p className="text-label font-bold text-gold/85 mb-1">Proposed targets</p>
         <p className="font-display text-[30px] font-black tracking-tight leading-none tabular-nums">
-          {result.kcal.toLocaleString("en-US").replace(",", " ")}
+          {fmtInt(result.kcal)}
           <span className="text-read text-muted-foreground font-bold"> kcal / day</span>
         </p>
       </div>

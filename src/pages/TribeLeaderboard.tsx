@@ -219,7 +219,7 @@ const TribeLeaderboard = () => {
 
       {/* Sticky my-tribe footer: solid tint, no blur over a scrolling list. */}
       {myBest && (
-        <div className="fixed bottom-20 left-0 right-0 px-4 z-30 pointer-events-none">
+        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+72px)] left-0 right-0 px-4 z-30 pointer-events-none">
           <div className="home-rise home-rise-3 max-w-md mx-auto pointer-events-auto">
             <button
               type="button"

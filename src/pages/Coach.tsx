@@ -760,6 +760,9 @@ const ChatSheet = ({
                   )
               }
               onClick={m.failed ? retryLast : undefined}
+              role={m.failed ? "button" : undefined}
+              tabIndex={m.failed ? 0 : undefined}
+              onKeyDown={m.failed ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); retryLast(); } } : undefined}
             >
               {m.role === "assistant" ? (
                 streaming && i === messages.length - 1 && !m.isFaq && !m.failed ? (

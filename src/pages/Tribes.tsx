@@ -241,7 +241,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       toast.info("Already a member");
     } else {
       hapticNotification("success");
-      toast.success("Joined the tribe!");
+      toast.success("Joined the tribe");
     }
     reloadTribes();
   };

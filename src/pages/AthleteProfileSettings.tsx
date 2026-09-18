@@ -9,6 +9,7 @@ import { FactRow, DoorRow } from "@/components/coach/rows";
 import { backOr } from "@/lib/nav";
 import { fmtUnit } from "@/lib/format";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
+import { ErrorState } from "@/components/ui/error-state";
 import AthleteProfileOnboarding, {
   GOALS, EXPERIENCE, TONES, EQUIPMENT_PRESETS, MENTAL_FOCUS, STRESS_WORDS, MOOD_WORDS,
 } from "@/components/coach/AthleteProfileOnboarding";
@@ -40,7 +41,7 @@ const Group = ({ title, children }: { title: string; children: React.ReactNode }
 
 const AthleteProfileSettings = () => {
   const navigate = useNavigate();
-  const { profile, isLoading, refetch } = useAthleteProfile();
+  const { profile, isLoading, error, refetch } = useAthleteProfile();
   const [editing, setEditing] = useState(false);
 
   if (isLoading) {
@@ -51,6 +52,19 @@ const AthleteProfileSettings = () => {
           <Block height={72} />
           <Block height={180} delay={80} />
           <Block height={140} delay={160} />
+        </div>
+      </div>
+    );
+  }
+
+  // Without this, a failed fetch opened the onboarding form, and saving it
+  // overwrote the profile the fetch had failed to return.
+  if (error && !profile && !editing) {
+    return (
+      <div className="min-h-full">
+        <PageBar title="Athlete profile" onBack={() => backOr(navigate, "/coach")} />
+        <div className="px-4 pt-4">
+          <ErrorState title="Couldn't load your athlete profile" onRetry={refetch} />
         </div>
       </div>
     );

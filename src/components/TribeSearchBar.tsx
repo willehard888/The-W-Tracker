@@ -79,7 +79,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
       toast.info("Already a member");
       refreshResultStatus(r.id, "member");
     } else {
-      toast.success("Joined the tribe!");
+      toast.success("Joined the tribe");
       refreshResultStatus(r.id, "member");
     }
     onChanged?.();

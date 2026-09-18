@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Mirrors the quiz success-card personalization (public/waitlist.html).
+// Mirrors the quiz success-card personalization (the retired waitlist quiz).
 const GOAL_LINES: Record<string, string> = {
   muscle: "Your muscle-building plan is waiting.",
   fat: "Your fat-loss plan is waiting.",

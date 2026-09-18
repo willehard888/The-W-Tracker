@@ -1,0 +1,476 @@
+{
+  "tool": "comp-spec",
+  "version": 1,
+  "createdAt": "2026-09-18T11:24:49.729Z",
+  "comp": ".impeccable/mocks/comp-1-object.png",
+  "warnings": [],
+  "uncoveredInkCells": [
+    "D1",
+    "G1"
+  ],
+  "compSize": {
+    "width": 1536,
+    "height": 1024
+  },
+  "aspect": 1.5,
+  "orientation": "landscape",
+  "palette": [
+    {
+      "hex": "#080808",
+      "coverage": 0.9572
+    },
+    {
+      "hex": "#e1ac3e",
+      "coverage": 0.0154
+    },
+    {
+      "hex": "#af7718",
+      "coverage": 0.0115
+    },
+    {
+      "hex": "#88550b",
+      "coverage": 0.0113
+    },
+    {
+      "hex": "#2c1808",
+      "coverage": 0.0045
+    }
+  ],
+  "bands": [
+    {
+      "y": 0.0588,
+      "strength": 0.2002
+    },
+    {
+      "y": 0.6471,
+      "strength": 0.2094
+    },
+    {
+      "y": 0.7294,
+      "strength": 0.2046
+    },
+    {
+      "y": 0.7647,
+      "strength": 0.2216
+    },
+    {
+      "y": 0.7882,
+      "strength": 0.2024
+    }
+  ],
+  "regions": [
+    {
+      "id": "masthead",
+      "kind": "chrome",
+      "note": "thin top bar with a hairline under it; nothing but the mark, wordmark and place label",
+      "grid": "A0:J0",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.1
+      },
+      "px": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 102
+      },
+      "aspect": 15.0588,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.9954
+        },
+        {
+          "hex": "#585858",
+          "coverage": 0.0021
+        },
+        {
+          "hex": "#b9b9b9",
+          "coverage": 0.0014
+        },
+        {
+          "hex": "#909090",
+          "coverage": 0.001
+        }
+      ],
+      "detail": {
+        "energy": 8.9502
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "nav-mark",
+      "kind": "image",
+      "note": "small polished gold W brand mark (w-mark.png, cut from the w-object plate)",
+      "grid": "A0:A0",
+      "box": {
+        "x": 0.02,
+        "y": 0.01,
+        "w": 0.034,
+        "h": 0.04
+      },
+      "px": {
+        "x": 31,
+        "y": 10,
+        "w": 52,
+        "h": 41
+      },
+      "aspect": 1.2683,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.8432
+        },
+        {
+          "hex": "#a76d13",
+          "coverage": 0.0551
+        },
+        {
+          "hex": "#e19f31",
+          "coverage": 0.0381
+        },
+        {
+          "hex": "#f0b858",
+          "coverage": 0.0339
+        },
+        {
+          "hex": "#4a2d0f",
+          "coverage": 0.0297
+        }
+      ],
+      "detail": {
+        "energy": 7.8993
+      },
+      "medium": "raster",
+      "plate": "site/media/w-mark.png",
+      "text": null
+    },
+    {
+      "id": "nav-wordmark",
+      "kind": "text",
+      "note": "WHEALTH FACTORY, small widely tracked warm white capitals",
+      "grid": "B0:C0",
+      "box": {
+        "x": 0.055,
+        "y": 0.015,
+        "w": 0.135,
+        "h": 0.032
+      },
+      "px": {
+        "x": 84,
+        "y": 15,
+        "w": 207,
+        "h": 33
+      },
+      "aspect": 6.2727,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.9196
+        },
+        {
+          "hex": "#535351",
+          "coverage": 0.029
+        },
+        {
+          "hex": "#bcb9b8",
+          "coverage": 0.0211
+        },
+        {
+          "hex": "#8a8784",
+          "coverage": 0.0171
+        },
+        {
+          "hex": "#e6e6e0",
+          "coverage": 0.0132
+        }
+      ],
+      "detail": {
+        "energy": 25.1747
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "nav-place",
+      "kind": "text",
+      "note": "MANUFACTURE · ESPOO, FINLAND, small tracked warm white capitals",
+      "grid": "I0:J0",
+      "box": {
+        "x": 0.77,
+        "y": 0.015,
+        "w": 0.215,
+        "h": 0.032
+      },
+      "px": {
+        "x": 1183,
+        "y": 15,
+        "w": 330,
+        "h": 33
+      },
+      "aspect": 10,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.9178
+        },
+        {
+          "hex": "#ceccc6",
+          "coverage": 0.0299
+        },
+        {
+          "hex": "#514d4f",
+          "coverage": 0.0257
+        },
+        {
+          "hex": "#989491",
+          "coverage": 0.0224
+        },
+        {
+          "hex": "#756e65",
+          "coverage": 0.0042
+        }
+      ],
+      "detail": {
+        "energy": 34.6762
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "w-object",
+      "kind": "plate",
+      "note": "monumental extruded polished gold W with raking light and a crisp mirror reflection on black",
+      "grid": "D1:H6",
+      "box": {
+        "x": 0.3,
+        "y": 0.16,
+        "w": 0.41,
+        "h": 0.5
+      },
+      "px": {
+        "x": 461,
+        "y": 164,
+        "w": 630,
+        "h": 512
+      },
+      "aspect": 1.2305,
+      "palette": [
+        {
+          "hex": "#090808",
+          "coverage": 0.7699
+        },
+        {
+          "hex": "#e1ac3f",
+          "coverage": 0.0866
+        },
+        {
+          "hex": "#8a5709",
+          "coverage": 0.0674
+        },
+        {
+          "hex": "#b47a1c",
+          "coverage": 0.0521
+        },
+        {
+          "hex": "#2d1808",
+          "coverage": 0.0241
+        }
+      ],
+      "detail": {
+        "energy": 16.6552
+      },
+      "medium": "raster",
+      "plate": "site/media/w-object.jpg",
+      "text": null
+    },
+    {
+      "id": "headline",
+      "kind": "text",
+      "note": "DISCIPLINE, MADE DAILY. one line, ultra-thin extended capitals, full width",
+      "grid": "A6:J7",
+      "box": {
+        "x": 0.07,
+        "y": 0.64,
+        "w": 0.9,
+        "h": 0.112
+      },
+      "px": {
+        "x": 108,
+        "y": 655,
+        "w": 1382,
+        "h": 115
+      },
+      "aspect": 12.0174,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.9426
+        },
+        {
+          "hex": "#f5f4ef",
+          "coverage": 0.0247
+        },
+        {
+          "hex": "#bbb9af",
+          "coverage": 0.0168
+        },
+        {
+          "hex": "#85817c",
+          "coverage": 0.0095
+        },
+        {
+          "hex": "#484845",
+          "coverage": 0.0064
+        }
+      ],
+      "detail": {
+        "energy": 31.3283
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "subline",
+      "kind": "text",
+      "note": "one line of small warm grey body text",
+      "grid": "C7:H7",
+      "box": {
+        "x": 0.21,
+        "y": 0.752,
+        "w": 0.58,
+        "h": 0.05
+      },
+      "px": {
+        "x": 323,
+        "y": 770,
+        "w": 891,
+        "h": 51
+      },
+      "aspect": 17.4706,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.929
+        },
+        {
+          "hex": "#a29e96",
+          "coverage": 0.0201
+        },
+        {
+          "hex": "#e1dcd2",
+          "coverage": 0.0193
+        },
+        {
+          "hex": "#6b6763",
+          "coverage": 0.0167
+        },
+        {
+          "hex": "#423f3c",
+          "coverage": 0.0149
+        }
+      ],
+      "detail": {
+        "energy": 25.7453
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "cta",
+      "kind": "control",
+      "note": "COMING TO THE APP STORE in tracked gold capitals on a gold hairline, not a button",
+      "grid": "E8:G8",
+      "coverBox": {
+        "x": 0.4,
+        "y": 0.8,
+        "w": 0.3,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.3997,
+        "y": 0.8291,
+        "w": 0.2617,
+        "h": 0.0469
+      },
+      "px": {
+        "x": 614,
+        "y": 849,
+        "w": 402,
+        "h": 48
+      },
+      "aspect": 8.375,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.8812
+        },
+        {
+          "hex": "#8f682d",
+          "coverage": 0.0689
+        },
+        {
+          "hex": "#2b1e0c",
+          "coverage": 0.0233
+        },
+        {
+          "hex": "#f2ca5f",
+          "coverage": 0.0152
+        },
+        {
+          "hex": "#5b421d",
+          "coverage": 0.0114
+        }
+      ],
+      "detail": {
+        "energy": 35.5356
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "next-peek",
+      "kind": "chrome",
+      "note": "full-width gold hairline with 01 THE DAILY RITUAL left and SCROLL right",
+      "grid": "A9:J9",
+      "box": {
+        "x": 0,
+        "y": 0.9,
+        "w": 1,
+        "h": 0.1
+      },
+      "px": {
+        "x": 0,
+        "y": 922,
+        "w": 1536,
+        "h": 102
+      },
+      "aspect": 15.0588,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.9707
+        },
+        {
+          "hex": "#a98631",
+          "coverage": 0.0293
+        }
+      ],
+      "detail": {
+        "energy": 3.9518
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    }
+  ]
+}

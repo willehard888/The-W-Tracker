@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Whealth Factory. Join the movement.</title>
+  <meta name="description" content="Whealth Factory is an iPhone app for discipline you can see: one check-in a day, status you earn, a coach, training, fuel and the Vault. Coming to the App Store.">
+  <meta name="theme-color" content="#080808">
+  <meta name="color-scheme" content="dark">
+  <link rel="canonical" href="https://www.whealthfactory.com/">
+  <link rel="icon" href="/app-icon.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="/app-icon@2x.webp">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Whealth Factory">
+  <meta property="og:title" content="Whealth Factory. Join the movement.">
+  <meta property="og:description" content="One check-in a day. Status you earn, never buy. An iPhone app for the ambitious, coming to the App Store.">
+  <meta property="og:url" content="https://www.whealthfactory.com/">
+  <meta property="og:image" content="https://www.whealthfactory.com/media/w-object.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="/fonts/cormorant-garamond-300-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/media/w-object.jpg" as="image" fetchpriority="high">
+  <link rel="stylesheet" href="site.css">
+  <!-- Hide the entrance's starting state only when the entrance will run. -->
+  <script>
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.add("motion");
+      // If the entrance never starts (script blocked, slow network), show the page as is.
+      setTimeout(function () { if (!window.__wfIntro) document.documentElement.classList.remove("motion"); }, 2500);
+    }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Whealth Factory Corporation Finland Oy",
+    "brand": "Whealth Factory",
+    "url": "https://www.whealthfactory.com/",
+    "email": "support@whealthfactory.com",
+    "taxID": "3636449-8",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Soukansalmentie 30 A",
+      "postalCode": "02360",
+      "addressLocality": "Espoo",
+      "addressCountry": "FI"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#ritual">Skip to content</a>
+
+  <header class="masthead">
+    <a class="brand" href="/" aria-label="Whealth Factory, home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Whealth Factory</span>
+    </a>
+    <p class="place"><span class="place-long">Manufacture · </span>Espoo, Finland</p>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-object" data-reveal="object">
+        <div class="w-lift">
+          <img class="w-plate" src="media/w-object.jpg" width="1024" height="1024" alt="" fetchpriority="high" decoding="async">
+          <span class="w-sweep" aria-hidden="true"><span class="w-beam"></span></span>
+        </div>
+      </div>
+      <h1 id="hero-title" class="hero-title">
+        <span class="word"><span>Join</span></span>
+        <span class="word"><span>the</span></span>
+        <span class="word"><span>movement.</span></span>
+      </h1>
+      <p class="hero-sub" data-reveal="late">One check-in a day. Status you earn, never buy. An iPhone app for the ambitious.</p>
+      <p class="hero-cta" data-reveal="late">Coming to the App Store</p>
+      <div class="hero-peek" data-reveal="late">
+        <a href="#ritual">The daily ritual</a>
+        <a href="#ritual" aria-hidden="true" tabindex="-1">Scroll</a>
+      </div>
+    </section>
+
+    <section id="ritual" class="ritual" aria-labelledby="ritual-title">
+      <div class="ritual-stage">
+        <div class="ritual-copy">
+          <h2 id="ritual-title" class="display">A day has four marks.</h2>
+          <p class="lede">Hit them and the day counts. Miss them and that shows too.</p>
+          <ol class="marks">
+            <li class="mark is-on" data-angle="97.5">
+              <p class="mark-time"><time>06:30</time> Sleep</p>
+              <p class="mark-body">The night counts. With Apple Health on, it is read, not typed.</p>
+            </li>
+            <li class="mark" data-angle="108.75">
+              <p class="mark-time"><time>07:15</time> Training</p>
+              <p class="mark-body">A session built from the muscles, the minutes and how hard. Loads follow what you lift.</p>
+            </li>
+            <li class="mark" data-angle="187.5">
+              <p class="mark-time"><time>12:30</time> Fuel</p>
+              <p class="mark-body">Search it, scan the barcode or photograph the plate. Measured against targets set from your profile.</p>
+            </li>
+            <li class="mark" data-angle="315">
+              <p class="mark-time"><time>21:00</time> Lock in</p>
+              <p class="mark-body">One check-in, under a minute. The streak moves, the rank moves, the coach reads it.</p>
+            </li>
+          </ol>
+        </div>
+
+        <figure class="dial" aria-hidden="true">
+          <svg viewBox="-200 -200 400 400" class="dial-svg">
+            <circle r="190" class="ring"/>
+            <circle r="118" class="ring ring-inner"/>
+            <g class="ticks"></g>
+            <g class="labels"></g>
+            <g class="hand" transform="rotate(97.5)">
+              <line x1="0" y1="18" x2="0" y2="-124"/>
+              <circle r="2.6" cy="-124"/>
+            </g>
+            <circle r="34" class="medallion-rim"/>
+          </svg>
+          <span class="medallion"></span>
+        </figure>
+      </div>
+    </section>
+
+    <section class="status" aria-labelledby="status-title">
+      <h2 id="status-title" class="display">Status is earned. There is nothing to buy.</h2>
+      <p class="lede">Seven tiers. Rank, active days and streak decide where you stand. Money never does.</p>
+      <ol class="ladder">
+        <li>Recruit</li>
+        <li>Operator</li>
+        <li>Performer</li>
+        <li>High Performer</li>
+        <li>Elite</li>
+        <li>Apex</li>
+        <li>Legend</li>
+      </ol>
+    </section>
+
+    <section class="house" aria-labelledby="house-title">
+      <h2 id="house-title" class="display">Everything hangs off the check-in.</h2>
+      <dl class="rooms">
+        <div class="room">
+          <dt>The Coach</dt>
+          <dd>Reads your check-ins, training and sleep before it answers. A morning brief, a plan for the day, a review every week. Off until you turn it on.</dd>
+        </div>
+        <div class="room">
+          <dt>Training</dt>
+          <dd>Sessions from the muscles, the minutes and the intensity. Weekly programs from your equipment and injuries. Over 260 illustrated exercises.</dd>
+        </div>
+        <div class="room">
+          <dt>Fuel</dt>
+          <dd>A food diary with search, barcode and photo logging, calorie and macro targets, Nordic and international food data.</dd>
+        </div>
+        <div class="room">
+          <dt>The Vault</dt>
+          <dd>Over 80 short lessons from 21 thinkers, each with an evidence rating, its references and a practice for the same day.</dd>
+        </div>
+        <div class="room">
+          <dt>Squad</dt>
+          <dd>Tribes, a proof feed, messages and one-on-one battles. Report and block wherever people meet.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="arrival" aria-labelledby="arrival-title">
+      <h2 id="arrival-title" class="display">Fourteen days of everything. No card.</h2>
+      <p class="lede">Then Whealth Factory Premium, monthly or yearly, through Apple. iPhone only.</p>
+      <p class="hero-cta arrival-cta">Coming to the App Store</p>
+    </section>
+  </main>
+
+  <footer class="company">
+    <div class="company-id">
+      <p class="company-name">Whealth Factory Corporation Finland Oy</p>
+      <p>Business ID 3636449-8</p>
+      <p>Soukansalmentie 30 A, 02360 Espoo, Finland</p>
+      <p><a href="mailto:support@whealthfactory.com">support@whealthfactory.com</a></p>
+    </div>
+    <nav class="company-links" aria-label="Legal and support">
+      <a href="/terms">Terms of Use</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/support">Support</a>
+    </nav>
+    <p class="company-fine">© 2026 Whealth Factory Corporation Finland Oy. Whealth Factory is not a medical device and gives no medical advice.</p>
+  </footer>
+
+  <script src="vendor/gsap.min.js" defer></script>
+  <script src="vendor/ScrollTrigger.min.js" defer></script>
+  <script src="site.js" defer></script>
+</body>
+</html>

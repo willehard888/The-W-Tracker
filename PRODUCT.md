@@ -12,8 +12,9 @@ separate static surface: a landing page and company information only.
 
 ## Stack
 
-The website is static HTML and CSS served by Vercel from `public/`, with no
-framework build. There is no web version of the app: the React bundle is served
+The website is static HTML, CSS and a little JS in `site/`, copied to the
+root of the Vercel build by `scripts/build-site.mjs` (the React shell moves to
+`app.html`). Nothing in `site/` reaches the iOS bundle. There is no web version of the app: the React bundle is served
 on the website for exactly `/privacy`, `/terms` and `/reset-password`
 (`src/lib/web-surface.ts` and `vercel.json` enforce it on both sides).
 
@@ -75,8 +76,10 @@ Constraints:
 
 - **No web app.** The site never signs anyone up, logs anyone in, or offers the
   product in a browser.
-- **Primary action: "Coming to the App Store".** No email capture, no waitlist
-  form on the site. On launch day the action becomes an App Store link.
+- **Headline: "Join the movement."** (founder, 2026-09-18, replacing
+  "Discipline, made daily."). **Action line: "Coming to the App Store".** No
+  email capture, no waitlist form on the site. On launch day the action line
+  becomes an App Store link.
 - **English only.**
 - iPhone only; there is no Android or iPad version to mention.
 

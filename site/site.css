@@ -1,0 +1,367 @@
+/* whealthfactory.com — the manufacture. Black is the room, one gold is the
+   only metal, the W is the object. Layout numbers in the hero come from the
+   approved comp's measured spec (.impeccable/build/spec.json). */
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/archivo-var-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cormorant";
+  src: url("/fonts/cormorant-garamond-300-latin.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-var-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --ground: #080808;
+  --ivory: #ede8df;
+  --stone: #a19c93;
+  --dust: #8c877e;
+  --gold: #e1ac3e;
+  --gold-deep: #af7718;
+  --line: rgba(175, 119, 24, 0.55);
+  --line-soft: rgba(175, 119, 24, 0.28);
+  /* Engraved capitals carry the voice; Archivo keeps the small labels. */
+  --serif: "Cormorant", "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --text: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --gutter: clamp(20px, 2.6vw, 40px);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--ground); scrollbar-color: var(--gold-deep) var(--ground); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ivory);
+  font: 400 16px/1.6 var(--text);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  caret-color: var(--gold);
+}
+::selection { background: var(--gold); color: var(--ground); }
+a { color: inherit; text-decoration: none; }
+a:focus-visible { outline: 1px solid var(--gold); outline-offset: 6px; border-radius: 2px; }
+p, h1, h2, ol, dl, dd, figure { margin: 0; }
+ol { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; height: auto; }
+
+.skip {
+  position: absolute; left: var(--gutter); top: -60px; z-index: 10;
+  padding: 10px 14px; background: var(--gold); color: var(--ground);
+  font: 600 13px/1 var(--text);
+}
+.skip:focus { top: 12px; }
+
+/* Small tracked capitals: every label on the page is this one voice. */
+.brand-name, .place, .hero-cta, .hero-peek, .mark-time, .company-links {
+  font-family: var(--display);
+  font-stretch: 112%;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.34em;
+}
+
+/* ── Masthead ───────────────────────────────────────────── */
+.masthead {
+  position: absolute; inset: 0 0 auto; z-index: 3;
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--line);
+  background: var(--ground);
+}
+.brand { display: inline-flex; align-items: center; gap: 13px; }
+.brand-mark {
+  width: 38px; height: 25px;
+  background: url("/media/w-mark.png") center / contain no-repeat;
+}
+.brand-name, .place { font-size: 11.5px; font-weight: 400; font-stretch: 100%; letter-spacing: 0.3em; color: var(--ivory); }
+
+/* ── Hero ───────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  height: 100vh; height: 100svh;
+  min-height: 620px;
+  overflow: hidden;
+}
+.hero-object {
+  position: absolute;
+  left: 50.5%; top: 12.4vh;
+  width: min(46vw, 69vh);
+  transform: translateX(-50%);
+  mix-blend-mode: lighten;
+}
+/* The plate's black is darker than the room; lighten keeps the brighter of
+   the two per channel, so the ground wins and the gold stays. It blends at
+   the group or against a grounded parent: a transformed parent with no
+   background of its own would isolate it against nothing. */
+.brand-mark, .medallion { mix-blend-mode: lighten; }
+.w-plate {
+  width: 100%;
+  /* the W ends at 57% of the plate; below it the mirror floor fades into the
+     room, passing behind the headline as it does in the comp */
+  -webkit-mask-image: linear-gradient(to bottom, #000 56%, rgba(0, 0, 0, 0.55) 62%, transparent 88%);
+  mask-image: linear-gradient(to bottom, #000 56%, rgba(0, 0, 0, 0.55) 62%, transparent 88%);
+}
+/* A band of light crossing the metal. color-dodge on black stays black, so
+   the light lands only where the gold is. */
+.w-sweep {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  mix-blend-mode: color-dodge;
+  -webkit-mask-image: linear-gradient(to bottom, #000 54%, transparent 58%);
+  mask-image: linear-gradient(to bottom, #000 54%, transparent 58%);
+  pointer-events: none;
+}
+/* The band itself moves by transform (site.js), starting off the right edge. */
+.w-beam {
+  position: absolute; top: 0; bottom: 0; left: -75%; width: 250%;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 240, 205, 0.55) 49%, rgba(255, 250, 235, 0.85) 50%, rgba(255, 240, 205, 0.55) 51%, transparent 62%);
+  transform: translateX(45%);
+}
+
+.hero-title {
+  position: absolute; left: 0; right: 0; top: 63.2vh;
+  display: flex; justify-content: center; gap: 0.3em;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: min(7.3vw, 11vh);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  white-space: nowrap;
+}
+.word { display: inline-block; overflow: hidden; padding-bottom: 0.06em; }
+.word > span { display: inline-block; }
+
+.hero-sub {
+  position: absolute; left: 0; right: 0; top: 75.5vh;
+  text-align: center;
+  font-size: min(1.3vw, 20px);
+  letter-spacing: 0.035em;
+  color: var(--ivory);
+  opacity: 0.86;
+  text-wrap: balance;
+}
+.hero-cta {
+  position: absolute; left: 50%; top: 83.4vh; transform: translateX(-50%);
+  padding: 0 1.1em 0.2em;
+  font-size: min(1.2vw, 18px);
+  color: var(--gold);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--gold-deep);
+}
+.hero-peek {
+  position: absolute; left: 0; right: 0; top: 91vh;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 26px var(--gutter) 0;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ivory);
+}
+.hero-peek a { transition: color 0.4s var(--ease-out); }
+.hero-peek a:hover { color: var(--gold); }
+
+/* Entrance: only hidden when site.js will play it (html.motion). */
+.motion [data-reveal] { opacity: 0; }
+.motion .word > span { transform: translateY(105%); }
+
+/* ── Sections ───────────────────────────────────────────── */
+.display {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(38px, 5.2vw, 86px);
+  line-height: 1.02;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.lede {
+  margin-top: 28px;
+  max-width: 44ch;
+  font-size: clamp(16px, 1.25vw, 19px);
+  color: var(--stone);
+  text-wrap: pretty;
+}
+section:not(.hero) { padding: clamp(96px, 14vh, 180px) var(--gutter); }
+
+/* The ritual: copy left, the day as a dial right. Grounded, because the pin
+   transforms it and the medallion blends against this background. */
+.ritual, .ritual-stage { background: var(--ground); }
+/* Pinned on a laptop the whole stage must fit one screen, 768 px included. */
+.ritual .display { font-size: clamp(38px, min(5.2vw, 8vh), 86px); }
+.ritual-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(32px, 6vw, 120px);
+  align-items: center;
+  max-width: 1440px; margin: 0 auto;
+}
+.marks { margin-top: min(56px, 5vh); border-top: 1px solid var(--line-soft); }
+.mark { padding: min(22px, 2vh) 0; border-bottom: 1px solid var(--line-soft); transition: opacity 0.6s var(--ease-out); }
+.mark-time { font-size: 13px; color: var(--ivory); }
+.mark-time time { color: var(--gold); margin-right: 1.4em; font-variant-numeric: tabular-nums; letter-spacing: 0.18em; }
+.mark-body { margin-top: 8px; max-width: 46ch; color: var(--stone); }
+/* Pinned (desktop, motion on): only the mark the hand points at speaks. */
+.pinned .mark { opacity: 0.32; }
+.pinned .mark.is-on { opacity: 1; }
+
+.dial { position: relative; width: min(100%, 76vh); aspect-ratio: 1; margin: 0 auto; }
+.dial-svg { width: 100%; height: 100%; overflow: visible; }
+.dial-svg .ring { fill: none; stroke: var(--gold-deep); stroke-width: 0.8; }
+.dial-svg .ring-inner { stroke: var(--line-soft); }
+.dial-svg .ticks line { stroke: var(--gold); stroke-width: 0.9; stroke-linecap: round; }
+.dial-svg .ticks line.minor { stroke: var(--gold-deep); stroke-width: 0.6; }
+.dial-svg .labels text {
+  fill: var(--ivory);
+  font: 500 9px var(--display);
+  font-stretch: 112%;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.dial-svg .labels text.t { fill: var(--gold); font-variant-numeric: tabular-nums; }
+.dial-svg .hand line { stroke: var(--gold); stroke-width: 1.6; stroke-linecap: round; }
+.dial-svg .hand circle { fill: var(--gold); }
+.dial-svg .medallion-rim { fill: var(--ground); stroke: var(--gold-deep); stroke-width: 0.8; }
+.medallion {
+  position: absolute; left: 50%; top: 50%;
+  width: 11%; aspect-ratio: 1.54;
+  transform: translate(-50%, -50%);
+  background: url("/media/w-mark.png") center / contain no-repeat;
+}
+
+/* Status: the ladder is a stair. Recruit sits on the ground, each tier one
+   tread higher and further in, Legend at the top in gold. The DOM reads
+   Recruit to Legend; column-reverse only draws the climb. */
+.status { max-width: 1440px; margin: 0 auto; }
+.ladder {
+  --step: min(7vw, 104px);
+  margin-top: 72px;
+  display: flex; flex-direction: column-reverse; align-items: flex-start;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(30px, 4.4vw, 72px);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ivory);
+}
+.ladder li {
+  margin-left: calc(var(--step) * var(--i, 0));
+  padding: 0.2em 0.3em 0.14em 0;
+  border-bottom: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+.ladder li:nth-child(2) { --i: 1; }
+.ladder li:nth-child(3) { --i: 2; }
+.ladder li:nth-child(4) { --i: 3; }
+.ladder li:nth-child(5) { --i: 4; }
+.ladder li:nth-child(6) { --i: 5; }
+.ladder li:nth-child(7) { --i: 6; color: var(--gold); border-bottom-color: var(--gold-deep); }
+
+/* The house: hairline rows, name left, what it does right. */
+.house { max-width: 1440px; margin: 0 auto; }
+.rooms { margin-top: 72px; border-top: 1px solid var(--line-soft); }
+.room {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 24px;
+  padding: 34px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.room dt {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(28px, 2.8vw, 44px);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.room dd { color: var(--stone); max-width: 58ch; font-size: clamp(16px, 1.15vw, 18px); }
+
+.arrival { text-align: center; }
+.arrival .display, .arrival .lede { margin-left: auto; margin-right: auto; }
+.arrival-cta {
+  position: static; transform: none;
+  display: inline-block; margin-top: 64px;
+  font-size: clamp(13px, 1.1vw, 17px);
+}
+
+/* The company: named plainly, as a maker signs its work. */
+.company {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px 40px;
+  padding: 56px var(--gutter) calc(48px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--stone);
+}
+.company-name { color: var(--ivory); font-weight: 500; margin-bottom: 4px; }
+.company-id a { color: var(--ivory); text-decoration: underline; text-decoration-color: var(--gold-deep); text-underline-offset: 4px; }
+.company-links { display: flex; gap: 28px; font-size: 11.5px; align-self: start; }
+.company-links a { color: var(--ivory); transition: color 0.4s var(--ease-out); }
+.company-links a:hover, .company-id a:hover { color: var(--gold); }
+.company-fine { grid-column: 1 / -1; font-size: 12.5px; color: var(--dust); }
+
+/* ── Narrow ─────────────────────────────────────────────── */
+/* Narrow: phones, and tablets held upright (the landscape hero would leave a
+   small W over a tall void). site.js uses the same split for its motion. */
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1100px) {
+  .masthead { height: 52px; }
+  .brand { gap: 12px; }
+  .brand-mark { width: 32px; height: 21px; }
+  .brand-name, .place { font-size: 11px; letter-spacing: 0.26em; white-space: nowrap; }
+  .place-long { display: none; }
+
+  .hero { --w: min(80vw, 46svh); height: auto; min-height: 100svh; padding: 0 var(--gutter) 40px; display: flex; flex-direction: column; align-items: center; }
+  .hero-object { position: relative; left: auto; top: auto; transform: none; width: var(--w); margin-top: 80px; }
+  /* the headline rises into the reflection, as on desktop */
+  .hero-title { position: relative; top: auto; flex-wrap: wrap; column-gap: 0.3em; margin-top: calc(var(--w) * -0.36); font-size: min(13.4vw, 96px); white-space: normal; }
+  .hero-sub { position: static; margin-top: 22px; max-width: 30ch; font-size: 16px; }
+  .hero-cta { position: static; transform: none; margin-top: 30px; font-size: 12.5px; letter-spacing: 0.3em; }
+  .hero-cta { margin-bottom: 40px; }
+  /* the fold line sits at the foot of the first screen, as in the comp */
+  .hero-peek { position: static; align-self: stretch; margin: auto calc(-1 * var(--gutter)) 0; padding-top: 22px; }
+
+  /* The ritual: heading, then the dial held in view while the marks scroll
+     under it and its hand follows them. */
+  .ritual-stage { grid-template-columns: 1fr; gap: 0; }
+  .ritual-copy { display: contents; }
+  .ritual-copy .display { order: 1; }
+  .ritual-copy .lede { order: 2; }
+  .dial-svg .labels text { font-size: 13px; }
+  .dial { order: 3; position: sticky; top: 0; z-index: 1; width: min(100%, 360px); margin: 28px auto 0; background: var(--ground); }
+  .marks { order: 4; }
+
+  .ladder { --step: 5vw; font-size: 30px; }
+  .room { grid-template-columns: 1fr; gap: 10px; padding: 26px 0; }
+  .company { grid-template-columns: 1fr; }
+  .company-links { flex-wrap: wrap; gap: 18px 24px; }
+}
+
+/* A phone has room for the name or the place, not both: the footer carries
+   the full address. */
+@media (max-width: 440px) {
+  .place { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  .w-sweep { display: none; }
+}

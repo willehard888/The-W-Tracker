@@ -54,7 +54,7 @@ type WaitlistData = {
   }>;
 };
 
-// Quiz answer ids → short labels (mirror public/waitlist.html).
+// Quiz answer ids → short labels (from the retired waitlist quiz; rows remain).
 const GOAL_LABELS: Record<string, string> = {
   muscle: "Muscle", fat: "Fat loss", energy: "Energy",
   discipline: "Discipline", sleep: "Sleep", mental: "Mental",

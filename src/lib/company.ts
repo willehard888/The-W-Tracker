@@ -4,7 +4,7 @@
  * Those three must be the same string, so it lives here once, spelled exactly
  * as the Finnish Trade Register has it (checked against PRH, 2026-09-18).
  *
- * The copies that cannot import this — public/support.html, public/waitlist.html,
+ * The copies that cannot import this — public/support.html, site/index.html,
  * the waitlist email and the App Store listing script — are held to it by
  * src/lib/__tests__/company.test.ts. The listing's copyright line once read
  * "Whealth-Factory": that drift is what the test is for.

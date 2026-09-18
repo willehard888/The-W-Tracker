@@ -57,3 +57,10 @@ build-*/
 
 # Impeccable machine-local settings
 .impeccable/config.local.json
+
+# impeccable working files (captures, diffs, crops, decision pages)
+.impeccable/review/
+.impeccable/build/crops/
+.impeccable/build/scaffold/
+.impeccable/questions/
+.impeccable/build/comp-grid.png

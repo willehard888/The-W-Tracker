@@ -1,15 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && node scripts/build-site.mjs",
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
   "redirects": [
-    { "source": "/", "has": [{ "type": "host", "value": "www.whealthfactory.com" }], "destination": "/waitlist", "permanent": false },
-    { "source": "/", "has": [{ "type": "host", "value": "whealthfactory.com" }], "destination": "/waitlist", "permanent": false }
+    { "source": "/waitlist", "destination": "/", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/waitlist", "destination": "/waitlist.html" },
     { "source": "/support", "destination": "/support.html" },
     {
       "source": "/u/:username",
@@ -22,10 +20,10 @@
       ],
       "destination": "https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/og-profile?u=:username"
     },
-    { "source": "/privacy", "destination": "/index.html" },
-    { "source": "/terms", "destination": "/index.html" },
-    { "source": "/reset-password", "destination": "/index.html" },
-    { "source": "/(.*)", "destination": "/waitlist.html" }
+    { "source": "/privacy", "destination": "/app.html" },
+    { "source": "/terms", "destination": "/app.html" },
+    { "source": "/reset-password", "destination": "/app.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {

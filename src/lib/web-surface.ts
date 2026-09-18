@@ -15,7 +15,9 @@
  */
 export const WEB_ROUTES: ReadonlySet<string> = new Set(["/privacy", "/terms", "/reset-password"]);
 
-export const WEB_EXIT = "/waitlist";
+// The static site owns "/"; a full-page load there always gets the site, never
+// the React shell (vercel.json serves the shell only as app.html).
+export const WEB_EXIT = "/";
 
 export const isPublicWebHost = (hostname: string): boolean => /(^|\.)whealthfactory\.com$/i.test(hostname);
 

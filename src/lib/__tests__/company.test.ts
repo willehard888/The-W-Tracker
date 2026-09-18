@@ -9,7 +9,7 @@ import { COMPANY, COMPANY_ADDRESS, isValidBusinessId } from "@/lib/company";
 // The listing's "©" line once said "Whealth-Factory" — this catches that.
 const COPIES = [
   "public/support.html",
-  "public/waitlist.html",
+  "site/index.html",
   "supabase/functions/waitlist-welcome/index.ts",
   "scripts/asc-listing.mjs",
 ];

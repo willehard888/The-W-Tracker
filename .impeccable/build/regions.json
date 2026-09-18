@@ -1,0 +1,96 @@
+{
+ "regions": [
+  {
+   "id": "masthead",
+   "kind": "chrome",
+   "grid": "A0:J0",
+   "note": "thin top bar with a hairline under it; nothing but the mark, wordmark and place label"
+  },
+  {
+   "id": "nav-mark",
+   "kind": "image",
+   "grid": "A0:A0",
+   "note": "small polished gold W brand mark (w-mark.png, cut from the w-object plate)",
+   "box": {
+    "x": 0.02,
+    "y": 0.01,
+    "w": 0.034,
+    "h": 0.04
+   },
+   "plate": "site/media/w-mark.png"
+  },
+  {
+   "id": "nav-wordmark",
+   "kind": "text",
+   "grid": "B0:C0",
+   "note": "WHEALTH FACTORY, small widely tracked warm white capitals",
+   "box": {
+    "x": 0.055,
+    "y": 0.015,
+    "w": 0.135,
+    "h": 0.032
+   }
+  },
+  {
+   "id": "nav-place",
+   "kind": "text",
+   "grid": "I0:J0",
+   "note": "MANUFACTURE \u00b7 ESPOO, FINLAND, small tracked warm white capitals",
+   "box": {
+    "x": 0.77,
+    "y": 0.015,
+    "w": 0.215,
+    "h": 0.032
+   }
+  },
+  {
+   "id": "w-object",
+   "kind": "plate",
+   "grid": "D1:H6",
+   "note": "monumental extruded polished gold W with raking light and a crisp mirror reflection on black",
+   "box": {
+    "x": 0.3,
+    "y": 0.16,
+    "w": 0.41,
+    "h": 0.5
+   },
+   "plate": "site/media/w-object.jpg"
+  },
+  {
+   "id": "headline",
+   "kind": "text",
+   "note": "DISCIPLINE, MADE DAILY. one line, ultra-thin extended capitals, full width",
+   "box": {
+    "x": 0.07,
+    "y": 0.64,
+    "w": 0.9,
+    "h": 0.112
+   },
+   "grid": "A6:J7"
+  },
+  {
+   "id": "subline",
+   "kind": "text",
+   "note": "one line of small warm grey body text",
+   "box": {
+    "x": 0.21,
+    "y": 0.752,
+    "w": 0.58,
+    "h": 0.05
+   },
+   "grid": "C7:H7"
+  },
+  {
+   "id": "cta",
+   "kind": "control",
+   "grid": "E8:G8",
+   "note": "COMING TO THE APP STORE in tracked gold capitals on a gold hairline, not a button"
+  },
+  {
+   "id": "next-peek",
+   "kind": "chrome",
+   "grid": "A9:J9",
+   "note": "full-width gold hairline with 01 THE DAILY RITUAL left and SCROLL right"
+  }
+ ]
+}

@@ -13,8 +13,8 @@ export function buildSite(root = process.cwd()) {
   // A second run would move the site itself into app.html.
   if (existsSync(resolve(dist, "app.html"))) throw new Error("build-site: dist/app.html exists, already ran");
   renameSync(resolve(dist, "index.html"), resolve(dist, "app.html"));
-  // DESIGN.md and other notes stay out of the public build.
-  cpSync(resolve(root, "site"), dist, { recursive: true, filter: (src) => !src.endsWith(".md") });
+  // DESIGN.md, notes and dot-folders (tool state) stay out of the public build.
+  cpSync(resolve(root, "site"), dist, { recursive: true, filter: (src) => !src.endsWith(".md") && !/\/\./.test(src.slice(resolve(root, "site").length)) });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) buildSite();

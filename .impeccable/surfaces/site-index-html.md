@@ -16,15 +16,15 @@ Must also serve: Apple's organization-website check — the company's legal name
 
 ## Direction contract
 
-THESIS: A manufacture of discipline — the daily ritual assembled by hand like a fine movement. Refuses the fitness launch page: floating phone, neon, feature cards.
+THESIS: The app's own world at page scale: the LOCK IN control is the product, so the page is the control, playable. Refuses a separate marketing look (round 1's luxury page was rejected for not matching the app).
 
-OWN-WORLD: Black as the room; one gold, the W, as the only metal; gold hairline engraving; huge engraved serif capitals (Cormorant Garamond 300, the founder's pick over the comp's hairline sans, 2026-09-18); small tracked Archivo labels in warm white. No cards, no decorative gradients, no grain.
+OWN-WORLD: The app's tokens: plum-black ground hsl(258 20% 1.8%), gold hsl(42 78% 54%), ember hsl(18 95% 58%), Space Grotesk 700 uppercase headlines, Inter body, lucide icons, the app's card and grouped-list surfaces, the official app icon.
 
-STORY: A house that makes discipline. The ritual ticks once a day; status here is earned, never bought; the app arrives on the App Store.
+STORY: Join the movement; lock in your day in under a minute; the streak grows; every tier is earned; everything hangs off one check-in; 14 days free; coming to the App Store. Copy hooks without claiming outcomes (PRODUCT.md capabilities only).
 
-FIRST VIEWPORT: Pure black. Polished gold W at hero scale on a mirror floor, a slow light sweep across its face. Below it, over the reflection, JOIN THE MOVEMENT. in huge engraved capitals (the founder replaced "Discipline, made daily." on 2026-09-18). A gold hairline and COMING TO THE APP STORE at the foot. MANUFACTURE · ESPOO, FINLAND top right. Signature: a scroll-pinned gold dial whose hand sweeps the day, one ritual per hour mark; slow ease-out, transform and opacity only.
+FIRST VIEWPORT: JOIN THE MOVEMENT. over a hero-scale LOCK IN built from the app's CSS recipe (three hot plates, drips, sparks); press and hold melts it to LOCKED IN; subline, +160 XP · STREAK DAY 1, and an example day of three cards at the fold.
 
-FORM: User-pinned luxury manufacture, after two bolder re-rolls; seed 69a4fe1b.
+FORM: Founder-pinned round 2, comp r2-comp-3-lockin (seed 69a4fe1b carried).
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
@@ -34,7 +34,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 ## Approved comp
 
-`.impeccable/mocks/comp-1-object.png` (The Object), confirmed by the founder in chat 2026-09-18.
+`.impeccable/mocks/r2-comp-3-lockin.png` ("The Lock In"), round 2, picked by the founder in chat 2026-09-18. Round 1 (`comp-1-object.png`, the black-and-gold luxury page) shipped and was rejected: "webbi landing on huono ja typografia ei täsmää", "tee apin mukainen ja oikeasti miljardi luokan animaation", and on copy: "teksti myös huono never buy. sen pitää oikeasti olla koukuttava".
 
 ## Unresolved
 

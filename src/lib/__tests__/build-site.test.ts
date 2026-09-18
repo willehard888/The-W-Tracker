@@ -17,6 +17,8 @@ describe("buildSite", () => {
     writeFileSync(join(root, "site/index.html"), "site");
     writeFileSync(join(root, "site/fonts/a.woff2"), "font");
     writeFileSync(join(root, "site/DESIGN.md"), "notes");
+    mkdirSync(join(root, "site/.tool-state"), { recursive: true });
+    writeFileSync(join(root, "site/.tool-state/x.json"), "{}");
     return root;
   };
 
@@ -28,6 +30,7 @@ describe("buildSite", () => {
     expect(readFileSync(join(root, "dist/fonts/a.woff2"), "utf8")).toBe("font");
     expect(readFileSync(join(root, "dist/assets/app.js"), "utf8")).toBe("js");
     expect(existsSync(join(root, "dist/DESIGN.md"))).toBe(false);
+    expect(existsSync(join(root, "dist/.tool-state"))).toBe(false);
   });
 
   it("refuses a second run", () => {

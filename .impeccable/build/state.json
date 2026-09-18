@@ -1,8 +1,8 @@
 {
   "tool": "build-phase",
   "version": 2,
-  "startedAt": "2026-09-18T09:29:49.998Z",
-  "comp": ".impeccable/mocks/comp-1-object.png",
+  "startedAt": "2026-09-18T11:52:46.311Z",
+  "comp": ".impeccable/mocks/r2-comp-3-lockin.png",
   "direction": "69a4fe1b",
   "breakpoint": "1536x1024",
   "artifact": null,
@@ -10,239 +10,289 @@
   "phases": {
     "comps": {
       "status": "closed",
-      "openedAt": "2026-09-18T09:29:49.997Z",
-      "closedAt": "2026-09-18T10:42:38.661Z",
-      "attempts": 2,
-      "notes": [],
+      "openedAt": "2026-09-18T11:52:46.311Z",
+      "closedAt": "2026-09-18T12:01:57.106Z",
+      "attempts": 1,
+      "notes": [
+        {
+          "at": "2026-09-18T11:52:46.356Z",
+          "text": "Round 2 (2026-09-18): founder rejected the live luxury site ('webbi landing on huono ja typografia ei täsmää'); new pinned world = the app's own (plum-black, gold, ember, Space Grotesk bold caps, Inter), billion-class motion."
+        }
+      ],
       "gate": {
         "ok": true,
         "reasons": [],
-        "summary": "3 comps, 1 approved",
-        "approved": ".impeccable/mocks/comp-1-object.png",
-        "at": "2026-09-18T10:42:38.661Z"
+        "summary": "6 comps, 1 approved",
+        "approved": ".impeccable/mocks/r2-comp-3-lockin.png",
+        "at": "2026-09-18T12:01:57.106Z"
       },
       "forced": null
     },
     "spec": {
       "status": "closed",
-      "openedAt": "2026-09-18T10:42:38.700Z",
-      "closedAt": "2026-09-18T10:45:04.945Z",
-      "attempts": 2,
+      "openedAt": "2026-09-18T12:01:57.154Z",
+      "closedAt": "2026-09-18T12:02:40.052Z",
+      "attempts": 1,
       "notes": [],
       "gate": {
         "ok": true,
         "reasons": [],
-        "summary": "9 regions, 2 plates, 4 text regions measured",
-        "at": "2026-09-18T10:45:04.945Z"
+        "summary": "12 regions, 1 plates, 5 text regions measured",
+        "at": "2026-09-18T12:02:40.052Z"
       },
       "forced": null
     },
     "plates": {
       "status": "closed",
-      "openedAt": "2026-09-18T10:45:04.945Z",
-      "closedAt": "2026-09-18T10:48:53.927Z",
-      "attempts": 1,
+      "openedAt": "2026-09-18T12:02:40.052Z",
+      "closedAt": "2026-09-18T12:03:24.932Z",
+      "attempts": 3,
       "notes": [],
       "gate": {
-        "ok": true,
-        "reasons": [],
-        "summary": "2/2 plates",
-        "at": "2026-09-18T10:48:53.926Z"
+        "ok": false,
+        "reasons": [
+          "plate site/media/app-icon.png: carries detail the comp region nav-mark does not have (added-detail 49% of cells): noise, grain, or a busier subject where the comp is calm; regenerate from the crop reference without adding texture"
+        ],
+        "summary": "1/1 plates",
+        "at": "2026-09-18T12:03:24.930Z"
       },
-      "forced": null
+      "forced": {
+        "at": "2026-09-18T12:03:24.932Z",
+        "reason": "user override: the founder ruled the logo binding (\"Logo sitoo, muu saa olla uutta\"); the masthead mark ships as the official app icon, not a regenerated lookalike of the comp crop, so its added detail against the 60px comp crop is accepted; proceed.",
+        "reasons": [
+          "plate site/media/app-icon.png: carries detail the comp region nav-mark does not have (added-detail 49% of cells): noise, grain, or a busier subject where the comp is calm; regenerate from the crop reference without adding texture"
+        ]
+      }
     },
     "hero": {
       "status": "closed",
-      "openedAt": "2026-09-18T10:48:53.927Z",
-      "closedAt": "2026-09-18T11:05:11.688Z",
+      "openedAt": "2026-09-18T12:03:24.932Z",
+      "closedAt": "2026-09-18T12:22:22.633Z",
       "attempts": 1,
       "notes": [],
       "gate": {
         "ok": false,
         "reasons": [
-          "hero overall 66.2% < 72% (structure 31%, color 98%, detail 77%)",
-          "region nav-wordmark (text) is contradicted (structure 18%, detail added 13%): the composition of this text region differs from the comp; re-derive it from the spec box",
-          "region nav-place (text) is contradicted (structure 18%, detail added 14%): the composition of this text region differs from the comp; re-derive it from the spec box",
-          "control cta drifts to 60% (structure 34%, color 94%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/cta.png and match the border, fill, radius, chevron or arrow, and label size"
+          "hero overall 69.4% < 72% (structure 54%, color 83%, detail 63%)",
+          "region masthead is missing (detail 0%, structure 73%): the comp shows material the build does not",
+          "region nav-mark is missing (detail 7%, structure 30%): the comp shows material the build does not",
+          "region nav-wordmark is missing (detail 0%, structure 23%): the comp shows material the build does not",
+          "region nav-cta is missing (detail 0%, structure 45%): the comp shows material the build does not",
+          "region subline is missing (detail 8%, structure 49%): the comp shows material the build does not",
+          "region xp-line is missing (detail 0%, structure 56%): the comp shows material the build does not",
+          "region headline (text) is contradicted (structure 25%, detail added 4%): the composition of this text region differs from the comp; re-derive it from the spec box",
+          "region lockin (control) is contradicted (structure 37%, detail added 8%): this control does not read as the comp's: rebuild its chrome from the crop (border, fill, radius, chevron or arrow, label size) rather than from a component default",
+          "control card-sleep drifts to 58% (structure 67%, color 65%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/card-sleep.png and match the border, fill, radius, chevron or arrow, and label size",
+          "control card-training drifts to 60% (structure 68%, color 64%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/card-training.png and match the border, fill, radius, chevron or arrow, and label size",
+          "control card-fuel drifts to 65% (structure 70%, color 65%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/card-fuel.png and match the border, fill, radius, chevron or arrow, and label size",
+          "region card-training: its ink sits in a 272x144px box in the comp and 228x72px in the build (padding, row height, or size); match the box, not only the position",
+          "region card-fuel: its ink sits in a 254x165px box in the comp and 227x93px in the build (padding, row height, or size); match the box, not only the position",
+          "READINGS, each one CSS edit (3):",
+          "text subline: ink is #e2a628 in the build, #c3c0b0 in the comp; use the comp's colour",
+          "text subline: it starts 132px further right than in the comp",
+          "chrome masthead: its rule sits 90px into the box in the comp and 29px in the build (-61px), so the strip is shorter than the comp's; match the height, not only the position",
+          "the build carries ink in 5 grid cells where the comp is calm (D0, E0, F0, C9, E9); nothing exists on the page that the comp does not show (a kicker, an extra nav item, a divider, a second row of controls); remove it or name it in a stated decision after the hero passes"
         ],
-        "summary": "hero 66% (drift)",
-        "score": 0.6618,
+        "summary": "hero 69% (drift)",
+        "score": 0.6939,
         "verdict": "drift",
         "report": ".impeccable/review/diff/hero/report.json",
         "sideBySide": ".impeccable/review/diff/hero/side-by-side.png",
         "worst": [
-          "nav-place contradicted 40%",
-          "nav-wordmark contradicted 46%",
-          "subline drift 48%"
+          "nav-mark missing 25%",
+          "nav-wordmark missing 33%",
+          "lockin contradicted 44%"
         ],
         "worstIds": [
-          "nav-place",
+          "nav-mark",
           "nav-wordmark",
-          "subline"
+          "lockin"
         ],
         "worstCrops": [
           {
-            "id": "nav-place",
-            "verdict": "contradicted",
+            "id": "nav-mark",
+            "verdict": "missing",
             "score": {
-              "overall": 0.3986,
-              "structure": 0.1819,
-              "color": 0.9781,
-              "colorIntersection": 0.9694,
-              "paletteMatch": 0.9827,
-              "detail": 0.4212,
-              "detailRaw": 0.4889,
-              "detailAdded": 0.1354,
+              "overall": 0.2534,
+              "structure": 0.3034,
+              "color": 0.7169,
+              "colorIntersection": 0.5529,
+              "paletteMatch": 0.8052,
+              "detail": 0.0684,
+              "detailRaw": 0.1986,
+              "detailAdded": 0.2604,
               "bands": 0
             },
-            "file": ".impeccable/review/diff/hero/regions/nav-place.png"
+            "file": ".impeccable/review/diff/hero/regions/nav-mark.png"
           },
           {
             "id": "nav-wordmark",
-            "verdict": "contradicted",
+            "verdict": "missing",
             "score": {
-              "overall": 0.4589,
-              "structure": 0.1803,
-              "color": 0.9801,
-              "colorIntersection": 0.9663,
-              "paletteMatch": 0.9875,
-              "detail": 0.3181,
-              "detailRaw": 0.3806,
-              "detailAdded": 0.125,
-              "bands": 0.76
+              "overall": 0.3293,
+              "structure": 0.2275,
+              "color": 0.8622,
+              "colorIntersection": 0.7778,
+              "paletteMatch": 0.9076,
+              "detail": 0,
+              "detailRaw": 0.0094,
+              "detailAdded": 0.3542,
+              "bands": 0
             },
             "file": ".impeccable/review/diff/hero/regions/nav-wordmark.png"
           },
           {
-            "id": "subline",
-            "verdict": "drift",
+            "id": "lockin",
+            "verdict": "contradicted",
             "score": {
-              "overall": 0.4786,
-              "structure": 0.3689,
-              "color": 0.9664,
-              "colorIntersection": 0.9531,
-              "paletteMatch": 0.9735,
-              "detail": 0.3506,
-              "detailRaw": 0.4756,
-              "detailAdded": 0.25,
-              "bands": 0
+              "overall": 0.4395,
+              "structure": 0.3684,
+              "color": 0.5103,
+              "colorIntersection": 0.3719,
+              "paletteMatch": 0.5848,
+              "detail": 0.4758,
+              "detailRaw": 0.5175,
+              "detailAdded": 0.0833,
+              "bands": 0.8286
             },
-            "file": ".impeccable/review/diff/hero/regions/subline.png"
+            "file": ".impeccable/review/diff/hero/regions/lockin.png"
           }
         ],
         "advisories": [],
         "regionVerdicts": {
-          "masthead": "drift",
-          "nav-mark": "drift",
-          "nav-wordmark": "contradicted",
-          "nav-place": "contradicted",
-          "w-object": "drift",
-          "headline": "drift",
-          "subline": "drift",
-          "cta": "drift",
-          "next-peek": "drift"
+          "masthead": "missing",
+          "nav-mark": "missing",
+          "nav-wordmark": "missing",
+          "nav-cta": "missing",
+          "headline": "contradicted",
+          "lockin": "contradicted",
+          "sparks": "drift",
+          "subline": "missing",
+          "xp-line": "missing",
+          "card-sleep": "drift",
+          "card-training": "drift",
+          "card-fuel": "drift"
         },
-        "at": "2026-09-18T11:24:51.170Z"
+        "at": "2026-09-18T12:22:22.630Z"
       },
       "forced": {
-        "at": "2026-09-18T11:05:11.688Z",
-        "reason": "user override: the founder rejected the comp headline (\"tuo discipline made daily on huono vaiha siihen join the movement\") and asked for a finer premium face over the comp lettering (\"teee hienompi fontti premium\", then picked Cormorant). The headline words and face no longer match the comp by the user's decision; proceed.",
+        "at": "2026-09-18T12:22:22.633Z",
+        "reason": "user override: the founder rewrote the comp copy (\"teksti myös huono never buy. sen pitää oikeasti olla koukuttava\") and pinned the type to the app (\"typografia ei täsmää joten tee apin mukainen\"), so the subline words and the Space Grotesk face override the comp; the masthead \"missing\" rows are a vertical misregistration in the diff crops (the masthead renders at the comp position in hero-repro.png); proceed.",
         "reasons": [
-          "hero overall 68.0% < 72% (structure 30%, color 98%, detail 76%)",
-          "plate nav-mark is placed but not at the comp's box: its ink spans 40x25px at (7,12) in the comp region and 30x22px at (13,10) in the build; size and position the <img> to the spec box (object-fit: cover), not to the surrounding layout",
-          "region nav-wordmark (text) is contradicted (structure 26%, detail added 13%): the composition of this text region differs from the comp; re-derive it from the spec box",
-          "region nav-place (text) is contradicted (structure 20%, detail added 14%): the composition of this text region differs from the comp; re-derive it from the spec box",
-          "control cta drifts to 60% (structure 34%, color 94%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/cta.png and match the border, fill, radius, chevron or arrow, and label size",
-          "artifact draws an illustration in inline SVG (dial-svg): <svg viewBox=\"-200 -200 400 400\" class=\"dial-svg\"...> (5 shapes, 0 chars of path data, 400px). Drawings, diagrams, notation, and leader lines are plates or belong to the plate they annotate; only icon-sized SVG (under 64px, a few paths) is code"
+          "hero overall 69.4% < 72% (structure 54%, color 83%, detail 63%)",
+          "region masthead is missing (detail 0%, structure 73%): the comp shows material the build does not",
+          "region nav-mark is missing (detail 7%, structure 30%): the comp shows material the build does not",
+          "region nav-wordmark is missing (detail 0%, structure 23%): the comp shows material the build does not",
+          "region nav-cta is missing (detail 0%, structure 45%): the comp shows material the build does not",
+          "region subline is missing (detail 8%, structure 49%): the comp shows material the build does not",
+          "region xp-line is missing (detail 0%, structure 56%): the comp shows material the build does not",
+          "region headline (text) is contradicted (structure 25%, detail added 4%): the composition of this text region differs from the comp; re-derive it from the spec box",
+          "region lockin (control) is contradicted (structure 37%, detail added 8%): this control does not read as the comp's: rebuild its chrome from the crop (border, fill, radius, chevron or arrow, label size) rather than from a component default",
+          "control card-sleep drifts to 58% (structure 67%, color 65%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/card-sleep.png and match the border, fill, radius, chevron or arrow, and label size",
+          "control card-training drifts to 60% (structure 68%, color 64%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/card-training.png and match the border, fill, radius, chevron or arrow, and label size",
+          "control card-fuel drifts to 65% (structure 70%, color 65%): its chrome differs from the comp's; open .impeccable/review/diff/hero/regions/card-fuel.png and match the border, fill, radius, chevron or arrow, and label size",
+          "region card-training: its ink sits in a 272x144px box in the comp and 228x72px in the build (padding, row height, or size); match the box, not only the position",
+          "region card-fuel: its ink sits in a 254x165px box in the comp and 227x93px in the build (padding, row height, or size); match the box, not only the position",
+          "READINGS, each one CSS edit (3):",
+          "text subline: ink is #e2a628 in the build, #c3c0b0 in the comp; use the comp's colour",
+          "text subline: it starts 132px further right than in the comp",
+          "chrome masthead: its rule sits 90px into the box in the comp and 29px in the build (-61px), so the strip is shorter than the comp's; match the height, not only the position",
+          "the build carries ink in 5 grid cells where the comp is calm (D0, E0, F0, C9, E9); nothing exists on the page that the comp does not show (a kicker, an extra nav item, a divider, a second row of controls); remove it or name it in a stated decision after the hero passes"
         ]
       },
       "readingsSeen": {
-        "text subline: its first line starts 14px lower than in the comp (14px vs 0px into the region box); the spacing above it is too large": 2,
-        "control cta: its rule sits 35px into the box in the comp and 44px in the build (+9px), so the strip is taller than the comp's; match the height, not only the position": 2
+        "text subline: ink is #e2a628 in the build, #c3c0b0 in the comp; use the comp's colour": 2,
+        "text subline: it starts 132px further right than in the comp": 2,
+        "chrome masthead: its rule sits 90px into the box in the comp and 29px in the build (-61px), so the strip is shorter than the comp's; match the height, not only the position": 2
       },
-      "records": 5,
+      "records": 1,
       "history": [
         {
-          "at": "2026-09-18T11:05:11.688Z",
-          "score": 0.6796,
+          "at": "2026-09-18T12:22:22.631Z",
+          "score": 0.6939,
           "worstIds": [
-            "nav-place",
             "nav-mark",
-            "subline"
+            "nav-wordmark",
+            "lockin"
           ],
           "regionVerdicts": {
-            "masthead": "drift",
-            "nav-mark": "drift",
-            "nav-wordmark": "contradicted",
-            "nav-place": "contradicted",
-            "w-object": "drift",
-            "headline": "drift",
-            "subline": "drift",
-            "cta": "drift",
-            "next-peek": "drift"
+            "masthead": "missing",
+            "nav-mark": "missing",
+            "nav-wordmark": "missing",
+            "nav-cta": "missing",
+            "headline": "contradicted",
+            "lockin": "contradicted",
+            "sparks": "drift",
+            "subline": "missing",
+            "xp-line": "missing",
+            "card-sleep": "drift",
+            "card-training": "drift",
+            "card-fuel": "drift"
           },
-          "artifactHash": "bca7a9b05eea"
+          "artifactHash": "ff7ff668b711"
         }
       ]
     },
     "sections": {
       "status": "closed",
-      "openedAt": "2026-09-18T11:05:11.688Z",
-      "closedAt": "2026-09-18T11:08:40.038Z",
+      "openedAt": "2026-09-18T12:22:22.633Z",
+      "closedAt": "2026-09-18T12:22:22.681Z",
       "attempts": 1,
       "notes": [],
       "gate": {
         "ok": true,
         "reasons": [],
         "summary": "no mechanical gate",
-        "at": "2026-09-18T11:08:40.038Z"
+        "at": "2026-09-18T12:22:22.680Z"
       },
       "forced": null
     },
     "motion": {
       "status": "closed",
-      "openedAt": "2026-09-18T11:08:40.038Z",
-      "closedAt": "2026-09-18T11:08:49.793Z",
+      "openedAt": "2026-09-18T12:22:22.681Z",
+      "closedAt": "2026-09-18T12:22:22.728Z",
       "attempts": 1,
       "notes": [],
       "gate": {
         "ok": true,
         "reasons": [],
         "summary": "no mechanical gate",
-        "at": "2026-09-18T11:08:49.792Z"
+        "at": "2026-09-18T12:22:22.727Z"
       },
       "forced": null
     },
     "responsive": {
       "status": "closed",
-      "openedAt": "2026-09-18T11:08:49.793Z",
-      "closedAt": "2026-09-18T11:11:59.523Z",
-      "attempts": 5,
+      "openedAt": "2026-09-18T12:22:22.728Z",
+      "closedAt": "2026-09-18T12:24:22.835Z",
+      "attempts": 2,
       "notes": [],
       "gate": {
         "ok": false,
         "reasons": [
-          "at desktop width, region nav-wordmark (text) is contradicted (structure 19%)",
-          "at desktop width, region nav-place (text) is contradicted (structure 29%)"
+          "at desktop width, region subline is missing",
+          "at desktop width, region xp-line is missing",
+          "at desktop width, region headline (text) is contradicted (structure 23%)"
         ],
-        "summary": "desktop 68% (drift)",
-        "score": 0.6778,
+        "summary": "desktop 70% (drift)",
+        "score": 0.7029,
         "sideBySide": ".impeccable/review/diff/desktop/side-by-side.png",
-        "at": "2026-09-18T11:11:59.521Z"
+        "at": "2026-09-18T12:24:22.826Z"
       },
       "forced": {
-        "at": "2026-09-18T11:11:59.523Z",
-        "reason": "user override on typography: the founder asked to replace the comp lettering with a finer premium face (\"teee hienompi fontti premium\") and approved Archivo for the small labels in the plan; the remaining nav-wordmark/nav-place contradictions are the comp face vs the approved label face at 11px, so the comp does not bind type here; proceed.",
+        "at": "2026-09-18T12:24:22.835Z",
+        "reason": "user override: the founder rewrote the comp copy (\"teksti myös huono never buy. sen pitää oikeasti olla koukuttava\") and pinned the type to the app (\"typografia ei täsmää joten tee apin mukainen\"); the subline and xp-line rows sit lower by the added \"Press and hold\" hint of the playable control, and the headline face is the app's Space Grotesk; proceed.",
         "reasons": [
-          "at desktop width, region nav-wordmark (text) is contradicted (structure 19%)",
-          "at desktop width, region nav-place (text) is contradicted (structure 29%)"
+          "at desktop width, region subline is missing",
+          "at desktop width, region xp-line is missing",
+          "at desktop width, region headline (text) is contradicted (structure 23%)"
         ]
       }
     },
     "review": {
       "status": "closed",
-      "openedAt": "2026-09-18T11:11:59.523Z",
-      "closedAt": "2026-09-18T11:34:28.436Z",
+      "openedAt": "2026-09-18T12:24:22.835Z",
+      "closedAt": "2026-09-18T12:40:36.464Z",
       "attempts": 0,
       "notes": [],
       "gate": null,
@@ -251,19 +301,14 @@
   },
   "finish": {
     "disposition": "fix",
-    "at": "2026-09-18T11:34:28.429Z",
+    "at": "2026-09-18T12:40:36.463Z",
     "phaseAtFinish": "review"
   },
   "plates": {
     "nav-mark": {
       "status": "ok",
-      "score": 0.8584,
-      "size": "1536x1024"
-    },
-    "w-object": {
-      "status": "ok",
-      "score": 0.6423,
-      "size": "1536x1024"
+      "score": 0.6985,
+      "size": "512x512"
     }
   }
 }

@@ -3,94 +3,150 @@
   {
    "id": "masthead",
    "kind": "chrome",
+   "box": {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 0.09
+   },
    "grid": "A0:J0",
-   "note": "thin top bar with a hairline under it; nothing but the mark, wordmark and place label"
+   "note": "thin top bar, gold hairline under it"
   },
   {
    "id": "nav-mark",
    "kind": "image",
-   "grid": "A0:A0",
-   "note": "small polished gold W brand mark (w-mark.png, cut from the w-object plate)",
    "box": {
-    "x": 0.02,
-    "y": 0.01,
-    "w": 0.034,
-    "h": 0.04
+    "x": 0.022,
+    "y": 0.018,
+    "w": 0.038,
+    "h": 0.058
    },
-   "plate": "site/media/w-mark.png"
+   "grid": "A0:A0",
+   "plate": "site/media/app-icon.png",
+   "note": "the official app icon tile (sourced asset)"
   },
   {
    "id": "nav-wordmark",
    "kind": "text",
-   "grid": "B0:C0",
-   "note": "WHEALTH FACTORY, small widely tracked warm white capitals",
    "box": {
-    "x": 0.055,
-    "y": 0.015,
-    "w": 0.135,
-    "h": 0.032
-   }
-  },
-  {
-   "id": "nav-place",
-   "kind": "text",
-   "grid": "I0:J0",
-   "note": "MANUFACTURE \u00b7 ESPOO, FINLAND, small tracked warm white capitals",
-   "box": {
-    "x": 0.77,
-    "y": 0.015,
-    "w": 0.215,
-    "h": 0.032
-   }
-  },
-  {
-   "id": "w-object",
-   "kind": "plate",
-   "grid": "D1:H6",
-   "note": "monumental extruded polished gold W with raking light and a crisp mirror reflection on black",
-   "box": {
-    "x": 0.3,
-    "y": 0.16,
-    "w": 0.41,
-    "h": 0.5
+    "x": 0.068,
+    "y": 0.03,
+    "w": 0.168,
+    "h": 0.038
    },
-   "plate": "site/media/w-object.jpg"
+   "grid": "A0:C0",
+   "note": "WHEALTH FACTORY in bold gold uppercase grotesk, as the app header"
+  },
+  {
+   "id": "nav-cta",
+   "kind": "text",
+   "box": {
+    "x": 0.82,
+    "y": 0.034,
+    "w": 0.155,
+    "h": 0.026
+   },
+   "grid": "I0:J0",
+   "note": "COMING TO THE APP STORE, small bold gold caps"
   },
   {
    "id": "headline",
    "kind": "text",
-   "note": "DISCIPLINE, MADE DAILY. one line, ultra-thin extended capitals, full width",
    "box": {
-    "x": 0.07,
-    "y": 0.64,
-    "w": 0.9,
-    "h": 0.112
+    "x": 0.11,
+    "y": 0.15,
+    "w": 0.795,
+    "h": 0.115
    },
-   "grid": "A6:J7"
+   "grid": "B1:I2",
+   "note": "JOIN THE MOVEMENT. huge bold uppercase grotesk, warm white"
+  },
+  {
+   "id": "lockin",
+   "kind": "control",
+   "codeDrawn": true,
+   "box": {
+    "x": 0.185,
+    "y": 0.32,
+    "w": 0.63,
+    "h": 0.33
+   },
+   "grid": "C3:I6",
+   "note": "the app's LOCK IN control at hero scale: gold-to-ember face over an ember base slab, flame glyph, LOCK IN label, +160 XP and chevron, gold drips from the lower edge; drawn by code with the app's own recipe (CommandDeck.tsx)"
+  },
+  {
+   "id": "sparks",
+   "kind": "chrome",
+   "codeDrawn": true,
+   "container": true,
+   "box": {
+    "x": 0.04,
+    "y": 0.27,
+    "w": 0.92,
+    "h": 0.42
+   },
+   "grid": "A3:J6",
+   "note": "crisp ember sparks around the control, drawn on a canvas"
   },
   {
    "id": "subline",
    "kind": "text",
-   "note": "one line of small warm grey body text",
    "box": {
-    "x": 0.21,
-    "y": 0.752,
-    "w": 0.58,
-    "h": 0.05
+    "x": 0.32,
+    "y": 0.672,
+    "w": 0.37,
+    "h": 0.034
    },
-   "grid": "C7:H7"
+   "grid": "D6:G7",
+   "note": "one line of muted body text"
   },
   {
-   "id": "cta",
+   "id": "xp-line",
+   "kind": "text",
+   "box": {
+    "x": 0.398,
+    "y": 0.71,
+    "w": 0.225,
+    "h": 0.034
+   },
+   "grid": "E7:G7",
+   "note": "+160 XP \u00b7 STREAK DAY 1 in bold gold caps"
+  },
+  {
+   "id": "card-sleep",
    "kind": "control",
-   "grid": "E8:G8",
-   "note": "COMING TO THE APP STORE in tracked gold capitals on a gold hairline, not a button"
+   "box": {
+    "x": 0.14,
+    "y": 0.772,
+    "w": 0.226,
+    "h": 0.228
+   },
+   "grid": "B8:C9",
+   "note": "dark plum card: gold outlined icon tile, SLEEP label, 7H 42M in gold"
   },
   {
-   "id": "next-peek",
-   "kind": "chrome",
-   "grid": "A9:J9",
-   "note": "full-width gold hairline with 01 THE DAILY RITUAL left and SCROLL right"
+   "id": "card-training",
+   "kind": "control",
+   "box": {
+    "x": 0.388,
+    "y": 0.772,
+    "w": 0.226,
+    "h": 0.228
+   },
+   "grid": "D8:F9",
+   "note": "dark plum card: icon tile, TRAINING, 45 MIN in gold"
+  },
+  {
+   "id": "card-fuel",
+   "kind": "control",
+   "box": {
+    "x": 0.635,
+    "y": 0.772,
+    "w": 0.226,
+    "h": 0.228
+   },
+   "grid": "G8:I9",
+   "note": "dark plum card: icon tile, FUEL, 142 G PROTEIN in gold"
   }
  ]
 }

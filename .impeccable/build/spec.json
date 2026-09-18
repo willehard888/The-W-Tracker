@@ -1,12 +1,16 @@
 {
   "tool": "comp-spec",
   "version": 1,
-  "createdAt": "2026-09-18T11:24:49.729Z",
-  "comp": ".impeccable/mocks/comp-1-object.png",
-  "warnings": [],
+  "createdAt": "2026-09-18T12:03:09.263Z",
+  "comp": ".impeccable/mocks/r2-comp-3-lockin.png",
+  "warnings": [
+    "region lockin: \"codeDrawn\": true set in the regions file (the painted-material refusal is overridden: code draws this region)",
+    "region sparks: \"codeDrawn\": true set in the regions file (the painted-material refusal is overridden: code draws this region)",
+    "region sparks: \"container\": true set in the regions file (the region-size refusal is overridden: one undivided element)"
+  ],
   "uncoveredInkCells": [
-    "D1",
-    "G1"
+    "E7",
+    "F7"
   ],
   "compSize": {
     "width": 1536,
@@ -16,87 +20,127 @@
   "orientation": "landscape",
   "palette": [
     {
-      "hex": "#080808",
-      "coverage": 0.9572
+      "hex": "#0c080b",
+      "coverage": 0.8078
     },
     {
-      "hex": "#e1ac3e",
-      "coverage": 0.0154
+      "hex": "#2d1108",
+      "coverage": 0.0638
     },
     {
-      "hex": "#af7718",
-      "coverage": 0.0115
+      "hex": "#f6b326",
+      "coverage": 0.05
     },
     {
-      "hex": "#88550b",
-      "coverage": 0.0113
+      "hex": "#f8890c",
+      "coverage": 0.0417
     },
     {
-      "hex": "#2c1808",
-      "coverage": 0.0045
+      "hex": "#f8eae0",
+      "coverage": 0.0366
     }
   ],
   "bands": [
     {
+      "y": 0.0353,
+      "strength": 0.2629
+    },
+    {
       "y": 0.0588,
-      "strength": 0.2002
+      "strength": 0.2541
+    },
+    {
+      "y": 0.1647,
+      "strength": 1
+    },
+    {
+      "y": 0.1882,
+      "strength": 0.239
+    },
+    {
+      "y": 0.2588,
+      "strength": 0.8267
+    },
+    {
+      "y": 0.3294,
+      "strength": 1
+    },
+    {
+      "y": 0.3882,
+      "strength": 0.2754
+    },
+    {
+      "y": 0.4706,
+      "strength": 0.2336
+    },
+    {
+      "y": 0.5294,
+      "strength": 0.5804
+    },
+    {
+      "y": 0.6,
+      "strength": 0.3922
+    },
+    {
+      "y": 0.6235,
+      "strength": 0.2083
     },
     {
       "y": 0.6471,
-      "strength": 0.2094
+      "strength": 0.2486
     },
     {
-      "y": 0.7294,
-      "strength": 0.2046
+      "y": 0.6824,
+      "strength": 0.2412
     },
     {
-      "y": 0.7647,
-      "strength": 0.2216
-    },
-    {
-      "y": 0.7882,
-      "strength": 0.2024
+      "y": 0.9059,
+      "strength": 0.2206
     }
   ],
   "regions": [
     {
       "id": "masthead",
       "kind": "chrome",
-      "note": "thin top bar with a hairline under it; nothing but the mark, wordmark and place label",
+      "note": "thin top bar, gold hairline under it",
       "grid": "A0:J0",
       "box": {
         "x": 0,
         "y": 0,
         "w": 1,
-        "h": 0.1
+        "h": 0.09
       },
       "px": {
         "x": 0,
         "y": 0,
         "w": 1536,
-        "h": 102
+        "h": 92
       },
-      "aspect": 15.0588,
+      "aspect": 16.6957,
       "palette": [
         {
           "hex": "#080808",
-          "coverage": 0.9954
+          "coverage": 0.9746
         },
         {
-          "hex": "#585858",
-          "coverage": 0.0021
+          "hex": "#eeb836",
+          "coverage": 0.0144
         },
         {
-          "hex": "#b9b9b9",
-          "coverage": 0.0014
+          "hex": "#443513",
+          "coverage": 0.0044
         },
         {
-          "hex": "#909090",
-          "coverage": 0.001
+          "hex": "#2d1d0d",
+          "coverage": 0.004
+        },
+        {
+          "hex": "#ca9a2e",
+          "coverage": 0.0027
         }
       ],
       "detail": {
-        "energy": 8.9502
+        "energy": 12.2263
       },
       "medium": "semantic",
       "plate": null,
@@ -105,233 +149,283 @@
     {
       "id": "nav-mark",
       "kind": "image",
-      "note": "small polished gold W brand mark (w-mark.png, cut from the w-object plate)",
+      "note": "the official app icon tile (sourced asset)",
       "grid": "A0:A0",
       "box": {
-        "x": 0.02,
-        "y": 0.01,
-        "w": 0.034,
-        "h": 0.04
+        "x": 0.022,
+        "y": 0.018,
+        "w": 0.038,
+        "h": 0.058
       },
       "px": {
-        "x": 31,
-        "y": 10,
-        "w": 52,
-        "h": 41
+        "x": 34,
+        "y": 18,
+        "w": 58,
+        "h": 59
       },
-      "aspect": 1.2683,
+      "aspect": 0.9831,
       "palette": [
         {
-          "hex": "#080808",
-          "coverage": 0.8432
+          "hex": "#121213",
+          "coverage": 0.7589
         },
         {
-          "hex": "#a76d13",
-          "coverage": 0.0551
+          "hex": "#312711",
+          "coverage": 0.1534
         },
         {
-          "hex": "#e19f31",
-          "coverage": 0.0381
+          "hex": "#f0d47f",
+          "coverage": 0.0329
         },
         {
-          "hex": "#f0b858",
-          "coverage": 0.0339
+          "hex": "#36282d",
+          "coverage": 0.0274
         },
         {
-          "hex": "#4a2d0f",
-          "coverage": 0.0297
+          "hex": "#7e5016",
+          "coverage": 0.0274
         }
       ],
       "detail": {
-        "energy": 7.8993
+        "energy": 9.6976
       },
       "medium": "raster",
-      "plate": "site/media/w-mark.png",
+      "plate": "site/media/app-icon.png",
       "text": null
     },
     {
       "id": "nav-wordmark",
       "kind": "text",
-      "note": "WHEALTH FACTORY, small widely tracked warm white capitals",
-      "grid": "B0:C0",
+      "note": "WHEALTH FACTORY in bold gold uppercase grotesk, as the app header",
+      "grid": "A0:C0",
       "box": {
-        "x": 0.055,
-        "y": 0.015,
-        "w": 0.135,
-        "h": 0.032
+        "x": 0.068,
+        "y": 0.03,
+        "w": 0.168,
+        "h": 0.038
       },
       "px": {
-        "x": 84,
-        "y": 15,
-        "w": 207,
-        "h": 33
+        "x": 104,
+        "y": 31,
+        "w": 258,
+        "h": 39
       },
-      "aspect": 6.2727,
-      "palette": [
-        {
-          "hex": "#080808",
-          "coverage": 0.9196
-        },
-        {
-          "hex": "#535351",
-          "coverage": 0.029
-        },
-        {
-          "hex": "#bcb9b8",
-          "coverage": 0.0211
-        },
-        {
-          "hex": "#8a8784",
-          "coverage": 0.0171
-        },
-        {
-          "hex": "#e6e6e0",
-          "coverage": 0.0132
-        }
-      ],
-      "detail": {
-        "energy": 25.1747
-      },
-      "medium": "semantic",
-      "plate": null,
-      "text": null
-    },
-    {
-      "id": "nav-place",
-      "kind": "text",
-      "note": "MANUFACTURE · ESPOO, FINLAND, small tracked warm white capitals",
-      "grid": "I0:J0",
-      "box": {
-        "x": 0.77,
-        "y": 0.015,
-        "w": 0.215,
-        "h": 0.032
-      },
-      "px": {
-        "x": 1183,
-        "y": 15,
-        "w": 330,
-        "h": 33
-      },
-      "aspect": 10,
-      "palette": [
-        {
-          "hex": "#080808",
-          "coverage": 0.9178
-        },
-        {
-          "hex": "#ceccc6",
-          "coverage": 0.0299
-        },
-        {
-          "hex": "#514d4f",
-          "coverage": 0.0257
-        },
-        {
-          "hex": "#989491",
-          "coverage": 0.0224
-        },
-        {
-          "hex": "#756e65",
-          "coverage": 0.0042
-        }
-      ],
-      "detail": {
-        "energy": 34.6762
-      },
-      "medium": "semantic",
-      "plate": null,
-      "text": null
-    },
-    {
-      "id": "w-object",
-      "kind": "plate",
-      "note": "monumental extruded polished gold W with raking light and a crisp mirror reflection on black",
-      "grid": "D1:H6",
-      "box": {
-        "x": 0.3,
-        "y": 0.16,
-        "w": 0.41,
-        "h": 0.5
-      },
-      "px": {
-        "x": 461,
-        "y": 164,
-        "w": 630,
-        "h": 512
-      },
-      "aspect": 1.2305,
+      "aspect": 6.6154,
       "palette": [
         {
           "hex": "#090808",
-          "coverage": 0.7699
+          "coverage": 0.7323
         },
         {
-          "hex": "#e1ac3f",
-          "coverage": 0.0866
+          "hex": "#ecb535",
+          "coverage": 0.1697
         },
         {
-          "hex": "#8a5709",
-          "coverage": 0.0674
+          "hex": "#b18830",
+          "coverage": 0.0544
         },
         {
-          "hex": "#b47a1c",
-          "coverage": 0.0521
+          "hex": "#896224",
+          "coverage": 0.0263
         },
         {
-          "hex": "#2d1808",
-          "coverage": 0.0241
+          "hex": "#544119",
+          "coverage": 0.0172
         }
       ],
       "detail": {
-        "energy": 16.6552
+        "energy": 53.4015
       },
-      "medium": "raster",
-      "plate": "site/media/w-object.jpg",
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "nav-cta",
+      "kind": "text",
+      "note": "COMING TO THE APP STORE, small bold gold caps",
+      "grid": "I0:J0",
+      "box": {
+        "x": 0.82,
+        "y": 0.034,
+        "w": 0.155,
+        "h": 0.026
+      },
+      "px": {
+        "x": 1260,
+        "y": 35,
+        "w": 238,
+        "h": 27
+      },
+      "aspect": 8.8148,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.8054
+        },
+        {
+          "hex": "#f6ce3a",
+          "coverage": 0.0679
+        },
+        {
+          "hex": "#dfad31",
+          "coverage": 0.0468
+        },
+        {
+          "hex": "#aa862a",
+          "coverage": 0.0452
+        },
+        {
+          "hex": "#694f1e",
+          "coverage": 0.0347
+        }
+      ],
+      "detail": {
+        "energy": 59.1898
+      },
+      "medium": "semantic",
+      "plate": null,
       "text": null
     },
     {
       "id": "headline",
       "kind": "text",
-      "note": "DISCIPLINE, MADE DAILY. one line, ultra-thin extended capitals, full width",
-      "grid": "A6:J7",
+      "note": "JOIN THE MOVEMENT. huge bold uppercase grotesk, warm white",
+      "grid": "B1:I2",
       "box": {
-        "x": 0.07,
-        "y": 0.64,
-        "w": 0.9,
-        "h": 0.112
+        "x": 0.11,
+        "y": 0.15,
+        "w": 0.795,
+        "h": 0.115
       },
       "px": {
-        "x": 108,
-        "y": 655,
-        "w": 1382,
-        "h": 115
+        "x": 169,
+        "y": 154,
+        "w": 1221,
+        "h": 118
       },
-      "aspect": 12.0174,
+      "aspect": 10.3475,
       "palette": [
         {
           "hex": "#080808",
-          "coverage": 0.9426
+          "coverage": 0.6027
         },
         {
-          "hex": "#f5f4ef",
-          "coverage": 0.0247
+          "hex": "#f6e9de",
+          "coverage": 0.3688
         },
         {
-          "hex": "#bbb9af",
-          "coverage": 0.0168
+          "hex": "#c4bdb4",
+          "coverage": 0.0134
         },
         {
-          "hex": "#85817c",
-          "coverage": 0.0095
+          "hex": "#4d4b4a",
+          "coverage": 0.0108
         },
         {
-          "hex": "#484845",
-          "coverage": 0.0064
+          "hex": "#989288",
+          "coverage": 0.0043
         }
       ],
       "detail": {
-        "energy": 31.3283
+        "energy": 115.7872
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "lockin",
+      "kind": "control",
+      "note": "the app's LOCK IN control at hero scale: gold-to-ember face over an ember base slab, flame glyph, LOCK IN label, +160 XP and chevron, gold drips from the lower edge; drawn by code with the app's own recipe (CommandDeck.tsx)",
+      "grid": "C3:I6",
+      "codeDrawn": true,
+      "box": {
+        "x": 0.185,
+        "y": 0.32,
+        "w": 0.63,
+        "h": 0.33
+      },
+      "px": {
+        "x": 284,
+        "y": 328,
+        "w": 968,
+        "h": 338
+      },
+      "aspect": 2.8639,
+      "palette": [
+        {
+          "hex": "#f8890c",
+          "coverage": 0.268
+        },
+        {
+          "hex": "#f8af1f",
+          "coverage": 0.2205
+        },
+        {
+          "hex": "#200d08",
+          "coverage": 0.2133
+        },
+        {
+          "hex": "#451608",
+          "coverage": 0.1715
+        },
+        {
+          "hex": "#f8ce3a",
+          "coverage": 0.1267
+        }
+      ],
+      "detail": {
+        "energy": 36.4158
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "sparks",
+      "kind": "chrome",
+      "note": "crisp ember sparks around the control, drawn on a canvas",
+      "grid": "A3:J6",
+      "codeDrawn": true,
+      "container": true,
+      "box": {
+        "x": 0.04,
+        "y": 0.27,
+        "w": 0.92,
+        "h": 0.42
+      },
+      "px": {
+        "x": 61,
+        "y": 276,
+        "w": 1413,
+        "h": 430
+      },
+      "aspect": 3.286,
+      "palette": [
+        {
+          "hex": "#0f0808",
+          "coverage": 0.5001
+        },
+        {
+          "hex": "#2d1108",
+          "coverage": 0.1776
+        },
+        {
+          "hex": "#f8b625",
+          "coverage": 0.1343
+        },
+        {
+          "hex": "#f8890c",
+          "coverage": 0.1205
+        },
+        {
+          "hex": "#4f1608",
+          "coverage": 0.0675
+        }
+      ],
+      "detail": {
+        "energy": 28.828
       },
       "medium": "semantic",
       "plate": null,
@@ -340,133 +434,233 @@
     {
       "id": "subline",
       "kind": "text",
-      "note": "one line of small warm grey body text",
-      "grid": "C7:H7",
+      "note": "one line of muted body text",
+      "grid": "D6:G7",
       "box": {
-        "x": 0.21,
-        "y": 0.752,
-        "w": 0.58,
-        "h": 0.05
+        "x": 0.32,
+        "y": 0.672,
+        "w": 0.37,
+        "h": 0.034
       },
       "px": {
-        "x": 323,
-        "y": 770,
-        "w": 891,
-        "h": 51
+        "x": 492,
+        "y": 688,
+        "w": 568,
+        "h": 35
       },
-      "aspect": 17.4706,
+      "aspect": 16.2286,
       "palette": [
         {
-          "hex": "#080808",
-          "coverage": 0.929
+          "hex": "#100909",
+          "coverage": 0.8045
         },
         {
-          "hex": "#a29e96",
-          "coverage": 0.0201
+          "hex": "#c3c0b0",
+          "coverage": 0.061
         },
         {
-          "hex": "#e1dcd2",
-          "coverage": 0.0193
+          "hex": "#c4b9b9",
+          "coverage": 0.057
         },
         {
-          "hex": "#6b6763",
-          "coverage": 0.0167
+          "hex": "#54504e",
+          "coverage": 0.0422
         },
         {
-          "hex": "#423f3c",
-          "coverage": 0.0149
+          "hex": "#928c87",
+          "coverage": 0.0354
         }
       ],
       "detail": {
-        "energy": 25.7453
+        "energy": 68.458
       },
       "medium": "semantic",
       "plate": null,
       "text": null
     },
     {
-      "id": "cta",
+      "id": "xp-line",
+      "kind": "text",
+      "note": "+160 XP · STREAK DAY 1 in bold gold caps",
+      "grid": "E7:G7",
+      "box": {
+        "x": 0.398,
+        "y": 0.71,
+        "w": 0.225,
+        "h": 0.034
+      },
+      "px": {
+        "x": 611,
+        "y": 727,
+        "w": 346,
+        "h": 35
+      },
+      "aspect": 9.8857,
+      "palette": [
+        {
+          "hex": "#080808",
+          "coverage": 0.7993
+        },
+        {
+          "hex": "#eeb633",
+          "coverage": 0.1363
+        },
+        {
+          "hex": "#c08d31",
+          "coverage": 0.0234
+        },
+        {
+          "hex": "#5d431a",
+          "coverage": 0.0205
+        },
+        {
+          "hex": "#8a661f",
+          "coverage": 0.0205
+        }
+      ],
+      "detail": {
+        "energy": 57.2211
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "card-sleep",
       "kind": "control",
-      "note": "COMING TO THE APP STORE in tracked gold capitals on a gold hairline, not a button",
-      "grid": "E8:G8",
-      "coverBox": {
-        "x": 0.4,
-        "y": 0.8,
-        "w": 0.3,
-        "h": 0.1
-      },
+      "note": "dark plum card: gold outlined icon tile, SLEEP label, 7H 42M in gold",
+      "grid": "B8:C9",
       "box": {
-        "x": 0.3997,
-        "y": 0.8291,
-        "w": 0.2617,
-        "h": 0.0469
+        "x": 0.14,
+        "y": 0.772,
+        "w": 0.226,
+        "h": 0.228
       },
       "px": {
-        "x": 614,
-        "y": 849,
-        "w": 402,
-        "h": 48
+        "x": 215,
+        "y": 791,
+        "w": 347,
+        "h": 233
       },
-      "aspect": 8.375,
+      "aspect": 1.4893,
       "palette": [
         {
-          "hex": "#080808",
-          "coverage": 0.8812
+          "hex": "#150916",
+          "coverage": 0.9476
         },
         {
-          "hex": "#8f682d",
-          "coverage": 0.0689
+          "hex": "#e9ad31",
+          "coverage": 0.0314
         },
         {
-          "hex": "#2b1e0c",
-          "coverage": 0.0233
+          "hex": "#2b251d",
+          "coverage": 0.0106
         },
         {
-          "hex": "#f2ca5f",
-          "coverage": 0.0152
+          "hex": "#544218",
+          "coverage": 0.0063
         },
         {
-          "hex": "#5b421d",
-          "coverage": 0.0114
+          "hex": "#b88c2f",
+          "coverage": 0.0042
         }
       ],
       "detail": {
-        "energy": 35.5356
+        "energy": 11.907
       },
       "medium": "semantic",
       "plate": null,
       "text": null
     },
     {
-      "id": "next-peek",
-      "kind": "chrome",
-      "note": "full-width gold hairline with 01 THE DAILY RITUAL left and SCROLL right",
-      "grid": "A9:J9",
+      "id": "card-training",
+      "kind": "control",
+      "note": "dark plum card: icon tile, TRAINING, 45 MIN in gold",
+      "grid": "D8:F9",
       "box": {
-        "x": 0,
-        "y": 0.9,
-        "w": 1,
-        "h": 0.1
+        "x": 0.388,
+        "y": 0.772,
+        "w": 0.226,
+        "h": 0.228
       },
       "px": {
-        "x": 0,
-        "y": 922,
-        "w": 1536,
-        "h": 102
+        "x": 596,
+        "y": 791,
+        "w": 347,
+        "h": 233
       },
-      "aspect": 15.0588,
+      "aspect": 1.4893,
       "palette": [
         {
-          "hex": "#080808",
-          "coverage": 0.9707
+          "hex": "#150916",
+          "coverage": 0.9459
         },
         {
-          "hex": "#a98631",
-          "coverage": 0.0293
+          "hex": "#e9ad31",
+          "coverage": 0.0294
+        },
+        {
+          "hex": "#282836",
+          "coverage": 0.0092
+        },
+        {
+          "hex": "#5d491c",
+          "coverage": 0.0085
+        },
+        {
+          "hex": "#b5b0aa",
+          "coverage": 0.0071
         }
       ],
       "detail": {
-        "energy": 3.9518
+        "energy": 12.1725
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "card-fuel",
+      "kind": "control",
+      "note": "dark plum card: icon tile, FUEL, 142 G PROTEIN in gold",
+      "grid": "G8:I9",
+      "box": {
+        "x": 0.635,
+        "y": 0.772,
+        "w": 0.226,
+        "h": 0.228
+      },
+      "px": {
+        "x": 975,
+        "y": 791,
+        "w": 347,
+        "h": 233
+      },
+      "aspect": 1.4893,
+      "palette": [
+        {
+          "hex": "#150917",
+          "coverage": 0.9293
+        },
+        {
+          "hex": "#e8ac32",
+          "coverage": 0.041
+        },
+        {
+          "hex": "#303030",
+          "coverage": 0.0177
+        },
+        {
+          "hex": "#b6b0ab",
+          "coverage": 0.0089
+        },
+        {
+          "hex": "#594518",
+          "coverage": 0.0031
+        }
+      ],
+      "detail": {
+        "energy": 11.6964
       },
       "medium": "semantic",
       "plate": null,

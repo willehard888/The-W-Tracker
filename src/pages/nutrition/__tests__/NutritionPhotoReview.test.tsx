@@ -7,7 +7,11 @@ import type { ScanItem, ScanResponse } from "@/lib/nutrition/scan-types";
 
 vi.mock("@/lib/haptics", () => ({ hapticSelection: vi.fn(), hapticImpact: vi.fn(), hapticNotification: vi.fn() }));
 vi.mock("@/lib/analytics", () => ({ track: vi.fn() }));
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u1" }, profile: null, refreshProfile: vi.fn() }) }));
+// A member who has already answered the AI question — the ordinary case. The
+// unasked case is its own test below: the photo must not leave the phone
+// before the answer.
+const mockProfile: { ai_consent_version: number | null } = { ai_consent_version: 1 };
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u1" }, profile: mockProfile, refreshProfile: vi.fn() }) }));
 vi.mock("@/hooks/use-food-search", () => ({ useFoodSearch: () => ({ results: [], localResults: [], isSearching: false, isFetching: false }) }));
 vi.mock("@/hooks/use-food-favorites", () => ({ useFoodFavorites: () => ({ ids: new Set(), toggle: vi.fn(), isLoading: false }) }));
 vi.mock("@/lib/nutrition/pending-photo", () => ({ takePendingPhoto: () => new File(["x"], "plate.jpg", { type: "image/jpeg" }) }));
@@ -127,6 +131,7 @@ describe("NutritionPhotoReview", () => {
     queries.lookupBarcode.mockClear();
     db.storage.from.mockClear();
     toastMock.mockClear();
+    mockProfile.ai_consent_version = 1;
   });
 
   it("offers a hint before scanning and sends it with the slot and plate", () => {
@@ -146,6 +151,17 @@ describe("NutritionPhotoReview", () => {
     fireEvent.click(screen.getByRole("button", { name: "Large 30" }));
     screen.getByRole("button", { name: "Scan this meal" }).click();
     expect(scanState.scan).toHaveBeenCalledWith(expect.any(File), expect.objectContaining({ sidePhoto: side, plateCm: 30 }));
+  });
+
+  // The AI-consent gate refuses on the server, so a member who has never been
+  // asked used to send the photo, take a 403, and be told to buy a membership
+  // they already had. The question comes first now, and nothing leaves the
+  // phone until it is answered (no consent host mounted here = no answer).
+  it("does not send the photo before the member has answered the AI question", async () => {
+    mockProfile.ai_consent_version = null;
+    renderPage();
+    screen.getByRole("button", { name: "Scan this meal" }).click();
+    await waitFor(() => expect(scanState.scan).not.toHaveBeenCalled());
   });
 
   it("renders the review with every detected item, the confidence pill and the scene note", () => {

@@ -10,6 +10,7 @@ export type ScanFailureReason =
   | "offline"
   | "bad_image"
   | "membership_required"
+  | "ai_consent_required"
   | "scan_limit"
   | "timeout"
   | "invalid_response"
@@ -35,6 +36,7 @@ const MAX_IMAGE_BYTES = 1.5 * 1024 * 1024;
 const CLIENT_TIMEOUT_MS = 45_000;
 
 const REASON_BY_CODE: Record<string, ScanFailureReason> = {
+  ai_consent_required: "ai_consent_required",
   ai_timeout: "timeout",
   invalid_ai_response: "invalid_response",
   scan_limit: "scan_limit",
@@ -59,9 +61,14 @@ const byStatus = (status: number | undefined): ScanFailure => {
 };
 
 /** The function's own `{error, retryable}` body wins over the status map when present. */
-const failureFor = (status: number | undefined, code: string | undefined, retryable: boolean | undefined): ScanFailure => {
+export const failureFor = (status: number | undefined, code: string | undefined, retryable: boolean | undefined): ScanFailure => {
   const fallback = byStatus(status);
-  const reason = status === 403 ? "membership_required" : (code && REASON_BY_CODE[code]) || fallback.reason;
+  // 403 used to shortcut straight to "membership required", against the rule
+  // this function states one line above. The function answers 403 for two
+  // different refusals, and the second one arrived with the AI-consent gate:
+  // a member who has never been asked was told to buy a membership they
+  // already had, and was never offered the question that would let them in.
+  const reason = (code && REASON_BY_CODE[code]) || fallback.reason;
   return { reason, retryable: retryable ?? fallback.retryable };
 };
 

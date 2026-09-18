@@ -11,6 +11,10 @@ const KNOWN: Array<{ pattern: RegExp; copy: string }> = [
   { pattern: /tribe_post_reports_post_reporter_key/, copy: "You already reported this post — the owner is on it." },
   { pattern: /duplicate key/i, copy: "That already exists — try a different name." },
   { pattern: /row-level security|permission denied/i, copy: "You don't have access to do that." },
+  // The server's machine code for "this member has never been asked whether a
+  // model may see their data". It reached the brief and the progress read as
+  // the literal string `ai_consent_required` before this line existed.
+  { pattern: /^ai_consent_required$/, copy: "AI features are off. Turn them on in Profile, or open the coach and say yes." },
   { pattern: /rate limit/i, copy: "Slow down a moment and try again." },
   { pattern: /load failed|failed to fetch|network|timeout/i, copy: "Connection hiccup — try again." },
   { pattern: /ALREADY_CHECKED_IN_TODAY/, copy: "Today is already locked in. Come back tomorrow." },

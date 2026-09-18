@@ -129,8 +129,10 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
       if (e?.message === "membership_required") {
         setNeedsMembership(true);
       } else {
-        // Never show the raw "Edge Function returned a non-2xx…" string.
-        toast.error("Couldn't refresh the plan — try again in a moment.");
+        // Never show the raw "Edge Function returned a non-2xx…" string — nor
+        // the server's machine codes, which is what a declined AI consent
+        // arrives as.
+        toast.error(friendlyError(e, "Couldn't refresh the plan — try again in a moment."));
       }
     } finally {
       setGenerating(false);

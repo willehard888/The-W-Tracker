@@ -57,9 +57,13 @@ describe("readEdgeError", () => {
     expect(e.status).toBe(429);
   });
 
-  it("keeps the raw code so the caller can branch on it", async () => {
+  it("keeps the raw code so the caller can branch on it, but never shows it", async () => {
     const e = await readEdgeError(httpError(403, { error: "ai_consent_required" }));
     expect(e.code).toBe("ai_consent_required");
+    // The brief hero and the progress read print `message`; the machine code
+    // must never be the sentence a member sees.
+    expect(e.message).not.toBe("ai_consent_required");
+    expect(e.message).toMatch(/AI features are off/);
   });
 
   it("falls back to the status when the body is not JSON", async () => {

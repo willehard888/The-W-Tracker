@@ -21,6 +21,8 @@ import { localDateKey } from "@/components/nutrition/DateBar";
 import { useLogMeal } from "@/hooks/use-log-meal";
 import { useNutritionScan, type ScanFailureReason } from "@/hooks/use-nutrition-scan";
 import { takePendingPhoto } from "@/lib/nutrition/pending-photo";
+import { ensureAiConsent } from "@/lib/ai-consent-gate";
+import { aiConsentState } from "@/lib/ai-consent";
 import { fetchFood, lookupBarcode, recordScanReview } from "@/lib/nutrition/queries";
 import { scale } from "@/lib/nutrition/scale";
 import { getNutritionPrefs, PLATE_OPTIONS } from "@/lib/nutrition/scan-prefs";
@@ -62,6 +64,7 @@ const chosenOf = (i: ScanItem) => i.candidates.find((c) => c.food_id === i.selec
 const FAILURE_COPY: Record<ScanFailureReason, { title: string; body: string }> = {
   offline: { title: "Photo scan needs a connection", body: "Nothing was added. Log it by search now and the photo can wait." },
   membership_required: { title: "Photo scan is part of membership", body: "Your diary still works — search or scan a barcode instead." },
+  ai_consent_required: { title: "Reading a meal photo needs AI", body: "The photo goes to an AI model to name what is on the plate. Nothing is sent until you say yes." },
   scan_limit: { title: "Daily scan limit reached", body: "Log manually for now; scans reset tomorrow." },
   bad_image: { title: "That photo can't be read", body: "Try a clearer, closer shot of the plate." },
   timeout: { title: "Couldn't read this meal.", body: "Nothing was added." },
@@ -147,7 +150,15 @@ const NutritionPhotoReview = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result]);
 
-  const start = (f: File) => void scan(f, { ...SCAN_OPTS, hint: hint.trim() || undefined, slot, sidePhoto: sidePhoto ?? undefined, plateCm });
+  // A meal photo is personal data going to a third-party model, so the server
+  // refuses it until the member has been asked. Ask here, before the photo
+  // leaves the phone, rather than sending it, taking a 403 and explaining
+  // afterwards. Someone who has already answered — yes or no — is not asked
+  // again; a "no" still gets the refusal screen with the way back.
+  const start = async (f: File) => {
+    if (aiConsentState(profile?.ai_consent_version) === "unasked" && !(await ensureAiConsent())) return;
+    void scan(f, { ...SCAN_OPTS, hint: hint.trim() || undefined, slot, sidePhoto: sidePhoto ?? undefined, plateCm });
+  };
   const manual = () => navigate(`/nutrition?date=${date}&slot=${slot}&add=1`);
   const pickFile = (f: File | null) => {
     if (!f) return;
@@ -392,8 +403,17 @@ const NutritionPhotoReview = () => {
         )}
         <div className="space-y-2">
           {failure.retryable && (
-            <Button size="lg" className="w-full" onClick={() => start(file)}>
+            <Button size="lg" className="w-full" onClick={() => void start(file)}>
               Try again
+            </Button>
+          )}
+          {failure.reason === "ai_consent_required" && (
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={async () => { if ((await ensureAiConsent()) && file) void start(file); }}
+            >
+              Turn on AI scanning
             </Button>
           )}
           {failure.reason === "bad_image" && fileInput("Choose another photo", "outline")}
@@ -569,7 +589,7 @@ const NutritionPhotoReview = () => {
             </Button>
           </label>
         </div>
-        <Button size="lg" className="w-full" onClick={() => start(file)}>
+        <Button size="lg" className="w-full" onClick={() => void start(file)}>
           Scan this meal
         </Button>
         {fileInput("Choose another photo", "outline")}

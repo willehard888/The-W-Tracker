@@ -20,7 +20,7 @@
   <link rel="preload" href="/fonts/cormorant-garamond-300-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/media/w-object.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="/site.css">
   <!-- Hide the entrance's starting state only when the entrance will run. -->
   <script>
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -63,7 +63,7 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-object" data-reveal="object">
         <div class="w-lift">
-          <img class="w-plate" src="media/w-object.jpg" width="1024" height="1024" alt="" fetchpriority="high" decoding="async">
+          <img class="w-plate" src="/media/w-object.jpg" width="1024" height="1024" alt="" fetchpriority="high" decoding="async">
           <span class="w-sweep" aria-hidden="true"><span class="w-beam"></span></span>
         </div>
       </div>
@@ -184,8 +184,8 @@
     <p class="company-fine">© 2026 Whealth Factory Corporation Finland Oy. Whealth Factory is not a medical device and gives no medical advice.</p>
   </footer>
 
-  <script src="vendor/gsap.min.js" defer></script>
-  <script src="vendor/ScrollTrigger.min.js" defer></script>
-  <script src="site.js" defer></script>
+  <script src="/vendor/gsap.min.js" defer></script>
+  <script src="/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="/site.js" defer></script>
 </body>
 </html>

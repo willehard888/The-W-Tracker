@@ -54,3 +54,32 @@ describe("resolveCheckinHabits", () => {
     expect(resolved.map((h) => h.key)).toEqual(libraryOrder);
   });
 });
+
+describe("earned habits", () => {
+  it("adds a habit the athlete never chose, in library order", () => {
+    const base = resolveCheckinHabits([]);
+    expect(base.some((h) => h.key === "mobility")).toBe(false);
+
+    const withRecovery = resolveCheckinHabits([], ["mobility"]);
+    expect(withRecovery.some((h) => h.key === "mobility")).toBe(true);
+    // Among the movement habits, not appended after Connection.
+    const keys = withRecovery.map((h) => h.key);
+    expect(keys.indexOf("mobility")).toBeLessThan(keys.indexOf("healthy_food"));
+  });
+
+  it("does not duplicate a habit the athlete already chose", () => {
+    const habits = resolveCheckinHabits(["mobility"], ["mobility"]);
+    expect(habits.filter((h) => h.key === "mobility")).toHaveLength(1);
+  });
+
+  it("changes nothing when nothing was earned", () => {
+    expect(resolveCheckinHabits(["reading"], [])).toEqual(resolveCheckinHabits(["reading"]));
+  });
+
+  it("is the same list the XP model scores, so an earned habit pays", () => {
+    const habits = resolveCheckinHabits([], ["mobility"]);
+    const mobility = habits.find((h) => h.key === "mobility");
+    expect(mobility?.xp).toBe(15);
+    expect(mobility?.core).toBeFalsy(); // optional, so the OPTIONAL_XP_CAP applies
+  });
+});

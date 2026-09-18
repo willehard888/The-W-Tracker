@@ -23,6 +23,7 @@ import { useDaySets, useRecentWorkoutLogs } from "@/hooks/use-workout-log";
 import { areaLoadFromLoggedSets, topAreas } from "@/lib/recovery/exposure";
 import { restDayAreas } from "@/lib/recovery/rest-day";
 import { buildSession, describeLength, type RecoveryLength } from "@/lib/recovery/build-session";
+import { markRecoveryDone } from "@/lib/recovery/completion";
 import { movementSeconds, type RecoveryMovement } from "@/data/recovery";
 
 type Source = "post_workout" | "rest_day" | "manual";
@@ -117,6 +118,9 @@ export default function Recovery() {
     }
     setDone(true);
     hapticNotification("success");
+    // Before the event, not after: `track` is fire-and-forget by contract, and
+    // what earns the athlete their XP must not depend on a network call.
+    markRecoveryDone();
     void track("recovery_completed", {
       source,
       length,
@@ -172,6 +176,14 @@ export default function Recovery() {
             </h2>
             <p className="mt-3 text-read font-bold tabular-nums text-foreground/85">
               {session.movements.length} movements · {mins} min
+            </p>
+            {/* Said here rather than as a number on a badge, because the XP is
+                not awarded on this screen — it is ticked on the check-in, the
+                same route a finished workout takes. Promising "+15 XP" at the
+                moment of finishing would be promising something this screen
+                does not hand over. */}
+            <p className="mt-3 text-dense text-muted-foreground leading-snug">
+              Mobility is ticked on today's check-in.
             </p>
           </div>
           <div className="home-rise home-rise-2 mt-6">

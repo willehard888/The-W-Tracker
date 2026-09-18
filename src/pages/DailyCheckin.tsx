@@ -51,6 +51,7 @@ import {
   resolveCheckinHabits, PILLAR_LABEL, type CheckinPillar, type CheckinHabit,
   type VerifySignal,
 } from "@/lib/checkin-habits";
+import { recoveryDoneToday, RECOVERY_HABIT_KEY } from "@/lib/recovery/completion";
 import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
 import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou } from "@/lib/sports";
 import { useRecentSports } from "@/hooks/use-recent-sports";
@@ -166,7 +167,17 @@ const DailyCheckin = () => {
 
   // The user's personalized habit selection (or the classic default set).
   const { keys: habitKeys, isCustomized, save: saveHabits, saving: savingHabits } = useCheckinConfig();
-  const chosenHabits = useMemo(() => resolveCheckinHabits(habitKeys), [habitKeys]);
+  // A recovery session finished today puts "Mobility / stretch" on the card
+  // even for somebody who never picked it. That is not editing their selection —
+  // it is showing them credit for something the app watched them do, on the one
+  // day they did it. Untick it and it is gone; it returns only on the next day
+  // they recover. `mobility` was already in the library at 15 XP, exactly half
+  // of a workout, so no constant moves and the server's mirror still agrees.
+  const recoveredToday = useMemo(() => recoveryDoneToday(), []);
+  const chosenHabits = useMemo(
+    () => resolveCheckinHabits(habitKeys, recoveredToday ? [RECOVERY_HABIT_KEY] : []),
+    [habitKeys, recoveredToday],
+  );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   // First-run habit onboarding: prompt once to pick habits (non-blocking).
@@ -356,6 +367,17 @@ const DailyCheckin = () => {
       setSportCategory((cur) => (cur === "none" ? "gym" : cur));
     }
   }, [sessionDoneToday]);
+
+  // ── Recovery auto-detect ────────────────────────────────────────────────
+  // Same bridge, same contract: a finished recovery session ticks the mobility
+  // habit rather than submitting it. Once — an athlete who unticks it has said
+  // something, and a re-render must not argue.
+  const recoveryPrefilled = useRef(false);
+  useEffect(() => {
+    if (!recoveredToday || recoveryPrefilled.current) return;
+    recoveryPrefilled.current = true;
+    setCompleted((c) => ({ ...c, [RECOVERY_HABIT_KEY]: true }));
+  }, [recoveredToday]);
 
   // Is a verifiable habit backed by a live Health signal right now?
   const isDetected = (h: CheckinHabit): boolean => {

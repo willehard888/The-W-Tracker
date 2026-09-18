@@ -35,6 +35,10 @@ export default function RecoveryOffer({
   query,
   onDismiss,
 }: RecoveryOfferProps) {
+  // The XP is named because an unnamed reward is not one, and it is named the
+  // way it is actually paid: recovery ticks the mobility habit on the check-in,
+  // the same route a finished workout takes. It is not awarded here, and saying
+  // "+15 XP" flat would promise something this screen does not hand over.
   const subtitle = areas.length
     ? `${listAreas(areas)} · ${minutes} min`
     : `A short general session · ${minutes} min`;

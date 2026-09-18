@@ -108,9 +108,22 @@ export const PILLAR_LABEL: Record<CheckinPillar, string> = {
   mind: "Mind", recovery: "Recovery", connection: "Connection",
 };
 
-/** Resolve the user's configured keys (or the default), preserving library order. */
-export const resolveCheckinHabits = (keys: string[] | null | undefined): CheckinHabit[] => {
+/**
+ * Resolve the user's configured keys (or the default), preserving library order.
+ *
+ * `earned` names habits the app has its own evidence of today which the athlete
+ * never chose — a finished recovery session puts "Mobility / stretch" on the
+ * card for that one day. It is not an edit to their selection: it shows credit
+ * for something the app watched them do, on the day they did it, and it is gone
+ * tomorrow unless they do it again. Library order holds either way, so an
+ * earned habit lands in its own pillar rather than at the bottom.
+ */
+export const resolveCheckinHabits = (
+  keys: string[] | null | undefined,
+  earned: readonly string[] = [],
+): CheckinHabit[] => {
   const set = new Set(keys && keys.length ? keys : DEFAULT_CHECKIN_KEYS);
+  for (const key of earned) set.add(key);
   // Core is always included.
   const chosen = CHECKIN_HABITS.filter((h) => h.core || set.has(h.key));
   return chosen;

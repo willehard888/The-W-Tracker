@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { areaLoad, areaLoadFromLoggedSets, topAreas, toArea } from "../exposure";
 import { buildSession, BUDGET_SEC } from "../build-session";
 import {
@@ -7,6 +7,8 @@ import {
   type RecoveryArea,
 } from "@/data/recovery";
 import { ILLUSTRATED_EXERCISES } from "@/data/exercises-illustrated";
+import { markRecoveryDone, recoveryDoneToday, RECOVERY_HABIT_KEY } from "../completion";
+import { CHECKIN_HABITS } from "@/lib/checkin-habits";
 
 // Slugs taken from the real illustrated set, not invented — a test that passes
 // against a made-up slug proves nothing about the resolver it is exercising.
@@ -232,5 +234,44 @@ describe("the library itself", () => {
         expect(line).not.toMatch(banned);
       }
     }
+  });
+});
+
+describe("the bridge to the check-in", () => {
+  beforeEach(() => localStorage.clear());
+
+  it("a finished session counts for the day it was finished", () => {
+    const evening = new Date(2026, 8, 18, 23, 50);
+    markRecoveryDone(evening);
+    expect(recoveryDoneToday(evening)).toBe(true);
+  });
+
+  it("does not carry into tomorrow — 00:10 is a new check-in", () => {
+    markRecoveryDone(new Date(2026, 8, 18, 23, 50));
+    expect(recoveryDoneToday(new Date(2026, 8, 19, 0, 10))).toBe(false);
+  });
+
+  it("is false when nothing was done", () => {
+    expect(recoveryDoneToday()).toBe(false);
+  });
+
+  it("names a habit that exists in the check-in library", () => {
+    const habit = CHECKIN_HABITS.find((h) => h.key === RECOVERY_HABIT_KEY);
+    expect(habit).toBeDefined();
+    // Smaller than a workout, which is the whole point: recovery is part of
+    // training, not a substitute for it.
+    const workout = CHECKIN_HABITS.find((h) => h.key === "workout");
+    expect(habit!.xp).toBeLessThan(workout!.xp);
+  });
+
+  it("survives storage being unavailable instead of throwing", () => {
+    const original = Object.getOwnPropertyDescriptor(window, "localStorage");
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      get() { throw new Error("blocked"); },
+    });
+    expect(() => markRecoveryDone()).not.toThrow();
+    expect(recoveryDoneToday()).toBe(false);
+    if (original) Object.defineProperty(window, "localStorage", original);
   });
 });

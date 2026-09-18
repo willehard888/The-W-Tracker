@@ -158,6 +158,12 @@ const LISTING = {
 
 const CATEGORIES = { primaryCategory: "HEALTH_AND_FITNESS", secondaryCategory: "LIFESTYLE" };
 
+// The product page's "©" line names the rights holder, and it has to be the
+// same legal entity as the seller, the Terms and the Privacy Policy. It was
+// typed into App Store Connect by hand and read "© 2026 Whealth-Factory" —
+// neither the brand nor the company. Held to src/lib/company.ts by its test.
+const COPYRIGHT = "© 2026 Whealth Factory Corporation Finland Oy";
+
 // The founder is the declarant. There are no ads; battles are not prize
 // contests; health topics are discussed, medical treatment is not the subject.
 const AGE = { advertising: false, contests: "NONE", medicalOrTreatmentInformation: "INFREQUENT_OR_MILD", healthOrWellnessTopics: true, messagingAndChat: true, userGeneratedContent: true };
@@ -200,6 +206,8 @@ const currentCats = { primaryCategory: appInfo.relationships?.primaryCategory?.d
 await diff("categories", currentCats, CATEGORIES, () => call("PATCH", `/v1/appInfos/${appInfo.id}`, {
   data: { type: "appInfos", id: appInfo.id, relationships: Object.fromEntries(Object.entries(CATEGORIES).map(([k, id]) => [k, { data: { type: "appCategories", id } }])) },
 }));
+
+await diff("copyright", version.attributes, { copyright: COPYRIGHT }, (attributes) => call("PATCH", `/v1/appStoreVersions/${version.id}`, { data: { type: "appStoreVersions", id: version.id, attributes } }));
 
 const age = (await get(`/v1/appInfos/${appInfo.id}/ageRatingDeclaration`)).data;
 await diff("ageRating", age.attributes, AGE, (attributes) => call("PATCH", `/v1/ageRatingDeclarations/${age.id}`, { data: { type: "ageRatingDeclarations", id: age.id, attributes } }));

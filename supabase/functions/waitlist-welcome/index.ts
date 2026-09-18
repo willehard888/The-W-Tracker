@@ -51,6 +51,7 @@ function welcomeHtml(goalLine: string | null): string {
   <tr><td align="center" style="padding-top:28px;">
     <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;color:#6f6a63;letter-spacing:2px;text-transform:uppercase;">✦ Earn your status ✦</div>
     <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#55504a;padding-top:10px;">You received this because you joined the waitlist at whealthfactory.com</div>
+    <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#55504a;padding-top:6px;line-height:1.5;">Whealth Factory Corporation Finland Oy &middot; Business ID 3636449-8<br/>Soukansalmentie 30 A, 02360 Espoo, Finland</div>
   </td></tr>
 </table>
 </td></tr>

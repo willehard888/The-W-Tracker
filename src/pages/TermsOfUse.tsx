@@ -1,6 +1,7 @@
 import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import PageBar from "@/components/ui/page-bar";
+import { COMPANY, COMPANY_ADDRESS } from "@/lib/company";
 
 const TermsOfUse = () => {
   const navigate = useNavigate();
@@ -11,14 +12,15 @@ const TermsOfUse = () => {
 
       <div className="home-rise px-4 pt-3 pb-6">
       <header className="mb-6">
-        <p className="eyebrow">Last updated: September 20, 2026</p>
+        <p className="eyebrow">Last updated: September 18, 2026</p>
         <h1 className="mt-1.5 font-display font-black text-beat leading-[1.04] tracking-tight">Terms of Use</h1>
       </header>
 
       <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
         <section>
           <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">1. Acceptance of Terms</h2>
-          <p>By using Whealth Factory, you agree to these Terms of Use. If you do not agree, please do not use the app.</p>
+          <p>Whealth Factory is operated by {COMPANY.name} (business ID {COMPANY.businessId}), {COMPANY_ADDRESS} — "we" and "us" in these terms.</p>
+          <p className="mt-2">By using Whealth Factory, you agree to these Terms of Use. If you do not agree, please do not use the app.</p>
         </section>
 
         <section>
@@ -65,7 +67,8 @@ const TermsOfUse = () => {
 
         <section>
           <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">10. Contact</h2>
-          <p>Questions about these terms: <a href="mailto:support@whealthfactory.com" className="text-foreground/85 underline">support@whealthfactory.com</a>.</p>
+          <p>Questions about these terms: <a href={`mailto:${COMPANY.email}`} className="text-foreground/85 underline">{COMPANY.email}</a>.</p>
+          <p className="mt-2">{COMPANY.name}, {COMPANY_ADDRESS}. Business ID {COMPANY.businessId}.</p>
         </section>
       </div>
       </div>

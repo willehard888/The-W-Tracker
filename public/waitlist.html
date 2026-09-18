@@ -210,6 +210,8 @@
     footer .row { display: flex; align-items: center; justify-content: center; gap: 8px; }
     footer p { font-size: 10px; color: hsl(40 6% 72% / 0.6); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
     footer svg { width: 10px; height: 10px; stroke: hsl(42 78% 54% / 0.3); }
+    footer .legal { margin-top: 14px; font-size: 11px; line-height: 1.6; color: hsl(40 6% 72% / 0.8); letter-spacing: 0; text-transform: none; font-weight: 400; }
+    footer .legal a { color: inherit; }
   </style>
 </head>
 <body>
@@ -313,6 +315,12 @@
       <p>Built for those who refuse to be average</p>
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
     </div>
+    <!-- Kept in step with src/lib/company.ts by src/lib/__tests__/company.test.ts. -->
+    <p class="legal">
+      Whealth Factory Corporation Finland Oy · Business ID 3636449-8<br />
+      Soukansalmentie 30 A, 02360 Espoo, Finland · <a href="mailto:support@whealthfactory.com">support@whealthfactory.com</a><br />
+      <a href="/terms">Terms of Use</a> · <a href="/privacy">Privacy Policy</a>
+    </p>
   </footer>
 
   <script>

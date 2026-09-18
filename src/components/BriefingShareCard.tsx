@@ -135,7 +135,7 @@ const BriefingShareCard = forwardRef<HTMLDivElement, BriefingShareCardProps>(
               textTransform: "uppercase",
             }}
           >
-            whealthfactory.app
+            whealthfactory.com
           </div>
         </div>
       </div>

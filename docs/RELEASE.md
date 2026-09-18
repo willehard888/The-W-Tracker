@@ -113,6 +113,38 @@ What the API cannot do, and only the founder can:
    request logging is off in the OpenRouter account.
 6. Pressing **Submit**, with both subscriptions attached to the version.
 
+## 4b. The seller: Whealth Factory Corporation Finland Oy
+
+The legal entity is **Whealth Factory Corporation Finland Oy**, business ID
+**3636449-8**, Soukansalmentie 30 A, 02360 Espoo (checked against the Finnish Trade
+Register). It is the App Store seller, the party the Terms are made with and the
+data controller in the Privacy Policy, and those three must never disagree.
+`src/lib/company.ts` holds it; `src/lib/__tests__/company.test.ts` holds every copy
+that cannot import it (support and waitlist pages, the waitlist email, the store
+listing's copyright line) to the same spelling, and checks the business ID's check
+digit.
+
+**Individual → organization migration (Apple case 102964867136, started 2026-09).**
+During it the Certificates, Identifiers & Profiles portal is closed: no new
+certificates, profiles, capabilities or signed builds. App Store Connect stays open.
+So everything that needs that portal happens *before* the migration starts — in
+practice, the Associated Domains capability on `app.lovable.wtracker`.
+
+When Apple says it is done, check before submitting anything:
+
+1. The seller name in App Store Connect is the company, not a person.
+2. The distribution and development certificates carry the company's name
+   (they read "Rasmus Petterson" before).
+3. The Team ID is still `TY6T95YVU9`. If Apple did a new account plus an app
+   transfer instead of an in-place conversion, it is not — and then five things
+   break: `DEVELOPMENT_TEAM` in `project.pbxproj`, the `APNS_TEAM_ID` secret (push
+   goes quiet without an error), the Sign in with Apple client secret, the App Store
+   Connect API key and issuer id (`scripts/asc-client.mjs`, the TestFlight workflow),
+   and TestFlight group membership.
+4. The Paid Applications Agreement is active for the organization, with its banking
+   and tax details, before the subscriptions are expected to sell.
+5. One build goes through Xcode Cloud to TestFlight before 1.0 is submitted.
+
 ## 5. Review notes, in short
 
 The reviewer needs to know: the 14-day trial is in-app and starts at signup (the

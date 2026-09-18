@@ -1,9 +1,10 @@
 import { forwardRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { trackAnon } from "@/lib/analytics";
 import { ArrowRight, Trophy, Sparkles, Dumbbell, Utensils, Moon, ShieldCheck } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
+import { COMPANY, COMPANY_ADDRESS } from "@/lib/company";
 
 // What the app ACTUALLY delivers — names the substance (coach, training,
 // nutrition, recovery, the verified-discipline moat), not just the game layer.
@@ -116,10 +117,23 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
         </div>
       </main>
 
-      {/* Bottom tagline */}
+      {/* Bottom tagline, then who is behind it. This page is the root of
+          whealthfactory.com, and Apple verifies that an organization's website
+          identifies the organization — the footer used to hold the tagline and
+          nothing else, so the site named no company at all. */}
       <footer className="relative px-6 pb-8 pt-10 home-rise home-rise-4">
         <p className="text-label text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
           Built for those who refuse to be average
+        </p>
+        <nav aria-label="Legal" className="mt-6 flex flex-wrap items-center gap-x-5 text-label text-muted-foreground/75">
+          <Link to="/terms" className="inline-flex min-h-11 items-center underline underline-offset-2">Terms of Use</Link>
+          <Link to="/privacy" className="inline-flex min-h-11 items-center underline underline-offset-2">Privacy Policy</Link>
+          <a href={`mailto:${COMPANY.email}`} className="inline-flex min-h-11 items-center underline underline-offset-2">{COMPANY.email}</a>
+        </nav>
+        <p className="mt-1 text-label text-muted-foreground/75 leading-relaxed">
+          {COMPANY.name} · <span className="whitespace-nowrap">Business ID {COMPANY.businessId}</span>
+          <br />
+          {COMPANY_ADDRESS}
         </p>
       </footer>
     </div>

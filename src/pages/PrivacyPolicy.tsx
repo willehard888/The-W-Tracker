@@ -1,6 +1,7 @@
 import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import PageBar from "@/components/ui/page-bar";
+import { COMPANY, COMPANY_ADDRESS } from "@/lib/company";
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const PrivacyPolicy = () => {
 
       <div className="home-rise px-4 pt-3 pb-6">
       <header className="mb-6">
-        <p className="eyebrow">Last updated: September 20, 2026</p>
+        <p className="eyebrow">Last updated: September 18, 2026</p>
         <h1 className="mt-1.5 font-display font-black text-beat leading-[1.04] tracking-tight">Privacy Policy</h1>
       </header>
 
@@ -73,6 +74,7 @@ const PrivacyPolicy = () => {
         <section>
           <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">9. Your rights</h2>
           <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us. You can delete your account from your profile settings.</p>
+          <p className="mt-2">You also have the right to lodge a complaint with a data protection authority. In Finland that is the Data Protection Ombudsman (tietosuoja.fi); you may also contact the authority where you live.</p>
         </section>
 
         <section>
@@ -81,8 +83,9 @@ const PrivacyPolicy = () => {
         </section>
 
         <section>
-          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">11. Contact us</h2>
-          <p>Questions, or a request about your data: <a href="mailto:support@whealthfactory.com" className="text-foreground/85 underline">support@whealthfactory.com</a>. We answer within one working day.</p>
+          <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">11. Who is responsible for your data</h2>
+          <p>The data controller is {COMPANY.name} (business ID {COMPANY.businessId}), {COMPANY_ADDRESS}.</p>
+          <p className="mt-2">Questions, or a request about your data: <a href={`mailto:${COMPANY.email}`} className="text-foreground/85 underline">{COMPANY.email}</a>. We answer within one working day.</p>
         </section>
       </div>
       </div>

@@ -147,6 +147,30 @@ export const ONBOARDING_EVENTS: Record<OnboardingEventId, OnboardingEventDef> = 
     title: "That counts twice",
     body: "The session is saved, and your check-in already knows you trained.",
     cta: "Good",
+    chainsTo: "RECOVERY_INTRO",
+    fallback: "sheet",
+    backdropDismiss: true,
+  },
+  // ── Recovery ────────────────────────────────────────────────────────────
+  // Chained off the workout-complete card, so the pair counts as ONE teaching
+  // moment against the per-launch cap. Finishing a first workout is a single
+  // beat; two sheets in a row on one screen is an interruption.
+  RECOVERY_INTRO: {
+    id: "RECOVERY_INTRO",
+    presentation: "sheet",
+    title: "Built from what you trained",
+    body: "Whealth reads the sets you logged and puts a few minutes together for the areas that took the load. Start it, or save it for later — it keeps until tonight.",
+    cta: "Got it",
+    prerequisite: "WORKOUT_COMPLETE_INTRO",
+    fallback: "sheet",
+    backdropDismiss: true,
+  },
+  RECOVERY_REST_DAY_INTRO: {
+    id: "RECOVERY_REST_DAY_INTRO",
+    presentation: "sheet",
+    title: "Rest days have something in them",
+    body: "Short mobility built from your last couple of sessions. A rest day is still a training day for the rest of you.",
+    cta: "Got it",
     fallback: "sheet",
     backdropDismiss: true,
   },

@@ -1,87 +1,96 @@
-// The offer, not the session: one row that says what it would work on and how
-// long it would take, with a way in and a way past.
+// The offer, not the session: what it would work on, how long it would take,
+// a way in and a way past.
 //
-// It is never mandatory and it never blocks finishing a workout. That is the
-// whole design constraint — an athlete who has just put the bar down and wants
-// a shower must be able to leave without stepping around something.
+// IT NEVER COMPETES WITH FINISHING
+//
+// The moment it appears in is the best one the training loop has — the bar is
+// down, the sets are saved, the volume is on screen in gold. Recovery arrives
+// after that, never on top of it: it is a row below the summary, both finish
+// buttons still work untouched, and nothing about it is required.
+//
+// "MAYBE LATER" MEANS LATER
+//
+// Declining parks the session on Today rather than deleting it. Someone who
+// does not want to stretch in the gym is not someone who does not want to
+// stretch, and the first version could not tell the difference.
 import { Link } from "react-router-dom";
 import { Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
-import { track } from "@/lib/analytics";
+import { track, FUNNEL } from "@/lib/analytics";
+import { listAreas } from "@/lib/recovery/explain";
 import type { RecoveryArea } from "@/data/recovery";
 
 export interface RecoveryOfferProps {
-  /** Where the offer is being made — carried into the session and the events. */
   source: "post_workout" | "rest_day";
   areas: RecoveryArea[];
   minutes: number;
   /** Appended to /recovery, e.g. "p=…&w=1&d=2". */
   query: string;
-  onDismiss?: () => void;
+  /** One line saying where this came from. Omitted when there is nothing true to say. */
+  why?: string | null;
+  /** Present on the finish screen; absent on Today, where the row IS the later. */
+  onLater?: () => void;
 }
 
-/** "chest, shoulders and triceps" — a list a person would say out loud. */
-export const listAreas = (areas: RecoveryArea[]): string => {
-  if (areas.length === 0) return "";
-  if (areas.length === 1) return areas[0];
-  return `${areas.slice(0, -1).join(", ")} and ${areas[areas.length - 1]}`;
-};
+export { listAreas };
 
 export default function RecoveryOffer({
   source,
   areas,
   minutes,
   query,
-  onDismiss,
+  why,
+  onLater,
 }: RecoveryOfferProps) {
-  // The XP is named because an unnamed reward is not one, and it is named the
-  // way it is actually paid: recovery ticks the mobility habit on the check-in,
-  // the same route a finished workout takes. It is not awarded here, and saying
-  // "+15 XP" flat would promise something this screen does not hand over.
-  const subtitle = areas.length
-    ? `${listAreas(areas)} · ${minutes} min`
-    : `A short general session · ${minutes} min`;
+  const href = `/recovery?src=${source}${query ? `&${query}` : ""}`;
 
   return (
-    <div className="surface-card surface-card-quiet flex items-center">
-      <div className="flex items-center gap-3 flex-1 min-w-0 px-4 py-3">
+    <div className="surface-card surface-card-quiet px-4 py-3.5">
+      <div className="flex items-start gap-3">
         <span className="h-10 w-10 shrink-0 rounded-xl bg-card/60 border border-border/40 flex items-center justify-center">
           <Waves size={16} className="text-muted-foreground" aria-hidden />
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-label font-bold text-muted-foreground/75 mb-0.5">
-            {source === "rest_day" ? "Rest day" : "After the work"}
+            {source === "rest_day" ? "Rest day" : "One more thing"}
           </p>
           <p className="text-note font-bold leading-tight">
-            {source === "rest_day" ? "Loosen off what you trained" : "Stretch what you just trained"}
+            {source === "rest_day" ? "Move, then loosen off." : "Loosen up what you trained."}
           </p>
-          <p className="text-meta text-muted-foreground leading-snug mt-0.5 truncate">{subtitle}</p>
+          <p className="text-meta text-muted-foreground leading-snug mt-1 capitalize">
+            {areas.length ? listAreas(areas) : "General mobility"}
+            <span className="tabular-nums"> · {minutes} min</span>
+          </p>
+          {why && (
+            <p className="text-meta text-muted-foreground/75 leading-snug mt-1 normal-case">{why}</p>
+          )}
         </div>
       </div>
-      <div className="pr-2 shrink-0 flex items-center gap-1">
-        <Button variant="outline" size="sm" className="min-h-11" asChild>
+
+      <div className="mt-3 flex gap-2">
+        <Button variant="outline" size="sm" className="flex-1 min-h-11" asChild>
           <Link
-            to={`/recovery?src=${source}${query ? `&${query}` : ""}`}
+            to={href}
             onClick={() => {
               hapticImpact("light");
-              void track("recovery_opened", { source, areas, minutes });
+              void track(FUNNEL.recoveryOpened, { source, areas, minutes, from: "offer" });
             }}
           >
-            Start
+            Start recovery
           </Link>
         </Button>
-        {onDismiss && (
+        {onLater && (
           <Button
             variant="ghost"
             size="sm"
-            className="min-h-11 text-muted-foreground"
+            className="flex-1 min-h-11 text-muted-foreground"
             onClick={() => {
-              void track("recovery_dismissed", { source, areas });
-              onDismiss();
+              void track(FUNNEL.recoveryDismissed, { source, areas, minutes, choice: "later" });
+              onLater();
             }}
           >
-            Not now
+            Maybe later
           </Button>
         )}
       </div>

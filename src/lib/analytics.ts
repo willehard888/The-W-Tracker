@@ -110,6 +110,9 @@ export const FUNNEL = {
   recoveryStarted: "recovery_started",
   recoveryCompleted: "recovery_completed",
   recoverySkipped: "recovery_skipped",
+  // Which movements get replaced, and by what — the pilot question is whether
+  // one keeps coming back, which is a library problem and not a user one.
+  recoverySwapped: "recovery_swapped",
   // The Vault's practice loop: a piece opened, understood (Mark complete),
   // its reflection answered, its practice run (server-recorded, +XP), its
   // integration answered; and a path walked to the end. Props carry

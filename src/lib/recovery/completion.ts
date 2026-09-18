@@ -23,10 +23,51 @@ import { readLocal, writeLocal } from "@/lib/storage";
 import { localDateKey } from "@/lib/date";
 
 const KEY = "recovery-done-on";
+const LOG_KEY = "recovery-done-log";
+
+/** Two weeks is all any screen asks for, and it keeps the value small. */
+const LOG_DAYS = 14;
+
+const readLog = (): string[] => {
+  const raw = readLocal(LOG_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((d): d is string => typeof d === "string") : [];
+  } catch {
+    return [];
+  }
+};
 
 /** Record that a recovery session was finished. Idempotent within a day. */
 export const markRecoveryDone = (when: Date = new Date()): void => {
-  writeLocal(KEY, localDateKey(when));
+  const key = localDateKey(when);
+  writeLocal(KEY, key);
+  // One entry per day, newest first, trimmed. A second session on the same day
+  // is a good day, not two — the count exists to say "I do this", and counting
+  // twice for one evening would make the number mean less, not more.
+  const log = [key, ...readLog().filter((d) => d !== key)].slice(0, LOG_DAYS);
+  try {
+    writeLocal(LOG_KEY, JSON.stringify(log));
+  } catch {
+    // The count is a nicety; the tick on the check-in is the part that matters.
+  }
+};
+
+/**
+ * Days with a finished recovery session in the last seven, today included.
+ *
+ * Shown as a plain count and never as a target. "3 this week" says the athlete
+ * is doing something; "3 / 5" would say they are behind, which is a different
+ * sentence about a thing nobody agreed to.
+ */
+export const recoveryDaysThisWeek = (when: Date = new Date()): number => {
+  const window = new Set<string>();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(when.getFullYear(), when.getMonth(), when.getDate() - i);
+    window.add(localDateKey(d));
+  }
+  return readLog().filter((d) => window.has(d)).length;
 };
 
 /**

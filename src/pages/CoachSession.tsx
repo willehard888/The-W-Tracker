@@ -29,8 +29,10 @@ import { useCommitPop } from "@/hooks/use-commit-pop";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { resolveIllustration } from "@/lib/exercise-match";
 import RecoveryOffer from "@/components/recovery/RecoveryOffer";
-import { areaLoadFromLoggedSets, topAreas } from "@/lib/recovery/exposure";
+import { areaLoadFromLoggedSets, topAreas, primaryAreaCount } from "@/lib/recovery/exposure";
 import { buildSession } from "@/lib/recovery/build-session";
+import { whyThisShort } from "@/lib/recovery/explain";
+import { deferRecovery } from "@/lib/recovery/deferred";
 import { IllustrationPlayer, preloadIllustration } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
@@ -341,12 +343,25 @@ const CoachSession = () => {
   // minutes the session runs — the card and the screen are two renders that
   // have to agree.
   const recoveryOffer = useMemo(() => {
-    if (!summaryShown || !recoveryOffered) return null;
-    const areas = topAreas(areaLoadFromLoggedSets(logged));
-    const built = buildSession(areas, { length: "standard", context: "post_workout" });
+    // `daySets` arrives async on a REOPENED finished session, and a card built
+    // from {} is a general one. Rendering that for a frame and then swapping in
+    // the real areas reads as the app changing its mind about what you trained,
+    // so the offer waits for the query it depends on.
+    if (!summaryShown || !recoveryOffered || daySets === undefined) return null;
+    const load = areaLoadFromLoggedSets(logged);
+    const built = buildSession(topAreas(load), {
+      length: "standard",
+      context: "post_workout",
+      primaryCount: primaryAreaCount(load),
+    });
     if (built.movements.length === 0) return null;
-    return { areas: built.areas, minutes: Math.max(1, Math.round(built.totalSec / 60)) };
-  }, [summaryShown, recoveryOffered, logged]);
+    const exercises = Object.values(logged).filter((sets) => sets.length > 0).length;
+    return {
+      areas: built.areas,
+      minutes: Math.max(1, Math.round(built.totalSec / 60)),
+      why: whyThisShort("post_workout", built, exercises),
+    };
+  }, [summaryShown, recoveryOffered, logged, daySets]);
 
   const offerTracked = useRef(false);
   useEffect(() => {
@@ -507,8 +522,20 @@ const CoachSession = () => {
                 source="post_workout"
                 areas={recoveryOffer.areas}
                 minutes={recoveryOffer.minutes}
+                why={recoveryOffer.why}
                 query={`p=${program.id}&w=${week}&d=${day}`}
-                onDismiss={() => setRecoveryOffered(false)}
+                onLater={() => {
+                  // Parked on Today, not deleted. "Not with a bar still on the
+                  // rack" and "never" are different answers.
+                  deferRecovery({
+                    source: "post_workout",
+                    query: `p=${program.id}&w=${week}&d=${day}`,
+                    areas: recoveryOffer.areas,
+                    minutes: recoveryOffer.minutes,
+                  });
+                  setRecoveryOffered(false);
+                  toast("Saved for later", { description: "It's on Today when you want it." });
+                }}
               />
             </div>
           )}

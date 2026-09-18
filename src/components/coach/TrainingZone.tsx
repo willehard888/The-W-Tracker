@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type ReactNode } from "react";
+import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
+import { deferredRecovery } from "@/lib/recovery/deferred";
 
 // Lazy: the sheet pulls in the 268-movement illustration catalog (164 kB raw,
 // 31 kB gz) through its thumbnails. Imported statically from a Home component
@@ -65,6 +66,9 @@ const TrainingZone = () => {
   const navigate = useNavigate();
   const { program, logs, currentWeek, todayDayIndex, isLoading } = useCoachProgram();
   const { session } = useTodayFocusSession();
+  // Read once per mount: it is a local value, it only changes on a screen this
+  // row is not on, and re-reading it on every render would be work for nothing.
+  const deferred = useMemo(() => deferredRecovery(), []);
 
   // Today's focus session, when one exists, is the day's training and leads;
   // the programmed day waits underneath the same door.
@@ -173,12 +177,16 @@ const TrainingZone = () => {
   // steps between "I have a session" and "I am doing it".
   const startSession = () => go(`/coach/session/${currentWeek}/${todayDayIndex}`);
   // A rest day has no session to read, so recovery works from the last couple
-  // of days of logged sets; a day already trained reads that day directly.
+  // of days of logged sets; a day already trained reads that day directly. A
+  // session parked with "Maybe later" wins over both — it is the one the
+  // athlete has already seen and chosen to come back to.
   const startRecovery = () =>
     go(
-      done
-        ? `/recovery?src=post_workout&p=${program.id}&w=${currentWeek}&d=${todayDayIndex}`
-        : "/recovery?src=rest_day",
+      deferred
+        ? `/recovery?src=${deferred.source}&${deferred.query}`
+        : done
+          ? `/recovery?src=post_workout&p=${program.id}&w=${currentWeek}&d=${todayDayIndex}`
+          : "/recovery?src=rest_day",
     );
 
   return (
@@ -209,6 +217,20 @@ const TrainingZone = () => {
             <p className="text-note font-bold leading-tight">Rest day</p>
             <p className="text-meta text-muted-foreground leading-snug mt-0.5">
               Recovery is part of the program, not a gap in it.
+            </p>
+          </>
+        ) : done && deferred ? (
+          // Trained, and the recovery session was parked rather than declined.
+          // It names what it is for, because a row that just says "Recovery"
+          // could be anything and this one was built from today's sets.
+          <>
+            <p className="text-note font-bold leading-tight truncate">
+              <Check aria-hidden size={13} className="inline mr-1 text-xp-green" />
+              {dayFocus(day) || "Today's session"} · logged
+            </p>
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5 truncate capitalize">
+              Recovery waiting · {deferred.areas.join(", ") || "general"}
+              <span className="tabular-nums"> · {deferred.minutes} min</span>
             </p>
           </>
         ) : (

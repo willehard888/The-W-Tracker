@@ -13,6 +13,7 @@ import {
   Dumbbell,
   ClipboardList,
   CircleCheck,
+  Waves,
   type LucideIcon,
 } from "lucide-react";
 import type { OnboardingEventId } from "@/lib/onboarding/types";
@@ -33,4 +34,8 @@ export const EVENT_ICONS: Record<OnboardingEventId, LucideIcon> = {
   WORKOUT_LOGGING_INTRO: Dumbbell,
   WORKOUT_COMPLETE_INTRO: CircleCheck,
   PROGRAM_ADAPTS_INTRO: TrendingUp,
+  // Same mark the offer card and Today's row carry, so the card that explains
+  // recovery is recognisably about the rows that show it.
+  RECOVERY_INTRO: Waves,
+  RECOVERY_REST_DAY_INTRO: Waves,
 };

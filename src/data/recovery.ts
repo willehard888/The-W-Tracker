@@ -24,14 +24,44 @@
 // LANGUAGE
 //
 // No claim about what a stretch does to tissue. Not "flushes", not "repairs",
-// not "speeds recovery", not "prevents injury" — style-guard rule 20 fails the
+// not "speeds recovery", not "prevents injury" — style-guard rule 21 fails the
 // build on that vocabulary, because a rule written in a comment is a rule that
 // erodes. What is left is what is true: where you should feel it, and how to
 // hold it.
+//
+// CONTEXTS ARE NOT DECORATION
+//
+// The first version of this file gave all 23 movements both contexts, so the
+// filter in build-session was a no-op and a rest day produced a byte-identical
+// session to a post-workout one. Contexts here now discriminate, and the rule
+// is about what the body has just done:
+//
+//   post_workout  holds and gentle range. Nobody wants to be walked through
+//                 leg swings with a barbell still on the rack.
+//   rest_day      that, plus the movement that only makes sense on a day with
+//                 nothing else in it — easy flows, dynamic range, walking.
+//
+// So static work is shared and `light`/dynamic work is rest-day only. That is
+// what makes the two sessions different in kind rather than in label.
 
-export type RecoveryType = "stretch" | "mobility" | "breathing";
+export type RecoveryType =
+  | "stretch" // held, static
+  | "mobility" // controlled range, repeated
+  | "flow" // several positions in sequence
+  | "light" // easy movement for its own sake
+  | "breathing";
+
 export type RecoveryContext = "post_workout" | "rest_day";
 export type RecoveryEquipment = "none" | "wall" | "mat";
+
+/**
+ * How hard the movement asks the body to work.
+ *
+ * `gentle` is what a session drops to when the athlete says they are sore.
+ * There is no claim here about soreness — only that somebody who says they
+ * hurt should not be handed the deepest version of a stretch.
+ */
+export type RecoveryIntensity = "gentle" | "moderate";
 
 /**
  * The body map recovery speaks in.
@@ -78,6 +108,10 @@ export interface RecoveryMovement {
   caution?: string;
   contexts: RecoveryContext[];
   equipment: RecoveryEquipment;
+  /** Defaults to "moderate"; `gentle` movements are what a sore session is built from. */
+  intensity?: RecoveryIntensity;
+  /** Lying or kneeling work — the wrong thing to hand somebody standing in a gym. */
+  floor?: boolean;
 }
 
 /**
@@ -424,6 +458,293 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
     caution: "No pressure into the neck, and stop if anything travels down the arm.",
     contexts: ["post_workout", "rest_day"],
     equipment: "none",
+  },
+
+  // ---- depth: a second and third answer per area, so "Deep" can be deep ----
+  //
+  // The first version had exactly one triceps movement and one for the neck,
+  // which is why a 12-minute session came back the same length as a 6-minute
+  // one: the builder ran out of things to offer and quietly stopped. Depth is
+  // not padding — each of these is a different position on the same area.
+  {
+    id: "triceps-wall",
+    name: "Wall triceps stretch",
+    type: "stretch",
+    areas: ["triceps", "lats"],
+    holdSec: 30,
+    sides: 2,
+    steps: [
+      "Stand side-on to a wall and place the elbow of the near arm on it, above shoulder height.",
+      "Let the forearm fall behind your head.",
+      "Lean gently in until the back of the arm lengthens.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "wall",
+    intensity: "gentle",
+  },
+  {
+    id: "triceps-reach",
+    name: "Seated triceps reach",
+    type: "mobility",
+    areas: ["triceps", "shoulders"],
+    holdSec: 40,
+    sides: 1,
+    steps: [
+      "Sit tall and lace your fingers together above your head, palms up.",
+      "Press upward, then let the hands drift slightly back.",
+      "Hold for a breath at the top of each press.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "none",
+    intensity: "gentle",
+  },
+  {
+    id: "prayer-stretch",
+    name: "Kneeling wrist stretch",
+    type: "stretch",
+    areas: ["forearms", "biceps"],
+    holdSec: 30,
+    sides: 1,
+    steps: [
+      "Kneel and place your palms on the floor, fingers pointing back towards your knees.",
+      "Rock your weight back a little at a time.",
+      "Keep the palms down only as long as it stays comfortable.",
+    ],
+    caution: "Come off it at once if the wrists complain rather than the forearms.",
+    contexts: ["post_workout", "rest_day"],
+    equipment: "mat",
+    intensity: "gentle",
+    floor: true,
+  },
+  {
+    id: "chest-corner",
+    name: "Corner chest stretch",
+    type: "stretch",
+    areas: ["chest", "shoulders", "biceps"],
+    holdSec: 40,
+    sides: 1,
+    steps: [
+      "Face a corner with a forearm on each wall, elbows just below shoulder height.",
+      "Step one foot in and let your chest sink forward.",
+      "Both sides at once — keep the ribs down.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "wall",
+    intensity: "gentle",
+  },
+  {
+    id: "neck-rotation",
+    name: "Neck rotation",
+    type: "mobility",
+    areas: ["neck", "upper back"],
+    holdSec: 30,
+    sides: 1,
+    steps: [
+      "Sit or stand tall and turn your head slowly to one side.",
+      "Pause where the turn ends, then come back through centre to the other side.",
+      "Keep the chin level the whole way.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "none",
+    intensity: "gentle",
+  },
+  {
+    id: "seated-calf-reach",
+    name: "Seated calf reach",
+    type: "stretch",
+    areas: ["calves", "hamstrings"],
+    holdSec: 35,
+    sides: 2,
+    steps: [
+      "Sit with one leg straight out in front of you.",
+      "Reach for the ball of that foot and draw the toes towards you.",
+      "A towel or belt around the foot works if the reach is long.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "mat",
+    intensity: "gentle",
+    floor: true,
+  },
+  {
+    id: "side-bend",
+    name: "Standing side bend",
+    type: "stretch",
+    areas: ["abdominals", "lats", "lower back"],
+    holdSec: 30,
+    sides: 2,
+    steps: [
+      "Stand tall, reach one arm overhead and lean away from it.",
+      "Keep both feet planted and the hips level.",
+      "Breathe into the side that is lengthening.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "none",
+    intensity: "gentle",
+  },
+  {
+    id: "seated-lat-reach",
+    name: "Seated lat reach",
+    type: "stretch",
+    areas: ["lats", "upper back", "triceps"],
+    holdSec: 35,
+    sides: 2,
+    steps: [
+      "Sit and hold the edge of a chair or bench beside you with one hand.",
+      "Reach the other arm up and over, leaning away from the held side.",
+      "You should feel it from the ribs to the armpit.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "none",
+    intensity: "gentle",
+  },
+  {
+    id: "seated-forward-fold",
+    name: "Seated forward fold",
+    type: "stretch",
+    areas: ["hamstrings", "lower back", "calves"],
+    holdSec: 45,
+    sides: 1,
+    steps: [
+      "Sit with both legs out in front, knees softly bent.",
+      "Hinge from the hips and let your head hang heavy.",
+      "Do not chase your toes — let the fold be where it is.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "mat",
+    intensity: "gentle",
+    floor: true,
+  },
+  {
+    id: "glute-bridge-hold",
+    name: "Glute bridge hold",
+    type: "mobility",
+    areas: ["glutes", "quadriceps", "abdominals"],
+    holdSec: 35,
+    sides: 1,
+    steps: [
+      "Lie on your back, knees bent, feet flat and hip width.",
+      "Press through your heels and lift the hips until the body is one line.",
+      "Hold, then lower one vertebra at a time.",
+    ],
+    contexts: ["post_workout", "rest_day"],
+    equipment: "mat",
+    floor: true,
+  },
+
+  // ---- rest day only: the movement that needs a day with room in it ----
+  //
+  // These are why a rest day is a different session and not the same one with a
+  // different heading. None of them belong in the ten minutes after a heavy
+  // set — nobody wants to be walked through leg swings with the bar still
+  // loaded — and all of them belong on a day whose whole job is to move well.
+  {
+    id: "easy-walk",
+    name: "Easy walk",
+    type: "light",
+    areas: [],
+    holdSec: 120,
+    sides: 1,
+    steps: [
+      "Walk at a pace where you could hold a conversation.",
+      "Indoors, outdoors or on the spot — it all counts.",
+      "Let the arms swing.",
+    ],
+    contexts: ["rest_day"],
+    equipment: "none",
+    intensity: "gentle",
+  },
+  {
+    id: "shoulder-circles",
+    name: "Shoulder circles",
+    type: "mobility",
+    areas: ["shoulders", "upper back", "neck"],
+    holdSec: 40,
+    sides: 1,
+    steps: [
+      "Stand tall and roll both shoulders slowly backwards.",
+      "Make the circles as large as they will go without forcing.",
+      "Halfway through, reverse the direction.",
+    ],
+    contexts: ["rest_day"],
+    equipment: "none",
+    intensity: "gentle",
+  },
+  {
+    id: "hip-circles",
+    name: "Standing hip circles",
+    type: "mobility",
+    areas: ["glutes", "lower back", "quadriceps"],
+    holdSec: 40,
+    sides: 2,
+    steps: [
+      "Hold something for balance and lift one knee to hip height.",
+      "Draw slow circles with the knee, out and around.",
+      "Reverse the direction halfway.",
+    ],
+    contexts: ["rest_day"],
+    equipment: "wall",
+  },
+  {
+    id: "leg-swings",
+    name: "Leg swings",
+    type: "mobility",
+    areas: ["hamstrings", "quadriceps", "glutes"],
+    holdSec: 35,
+    sides: 2,
+    steps: [
+      "Hold a wall and swing one leg forward and back, loose and unforced.",
+      "Let the range grow over the first few swings rather than starting big.",
+      "Keep your torso still.",
+    ],
+    contexts: ["rest_day"],
+    equipment: "wall",
+  },
+  {
+    id: "spine-flow",
+    name: "Standing spine flow",
+    type: "flow",
+    areas: ["lower back", "upper back", "hamstrings"],
+    holdSec: 60,
+    sides: 1,
+    steps: [
+      "Stand tall, then roll down one vertebra at a time towards the floor.",
+      "Let the knees bend as much as they want.",
+      "Roll back up just as slowly, head last.",
+    ],
+    contexts: ["rest_day"],
+    equipment: "none",
+    intensity: "gentle",
+  },
+  {
+    id: "world-greatest",
+    name: "Lunge with a reach",
+    type: "flow",
+    areas: ["quadriceps", "glutes", "upper back", "hamstrings"],
+    holdSec: 45,
+    sides: 2,
+    steps: [
+      "Step into a long lunge and put both hands inside the front foot.",
+      "Turn your chest towards the front knee and reach that arm to the ceiling.",
+      "Come back down, then step through to the other side.",
+    ],
+    contexts: ["rest_day"],
+    equipment: "mat",
+  },
+  {
+    id: "dead-bug",
+    name: "Slow dead bug",
+    type: "mobility",
+    areas: ["abdominals", "lower back"],
+    holdSec: 45,
+    sides: 1,
+    steps: [
+      "Lie on your back with knees and arms up over you.",
+      "Lower one arm and the opposite leg slowly, then return.",
+      "Keep the lower back in contact with the floor the whole time.",
+    ],
+    contexts: ["rest_day"],
+    equipment: "mat",
+    floor: true,
   },
 
   // ---- downshift ----

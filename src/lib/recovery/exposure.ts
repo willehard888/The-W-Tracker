@@ -133,15 +133,74 @@ export function areaLoadFromLoggedSets(
 }
 
 /**
- * The areas worth addressing, cut to `limit`.
+ * Areas that move together, so one is not dropped while its partners rank top.
  *
- * Anything under a third of the top area's weight is dropped: the biceps that
- * came along for a row are not what needs attention after a pulling session,
- * and a plan that lists them alongside the lats reads as if nothing was
- * actually measured.
+ * This is not a physiological claim and it never reorders anything — it only
+ * stops the floor below from discarding an area the session plainly loaded.
+ *
+ * It exists because of a measured failure. Run a posterior-chain day through
+ * the model — Romanian deadlift, leg curl, deadlift — and it returns
+ * hamstrings 5, calves 2, lower back 2, glutes 1. The glutes fall under the
+ * floor and drop out, so the athlete finishes a hip-hinge session and is
+ * offered nothing for their hips. The cause is upstream: of the three, only
+ * the RDL names glutes at all, and only as a secondary. The data is thin, not
+ * the training.
+ *
+ * So: an area sharing a chain with the top-ranked area survives the floor. It
+ * still has to have been loaded at all — an area with no weight is not here.
+ */
+const CHAINS: RecoveryArea[][] = [
+  ["hamstrings", "glutes", "lower back", "calves"], // hinge
+  ["quadriceps", "glutes", "calves"], // squat
+  ["chest", "shoulders", "triceps"], // press
+  ["lats", "upper back", "biceps", "forearms"], // pull
+  ["abdominals", "lower back"], // trunk
+];
+
+const chainPartners = (area: RecoveryArea): Set<RecoveryArea> => {
+  const partners = new Set<RecoveryArea>();
+  for (const chain of CHAINS) {
+    if (!chain.includes(area)) continue;
+    for (const member of chain) partners.add(member);
+  }
+  return partners;
+};
+
+/**
+ * The areas worth addressing, ordered by load and cut to `limit`.
+ *
+ * Anything under a third of the top area's weight is dropped unless it shares
+ * a chain with the top area: the biceps that came along for one row are not
+ * what needs attention after a pulling session, and listing them beside the
+ * lats reads as if nothing had been measured.
  */
 export function topAreas(load: AreaLoad[], limit = 4): RecoveryArea[] {
   if (load.length === 0) return [];
   const floor = load[0].weight / 3;
-  return load.filter((l) => l.weight >= floor).slice(0, limit).map((l) => l.area);
+  const partners = chainPartners(load[0].area);
+  return load
+    .filter((l) => l.weight >= floor || partners.has(l.area))
+    .slice(0, limit)
+    .map((l) => l.area);
+}
+
+/**
+ * How many of the ranked areas count as "what you trained" rather than "what
+ * came along".
+ *
+ * By WEIGHT, not by rank. Taking the top two was arbitrary and it showed: a
+ * pressing session measures chest 6, shoulders 5, triceps 4 — three areas that
+ * were all genuinely worked — and a rank cut put the triceps in the supporting
+ * group, where a full primary block spent the budget before reaching them. The
+ * athlete finished five pressing exercises and was offered nothing for their
+ * triceps.
+ *
+ * Half of the top area's load is the line, capped at three so the phase stays
+ * a phase, and at least one so there is always something to open with.
+ */
+export function primaryAreaCount(load: AreaLoad[], max = 3): number {
+  if (load.length === 0) return 0;
+  const line = load[0].weight / 2;
+  const n = load.filter((l) => l.weight >= line).length;
+  return Math.max(1, Math.min(max, n));
 }

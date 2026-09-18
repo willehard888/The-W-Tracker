@@ -20,6 +20,12 @@ export const ONBOARDING_EVENT_IDS = [
   "WORKOUT_LOGGING_INTRO",
   "WORKOUT_COMPLETE_INTRO",
   "PROGRAM_ADAPTS_INTRO",
+  // Recovery. Two, and only two: one the first time a session is offered after
+  // training, one the first time a rest day has something in it. The feature
+  // teaches itself from there — every session names its own areas and says
+  // where they came from, which is what a card would have had to say anyway.
+  "RECOVERY_INTRO",
+  "RECOVERY_REST_DAY_INTRO",
 ] as const;
 
 export type OnboardingEventId = (typeof ONBOARDING_EVENT_IDS)[number];

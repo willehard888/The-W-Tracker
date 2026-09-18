@@ -155,6 +155,19 @@ describe("session building", () => {
     expect(session.totalSec).toBeLessThanOrEqual(BUDGET_SEC.standard);
   });
 
+  // Found by running it: the general session filled its budget and ended on a
+  // calf stretch, while an area session ended on the breath. Every session now
+  // closes the same way, at every length and from either branch.
+  it("always closes on the breath, general or earned, at any length", () => {
+    for (const length of ["quick", "standard", "deep"] as const) {
+      for (const areas of [[], ["glutes"], ["chest", "shoulders", "triceps", "lats"]] as const) {
+        const session = buildSession([...areas], { length });
+        expect(session.movements.at(-1)?.type).toBe("breathing");
+        expect(session.totalSec).toBeLessThanOrEqual(BUDGET_SEC[length]);
+      }
+    }
+  });
+
   it("is deterministic", () => {
     const a = buildSession(["glutes", "hamstrings"]);
     const b = buildSession(["glutes", "hamstrings"]);

@@ -172,6 +172,14 @@ const TrainingZone = () => {
   // Start goes straight into the runner — the whole point is removing the
   // steps between "I have a session" and "I am doing it".
   const startSession = () => go(`/coach/session/${currentWeek}/${todayDayIndex}`);
+  // A rest day has no session to read, so recovery works from the last couple
+  // of days of logged sets; a day already trained reads that day directly.
+  const startRecovery = () =>
+    go(
+      done
+        ? `/recovery?src=post_workout&p=${program.id}&w=${currentWeek}&d=${todayDayIndex}`
+        : "/recovery?src=rest_day",
+    );
 
   return (
     <div className={ROW.replace("flex items-center", "flex flex-col")}>
@@ -222,6 +230,19 @@ const TrainingZone = () => {
         <div className="pr-2 shrink-0">
           <Button variant="outline" size="sm" className="min-h-11" onClick={startSession}>
             Start
+          </Button>
+        </div>
+      )}
+
+      {/* This row has said "recovery is part of the program" on every rest day
+          for months while offering no way to do any. The two states where
+          training is not the answer now get the action that is: a rest day,
+          and a session already logged. Still one action on the row — this
+          branch and the Start above cannot both be true. */}
+      {(isRestDay(day) || (isTrainingDay(day) && done)) && (
+        <div className="pr-2 shrink-0">
+          <Button variant="outline" size="sm" className="min-h-11" onClick={startRecovery}>
+            Recover
           </Button>
         </div>
       )}

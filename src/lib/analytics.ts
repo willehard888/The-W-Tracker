@@ -98,6 +98,18 @@ export const FUNNEL = {
   programEdited: "program_edited",
   // A neglected muscle group was taken up: { focus, surface: sheet|picker }.
   balanceSuggestionUsed: "balance_suggestion_used",
+  // Recovery, as one funnel. The pilot's question is how many finished
+  // workouts turn into a recovery session that is actually finished, so the
+  // spine is offered → opened → started → completed, with dismissed and
+  // skipped as the two ways out. `source` is post_workout | rest_day | manual
+  // on every one of them. No health data rides along: `areas` are muscle
+  // names, never sleep, heart rate or soreness.
+  recoveryOffered: "recovery_offered",
+  recoveryDismissed: "recovery_dismissed",
+  recoveryOpened: "recovery_opened",
+  recoveryStarted: "recovery_started",
+  recoveryCompleted: "recovery_completed",
+  recoverySkipped: "recovery_skipped",
   // The Vault's practice loop: a piece opened, understood (Mark complete),
   // its reflection answered, its practice run (server-recorded, +XP), its
   // integration answered; and a path walked to the end. Props carry

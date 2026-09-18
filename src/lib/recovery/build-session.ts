@@ -82,6 +82,14 @@ export function buildSession(
   const taken = new Set<string>();
   let spent = 0;
 
+  // Room held back for the closing breath, so a full budget cannot crowd it
+  // out. Both branches below respect it: driving the general session in a
+  // browser turned up the one that didn't, and it ended on a calf stretch —
+  // every session should end the same way, or ending on the breath is not a
+  // design decision, it is what happens when there is budget left over.
+  const closerCost = closer ? movementSeconds(closer) : 0;
+  const bodyBudget = Math.max(0, budget - closerCost);
+
   const take = (m: RecoveryMovement): boolean => {
     if (taken.has(m.id)) return false;
     const cost = movementSeconds(m);
@@ -94,15 +102,13 @@ export function buildSession(
 
   if (areas.length === 0) {
     for (const id of GENERAL_ORDER) {
+      if (id === CLOSER_ID || spent >= bodyBudget) continue;
       const m = pool.find((x) => x.id === id);
-      if (m) take(m);
+      if (m && spent + movementSeconds(m) <= bodyBudget) take(m);
     }
+    if (closer) take(closer);
     return { movements: chosen, totalSec: spent, areas: [], length, general: true };
   }
-
-  // Reserve room for the closing breath so a full budget cannot crowd it out.
-  const closerCost = closer ? movementSeconds(closer) : 0;
-  const bodyBudget = Math.max(0, budget - closerCost);
 
   const forArea = (area: RecoveryArea) =>
     pool

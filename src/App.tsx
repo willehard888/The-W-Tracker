@@ -78,6 +78,7 @@ const CoachProgress = lazy(() => import("./pages/CoachProgress"));
 const Journey = lazy(() => import("./pages/Journey"));
 const CoachProgramDetail = lazy(() => import("./pages/CoachProgramDetail"));
 const CoachSession = lazy(() => import("./pages/CoachSession"));
+const Recovery = lazy(() => import("./pages/Recovery"));
 const CoachMemoryScreen = lazy(() => import("./pages/CoachMemoryScreen"));
 const Squad = lazy(() => import("./pages/Squad"));
 const TribeNew = lazy(() => import("./pages/TribeNew"));
@@ -396,6 +397,7 @@ const AppRoutes = () => {
           {/* The active workout. Full-screen by design — the nav and status
               header are hidden so nothing competes with the set in front of
               the athlete. */}
+          <Route path="/recovery" element={<ProtectedRoute><Recovery /></ProtectedRoute>} />
           <Route path="/coach/session/:week/:day" element={<ProtectedRoute><CoachSession /></ProtectedRoute>} />
           <Route path="/coach/memory" element={<ProtectedRoute><CoachMemoryScreen /></ProtectedRoute>} />
           <Route path="/coach/library" element={<Navigate to="/coach" replace />} />

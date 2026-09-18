@@ -28,6 +28,9 @@ import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from 
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { resolveIllustration } from "@/lib/exercise-match";
+import RecoveryOffer from "@/components/recovery/RecoveryOffer";
+import { areaLoadFromLoggedSets, topAreas } from "@/lib/recovery/exposure";
+import { buildSession } from "@/lib/recovery/build-session";
 import { IllustrationPlayer, preloadIllustration } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
@@ -300,6 +303,11 @@ const CoachSession = () => {
     () => isNativePlatform() && !hasWorkoutWriteConsent() && !isWorkoutWriteDeclined(),
   );
   const [healthBusy, setHealthBusy] = useState(false);
+  // "Not now" hides the offer for this screen only. It is not remembered: the
+  // answer to "do you want to stretch right now" is about right now, and a
+  // permanent no would quietly remove the feature for anyone who ever tapped
+  // it once while in a hurry.
+  const [recoveryOffered, setRecoveryOffered] = useState(true);
 
   const planDay = program?.plan_json?.weeks?.find((w) => w.week === week)?.days?.[day];
   const plan = useMemo(() => buildSessionPlan(planDay?.blocks), [planDay]);
@@ -327,6 +335,29 @@ const CoachSession = () => {
 
   const current = progress.currentExerciseIndex >= 0 ? plan[progress.currentExerciseIndex] : null;
   const summaryShown = progress.isComplete || showSummary || (!!session?.completed && !resumed);
+
+  // What to offer stretching, built from the sets that were actually logged.
+  // `buildSession` is deterministic, so the minutes promised here are the
+  // minutes the session runs — the card and the screen are two renders that
+  // have to agree.
+  const recoveryOffer = useMemo(() => {
+    if (!summaryShown || !recoveryOffered) return null;
+    const areas = topAreas(areaLoadFromLoggedSets(logged));
+    const built = buildSession(areas, { length: "standard", context: "post_workout" });
+    if (built.movements.length === 0) return null;
+    return { areas: built.areas, minutes: Math.max(1, Math.round(built.totalSec / 60)) };
+  }, [summaryShown, recoveryOffered, logged]);
+
+  const offerTracked = useRef(false);
+  useEffect(() => {
+    if (!recoveryOffer || offerTracked.current) return;
+    offerTracked.current = true;
+    void track(FUNNEL.recoveryOffered, {
+      source: "post_workout",
+      areas: recoveryOffer.areas,
+      minutes: recoveryOffer.minutes,
+    });
+  }, [recoveryOffer]);
 
   // Every set logged: the session is finished whether or not a button gets
   // pressed — someone who closes the app on the summary still trained today,
@@ -463,8 +494,27 @@ const CoachSession = () => {
             Weights saved. Today counts toward your check-in.
           </p>
 
-          {healthAsk && (
+          {/* The offer sits between what was done and what happens next, which
+              is the only place it fits: above the CTAs it would compete with
+              finishing, below them nobody would see it. It is a row, not a
+              gate — both CTAs still work untouched with it on screen.
+
+              Its areas come from `logged`: the sets that actually went in. An
+              exercise the athlete skipped has no rows, so it steers nothing. */}
+          {recoveryOffer && (
             <div className="home-rise home-rise-3 mt-5">
+              <RecoveryOffer
+                source="post_workout"
+                areas={recoveryOffer.areas}
+                minutes={recoveryOffer.minutes}
+                query={`p=${program.id}&w=${week}&d=${day}`}
+                onDismiss={() => setRecoveryOffered(false)}
+              />
+            </div>
+          )}
+
+          {healthAsk && (
+            <div className="home-rise home-rise-4 mt-5">
               <div className="surface-card surface-card-quiet">
                 <ActionRow
                   leading={
@@ -484,7 +534,7 @@ const CoachSession = () => {
             </div>
           )}
 
-          <div className="home-rise home-rise-4 mt-6">
+          <div className="home-rise home-rise-5 mt-6">
             <Button
               variant="ember"
               size="lg"

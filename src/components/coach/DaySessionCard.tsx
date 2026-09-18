@@ -197,9 +197,25 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
           )}
         </div>
       ) : recovery ? (
-        <p className="mt-3 text-dense text-muted-foreground leading-snug">
-          {recovery.mobility_min} min mobility · {recovery.breathwork} · sleep {recovery.sleep_target_h}h.
-        </p>
+        <>
+          <p className="mt-3 text-dense text-muted-foreground leading-snug">
+            {recovery.mobility_min} min mobility · {recovery.breathwork} · sleep {recovery.sleep_target_h}h.
+          </p>
+          {/* This line has named a number of mobility minutes since the first
+              program shipped and never said which minutes. Today's rest day
+              can now do them. Another day's is a plan, not a button, so it
+              keeps the line on its own. */}
+          {isToday && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 min-h-11"
+              onClick={() => { hapticImpact("light"); navigate("/recovery?src=rest_day"); }}
+            >
+              Recover now
+            </Button>
+          )}
+        </>
       ) : null}
 
       {/* Done belongs to today. Quiet while Start leads; on another day a

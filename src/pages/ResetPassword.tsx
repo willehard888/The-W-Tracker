@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
+import { isPublicWebHost } from "@/lib/web-surface";
 import { Eye, EyeOff } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 
@@ -22,6 +24,10 @@ const ResetPassword = () => {
   const [isRecovery, setIsRecovery] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const navigate = useNavigate();
+  // A recovery email always finishes here in a browser, and there is no web app
+  // to continue into: on the website the page ends by pointing at the iPhone
+  // instead of offering a button that would lead into the app.
+  const onWebsite = !Capacitor.isNativePlatform() && isPublicWebHost(window.location.hostname);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -84,11 +90,15 @@ const ResetPassword = () => {
         <div className="w-full max-w-sm text-center home-rise">
           <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">This link has expired.</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Reset links work once. Sign in and request a new one.
+            {onWebsite
+              ? "Reset links work once. Open Whealth Factory on your iPhone and request a new one from the sign-in screen."
+              : "Reset links work once. Sign in and request a new one."}
           </p>
-          <Button variant="ember" size="xl" className="mt-6 w-full" onClick={() => navigate("/auth")}>
-            Back to sign in
-          </Button>
+          {!onWebsite && (
+            <Button variant="ember" size="xl" className="mt-6 w-full" onClick={() => navigate("/auth")}>
+              Back to sign in
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -100,11 +110,15 @@ const ResetPassword = () => {
         <div className="w-full max-w-sm text-center home-rise">
           <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Password updated.</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            You're signed in. Your streak is waiting.
+            {onWebsite
+              ? "Open Whealth Factory on your iPhone and sign in with the new password. Your streak is waiting."
+              : "You're signed in. Your streak is waiting."}
           </p>
-          <Button variant="ember" size="xl" className="mt-6 w-full" onClick={() => navigate("/")}>
-            Continue
-          </Button>
+          {!onWebsite && (
+            <Button variant="ember" size="xl" className="mt-6 w-full" onClick={() => navigate("/")}>
+              Continue
+            </Button>
+          )}
         </div>
       </div>
     );

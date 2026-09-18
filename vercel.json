@@ -4,6 +4,10 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
+  "redirects": [
+    { "source": "/", "has": [{ "type": "host", "value": "www.whealthfactory.com" }], "destination": "/waitlist", "permanent": false },
+    { "source": "/", "has": [{ "type": "host", "value": "whealthfactory.com" }], "destination": "/waitlist", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/waitlist", "destination": "/waitlist.html" },
     { "source": "/support", "destination": "/support.html" },
@@ -18,7 +22,10 @@
       ],
       "destination": "https://gcwuvijcuzhunkcauzom.supabase.co/functions/v1/og-profile?u=:username"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/privacy", "destination": "/index.html" },
+    { "source": "/terms", "destination": "/index.html" },
+    { "source": "/reset-password", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/waitlist.html" }
   ],
   "headers": [
     {

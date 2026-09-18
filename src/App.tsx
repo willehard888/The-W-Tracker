@@ -4,6 +4,7 @@ import { HARNESS_KEY, readHarnessParam, shouldForcePaywall } from "@/lib/paywall
 import { useAdminAccess, useIsAdmin } from "@/hooks/use-is-admin";
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
+import { webExitFor } from "@/lib/web-surface";
 import { LazyMotion, MotionConfig } from "framer-motion";
 
 // Animation features load AFTER first paint. With the eager `motion` import
@@ -319,6 +320,16 @@ const AppRoutes = () => {
     scrollContainerRef.current?.scrollTo(0, TAB_ROOTS.has(key) ? (savedScroll.get(key) ?? 0) : 0);
   }, [key]);
 
+  // No web version of the app: on the public site only the legal pages and
+  // password reset render from here, and any other route — typed, linked, or
+  // reached by the back button on /privacy — leaves for the static page before
+  // it paints. vercel.json refuses the same paths on the server; see
+  // src/lib/web-surface.ts for why both locks exist.
+  const webExit = webExitFor(window.location.hostname, location.pathname, Capacitor.isNativePlatform());
+  useLayoutEffect(() => {
+    if (webExit) window.location.replace(webExit);
+  }, [webExit]);
+
   // Page-transition wrap was REMOVED — keying a m.div on
   // location.pathname caused React to unmount + remount the entire
   // page tree on every navigation, which:
@@ -329,6 +340,8 @@ const AppRoutes = () => {
   // Component-level animations (framer-motion on cards, motion variants
   // on individual cards) still provide visual polish without the
   // re-mount tax.
+
+  if (webExit) return null;
 
   return (
     <PushControlsContext.Provider value={pushControls}>

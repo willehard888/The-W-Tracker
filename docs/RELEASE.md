@@ -124,11 +124,14 @@ that cannot import it (support and waitlist pages, the waitlist email, the store
 listing's copyright line) to the same spelling, and checks the business ID's check
 digit.
 
-**Individual → organization migration (Apple case 102964867136, started 2026-09).**
+**Individual → organization migration (Apple case 102964867136, requested 2026-09-18).**
 During it the Certificates, Identifiers & Profiles portal is closed: no new
 certificates, profiles, capabilities or signed builds. App Store Connect stays open.
-So everything that needs that portal happens *before* the migration starts — in
-practice, the Associated Domains capability on `app.lovable.wtracker`.
+So everything that needs that portal happens *before* the migration starts. The
+last such item — the Associated Domains capability on `app.lovable.wtracker` — was
+enabled 2026-09-18, together with the `applinks:www.whealthfactory.com`
+entitlement (www only: the apex answers 308, and Apple never follows a redirect
+when it fetches the association file).
 
 When Apple says it is done, check before submitting anything:
 

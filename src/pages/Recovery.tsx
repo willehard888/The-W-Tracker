@@ -102,10 +102,22 @@ export default function Recovery() {
   const [phase, setPhase] = useState<"ready" | "running" | "done">("ready");
 
   // Waiting for the query that decides the areas. Without this the screen
-  // renders a general session for a frame and then swaps to the real one,
-  // which reads as the app changing its mind about what you just trained.
-  const settling =
+  // renders a general session for a frame and then swaps to the real one, which
+  // reads as the app changing its mind about what you just trained.
+  //
+  // But it waits for a moment, not indefinitely. On a phone with no signal the
+  // query retries with backoff for the better part of ten seconds, and the
+  // first version left Start disabled for all of it — a recovery session the
+  // athlete cannot begin is worse than a general one they can. After the
+  // ceiling we go with whatever is in hand and the copy says it is general.
+  const queryPending =
     source === "post_workout" ? daySetsLoading : source === "rest_day" ? recentLoading : false;
+  const [waited, setWaited] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => setWaited(true), 2500);
+    return () => window.clearTimeout(id);
+  }, []);
+  const settling = queryPending && !waited;
 
   const load = useMemo(() => {
     if (source === "post_workout") return areaLoadFromLoggedSets(daySets ?? {});

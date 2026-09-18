@@ -35,8 +35,8 @@
 
 @layer base {
   :root {
-    /* The UI is dark-only: without this the keyboard, date pickers and form
-       chrome follow the phone's Light Mode and render light over the app. */
+    /* The UI is dark-only: form controls render dark. The keyboard and the
+       system pickers follow the native UIUserInterfaceStyle (Info.plist). */
     color-scheme: dark;
     /* Premium easing tokens */
     --ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1);

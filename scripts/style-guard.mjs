@@ -61,6 +61,21 @@ const RULES = [
   // which is why they may sit below the ladder's floor.
   { re: /text-\[(?:\d|1\d|2[0-7])(?:\.\d+)?px\]/, msg: "hand-written text size — use a rung (text-label/meta/dense/note/read/copy/lead/subhead/head/title/major/beat)",
     exempt: ["src/components/StoryShareModal.tsx", "src/components/feed/DayStatsSticker.tsx"] },
+  // Health claims. The app prescribes stretches; it is not licensed to say what
+  // they do to tissue, and "flushes lactic acid" is folklore besides. This is
+  // the line recovery copy will drift across first: describe the movement and
+  // where it is felt, never the physiological outcome.
+  //
+  // Narrow on purpose. A first draft banned the bare words "flush" and "detox"
+  // and hit three innocents — two layout comments where flush means aligned,
+  // and the "Digital Detox" quest — which is exactly the rule shape that
+  // teaches people to add exemptions instead of to stop. So every pattern here
+  // names a claim, not a word. stripComments is on because the rule governs
+  // copy, and a comment explaining the ban has to be able to quote it. The two
+  // exempt files are auto-generated upstream prose nobody here writes.
+  { re: /\blactic acid\b|(?:speeds?|speeding|accelerates?|boosts?)\s+(?:up\s+)?(?:your\s+|muscle\s+)?recovery|repairs?\s+(?:your\s+)?(?:muscle|tissue)|muscle repair|prevents?\s+injur|injury prevention|heals?\s+(?:your\s+)?(?:muscle|tissue)|reduces?\s+(?:muscle\s+)?soreness|flush(?:es|ing)?\s+(?:out\s+)?(?:the\s+)?(?:toxin|lactic|waste)/i,
+    msg: "health claim — describe the movement and where it is felt, not what it does to tissue",
+    stripComments: true, exempt: ["src/data/exercises-illustrated.ts", "src/data/exercises.ts"] },
 ];
 
 /**

@@ -298,12 +298,11 @@ const BadgeVault = ({
                 </div>
               )}
 
-              <div
+              <button
+                type="button"
                 onClick={() => onBadgeClick?.(badge)}
-                onDoubleClick={() => {
-                  if (earned && onSetFeatured) onSetFeatured(badge.id);
-                }}
-                className="cursor-pointer"
+                aria-label={`${badge.name}, ${earned ? "earned" : "not earned yet"}${isFeatured && earned ? ", your title" : ""}`}
+                className="block w-full text-left"
               >
                 <BadgeCard
                   name={badge.name}
@@ -331,7 +330,7 @@ const BadgeVault = ({
                     </p>
                   </div>
                 )}
-              </div>
+              </button>
             </div>
           );
         })}
@@ -339,7 +338,7 @@ const BadgeVault = ({
 
       {onSetFeatured && (
         <p className="text-label text-muted-foreground text-center mt-4">
-          Tap to inspect · Double-tap an earned badge to set it as your title
+          Tap a badge to inspect it. Earned ones can be set as your title.
         </p>
       )}
     </div>

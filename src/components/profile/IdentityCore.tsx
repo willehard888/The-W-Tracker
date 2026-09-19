@@ -87,7 +87,8 @@ const IdentityCore = ({
       {/* @handle — tier-colored */}
       <div className="flex items-center justify-center gap-2 flex-wrap">
         <h1 className={cn(
-          "font-display text-[32px] leading-none font-black tracking-tight",
+          // A 20-character handle at 32px is wider than the phone; let it wrap.
+          "font-display text-[32px] leading-none font-black tracking-tight min-w-0 max-w-full break-words",
           getTierUsernameClass(tier),
         )}>
           @{profile.username}

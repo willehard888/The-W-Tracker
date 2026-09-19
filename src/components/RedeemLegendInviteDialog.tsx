@@ -53,14 +53,14 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
         toast.error(REASON_COPY[result?.reason] ?? "Could not redeem code");
         return;
       }
-      toast.success("Welcome to the Legend tier 🔱", {
+      toast.success("Welcome to the Legend tier", {
         description: "Your status has been pinned.",
       });
       setOpen(false);
       setCode("");
       await refreshProfile();
     } catch (e: any) {
-      toast.error(friendlyError(e, "Failed to redeem"));
+      toast.error(friendlyError(e, "Couldn't redeem. Try again."));
     } finally {
       setLoading(false);
     }

@@ -53,6 +53,8 @@ export const useCoachMemory = () => {
   return {
     memories: query.data ?? [],
     isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
     add: add.mutateAsync,
     remove: remove.mutateAsync,
   };

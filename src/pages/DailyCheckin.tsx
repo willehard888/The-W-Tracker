@@ -89,7 +89,7 @@ const HabitToggle = ({
     )}
   >
     {/* Emoji tile */}
-    <span className={cn(
+    <span aria-hidden className={cn(
       "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-title transition-colors",
       active ? "bg-gold/15" : "bg-secondary",
     )}>
@@ -1093,7 +1093,7 @@ const DailyCheckin = () => {
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
-                      <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                      <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
                       <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
                         {sport.label}
                         {detectedSportId === sport.id && (
@@ -1143,7 +1143,7 @@ const DailyCheckin = () => {
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
-                      <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                      <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
                       <span className="text-sm font-medium flex-1">{sport.label}</span>
                       {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
                       <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
@@ -1178,7 +1178,7 @@ const DailyCheckin = () => {
                             sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                           )}
                         >
-                          <span className="text-lg w-7 text-center">{sport.emoji}</span>
+                          <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
                           <span className="text-sm font-medium flex-1">{sport.label}</span>
                           {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
                           <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>

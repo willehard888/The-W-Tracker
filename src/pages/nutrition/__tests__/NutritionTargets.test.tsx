@@ -10,7 +10,7 @@ vi.mock("@/lib/health/meal-write", () => ({ hasMealWriteConsent: () => false, en
 
 const profile = { age: 34, sex: "male", height_cm: 182, weight_kg: 78, body_fat_pct: null, primary_goal: "fat_loss" };
 const athlete = vi.hoisted(() => ({ profile: null as Record<string, unknown> | null, isLoading: false }));
-const targetsState = vi.hoisted(() => ({ targets: null as Record<string, unknown> | null, isLoading: false, save: vi.fn(async (_patch: Record<string, unknown>) => ({})), saving: false }));
+const targetsState = vi.hoisted(() => ({ targets: null as Record<string, unknown> | null, isLoading: false, error: null as Error | null, refetch: vi.fn(), save: vi.fn(async (_patch: Record<string, unknown>) => ({})), saving: false }));
 vi.mock("@/hooks/use-athlete-profile", () => ({ useAthleteProfile: () => athlete }));
 vi.mock("@/hooks/use-nutrition-targets", () => ({ useNutritionTargets: () => targetsState }));
 
@@ -27,6 +27,7 @@ describe("NutritionTargets", () => {
   beforeEach(() => {
     athlete.profile = profile;
     targetsState.targets = null;
+    targetsState.error = null;
     targetsState.save.mockClear();
   });
 
@@ -49,6 +50,14 @@ describe("NutritionTargets", () => {
     expect(patch.activity_level).toBe("moderate");
     for (const k of ["kcal", "protein_g", "carbs_g", "fat_g"]) expect(typeof patch[k]).toBe("number");
     expect(patch.protein_g).toBe(170); // 2.2 g/kg × 78 = 171.6 → 170
+  });
+
+  it("a failed read retries instead of proposing targets that would save over the real ones", () => {
+    targetsState.error = new Error("network");
+    renderPage();
+    expect(screen.queryByRole("button", { name: "Use these targets" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Try again/ }));
+    expect(targetsState.refetch).toHaveBeenCalled();
   });
 
   it("puts no numbers on a minor but still offers manual fields", () => {

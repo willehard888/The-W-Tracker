@@ -2,11 +2,16 @@ import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
 interface BadgeUnlockModalProps {
   badge: { name: string; icon: string; rarity: string; description?: string } | null;
   onClose: () => void;
+  /** Profile opens every badge through this modal; a locked one must not say "Unlocked". */
+  earned?: boolean;
+  /** One action under the details, e.g. "Set as title" from the Profile vault. */
+  action?: { label: string; onClick: () => void };
 }
 
 const rarityConfig: Record<string, {
@@ -46,7 +51,7 @@ const rarityConfig: Record<string, {
   },
 };
 
-const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
+const BadgeUnlockModal = ({ badge, onClose, earned = true, action }: BadgeUnlockModalProps) => {
   const [phase, setPhase] = useState<"enter" | "burst" | "reveal" | "details">("enter");
   // Mounted unconditionally by Profile and the check-in page with a null
   // badge (it renders nothing then) — the lock must follow the badge, or the
@@ -198,7 +203,7 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
             "text-label font-bold text-muted-foreground mb-3",
             isLegendary ? "text-gold" : "text-muted-foreground"
           )}>
-            {isLegendary ? "⚡ Legendary Badge Unlocked ⚡" : "Badge Unlocked"}
+            {!earned ? "Not earned yet" : isLegendary ? "⚡ Legendary Badge Unlocked ⚡" : "Badge Unlocked"}
           </p>
           <h2 className="font-display text-3xl font-black tracking-tight mb-2">{badge.name}</h2>
           <div className={cn(
@@ -212,6 +217,16 @@ const BadgeUnlockModal = ({ badge, onClose }: BadgeUnlockModalProps) => {
           </div>
           {badge.description && (
             <p className="text-sm text-muted-foreground mt-3 max-w-[260px] leading-relaxed">{badge.description}</p>
+          )}
+          {action && (
+            <Button
+              variant="gold-outline"
+              size="sm"
+              className="min-h-11 mt-5"
+              onClick={(e) => { e.stopPropagation(); action.onClick(); }}
+            >
+              {action.label}
+            </Button>
           )}
         </div>
 

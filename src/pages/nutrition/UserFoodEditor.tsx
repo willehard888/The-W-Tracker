@@ -5,6 +5,7 @@ import { Plus, Star, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import MoreSection from "@/components/ui/more-section";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
@@ -183,7 +184,11 @@ const UserFoodEditor = () => {
       <div className="min-h-full">
         <PageBar title={title} onBack={() => backOr(navigate, "/nutrition")} />
         <div className="px-4 pt-6">
-          <EmptyState title="Food not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition")}>Back to the diary</Button>} />
+          {existing.error ? (
+            <ErrorState title="Couldn't load this food" onRetry={existing.refetch} />
+          ) : (
+            <EmptyState title="Food not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition")}>Back to the diary</Button>} />
+          )}
         </div>
       </div>
     );

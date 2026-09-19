@@ -4,6 +4,7 @@ import { useQueries } from "@tanstack/react-query";
 import { ChefHat, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +20,7 @@ import { recipePerServing } from "@/lib/nutrition/queries";
  */
 const NutritionRecipes = () => {
   const navigate = useNavigate();
-  const { recipes, isLoading } = useUserRecipes();
+  const { recipes, isLoading, error, refetch } = useUserRecipes();
   const perServing = useQueries({
     queries: recipes.map((r) => ({
       queryKey: ["recipe-per-serving", r.id, r.updated_at],
@@ -53,7 +54,11 @@ const NutritionRecipes = () => {
     <div className="min-h-full">
       <PageBar title="Recipes" onBack={() => backOr(navigate, "/nutrition")} action={action} />
       <div className="px-4 pt-4 pb-6">
-        {recipes.length === 0 ? (
+        {error && recipes.length === 0 ? (
+          <div className="home-rise pt-6">
+            <ErrorState title="Couldn't load your recipes" onRetry={refetch} />
+          </div>
+        ) : recipes.length === 0 ? (
           <div className="home-rise pt-6">
             <EmptyState
               icon={ChefHat}

@@ -35,7 +35,9 @@ const RULES = [
   { re: /text-gold\/(?:[1-6]\d|[1-9])\b/, msg: "gold below /70 — gold is scarce, not a wash", exempt: ["src/components/StoryShareModal.tsx"] },
   { re: /\.toLocaleString\(\)/, msg: "locale grouping — use fmtInt/fmtUnit from @/lib/format", stripComments: true, exempt: ["src/lib/format.ts"] },
   { re: /\.\.\.(?=["'`<]|\s*<\/)/, msg: "three dots — use the … glyph", stripComments: true, exempt: ["src/main.tsx"] },
-  { re: /(?<![\w.])confirm\(/, msg: "window.confirm — use ConfirmDialog", exempt: [/__tests__/] },
+  { re: /(?<![\w.])(?:window\.)?(?:confirm|prompt|alert)\(/, msg: "window.confirm/prompt/alert — a grey system alert over the app; use ConfirmDialog or an inline field", stripComments: true, exempt: [/__tests__/] },
+  // A system toast states what happened; the celebration lives in the UI that changed.
+  { re: /toast(?:\.\w+)?\(\s*(["'`])(?:(?!\1)[^\n])*(?:!\s*\1|!\s|\p{Extended_Pictographic})/u, msg: "toast with ! or emoji — state what happened (\"Posted\", \"Couldn't post. Try again.\")", stripComments: true },
   // Layout: the shell scrolls, pages do not
   { re: /min-h-screen|h-screen|\[100dvh\]/, msg: "page owns the viewport — pages are min-h-full (the shell scrolls)", only: PAGES, exempt: ["src/pages/TribeLeaderboard.tsx", "src/pages/ButtonGallery.tsx", "src/pages/Landing.tsx", "src/pages/Auth.tsx", "src/pages/Onboarding.tsx", "src/pages/OAuthCallback.tsx", "src/pages/ChooseUsername.tsx", "src/pages/NotFound.tsx"] },
   { re: /\bpb-(24|28|32)\b/, msg: "nav clearance padding — the shell already clears the tab bar", only: PAGES, exempt: ["src/pages/TribeLeaderboard.tsx", "src/pages/ButtonGallery.tsx"] },

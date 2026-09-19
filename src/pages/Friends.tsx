@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
 import ErrorState from "@/components/ui/error-state";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
@@ -56,6 +57,7 @@ const Friends = () => {
 
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<{ id: string; username: string } | null>(null);
 
   const friendIds = useMemo(() => new Set((friends ?? []).map((f) => f.user_id)), [friends]);
   const sentIds = useMemo(() => new Set((sent ?? []).map((f) => f.user_id)), [sent]);
@@ -74,7 +76,7 @@ const Friends = () => {
       if (ok) { hapticNotification("success"); toast.success(ok); }
     } catch (e) {
       const raw = e instanceof Error ? e.message : String(e ?? "");
-      toast.error(raw.includes("duplicate") ? "Request already exists" : friendlyError(e, "Something went wrong"));
+      toast.error(raw.includes("duplicate") ? "Request already exists" : friendlyError(e));
     } finally {
       setBusy(null);
     }
@@ -218,7 +220,7 @@ const Friends = () => {
                   <button
                     type="button"
                     disabled={busy === f.user_id}
-                    onClick={() => guard(f.user_id, () => removeFriend(f.user_id), "Removed from your circle.")}
+                    onClick={() => setConfirmRemove({ id: f.user_id, username: f.username })}
                     className="relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground/75 shrink-0"
                     aria-label={`Remove @${f.username}`}
                   >
@@ -249,6 +251,18 @@ const Friends = () => {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmRemove !== null}
+        onOpenChange={(open) => { if (!open) setConfirmRemove(null); }}
+        title={`Remove @${confirmRemove?.username ?? ""} from your circle?`}
+        description="You can send a new request later."
+        actionLabel="Remove"
+        onConfirm={() => {
+          const target = confirmRemove;
+          setConfirmRemove(null);
+          if (target) void guard(target.id, () => removeFriend(target.id), "Removed from your circle.");
+        }}
+      />
     </div>
   );
 };

@@ -35,6 +35,9 @@
 
 @layer base {
   :root {
+    /* The UI is dark-only: form controls render dark. The keyboard and the
+       system pickers follow the native UIUserInterfaceStyle (Info.plist). */
+    color-scheme: dark;
     /* Premium easing tokens */
     --ease-spring: cubic-bezier(0.16, 1.2, 0.32, 1);
     --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -1842,7 +1845,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .breathing-glow::after,
-  [style*="hero-aura-drift"] {
+  [style*="hero-aura-drift"],
+  /* The level-up and badge-unlock loops are inline styles, so they match here. */
+  [style*="levelup-particle"],
+  [style*="badge-ring-expand"],
+  [style*="animation: pulse"],
+  [style*="animation: float"] {
     animation: none !important;
   }
 }

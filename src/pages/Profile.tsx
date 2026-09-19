@@ -159,7 +159,7 @@ const Profile = () => {
           ? "Connection dropped — check your signal and try again."
           : (err?.message?.includes("policy") || err?.message?.includes("rejected"))
           ? err.message
-          : "Failed to upload photo",
+          : "Couldn't upload photo. Try again.",
       );
     }
     setUploadingAvatar(false);
@@ -213,7 +213,7 @@ const Profile = () => {
     enabled: !!profile,
   });
 
-  const { data: battleStats } = useQuery({
+  const { data: battleStats, isError: battleStatsError } = useQuery({
     queryKey: ["battle-stats", profile?.user_id],
     staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
@@ -254,7 +254,7 @@ const Profile = () => {
   const textPosts = (userPosts ?? []).filter((p) => !p.image_url && !p.video_url);
   const [lightbox, setLightbox] = useState<{ url: string; post: (typeof mediaPosts)[number] } | null>(null);
 
-  const { data: kudosReceived } = useQuery({
+  const { data: kudosReceived, isError: kudosError } = useQuery({
     queryKey: ["kudos-received", profile?.user_id],
     staleTime: 5 * 60_000,
     gcTime:    20 * 60_000,
@@ -271,7 +271,7 @@ const Profile = () => {
 
 
   // Lifetime check-in count — the "days you showed up" number.
-  const { data: checkinTotal } = useQuery({
+  const { data: checkinTotal, isError: checkinTotalError } = useQuery({
     queryKey: ["checkin-total", profile?.user_id],
     staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
@@ -443,7 +443,15 @@ const Profile = () => {
         </DropdownMenu>
       </header>
 
-      <BadgeUnlockModal badge={previewBadge} onClose={() => setPreviewBadge(null)} />
+      <BadgeUnlockModal
+        badge={previewBadge}
+        earned={!previewBadge || !!earnedBadgeIds?.includes(previewBadge.id)}
+        action={previewBadge && earnedBadgeIds?.includes(previewBadge.id) ? {
+          label: profile.featured_badge_id === previewBadge.id ? "Remove as title" : "Set as title",
+          onClick: () => { void handleSetFeatured(previewBadge.id); setPreviewBadge(null); },
+        } : undefined}
+        onClose={() => setPreviewBadge(null)}
+      />
       <StoryShareModal
         open={shareModal.open}
         onClose={() => setShareModal({ ...shareModal, open: false })}
@@ -488,7 +496,8 @@ const Profile = () => {
 
       {/* ── STANDING — the lifetime scoreboard as one quiet line, not four
              tiles. Gated on the queries so it never flashes plausible zeros. ── */}
-      {(checkinTotal === undefined || battleStats === undefined || kudosReceived === undefined) ? (
+      {/* A failed query drops the line; left gated it was a skeleton forever. */}
+      {(checkinTotalError || battleStatsError || kudosError) ? null : (checkinTotal === undefined || battleStats === undefined || kudosReceived === undefined) ? (
         <div className="skeleton-block h-[46px] rounded-2xl" />
       ) : (
         <div className="home-rise home-rise-3 surface-card surface-card-quiet flex items-baseline gap-x-4 gap-y-0.5 flex-wrap px-4 py-3">

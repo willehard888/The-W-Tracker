@@ -353,7 +353,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
         toast.success("Profile saved. Coach is now personal.");
         onDone();
       } catch (e: any) {
-        toast.error(friendlyError(e, "Failed to save profile"));
+        toast.error(friendlyError(e, "Couldn't save profile. Try again."));
       }
     } else {
       hapticImpact("light");

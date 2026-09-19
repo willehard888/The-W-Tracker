@@ -35,5 +35,5 @@ export const useUserRecipes = () => {
     onError: (e) => toast.error(friendlyError(e)),
   });
 
-  return { recipes: q.data ?? EMPTY, isLoading: q.isLoading, save: save.mutateAsync, remove: remove.mutateAsync, saving: save.isPending };
+  return { recipes: q.data ?? EMPTY, isLoading: q.isLoading, error: q.error, refetch: q.refetch, save: save.mutateAsync, remove: remove.mutateAsync, saving: save.isPending };
 };

@@ -94,7 +94,7 @@ export default function AdminLegendInvites() {
       setExpiresInDays("");
       queryClient.invalidateQueries({ queryKey: ["legend-invites"] });
     } catch (e: any) {
-      toast.error(friendlyError(e, "Failed to create invite"));
+      toast.error(friendlyError(e, "Couldn't create invite. Try again."));
     } finally {
       setCreating(false);
     }

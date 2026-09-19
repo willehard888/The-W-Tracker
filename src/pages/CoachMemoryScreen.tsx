@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import { Input } from "@/components/ui/input";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { useCoachMemory } from "@/hooks/use-coach-memory";
 import { m as fm, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -23,7 +24,7 @@ const SOURCE_LABEL: Record<string, string> = {
 /** /coach/memory — the facts the Coach carries. A composer, then hairline rows. */
 const CoachMemoryScreen = () => {
   const navigate = useNavigate();
-  const { memories, isLoading, add, remove } = useCoachMemory();
+  const { memories, isLoading, error, refetch, add, remove } = useCoachMemory();
   const [draft, setDraft] = useState("");
 
   const addFact = async () => {
@@ -75,6 +76,8 @@ const CoachMemoryScreen = () => {
                 </div>
               ))}
             </div>
+          ) : error && memories.length === 0 ? (
+            <ErrorState title="Couldn't load what the Coach remembers" onRetry={refetch} />
           ) : memories.length === 0 ? (
             <EmptyState
               icon={Brain}

@@ -317,7 +317,7 @@ const Auth = () => {
                   redirectTo: `${authRedirectOrigin()}/reset-password`,
                 });
                 if (error) toast.error(error.message);
-                else toast.success("Password reset link sent! Check your email.");
+                else toast.success("Reset link sent. Check your email.");
               }}
               className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >

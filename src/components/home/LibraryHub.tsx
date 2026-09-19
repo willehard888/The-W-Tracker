@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Utensils, Waves } from "lucide-react";
+import { ChevronRight, Utensils } from "lucide-react";
 import VaultThumb from "@/components/vault/VaultThumb";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { RECIPE_COUNT } from "@/data/library-counts";
@@ -35,22 +35,14 @@ const ROWS = [
     chipGold: false,
   },
   {
+    // One library for training and recovery (founder: "yhdistä se exercise
+    // and recover library"). Recovery is named in the title because it had
+    // only contextual doors before and could not be found.
     key: "exercises",
     path: "/exercises",
-    title: "Exercise library",
-    sub: "Illustrated technique guides, step by step",
-    chip: "260+",
-    chipGold: false,
-  },
-  {
-    // Recovery had only contextual doors (a rest day, a logged session) and
-    // the founder could not find it. The shelf is where a member looks for
-    // what the membership holds, so it is named here too.
-    key: "recovery",
-    path: "/recovery?src=manual",
-    title: "Recovery",
-    sub: "Mobility, built from what you trained",
-    chip: "New",
+    title: "Exercise & Recovery",
+    sub: "Technique, stretching, breathing, sleep",
+    chip: "350+",
     chipGold: false,
   },
   {
@@ -74,13 +66,6 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${recipeSquare("greek-chicken-bowl") ?? recipeThumb("greek-chicken-bowl")})` }}
         />
-      </div>
-    );
-  }
-  if (id === "recovery") {
-    return (
-      <div className="h-10 w-10 rounded-lg shrink-0 bg-black border border-gold/25 flex items-center justify-center">
-        <Waves aria-hidden size={18} className="text-gold" strokeWidth={2} />
       </div>
     );
   }

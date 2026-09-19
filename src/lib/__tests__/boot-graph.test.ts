@@ -15,6 +15,8 @@ const HEAVY = [
   "src/data/exercises.ts",
   "src/data/exercise-coaching",
   "src/data/daily-insights",
+  // Recovery's movement library and routine scripts (both files by prefix).
+  "src/data/recovery",
   "src/components/StoryShareModal",
   "supabase/functions/",
 ];

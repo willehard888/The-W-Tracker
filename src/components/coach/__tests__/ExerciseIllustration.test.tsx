@@ -67,6 +67,13 @@ describe("IllustrationPlayer", () => {
     expect(screen.getByLabelText("Play the movement")).toBeInTheDocument();
   });
 
+  it("names what is playing: a rep by default, a position for a stretch", () => {
+    const { rerender } = render(<IllustrationPlayer ex={ex} />);
+    expect(screen.getByText("Full rep")).toBeInTheDocument();
+    rerender(<IllustrationPlayer ex={{ idNum: "0300", title: "Kneeling hip flexor stretch" }} playingLabel="Into position" />);
+    expect(screen.getByText("Into position")).toBeInTheDocument();
+  });
+
   it("does not animate off screen", () => {
     stubIntersectionObserver(false);
     const { container } = render(<IllustrationPlayer ex={ex} />);

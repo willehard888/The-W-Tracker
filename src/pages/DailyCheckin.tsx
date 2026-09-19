@@ -51,7 +51,7 @@ import {
   resolveCheckinHabits, PILLAR_LABEL, type CheckinPillar, type CheckinHabit,
   type VerifySignal,
 } from "@/lib/checkin-habits";
-import { recoveryDoneToday, RECOVERY_HABIT_KEY } from "@/lib/recovery/completion";
+import { habitsEarnedToday } from "@/lib/recovery/completion";
 import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
 import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou } from "@/lib/sports";
 import { useRecentSports } from "@/hooks/use-recent-sports";
@@ -173,10 +173,12 @@ const DailyCheckin = () => {
   // day they did it. Untick it and it is gone; it returns only on the next day
   // they recover. `mobility` was already in the library at 15 XP, exactly half
   // of a workout, so no constant moves and the server's mirror still agrees.
-  const recoveredToday = useMemo(() => recoveryDoneToday(), []);
+  // Routines tick their own habit (breathwork, meditation, evening meditation)
+  // by the same rule.
+  const earnedToday = useMemo(() => habitsEarnedToday(), []);
   const chosenHabits = useMemo(
-    () => resolveCheckinHabits(habitKeys, recoveredToday ? [RECOVERY_HABIT_KEY] : []),
-    [habitKeys, recoveredToday],
+    () => resolveCheckinHabits(habitKeys, earnedToday),
+    [habitKeys, earnedToday],
   );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -374,10 +376,10 @@ const DailyCheckin = () => {
   // something, and a re-render must not argue.
   const recoveryPrefilled = useRef(false);
   useEffect(() => {
-    if (!recoveredToday || recoveryPrefilled.current) return;
+    if (earnedToday.length === 0 || recoveryPrefilled.current) return;
     recoveryPrefilled.current = true;
-    setCompleted((c) => ({ ...c, [RECOVERY_HABIT_KEY]: true }));
-  }, [recoveredToday]);
+    setCompleted((c) => ({ ...c, ...Object.fromEntries(earnedToday.map((h) => [h, true])) }));
+  }, [earnedToday]);
 
   // Is a verifiable habit backed by a live Health signal right now?
   const isDetected = (h: CheckinHabit): boolean => {

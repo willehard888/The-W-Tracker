@@ -2,17 +2,17 @@ import { useLayoutEffect, useMemo, useRef, useState, useEffect } from "react";
 // useParams: an exercise is a route (/exercises/:slug), so the coach can link
 // straight to a movement and the phone's back gesture closes the detail
 // instead of leaving the library entirely.
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useScrollContainer } from "@/contexts/ScrollContainerContext";
 import { backOr } from "@/lib/nav";
-import { BookOpen, ChevronRight, Search, X } from "lucide-react";
+import { Activity, BookOpen, ChevronRight, Dumbbell, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
-import { hapticImpact } from "@/lib/haptics";
+import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import {
   ILLUSTRATED_EXERCISES,
   type IllustratedExercise,
@@ -20,6 +20,12 @@ import {
 import { IllustrationThumb, IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingBlock } from "@/components/coach/ExerciseCoachingBlock";
 import { coachingFor } from "@/data/exercise-coaching";
+import { LIBRARY_BY_ID } from "@/data/recovery-routines";
+import { RecoverDetail, RecoverList } from "@/components/recovery/RecoverLibrary";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+
+/** Quiet pill under the gold segment: one gold fill per screen, not two rows of it. */
+const FILTER_PILL_ACTIVE = "bg-gold/[0.12] text-gold border-gold/50";
 
 /**
  * /exercises — the curated illustrated library. Every entry ships two
@@ -30,6 +36,11 @@ import { coachingFor } from "@/data/exercise-coaching";
  *
  * One job: learn one movement. The detail is a beat (the name) over the one
  * hero (the rep, played); everything under it is type on the page.
+ *
+ * Since Recovery joined, one library with two halves behind a segment in the
+ * URL (`?tab=recover`): Train is the strength set, Recover is stretches, body
+ * care, breathing, sleep and meditation. Both open details on the same route,
+ * so a link to any movement, trained or recovered, is `/exercises/<id>`.
  */
 
 const GROUPS: Array<{ label: string; match: (m: string) => boolean }> = [
@@ -151,6 +162,8 @@ const ExerciseMissing = ({ onBack }: { onBack: () => void }) => (
 const Exercises = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") === "recover" ? "recover" : "train";
   const scroller = useScrollContainer();
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string | null>(null);
@@ -184,25 +197,58 @@ const Exercises = () => {
   // under the detail (hidden), so search, filter and scroll survive the hop
   // and the 269 rows are not rebuilt on the way back.
   const selected = slug ? ILLUSTRATED_EXERCISES.find((e) => e.slug === slug) : undefined;
+  const recovery = slug && !selected ? LIBRARY_BY_ID.get(slug) : undefined;
   useLayoutEffect(() => {
     scroller?.current?.scrollTo(0, slug ? 0 : listScroll.current);
   }, [slug, scroller]);
-  const close = () => backOr(navigate, "/exercises");
+  const close = () => backOr(navigate, tab === "recover" ? "/exercises?tab=recover" : "/exercises");
   const open = (ex: IllustratedExercise) => {
     hapticImpact("light");
     listScroll.current = scroller?.current?.scrollTop ?? 0;
     setOpened(true);
     navigate(`/exercises/${ex.slug}`);
   };
+  const openRecovery = (id: string) => {
+    hapticImpact("light");
+    listScroll.current = scroller?.current?.scrollTop ?? 0;
+    setOpened(true);
+    navigate(`/exercises/${id}?tab=recover`);
+  };
+  const setTab = (t: "train" | "recover") => {
+    hapticSelection();
+    setParams(t === "recover" ? { tab: "recover" } : {}, { replace: true });
+  };
 
   return (
     <>
       {selected && <ExerciseDetail ex={selected} onBack={close} />}
-      {slug && !selected && <ExerciseMissing onBack={close} />}
+      {recovery && <RecoverDetail m={recovery} onBack={close} />}
+      {slug && !selected && !recovery && <ExerciseMissing onBack={close} />}
       <div className={cn("min-h-full", opened && "entrance-done")} hidden={!!slug}>
-        <PageBar title="Exercise library" onBack={() => backOr(navigate, "/")} />
+        <PageBar title="Exercise & Recovery" onBack={() => backOr(navigate, "/")} />
 
         <div className="home-rise px-4 pt-4 pb-6">
+          <div className={cn(SEGMENT_TRACK, "mb-4")}>
+            {([["train", "Train", Dumbbell], ["recover", "Recover", Activity]] as const).map(([key, label, Icon]) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={tab === key}
+                onClick={() => setTab(key)}
+                className={cn(
+                  "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-meta font-black transition-colors",
+                  tab === key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
+                )}
+              >
+                <Icon aria-hidden size={14} /> {label}
+              </button>
+            ))}
+          </div>
+
+          {tab === "recover" ? (
+            <RecoverList onOpen={openRecovery} />
+          ) : (
+          <>
           {/* Search */}
           <div className="relative mb-3">
             <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
@@ -240,7 +286,7 @@ const Exercises = () => {
                       // A 32 px pill; the invisible ::before lifts its target to the 44 pt floor.
                       "press relative shrink-0 rounded-full px-3 py-1.5 text-meta font-black border transition-colors",
                       "before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']",
-                      active ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
+                      active ? FILTER_PILL_ACTIVE : "bg-secondary/40 border-border/50 text-muted-foreground",
                     )}
                   >
                     {g ?? "All"}
@@ -287,6 +333,8 @@ const Exercises = () => {
           <p className="mt-8 text-center text-label text-muted-foreground/75">
             Illustrations © Everkinetic · CC BY-SA 4.0
           </p>
+          </>
+          )}
         </div>
       </div>
     </>

@@ -23,6 +23,9 @@ import { readLocal, writeLocal } from "@/lib/storage";
 import { localDateKey } from "@/lib/date";
 
 const KEY = "recovery-done-on";
+
+/** The check-in habit a finished recovery session answers by default. */
+export const RECOVERY_HABIT_KEY = "mobility";
 const LOG_KEY = "recovery-done-log";
 
 /** Two weeks is all any screen asks for, and it keeps the value small. */
@@ -39,10 +42,23 @@ const readLog = (): string[] => {
   }
 };
 
-/** Record that a recovery session was finished. Idempotent within a day. */
-export const markRecoveryDone = (when: Date = new Date()): void => {
+/**
+ * Where the day is kept for one habit. Mobility keeps the original key, so a
+ * session finished on the build before routines still ticks the card.
+ */
+const habitKey = (habit: string) => (habit === RECOVERY_HABIT_KEY ? KEY : `${KEY}:${habit}`);
+
+/** The habits a routine can tick, so the check-in knows which keys to look at. */
+const HABITS = [RECOVERY_HABIT_KEY, "breathwork", "meditation", "meditation_pm"] as const;
+
+/**
+ * Record that a recovery session was finished. Idempotent within a day.
+ * `habit` is the check-in habit it answers: a stretch session ticks mobility,
+ * a breathing routine breathwork, a meditation meditation.
+ */
+export const markRecoveryDone = (when: Date = new Date(), habit: string = RECOVERY_HABIT_KEY): void => {
   const key = localDateKey(when);
-  writeLocal(KEY, key);
+  writeLocal(habitKey(habit), key);
   // One entry per day, newest first, trimmed. A second session on the same day
   // is a good day, not two — the count exists to say "I do this", and counting
   // twice for one evening would make the number mean less, not more.
@@ -80,5 +96,8 @@ export const recoveryDaysThisWeek = (when: Date = new Date()): number => {
 export const recoveryDoneToday = (when: Date = new Date()): boolean =>
   readLocal(KEY) === localDateKey(when);
 
-/** The check-in habit a finished recovery session answers. */
-export const RECOVERY_HABIT_KEY = "mobility";
+/** Every habit a recovery session finished today has earned, for the check-in. */
+export const habitsEarnedToday = (when: Date = new Date()): string[] => {
+  const today = localDateKey(when);
+  return HABITS.filter((h) => readLocal(habitKey(h)) === today);
+};

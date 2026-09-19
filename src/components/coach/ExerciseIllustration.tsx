@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { illustrationUrl, illustrationImg, type IllustratedExercise } from "@/data/exercises-illustrated";
+import { illustrationUrl, illustrationImg } from "@/data/illustration-urls";
+import type { IllustratedExercise } from "@/data/exercises-illustrated";
 import { BUNDLED_FRAME_IDS } from "@/data/illustration-frame-ids";
 import { GOLD_LINES, goldThumb } from "./gold-lines";
 
@@ -12,6 +13,9 @@ const STATES = ["relaxation", "tension"] as const;
 // The blur-up base is the baked gold thumbnail: only the blur is left to do.
 const THUMB_WASH = "blur(6px)";
 type FrameState = (typeof STATES)[number];
+/** What a drawing needs: its frame id and a name for the alt text. Recovery
+ *  movements are drawn in the same set without being strength exercises. */
+type Drawn = Pick<IllustratedExercise, "idNum" | "title">;
 
 /**
  * The technique frame. Every movement the coach can prescribe ships its two
@@ -24,7 +28,7 @@ export const illustrationFrame = (idNum: string, state: FrameState): string =>
   BUNDLED_FRAME_IDS.has(idNum) ? `/illustrations/frames/${idNum}-${state}.svg` : illustrationUrl(idNum, state);
 
 /** Warm a movement's frames so a swap or the next exercise lands drawn. */
-export const preloadIllustration = (ex: IllustratedExercise): void => {
+export const preloadIllustration = (ex: Drawn): void => {
   if (typeof Image !== "function") return;
   for (const state of STATES) { const img = new Image(); img.src = illustrationFrame(ex.idNum, state); }
 };
@@ -35,7 +39,7 @@ export const preloadIllustration = (ex: IllustratedExercise): void => {
  * under the new ones while they loaded — and the new pair fades in only once
  * both frames have decoded. Until then the blurred thumb holds the tile.
  */
-const Frames = ({ ex, running }: { ex: IllustratedExercise; running: boolean }) => {
+const Frames = ({ ex, running }: { ex: Drawn; running: boolean }) => {
   const [ready, setReady] = useState(false);
   const loaded = useRef(new Set<FrameState>());
   const mark = (state: FrameState) => {
@@ -78,7 +82,7 @@ const Frames = ({ ex, running }: { ex: IllustratedExercise; running: boolean }) 
  * in the library footer.)
  */
 
-export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: { ex: IllustratedExercise; size?: number; className?: string; eager?: boolean }) => (
+export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: { ex: Drawn; size?: number; className?: string; eager?: boolean }) => (
   <div
     aria-hidden
     className={cn(
@@ -125,7 +129,16 @@ export const IllustrationThumb = ({ ex, size = 56, className, eager = false }: {
  * screen is about. It still pauses when scrolled out of view, and the athlete
  * can stop it — a demonstration you cannot pause is worse than a still.
  */
-export const IllustrationPlayer = ({ ex, className }: { ex: IllustratedExercise; className?: string }) => {
+export const IllustrationPlayer = ({
+  ex,
+  className,
+  playingLabel = "Full rep",
+}: {
+  ex: Drawn;
+  className?: string;
+  /** A stretch moves into a position rather than through a rep. */
+  playingLabel?: string;
+}) => {
   const [playing, setPlaying] = useState(true);
   const [inView, setInView] = useState(true);
   const [reduced, setReduced] = useState(false);
@@ -185,7 +198,7 @@ export const IllustrationPlayer = ({ ex, className }: { ex: IllustratedExercise;
         </button>
 
         <span className="absolute bottom-4 left-4 text-label font-bold text-gold/70">
-          {playing ? "Full rep" : "Start position"}
+          {playing ? playingLabel : "Start position"}
         </span>
       </div>
     </div>
@@ -193,7 +206,7 @@ export const IllustrationPlayer = ({ ex, className }: { ex: IllustratedExercise;
 };
 
 /** Detail hero: the two technique states, Start → Finish. */
-export const IllustrationHero = ({ ex, className }: { ex: IllustratedExercise; className?: string }) => (
+export const IllustrationHero = ({ ex, className }: { ex: Drawn; className?: string }) => (
   <div className={cn("grid grid-cols-2 gap-2", className)}>
     {(["relaxation", "tension"] as const).map((state, i) => (
       <div key={state} className="relative overflow-hidden rounded-2xl border border-gold/25 bg-black">

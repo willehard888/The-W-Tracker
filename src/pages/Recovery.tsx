@@ -6,6 +6,7 @@
 //   /recovery?src=post_workout&p=<program>&w=<week>&d=<dayIndex>
 //   /recovery?src=rest_day
 //   /recovery                       → general
+//   /recovery?routine=<id>          → a routine picked in the library
 //
 // Nothing about the session is passed in. Two renders of the same URL build the
 // same session, because `buildSession` is deterministic — which is what lets
@@ -31,7 +32,7 @@
 // so a session backgrounded for a minute comes back showing the truth.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, Pause, Play, SkipForward, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play, SkipForward, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import { backOr } from "@/lib/nav";
@@ -55,6 +56,10 @@ import { clearDeferredRecovery } from "@/lib/recovery/deferred";
 import { preferredLength, rememberLength } from "@/lib/recovery/preferences";
 import { whyThis } from "@/lib/recovery/explain";
 import { movementSeconds, RECOVERY_BY_ID, type RecoveryMovement } from "@/data/recovery";
+import { ROUTINE_BY_ID, SHELF_LABEL, routineSession } from "@/data/recovery-routines";
+import { CHECKIN_HABITS } from "@/lib/checkin-habits";
+import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
+import { BreathPacer, GuidedCue, armChime } from "@/components/recovery/StepVisual";
 
 type Source = "post_workout" | "rest_day" | "manual";
 
@@ -82,6 +87,16 @@ const SORENESS: { id: Exclude<Soreness, null>; label: string }[] = [
 const clock = (sec: number) =>
   `${Math.floor(Math.max(0, sec) / 60)}:${String(Math.max(0, sec) % 60).padStart(2, "0")}`;
 
+/** Under a drawing: the hold as a thin bar and the time left. */
+const HoldBar = ({ ring, left }: { ring: number; left: number }) => (
+  <div className="mt-3 flex items-center gap-3">
+    <div className="h-1 flex-1 rounded-full bg-border overflow-hidden">
+      <div className="h-full bg-gold transition-[width] duration-300 ease-out" style={{ width: `${ring}%` }} />
+    </div>
+    <span className="font-display font-black text-read tabular-nums">{clock(left)}</span>
+  </div>
+);
+
 export default function Recovery() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -89,6 +104,7 @@ export default function Recovery() {
   const programId = params.get("p");
   const week = params.get("w") ? Number(params.get("w")) : undefined;
   const day = params.get("d") ? Number(params.get("d")) : undefined;
+  const routine = ROUTINE_BY_ID.get(params.get("routine") ?? "");
 
   const { data: daySets, isLoading: daySetsLoading } = useDaySets(
     source === "post_workout" ? programId : null,
@@ -112,7 +128,8 @@ export default function Recovery() {
   // ceiling we go with whatever is in hand and the copy says it is general.
   // A manual open (the door on Home) reads the last two days like a rest day
   // does, so it is built for what was trained rather than general.
-  const queryPending = source === "post_workout" ? daySetsLoading : recentLoading;
+  // A routine is fixed and needs nothing from the network.
+  const queryPending = routine ? false : source === "post_workout" ? daySetsLoading : recentLoading;
   const [waited, setWaited] = useState(false);
   useEffect(() => {
     const id = window.setTimeout(() => setWaited(true), 2500);
@@ -131,6 +148,7 @@ export default function Recovery() {
   const [swaps, setSwaps] = useState<Record<string, string>>({});
 
   const session = useMemo(() => {
+    if (routine) return routineSession(routine.id)!;
     const built = buildSession(topAreas(load), {
       length,
       context: source === "rest_day" ? "rest_day" : "post_workout",
@@ -150,7 +168,7 @@ export default function Recovery() {
       movements,
       totalSec: movements.reduce((s, m) => s + movementSeconds(m), 0),
     };
-  }, [load, length, source, soreness, swaps]);
+  }, [routine, load, length, source, soreness, swaps]);
 
   const [index, setIndex] = useState(0);
   const [side, setSide] = useState<0 | 1>(0);
@@ -167,6 +185,11 @@ export default function Recovery() {
     ? running && deadline !== null
       ? Math.ceil((deadline - now) / 1000)
       : heldLeft ?? movement.holdSec
+    : 0;
+  // How far into this hold, to the millisecond — the pacer and the cues read
+  // this rather than the rounded seconds on the clock.
+  const elapsedMs = movement
+    ? movement.holdSec * 1000 - (running && deadline !== null ? deadline - now : (heldLeft ?? movement.holdSec) * 1000)
     : 0;
 
   useWakeLock(phase === "running");
@@ -200,12 +223,13 @@ export default function Recovery() {
     announced.current = true;
     void track(FUNNEL.recoveryOpened, {
       source,
+      routine: routine?.id,
       length,
       areas: session.areas,
       movements: session.movements.length,
       general: session.general,
     });
-  }, [settling, session, source, length]);
+  }, [settling, session, source, length, routine]);
 
   const armHold = useCallback((seconds: number) => {
     setHeldLeft(null);
@@ -216,21 +240,23 @@ export default function Recovery() {
   const finish = useCallback(() => {
     setPhase("done");
     setDeadline(null);
-    hapticNotification("success");
+    // A sleep routine ends in bed; it does not buzz the phone at the end.
+    if (routine?.shelf !== "sleep") hapticNotification("success");
     // Before the events: `track` is fire-and-forget by contract, and what earns
     // the athlete their check-in tick must not wait on a network call.
-    markRecoveryDone();
+    markRecoveryDone(new Date(), routine?.habit);
     clearDeferredRecovery();
     rememberLength(length);
     void track(FUNNEL.recoveryCompleted, {
       source,
+      routine: routine?.id,
       length,
       soreness,
       areas: session.areas,
       movements: session.movements.length,
       seconds: Math.round((Date.now() - startedAt.current) / 1000),
     });
-  }, [length, soreness, source, session]);
+  }, [length, soreness, source, session, routine]);
 
   const advance = useCallback(() => {
     const current = session.movements[index];
@@ -278,6 +304,7 @@ export default function Recovery() {
 
   const start = () => {
     hapticImpact("light");
+    armChime();
     startedAt.current = Date.now();
     setPhase("running");
     setIndex(0);
@@ -286,6 +313,7 @@ export default function Recovery() {
     armHold(session.movements[0]?.holdSec ?? 30);
     void track(FUNNEL.recoveryStarted, {
       source,
+      routine: routine?.id,
       length,
       soreness,
       areas: session.areas,
@@ -294,17 +322,68 @@ export default function Recovery() {
     });
   };
 
+  // Where "back" goes when there is no history: the library a routine came from.
+  const home = routine ? "/exercises?tab=recover" : "/";
+
   const leave = () => {
     if (phase === "running") {
       void track(FUNNEL.recoverySkipped, {
         source,
+        routine: routine?.id,
         length,
         atMovement: index,
         of: session.movements.length,
       });
     }
-    backOr(navigate, "/");
+    backOr(navigate, home);
   };
+
+  // ── Ready: a routine ─────────────────────────────────────────────────────
+  // Chosen by name in the library, so there is nothing to tune: what it is,
+  // what is in it, where the reasoning lives, and Start.
+  if (phase === "ready" && routine) {
+    return (
+      <div className="min-h-full">
+        <PageBar onBack={() => backOr(navigate, home)} title="Recovery" />
+        <div className="px-4 pt-6 pb-6">
+          <div className="home-rise">
+            <p className="eyebrow-sm text-muted-foreground">{SHELF_LABEL[routine.shelf]}</p>
+            <h1 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight text-balance">
+              {routine.name}
+            </h1>
+            <p className="mt-3 text-dense text-muted-foreground leading-snug">{routine.blurb}</p>
+          </div>
+          {/* A one-item routine is its own name; listing it again says nothing. */}
+          {session.movements.length > 1 && (
+          <ol className="home-rise home-rise-1 mt-6 divide-y divide-border/35 border-y border-border/35">
+            {session.movements.map((m) => (
+              <li key={m.id} className="flex items-baseline justify-between gap-3 py-2.5">
+                <span className="text-note font-bold">{m.name}</span>
+                <span className="text-label text-muted-foreground tabular-nums shrink-0">
+                  {clock(movementSeconds(m))}
+                </span>
+              </li>
+            ))}
+          </ol>
+          )}
+          {routine.vault && (
+            <button
+              type="button"
+              onClick={() => { hapticSelection(); navigate(`/vault?lesson=${routine.vault}`); }}
+              className="press home-rise home-rise-2 mt-3 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
+            >
+              Why it works, in the Vault <ChevronRight aria-hidden size={13} />
+            </button>
+          )}
+          <div className="home-rise home-rise-3 mt-6">
+            <Button variant="ember" size="lg" className="w-full" onClick={start}>
+              {`Start · ${describeLength(session.totalSec)}`}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Ready ────────────────────────────────────────────────────────────────
   if (phase === "ready") {
@@ -435,24 +514,25 @@ export default function Recovery() {
     // A count, never a target: "3 this week" says the athlete does this; "3 / 5"
     // would say they are behind, about a goal nobody set.
     const daysThisWeek = recoveryDaysThisWeek();
+    const habit = CHECKIN_HABITS.find((h) => h.key === (routine?.habit ?? "mobility"))?.label ?? "Mobility / stretch";
     return (
       <div className="min-h-full">
-        <PageBar onBack={() => backOr(navigate, "/")} title="Recovery" />
+        <PageBar onBack={() => backOr(navigate, home)} title="Recovery" />
         <div className="px-4 pt-6 pb-6">
           <div className="home-rise">
             <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
-              Done. Recovery handled.
+              {routine ? `Done. ${routine.name}.` : "Done. Recovery handled."}
             </h2>
             <p className="mt-3 text-read font-bold tabular-nums text-foreground/85">
-              {session.movements.length} movements · {mins} min
+              {session.movements.length > 1 && `${session.movements.length} movements · `}{mins} min
             </p>
             <p className="mt-3 text-dense text-muted-foreground leading-snug">
-              Mobility is ticked on today's check-in.
+              {habit} is ticked on today's check-in.
               {daysThisWeek > 1 && ` That's ${daysThisWeek} days this week.`}
             </p>
           </div>
           <div className="home-rise home-rise-2 mt-7">
-            <Button variant="ember" size="lg" className="w-full" onClick={() => backOr(navigate, "/")}>
+            <Button variant="ember" size="lg" className="w-full" onClick={() => backOr(navigate, home)}>
               Done
             </Button>
           </div>
@@ -469,10 +549,13 @@ export default function Recovery() {
   const ring = Math.min(100, Math.max(0, Math.round(((movement.holdSec - left) / movement.holdSec) * 100)));
   const blockLabel = session.blocks.find((b) => b.movements.includes(movement))?.label ?? "";
   const isLast = index + 1 === total && (movement.sides === 1 || side === 1);
-  const alternative = swapMovement(session, movement, {
-    context: source === "rest_day" ? "rest_day" : "post_workout",
-    soreness,
-  });
+  // A routine is somebody's choice by name; it is run as chosen.
+  const alternative = routine
+    ? null
+    : swapMovement(session, movement, {
+        context: source === "rest_day" ? "rest_day" : "post_workout",
+        soreness,
+      });
 
   return (
     <div className="min-h-full">
@@ -513,20 +596,39 @@ export default function Recovery() {
         </div>
 
         <div className="home-rise home-rise-1 mt-6">
-          <div className="surface-card surface-card-quiet flex flex-col items-center justify-center py-8">
-            <div
-              className="relative h-32 w-32 rounded-full grid place-items-center"
-              style={{
-                background: `conic-gradient(hsl(var(--gold)) ${ring}%, hsl(var(--border)) ${ring}%)`,
-              }}
-            >
-              <div className="h-[7.25rem] w-[7.25rem] rounded-full bg-card grid place-items-center">
-                <span className="font-display font-black text-beat tabular-nums">{clock(left)}</span>
+          {movement.art ? (
+            // Drawn: the movement itself, with the time under it.
+            <>
+              <IllustrationPlayer key={movement.id} ex={{ idNum: movement.art, title: movement.name }} playingLabel="Into position" />
+              <HoldBar ring={ring} left={left} />
+            </>
+          ) : movement.pace ? (
+            <div className="surface-card surface-card-quiet flex flex-col items-center justify-center py-7">
+              <BreathPacer pace={movement.pace} elapsedMs={elapsedMs} running={running} />
+              <p className="mt-2 text-label text-muted-foreground tabular-nums">{clock(left)} left</p>
+            </div>
+          ) : movement.cues ? (
+            <div className="surface-card surface-card-quiet px-5 py-7">
+              <GuidedCue cues={movement.cues} elapsedMs={elapsedMs} running={running} />
+              <p className="mt-3 text-label text-muted-foreground tabular-nums text-center">{clock(left)} left</p>
+            </div>
+          ) : (
+            <div className="surface-card surface-card-quiet flex flex-col items-center justify-center py-8">
+              <div
+                className="relative h-32 w-32 rounded-full grid place-items-center"
+                style={{
+                  background: `conic-gradient(hsl(var(--gold)) ${ring}%, hsl(var(--border)) ${ring}%)`,
+                }}
+              >
+                <div className="h-[7.25rem] w-[7.25rem] rounded-full bg-card grid place-items-center">
+                  <span className="font-display font-black text-beat tabular-nums">{clock(left)}</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
+        {!movement.cues && (
         <ol className="home-rise home-rise-2 mt-5 space-y-2">
           {movement.steps.map((step) => (
             <li key={step} className="flex gap-2.5 text-note leading-snug text-foreground/85">
@@ -535,6 +637,7 @@ export default function Recovery() {
             </li>
           ))}
         </ol>
+        )}
 
         {movement.caution && (
           <p className="home-rise home-rise-3 mt-4 text-dense leading-snug text-muted-foreground">

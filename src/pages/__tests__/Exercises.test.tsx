@@ -48,4 +48,24 @@ describe("Exercise library", () => {
     fireEvent.click(screen.getByRole("button", { name: "Browse the library" }));
     expect(screen.getByLabelText("Search exercises")).toBeVisible();
   });
+
+  it("holds recovery behind its own tab, with routines and every movement", () => {
+    renderAt("/exercises");
+    fireEvent.click(screen.getByRole("button", { name: "Recover" }));
+    expect(screen.getByRole("button", { name: "Recover" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("Built for you")).toBeInTheDocument();
+    expect(screen.getByText("Morning mobility")).toBeInTheDocument();
+    expect(screen.getByLabelText("Search recovery")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Search exercises")).toBeNull();
+  });
+
+  it("opens a recovery movement on the same route and closes back to the Recover tab", () => {
+    renderAt("/exercises/pigeon?tab=recover");
+    expect(screen.getByRole("heading", { level: 1, name: "Pigeon stretch" })).toBeInTheDocument();
+    // It is in routines, and says so.
+    expect(screen.getByText("Do it in a routine")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.queryByRole("heading", { level: 1, name: "Pigeon stretch" })).toBeNull();
+    expect(screen.getByLabelText("Search recovery")).toBeVisible();
+  });
 });

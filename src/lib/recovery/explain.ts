@@ -49,7 +49,10 @@ export function whyThis(
   }
 
   if (source === "rest_day") {
-    return `${listAreas(primary)} took the most work in your last two days.`;
+    // The list opens the sentence, so its first word is capitalised: the
+    // screen read "triceps, chest and shoulders took…" in lower case.
+    const list = listAreas(primary);
+    return `${list.charAt(0).toUpperCase()}${list.slice(1)} took the most work in your last two days.`;
   }
 
   return `Built around ${listAreas(primary)}.`;

@@ -63,10 +63,15 @@ const ItemThumb = ({ m, size = 48 }: { m: RecoveryMovement; size?: number }) => 
 const holdLabel = (m: RecoveryMovement) =>
   m.type === "guided" ? describeLength(m.holdSec) : m.sides === 2 ? `${m.holdSec} s each side` : `${m.holdSec} s`;
 
-const itemMeta = (m: RecoveryMovement) => {
-  const where = m.areas.length ? m.areas.join(", ") : m.type === "guided" ? "guided" : m.type === "breathing" ? "breathing" : "whole body";
-  return `${where} · ${holdLabel(m)}`;
-};
+/** Where it works, capitalised as a list; the time after it stays lower-case. */
+const ItemMeta = ({ m }: { m: RecoveryMovement }) => (
+  <>
+    <span className="capitalize">
+      {m.areas.length ? m.areas.join(", ") : m.type === "guided" ? "guided" : m.type === "breathing" ? "breathing" : "whole body"}
+    </span>
+    {` · ${holdLabel(m)}`}
+  </>
+);
 
 const haystack = (m: RecoveryMovement) =>
   [m.name, m.type, m.equipment, ...m.areas, ...m.steps].join(" ").toLowerCase();
@@ -201,7 +206,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
               <ItemThumb m={m} />
               <span className="flex-1 min-w-0">
                 <span className="block text-note font-semibold leading-tight truncate">{m.name}</span>
-                <span className="block text-meta text-muted-foreground leading-snug mt-0.5 capitalize truncate">{itemMeta(m)}</span>
+                <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate"><ItemMeta m={m} /></span>
               </span>
               <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
             </button>
@@ -243,7 +248,7 @@ export function RecoverDetail({ m, onBack }: { m: RecoveryMovement; onBack: () =
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
           <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{m.name}</h1>
-          <p className="mt-1.5 text-dense text-muted-foreground capitalize">
+          <p className="mt-1.5 text-dense text-muted-foreground">
             {[SHELF_LABEL[itemShelf(m)], m.equipment !== "none" ? m.equipment : null, holdLabel(m)].filter(Boolean).join(" · ")}
           </p>
           {m.areas.length > 0 && (

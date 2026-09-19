@@ -8,18 +8,17 @@
 // stretches, zero mobility drills, zero breathing work. Recovery has no content
 // anywhere in the product, so it gets its own authored dataset.
 //
-// WHY THERE ARE NO ILLUSTRATIONS
+// THE DRAWINGS
 //
 // Everkinetic is exhausted — 293 upstream entries, 268 imported, all of them
-// strength. Nothing here can be drawn without commissioning it, and mapping a
-// stretch onto a strength drawing would show the wrong movement, which is the
-// one thing the illustration rules forbid. So the app shows a branded frame and
-// the text carries the movement. That is the standard the founder set when the
-// same choice came up for exercise media: no image beats an inconsistent one.
-//
-// It works better here than it would for strength: "stand in a doorway,
-// forearms on the frame at shoulder height, step through" is unambiguous in a
-// way that a barbell path is not.
+// strength — and mapping a stretch onto a strength drawing would show the
+// wrong movement. So recovery movements are drawn new, in the Everkinetic
+// style: one generated two-panel sheet per movement (start, end), traced by
+// `scripts/recovery-art.mjs` into the same frame pair the strength set ships,
+// and animated by the same player. `art` holds the frame id (0300 and up, never
+// an Everkinetic id). The founder approved the style on a six-movement pilot
+// (2026-09-19) before the rest were drawn. A movement without `art` shows the
+// timer ring: no drawing still beats a wrong one.
 //
 // LANGUAGE
 //
@@ -137,6 +136,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "doorway-chest",
     name: "Doorway chest stretch",
+    art: "0306",
     type: "stretch",
     areas: ["chest", "shoulders"],
     holdSec: 30,
@@ -153,6 +153,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "floor-chest-opener",
     name: "Floor chest opener",
+    art: "0307",
     type: "stretch",
     areas: ["chest", "shoulders"],
     holdSec: 40,
@@ -170,6 +171,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "cross-body-shoulder",
     name: "Cross-body shoulder stretch",
+    art: "0308",
     type: "stretch",
     areas: ["shoulders"],
     holdSec: 30,
@@ -185,6 +187,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "wall-slide",
     name: "Wall slide",
+    art: "0309",
     type: "mobility",
     areas: ["shoulders", "upper back"],
     holdSec: 45,
@@ -202,6 +205,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "overhead-triceps",
     name: "Overhead triceps stretch",
+    art: "0310",
     type: "stretch",
     areas: ["triceps"],
     holdSec: 30,
@@ -219,6 +223,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "kneeling-lat",
     name: "Kneeling lat stretch",
+    art: "0311",
     type: "stretch",
     areas: ["lats", "upper back"],
     holdSec: 40,
@@ -234,6 +239,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "thread-the-needle",
     name: "Thread the needle",
+    art: "0303",
     type: "mobility",
     areas: ["upper back", "shoulders"],
     holdSec: 30,
@@ -249,6 +255,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "cat-cow",
     name: "Cat-cow",
+    art: "0301",
     type: "mobility",
     areas: ["lower back", "upper back", "abdominals"],
     holdSec: 45,
@@ -266,6 +273,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "wall-biceps",
     name: "Wall biceps stretch",
+    art: "0312",
     type: "stretch",
     areas: ["biceps", "forearms", "chest"],
     holdSec: 30,
@@ -282,6 +290,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "forearm-flexor",
     name: "Forearm stretch",
+    art: "0313",
     type: "stretch",
     areas: ["forearms"],
     holdSec: 25,
@@ -299,6 +308,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "standing-quad",
     name: "Standing quad stretch",
+    art: "0302",
     type: "stretch",
     areas: ["quadriceps"],
     holdSec: 30,
@@ -314,6 +324,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "couch-stretch",
     name: "Kneeling hip flexor stretch",
+    art: "0300",
     type: "stretch",
     areas: ["quadriceps", "glutes"],
     holdSec: 40,
@@ -331,6 +342,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "supine-hamstring",
     name: "Lying hamstring stretch",
+    art: "0314",
     type: "stretch",
     areas: ["hamstrings", "calves"],
     holdSec: 40,
@@ -346,6 +358,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "hinge-hamstring",
     name: "Standing hamstring hinge",
+    art: "0315",
     type: "mobility",
     areas: ["hamstrings", "lower back"],
     holdSec: 30,
@@ -363,6 +376,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "figure-four",
     name: "Figure-four glute stretch",
+    art: "0304",
     type: "stretch",
     areas: ["glutes"],
     holdSec: 40,
@@ -378,6 +392,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "ninety-ninety",
     name: "90/90 hip rotation",
+    art: "0316",
     type: "mobility",
     areas: ["glutes", "quadriceps"],
     holdSec: 45,
@@ -393,6 +408,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "adductor-rock",
     name: "Adductor rock-back",
+    art: "0317",
     type: "mobility",
     areas: ["glutes", "hamstrings"],
     holdSec: 40,
@@ -410,6 +426,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "wall-calf",
     name: "Wall calf stretch",
+    art: "0318",
     type: "stretch",
     areas: ["calves"],
     holdSec: 30,
@@ -427,6 +444,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "supine-twist",
     name: "Lying spinal twist",
+    art: "0319",
     type: "stretch",
     areas: ["lower back", "glutes", "abdominals"],
     holdSec: 40,
@@ -443,6 +461,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "childs-pose",
     name: "Child's pose",
+    art: "0305",
     type: "stretch",
     areas: ["lower back", "lats", "glutes"],
     holdSec: 45,
@@ -460,6 +479,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "neck-side",
     name: "Neck side stretch",
+    art: "0320",
     type: "stretch",
     areas: ["neck", "upper back"],
     holdSec: 25,
@@ -483,6 +503,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "triceps-wall",
     name: "Wall triceps stretch",
+    art: "0321",
     type: "stretch",
     areas: ["triceps", "lats"],
     holdSec: 30,
@@ -499,6 +520,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "triceps-reach",
     name: "Seated triceps reach",
+    art: "0322",
     type: "mobility",
     areas: ["triceps", "shoulders"],
     holdSec: 40,
@@ -533,6 +555,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "chest-corner",
     name: "Corner chest stretch",
+    art: "0324",
     type: "stretch",
     areas: ["chest", "shoulders", "biceps"],
     holdSec: 40,
@@ -549,6 +572,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "neck-rotation",
     name: "Neck rotation",
+    art: "0325",
     type: "mobility",
     areas: ["neck", "upper back"],
     holdSec: 30,
@@ -565,6 +589,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "seated-calf-reach",
     name: "Seated calf reach",
+    art: "0326",
     type: "stretch",
     areas: ["calves", "hamstrings"],
     holdSec: 35,
@@ -582,6 +607,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "side-bend",
     name: "Standing side bend",
+    art: "0327",
     type: "stretch",
     areas: ["abdominals", "lats", "lower back"],
     holdSec: 30,
@@ -598,6 +624,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "seated-lat-reach",
     name: "Seated lat reach",
+    art: "0328",
     type: "stretch",
     areas: ["lats", "upper back", "triceps"],
     holdSec: 35,
@@ -614,6 +641,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "seated-forward-fold",
     name: "Seated forward fold",
+    art: "0329",
     type: "stretch",
     areas: ["hamstrings", "lower back", "calves"],
     holdSec: 45,
@@ -631,6 +659,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "glute-bridge-hold",
     name: "Glute bridge hold",
+    art: "0330",
     type: "mobility",
     areas: ["glutes", "quadriceps", "abdominals"],
     holdSec: 35,
@@ -654,6 +683,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "easy-walk",
     name: "Easy walk",
+    art: "0331",
     type: "light",
     areas: [],
     holdSec: 120,
@@ -670,6 +700,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "shoulder-circles",
     name: "Shoulder circles",
+    art: "0332",
     type: "mobility",
     areas: ["shoulders", "upper back", "neck"],
     holdSec: 40,
@@ -686,6 +717,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "hip-circles",
     name: "Standing hip circles",
+    art: "0333",
     type: "mobility",
     areas: ["glutes", "lower back", "quadriceps"],
     holdSec: 40,
@@ -701,6 +733,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "leg-swings",
     name: "Leg swings",
+    art: "0334",
     type: "mobility",
     areas: ["hamstrings", "quadriceps", "glutes"],
     holdSec: 35,
@@ -716,6 +749,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "spine-flow",
     name: "Standing spine flow",
+    art: "0335",
     type: "flow",
     areas: ["lower back", "upper back", "hamstrings"],
     holdSec: 60,
@@ -732,6 +766,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "world-greatest",
     name: "Lunge with a reach",
+    art: "0336",
     type: "flow",
     areas: ["quadriceps", "glutes", "upper back", "hamstrings"],
     holdSec: 45,
@@ -747,6 +782,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "dead-bug",
     name: "Slow dead bug",
+    art: "0337",
     type: "mobility",
     areas: ["abdominals", "lower back"],
     holdSec: 45,
@@ -769,6 +805,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "pigeon",
     name: "Pigeon stretch",
+    art: "0338",
     type: "stretch",
     areas: ["glutes"],
     holdSec: 45,
@@ -786,6 +823,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "lizard",
     name: "Low lunge, elbows down",
+    art: "0339",
     type: "stretch",
     areas: ["quadriceps", "glutes"],
     holdSec: 40,
@@ -802,6 +840,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "frog",
     name: "Frog stretch",
+    art: "0340",
     type: "stretch",
     areas: ["glutes", "hamstrings"],
     holdSec: 45,
@@ -818,6 +857,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "deep-squat",
     name: "Deep squat hold",
+    art: "0341",
     type: "mobility",
     areas: ["glutes", "calves", "lower back"],
     holdSec: 45,
@@ -833,6 +873,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "knee-to-wall",
     name: "Knee-to-wall ankle rocks",
+    art: "0342",
     type: "mobility",
     areas: ["calves"],
     holdSec: 35,
@@ -848,6 +889,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "soleus-wall",
     name: "Bent-knee calf stretch",
+    art: "0343",
     type: "stretch",
     areas: ["calves"],
     holdSec: 30,
@@ -864,6 +906,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "open-book",
     name: "Open book",
+    art: "0344",
     type: "mobility",
     areas: ["upper back", "chest"],
     holdSec: 40,
@@ -881,6 +924,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "sphinx",
     name: "Sphinx",
+    art: "0345",
     type: "stretch",
     areas: ["abdominals", "lower back"],
     holdSec: 40,
@@ -898,6 +942,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "cobra",
     name: "Cobra",
+    art: "0346",
     type: "stretch",
     areas: ["abdominals", "chest"],
     holdSec: 30,
@@ -914,6 +959,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "puppy",
     name: "Kneeling lat reach",
+    art: "0347",
     type: "stretch",
     areas: ["lats", "shoulders", "chest"],
     holdSec: 40,
@@ -930,6 +976,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "wrist-extensor",
     name: "Wrist extensor stretch",
+    art: "0348",
     type: "stretch",
     areas: ["forearms"],
     holdSec: 25,
@@ -946,6 +993,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "wrist-circles",
     name: "Wrist and forearm circles",
+    art: "0349",
     type: "mobility",
     areas: ["forearms"],
     holdSec: 30,
@@ -962,6 +1010,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "standing-hip-flexor",
     name: "Standing hip flexor stretch",
+    art: "0350",
     type: "stretch",
     areas: ["quadriceps", "glutes"],
     holdSec: 30,
@@ -977,6 +1026,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "elevated-hamstring",
     name: "Heel-up hamstring stretch",
+    art: "0351",
     type: "stretch",
     areas: ["hamstrings"],
     holdSec: 30,
@@ -992,6 +1042,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "down-dog",
     name: "Downward dog",
+    art: "0352",
     type: "stretch",
     areas: ["hamstrings", "calves", "shoulders"],
     holdSec: 40,
@@ -1007,6 +1058,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "chin-tucks",
     name: "Chin tucks",
+    art: "0353",
     type: "mobility",
     areas: ["neck", "upper back"],
     holdSec: 30,
@@ -1023,6 +1075,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "sleeper",
     name: "Sleeper stretch",
+    art: "0354",
     type: "stretch",
     areas: ["shoulders"],
     holdSec: 30,
@@ -1041,6 +1094,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "happy-baby",
     name: "Happy baby",
+    art: "0355",
     type: "stretch",
     areas: ["glutes", "lower back"],
     holdSec: 40,
@@ -1058,6 +1112,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "knees-to-chest",
     name: "Knees to chest",
+    art: "0356",
     type: "stretch",
     areas: ["lower back", "glutes"],
     holdSec: 40,
@@ -1075,6 +1130,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "seated-twist",
     name: "Seated twist",
+    art: "0357",
     type: "stretch",
     areas: ["upper back", "lower back", "glutes"],
     holdSec: 30,
@@ -1091,6 +1147,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "bretzel",
     name: "Side-lying quad and twist",
+    art: "0358",
     type: "stretch",
     areas: ["quadriceps", "upper back", "chest"],
     holdSec: 40,
@@ -1107,6 +1164,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "wall-lat",
     name: "Wall lat stretch",
+    art: "0359",
     type: "stretch",
     areas: ["lats", "shoulders"],
     holdSec: 30,
@@ -1122,6 +1180,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "butterfly",
     name: "Seated butterfly",
+    art: "0360",
     type: "stretch",
     areas: ["glutes", "lower back"],
     holdSec: 40,
@@ -1139,6 +1198,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "legs-up-wall",
     name: "Legs up the wall",
+    art: "0361",
     type: "stretch",
     areas: ["hamstrings", "calves"],
     holdSec: 90,
@@ -1156,6 +1216,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "reclined-butterfly",
     name: "Reclined butterfly",
+    art: "0362",
     type: "stretch",
     areas: ["glutes"],
     holdSec: 60,
@@ -1178,6 +1239,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "roll-quads",
     name: "Roll the quads",
+    art: "0363",
     type: "mobility",
     areas: ["quadriceps"],
     holdSec: 45,
@@ -1194,6 +1256,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "roll-outer-thigh",
     name: "Roll the outer thigh",
+    art: "0364",
     type: "mobility",
     areas: ["quadriceps", "glutes"],
     holdSec: 40,
@@ -1210,6 +1273,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "roll-calves",
     name: "Roll the calves",
+    art: "0365",
     type: "mobility",
     areas: ["calves"],
     holdSec: 40,
@@ -1226,6 +1290,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "roll-upper-back",
     name: "Roll the upper back",
+    art: "0366",
     type: "mobility",
     areas: ["upper back"],
     holdSec: 45,
@@ -1242,6 +1307,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "roller-t-spine",
     name: "Upper back extension over the roller",
+    art: "0367",
     type: "mobility",
     areas: ["upper back", "chest"],
     holdSec: 40,
@@ -1258,6 +1324,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "roll-lats",
     name: "Roll the lats",
+    art: "0368",
     type: "mobility",
     areas: ["lats"],
     holdSec: 35,
@@ -1274,6 +1341,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "ball-glutes",
     name: "Ball on the glutes",
+    art: "0369",
     type: "mobility",
     areas: ["glutes"],
     holdSec: 40,
@@ -1290,6 +1358,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "ball-chest",
     name: "Ball on the chest",
+    art: "0370",
     type: "mobility",
     areas: ["chest", "shoulders"],
     holdSec: 35,
@@ -1305,6 +1374,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "ball-feet",
     name: "Ball under the feet",
+    art: "0371",
     type: "mobility",
     areas: ["calves"],
     holdSec: 40,

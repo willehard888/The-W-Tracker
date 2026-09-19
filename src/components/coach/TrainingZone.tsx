@@ -62,6 +62,25 @@ const FocusDoor = ({ label = "Pick a different focus", aside }: { label?: string
   );
 };
 
+/**
+ * Recovery on demand. The row offers it where it is the obvious next thing
+ * (a rest day, a logged session); every other state still needs a way in, or
+ * the feature does not exist for somebody who has not trained yet today.
+ * Source "manual" keeps these opens apart from the offered ones in the funnel.
+ */
+const RecoveryDoor = ({ to = "/recovery?src=manual" }: { to?: string }) => {
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      onClick={() => { hapticImpact("light"); navigate(to); }}
+      className="press w-full min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
+    >
+      Recovery session <ChevronRight aria-hidden size={13} />
+    </button>
+  );
+};
+
 const TrainingZone = () => {
   const navigate = useNavigate();
   const { program, logs, currentWeek, todayDayIndex, isLoading } = useCoachProgram();
@@ -112,6 +131,7 @@ const TrainingZone = () => {
             </button>
           ) : undefined}
         />
+        <RecoveryDoor to={done ? `/recovery?src=post_workout&p=${session.program.id}&w=1&d=${todayDayIndex}` : undefined} />
       </div>
     );
   }
@@ -160,6 +180,7 @@ const TrainingZone = () => {
           </div>
         </div>
         <FocusDoor label="Train today by focus" />
+        <RecoveryDoor />
       </div>
     );
   }
@@ -270,6 +291,7 @@ const TrainingZone = () => {
       )}
     </div>
     <FocusDoor />
+    {!(isRestDay(day) || (isTrainingDay(day) && done)) && <RecoveryDoor />}
     </div>
   );
 };

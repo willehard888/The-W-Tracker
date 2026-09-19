@@ -117,6 +117,29 @@ describe("TrainingZone", () => {
     expect(screen.queryByText("Upper Body A")).not.toBeInTheDocument();
   });
 
+  it("always offers a way into recovery, exactly once", () => {
+    // Recovery lived only behind a rest day or a logged session, so a member
+    // who had not trained yet today could not find it at all.
+    const doors = () => ({
+      recover: screen.queryAllByRole("button", { name: "Recover" }).length,
+      door: screen.queryAllByRole("button", { name: /Recovery session/ }).length,
+    });
+
+    mockProgram.mockReturnValue(withProgram([day("Upper Body A", 5)]));
+    const { unmount } = renderZone();
+    expect(doors()).toEqual({ recover: 0, door: 1 });
+    unmount();
+
+    mockProgram.mockReturnValue(withProgram([day("Rest", 0, 0)]));
+    const rest = renderZone();
+    expect(doors()).toEqual({ recover: 1, door: 0 });
+    rest.unmount();
+
+    mockProgram.mockReturnValue({ isLoading: false, program: null, logs: [], currentWeek: 1, todayDayIndex: 0 });
+    renderZone();
+    expect(doors()).toEqual({ recover: 0, door: 1 });
+  });
+
   it("stays legible when today's slot is missing from the plan", () => {
     mockProgram.mockReturnValue(withProgram([]));
     renderZone();

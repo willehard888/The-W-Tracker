@@ -110,8 +110,9 @@ export default function Recovery() {
   // first version left Start disabled for all of it — a recovery session the
   // athlete cannot begin is worse than a general one they can. After the
   // ceiling we go with whatever is in hand and the copy says it is general.
-  const queryPending =
-    source === "post_workout" ? daySetsLoading : source === "rest_day" ? recentLoading : false;
+  // A manual open (the door on Home) reads the last two days like a rest day
+  // does, so it is built for what was trained rather than general.
+  const queryPending = source === "post_workout" ? daySetsLoading : recentLoading;
   const [waited, setWaited] = useState(false);
   useEffect(() => {
     const id = window.setTimeout(() => setWaited(true), 2500);
@@ -121,8 +122,7 @@ export default function Recovery() {
 
   const load = useMemo(() => {
     if (source === "post_workout") return areaLoadFromLoggedSets(daySets ?? {});
-    if (source === "rest_day") return recentAreaLoad(recentLogs ?? []);
-    return [];
+    return recentAreaLoad(recentLogs ?? []);
   }, [source, daySets, recentLogs]);
 
   // Swaps, by movement id. Held outside the builder so the session stays a pure

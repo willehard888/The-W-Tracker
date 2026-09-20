@@ -363,6 +363,7 @@ const CoachSession = () => {
       areas: built.areas,
       minutes: Math.max(1, Math.round(built.totalSec / 60)),
       why: whyThisShort("post_workout", built, exercises),
+      art: built.movements.find((m) => m.art)?.art,
     };
   }, [summaryShown, recoveryOffered, logged, daySets]);
 
@@ -536,6 +537,7 @@ const CoachSession = () => {
                 areas={recoveryOffer.areas}
                 minutes={recoveryOffer.minutes}
                 why={recoveryOffer.why}
+                art={recoveryOffer.art}
                 query={`p=${program.id}&w=${week}&d=${day}`}
                 onLater={() => {
                   // Parked on Today, not deleted. "Not with a bar still on the

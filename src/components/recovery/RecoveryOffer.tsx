@@ -14,11 +14,11 @@
 // does not want to stretch in the gym is not someone who does not want to
 // stretch, and the first version could not tell the difference.
 import { Link } from "react-router-dom";
-import { Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
 import { listAreas } from "@/lib/recovery/explain";
+import { IllustrationThumb } from "@/components/coach/ExerciseIllustration";
 import type { RecoveryArea } from "@/data/recovery";
 
 export interface RecoveryOfferProps {
@@ -31,6 +31,8 @@ export interface RecoveryOfferProps {
   why?: string | null;
   /** Present on the finish screen; absent on Today, where the row IS the later. */
   onLater?: () => void;
+  /** The first movement of the session being offered, drawn. */
+  art?: string;
 }
 
 export { listAreas };
@@ -42,15 +44,15 @@ export default function RecoveryOffer({
   query,
   why,
   onLater,
+  art,
 }: RecoveryOfferProps) {
   const href = `/recovery?src=${source}${query ? `&${query}` : ""}`;
 
   return (
     <div className="surface-card surface-card-quiet px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <span className="h-10 w-10 shrink-0 rounded-xl bg-card/60 border border-border/40 flex items-center justify-center">
-          <Waves size={16} className="text-muted-foreground" aria-hidden />
-        </span>
+        {/* The session's own first movement, so the card shows what it offers. */}
+        {art && <IllustrationThumb ex={{ idNum: art, title: "Recovery" }} size={40} />}
         <div className="flex-1 min-w-0">
           <p className="text-label font-bold text-muted-foreground/75 mb-0.5">
             {source === "rest_day" ? "Rest day" : "One more thing"}

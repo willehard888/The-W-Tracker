@@ -1394,6 +1394,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "box-breathing",
     name: "Box breathing",
+    art: "0323",
     type: "breathing",
     areas: [],
     holdSec: 60,
@@ -1410,6 +1411,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "long-exhale",
     name: "Long exhale",
+    art: "0373",
     type: "breathing",
     areas: [],
     holdSec: 60,
@@ -1426,6 +1428,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "physiological-sigh",
     name: "Double inhale, long exhale",
+    art: "0374",
     type: "breathing",
     areas: [],
     holdSec: 60,
@@ -1442,6 +1445,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "coherent-breathing",
     name: "Even breathing, 5.5",
+    art: "0375",
     type: "breathing",
     areas: [],
     holdSec: 66,
@@ -1458,6 +1462,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "four-seven-eight",
     name: "4-7-8 breathing",
+    art: "0376",
     type: "breathing",
     areas: [],
     holdSec: 76,

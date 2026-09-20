@@ -6,7 +6,7 @@
 // its own with the drawing or the pacer on it; a routine opens the runner.
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, ChevronRight, CircleDot, Moon, Search, Sparkles, Waves, X, type LucideIcon } from "lucide-react";
+import { ChevronRight, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import {
   ROUTINES,
   SHELF_LABEL,
   itemShelf,
+  routineArt,
   routineMovements,
   routinesWith,
   type Routine,
@@ -34,30 +35,20 @@ const SHELF_SHORT: Record<Shelf, string> = {
   sleep: "Sleep",
   mind: "Meditation",
 };
-const SHELF_ICON: Record<Shelf, LucideIcon> = {
-  mobility: Activity,
-  body: CircleDot,
-  breath: Waves,
-  sleep: Moon,
-  mind: Sparkles,
-};
+/** The session a member is handed when they have not picked anything: the
+ *  general opener the builder itself starts with. */
+const BUILT_FOR_YOU_ART = { idNum: "0301", title: "Cat-cow" };
 
 const routineSec = (r: Routine) => routineMovements(r).reduce((s, m) => s + movementSeconds(m), 0);
 
-/** The row picture: the drawing when there is one, the shelf's mark otherwise. */
-const ItemThumb = ({ m, size = 48 }: { m: RecoveryMovement; size?: number }) => {
-  if (m.art) return <IllustrationThumb ex={{ idNum: m.art, title: m.name }} size={size} />;
-  const Icon = SHELF_ICON[itemShelf(m)];
-  return (
-    <div
-      aria-hidden
-      className="shrink-0 rounded-xl border border-gold/25 bg-black grid place-items-center"
-      style={{ width: size, height: size }}
-    >
-      <Icon size={18} className="text-gold/80" strokeWidth={1.8} />
-    </div>
-  );
-};
+/**
+ * The row picture. Every item is drawn — breathing and the guided sessions too,
+ * where the two frames are the same body breathing out and in — so there is no
+ * fallback here any more. A row that showed the shelf's glyph instead showed
+ * the same picture as five other rows, which is not a picture.
+ */
+const ItemThumb = ({ m, size = 48 }: { m: RecoveryMovement; size?: number }) =>
+  m.art ? <IllustrationThumb ex={{ idNum: m.art, title: m.name }} size={size} /> : null;
 
 /** "45 s each side", "60 s", "10 min" — how long it runs. */
 const holdLabel = (m: RecoveryMovement) =>
@@ -101,9 +92,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
         onClick={() => go("/recovery?src=manual")}
         className="press w-full surface-card surface-card-quiet flex items-center gap-3 px-4 py-3.5 text-left mb-5"
       >
-        <div className="h-11 w-11 shrink-0 rounded-xl border border-gold/30 bg-black grid place-items-center" aria-hidden>
-          <Waves size={18} className="text-gold" />
-        </div>
+        <IllustrationThumb ex={BUILT_FOR_YOU_ART} size={44} />
         <span className="flex-1 min-w-0">
           <span className="block text-note font-bold leading-tight">Built for you</span>
           <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
@@ -146,7 +135,9 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
           <h2 id="routines-h" className="text-label font-bold text-muted-foreground mb-2">Routines</h2>
           <ul className="divide-y divide-border/35 border-y border-border/35">
             {routines.map((r) => {
-              const Icon = SHELF_ICON[r.shelf];
+              // A routine's picture is one of its own movements, drawn — never
+              // a shelf glyph that six other routines would also show.
+              const art = routineArt(r);
               return (
                 <li key={r.id}>
                   <button
@@ -154,9 +145,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
                     onClick={() => go(`/recovery?routine=${r.id}`)}
                     className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
                   >
-                    <div className="h-12 w-12 shrink-0 rounded-xl border border-gold/25 bg-black grid place-items-center" aria-hidden>
-                      <Icon size={18} className="text-gold/80" strokeWidth={1.8} />
-                    </div>
+                    {art && <IllustrationThumb ex={{ idNum: art, title: r.name }} size={48} />}
                     <span className="flex-1 min-w-0">
                       <span className="block text-note font-semibold leading-tight truncate">{r.name}</span>
                       <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{r.blurb}</span>

@@ -38,6 +38,8 @@ const guided = (
   id: string,
   name: string,
   holdSec: number,
+  /** The drawing: the same body, breathing out and in, or tensed and released. */
+  art: string,
   steps: string[],
   cues: [number, string][],
 ): RecoveryMovement => ({
@@ -51,11 +53,12 @@ const guided = (
   contexts: [],
   equipment: "none",
   intensity: "gentle",
+  art,
   cues,
 });
 
 export const GUIDED: RecoveryMovement[] = [
-  guided("body-scan", "Body scan", 600, [
+  guided("body-scan", "Body scan", 600, "0377", [
     "Lie down or sit back and close the eyes.",
     "Move your attention slowly from the feet to the head.",
     "Notice what is there without trying to change it.",
@@ -75,7 +78,7 @@ export const GUIDED: RecoveryMovement[] = [
     [540, "If the mind wandered, that was part of it. Come back to the breath."],
     [575, "Move the fingers and toes. Open the eyes when you are ready."],
   ]),
-  guided("nsdr-10", "NSDR, 10 minutes", 600, [
+  guided("nsdr-10", "NSDR, 10 minutes", 600, "0378", [
     "Lie on your back, arms by your sides, eyes closed.",
     "Follow the attention around the body, side by side.",
     "Stay awake and still; there is nothing to achieve.",
@@ -95,7 +98,7 @@ export const GUIDED: RecoveryMovement[] = [
     [540, "Notice the room again: the sounds, the floor under you."],
     [575, "Take a deeper breath, move gently, open the eyes."],
   ]),
-  guided("nsdr-20", "NSDR, 20 minutes", 1200, [
+  guided("nsdr-20", "NSDR, 20 minutes", 1200, "0378", [
     "Lie on your back, arms by your sides, eyes closed.",
     "Two slow rounds around the body, then a long rest.",
     "Stay awake and still; there is nothing to achieve.",
@@ -118,7 +121,7 @@ export const GUIDED: RecoveryMovement[] = [
     [1080, "Notice the room again: the sounds, the floor under you."],
     [1150, "Take a deeper breath, move gently, open the eyes."],
   ]),
-  guided("breath-focus", "Breath-focus meditation", 600, [
+  guided("breath-focus", "Breath-focus meditation", 600, "0379", [
     "Sit upright but not stiff and close the eyes.",
     "Rest the attention on the breath, one breath at a time.",
     "When the mind wanders, notice it and come back.",
@@ -133,7 +136,7 @@ export const GUIDED: RecoveryMovement[] = [
     [500, "Widen the attention to the whole body sitting here."],
     [570, "Let the breath go. Open the eyes when you are ready."],
   ]),
-  guided("open-awareness", "Open awareness", 600, [
+  guided("open-awareness", "Open awareness", 600, "0380", [
     "Sit comfortably and close the eyes.",
     "Let sounds, sensations and thoughts come and go.",
     "Notice without holding on to anything.",
@@ -148,7 +151,7 @@ export const GUIDED: RecoveryMovement[] = [
     [530, "Come back to the breath for a few rounds."],
     [575, "Open the eyes."],
   ]),
-  guided("pmr", "Tense and release", 600, [
+  guided("pmr", "Tense and release", 600, "0381", [
     "Lie or sit comfortably.",
     "Tense one area for about five seconds, then let it go.",
     "Work from the feet to the face.",
@@ -168,7 +171,7 @@ export const GUIDED: RecoveryMovement[] = [
     [450, "Breathe slowly and stay heavy."],
     [560, "Move gently when you are ready."],
   ]),
-  guided("five-senses", "Five senses reset", 180, [
+  guided("five-senses", "Five senses reset", 180, "0382", [
     "Stop and put both feet on the floor.",
     "Name what you see, feel, hear and smell.",
     "Finish with one long breath out.",
@@ -182,7 +185,7 @@ export const GUIDED: RecoveryMovement[] = [
     [140, "One slow breath. Then carry on."],
     [165, "Feet on the floor, once more. Done."],
   ]),
-  guided("park-the-day", "Park the day", 300, [
+  guided("park-the-day", "Park the day", 300, "0383", [
     "In bed, lights off.",
     "Give each unfinished thing a time tomorrow.",
     "Then picture simple, unrelated things, one letter at a time.",
@@ -216,6 +219,8 @@ export interface Routine {
   habit: RecoveryHabit;
   /** The Vault piece that explains the practice. */
   vault?: string;
+  /** Overrides the cover when the first drawn step is another routine's too. */
+  art?: string;
 }
 
 export const ROUTINES: Routine[] = [
@@ -271,6 +276,9 @@ export const ROUTINES: Routine[] = [
       "couch-stretch", "pigeon", "supine-hamstring", "wall-calf", "open-book", "sphinx", "neck-side", ["long-exhale", 66],
     ],
     habit: "mobility",
+    // Morning mobility also opens on cat-cow; the lunge with a reach says
+    // "head to toe" better anyway.
+    art: "0336",
   },
   // ---- body care ----
   {
@@ -448,6 +456,16 @@ export const itemShelf = (m: RecoveryMovement): Shelf =>
       : m.equipment === "roller" || m.equipment === "ball"
         ? "body"
         : "mobility";
+
+/**
+ * The drawing that stands for a routine: the first step that has one.
+ *
+ * Every step is drawn, so this always resolves — a test holds that. It is
+ * derived rather than stored because a routine IS its movements: pick a cover
+ * by hand and it drifts the first time a step is swapped.
+ */
+export const routineArt = (routine: Routine): string | undefined =>
+  routine.art ?? routineMovements(routine).find((m) => m.art)?.art;
 
 /** The routines an item appears in — what the detail screen offers next. */
 export const routinesWith = (itemId: string): Routine[] =>

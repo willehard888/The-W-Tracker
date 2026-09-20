@@ -5,6 +5,7 @@ import {
   GUIDED,
   LIBRARY_ITEMS,
   ROUTINES,
+  routineArt,
   routineMovements,
   routineSession,
 } from "@/data/recovery-routines";
@@ -101,8 +102,26 @@ describe("the library", () => {
     expect(lines.filter((l) => banned.test(l))).toEqual([]);
   });
 
+  it("draws every item, so no row falls back to a shared glyph", () => {
+    // Six routine rows once showed the same lucide squiggle, because twelve
+    // routines had no drawn step. A picture that six rows share is not a
+    // picture; this is what stops the fallback coming back unnoticed.
+    expect(LIBRARY_ITEMS.filter((m) => !m.art).map((m) => m.id)).toEqual([]);
+  });
+
+  it("gives every routine a drawing of its own first movement", () => {
+    for (const r of ROUTINES) expect(routineArt(r), r.id).toBeDefined();
+  });
+
+  it("gives each routine a different cover, so no two rows look alike", () => {
+    // The two NSDRs are deliberately the same practice at two lengths; every
+    // other pair sharing a picture is the old shelf-glyph problem returning.
+    const covers = ROUTINES.filter((r) => !r.id.startsWith("nsdr-")).map(routineArt);
+    expect(new Set(covers).size).toBe(covers.length);
+  });
+
   it("ships a drawing only as a complete, aligned pair", () => {
-    for (const m of RECOVERY_MOVEMENTS.filter((x) => x.art)) {
+    for (const m of LIBRARY_ITEMS.filter((x) => x.art)) {
       const id = m.art!;
       expect(Number(id), m.id).toBeGreaterThanOrEqual(300); // never an Everkinetic id
       expect(BUNDLED_FRAME_IDS.has(id), m.id).toBe(true);

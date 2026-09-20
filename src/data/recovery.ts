@@ -537,6 +537,7 @@ export const RECOVERY_MOVEMENTS: RecoveryMovement[] = [
   {
     id: "prayer-stretch",
     name: "Kneeling wrist stretch",
+    art: "0372",
     type: "stretch",
     areas: ["forearms", "biceps"],
     holdSec: 30,

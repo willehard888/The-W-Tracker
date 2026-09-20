@@ -60,6 +60,8 @@ import { ROUTINE_BY_ID, SHELF_LABEL, routineSession } from "@/data/recovery-rout
 import { CHECKIN_HABITS } from "@/lib/checkin-habits";
 import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { BreathPacer, GuidedCue, armChime } from "@/components/recovery/StepVisual";
+import { hasVoice, needsSeek, setVoiceOn, voiceOn, voiceSrc } from "@/lib/recovery/voice";
+import { holdAudioSession, releaseAudioSession } from "@/lib/recovery/audio-session";
 
 type Source = "post_workout" | "rest_day" | "manual";
 
@@ -194,6 +196,43 @@ export default function Recovery() {
 
   useWakeLock(phase === "running");
 
+  // ── The voice ────────────────────────────────────────────────────────────
+  // A voiced routine ships one file for the whole session, spoken at the same
+  // seconds the screen changes. The runner's clock is the truth; the audio is
+  // seeked back onto it whenever the two disagree by more than a second, which
+  // is what a pause, a skip or a locked screen does.
+  const [voice, setVoice] = useState(voiceOn);
+  const voiced = !!routine && hasVoice(routine.id) && voice;
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const sessionSec =
+    session.movements.slice(0, index).reduce((sum, m) => sum + movementSeconds(m), 0) +
+    (movement?.sides === 2 && side === 1 ? movement.holdSec : 0) +
+    elapsedMs / 1000;
+
+  useEffect(() => {
+    if (!voiced || !routine) return;
+    const el = new Audio(voiceSrc(routine.id));
+    el.preload = "auto";
+    audio.current = el;
+    return () => {
+      el.pause();
+      audio.current = null;
+      void releaseAudioSession();
+    };
+  }, [voiced, routine]);
+
+  useEffect(() => {
+    const el = audio.current;
+    if (!el) return;
+    if (phase !== "running" || !running) {
+      if (!el.paused) el.pause();
+      return;
+    }
+    if (needsSeek(el.currentTime, sessionSec)) el.currentTime = Math.max(0, sessionSec);
+    // Autoplay is allowed: the first play() follows the Start tap.
+    if (el.paused) void el.play().catch(() => {});
+  }, [phase, running, sessionSec]);
+
   // The rest-day card, once, on the ready screen of a real rest-day session.
   // Not on a general one: "built from your last couple of sessions" over a
   // session built from nothing would teach the wrong thing on the one day it
@@ -240,6 +279,8 @@ export default function Recovery() {
   const finish = useCallback(() => {
     setPhase("done");
     setDeadline(null);
+    audio.current?.pause();
+    void releaseAudioSession();
     // A sleep routine ends in bed; it does not buzz the phone at the end.
     if (routine?.shelf !== "sleep") hapticNotification("success");
     // Before the events: `track` is fire-and-forget by contract, and what earns
@@ -305,6 +346,7 @@ export default function Recovery() {
   const start = () => {
     hapticImpact("light");
     armChime();
+    if (voiced) void holdAudioSession();
     startedAt.current = Date.now();
     setPhase("running");
     setIndex(0);
@@ -326,6 +368,8 @@ export default function Recovery() {
   const home = routine ? "/exercises?tab=recover" : "/";
 
   const leave = () => {
+    audio.current?.pause();
+    void releaseAudioSession();
     if (phase === "running") {
       void track(FUNNEL.recoverySkipped, {
         source,
@@ -373,6 +417,21 @@ export default function Recovery() {
               className="press home-rise home-rise-2 mt-3 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
             >
               Why it works, in the Vault <ChevronRight aria-hidden size={13} />
+            </button>
+          )}
+          {hasVoice(routine.id) && (
+            // Spoken guidance is the default for the sessions that have it, and
+            // the toggle sticks — somebody who wants the room quiet says so once.
+            <button
+              type="button"
+              onClick={() => { hapticSelection(); setVoice((on) => { setVoiceOn(!on); return !on; }); }}
+              aria-pressed={voice}
+              className="press home-rise home-rise-2 mt-4 w-full min-h-11 flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-card/40 px-4"
+            >
+              <span className="text-note font-bold">Voice guidance</span>
+              <span className={cn("text-meta font-black", voice ? "text-gold" : "text-muted-foreground")}>
+                {voice ? "On" : "Off"}
+              </span>
             </button>
           )}
           <div className="home-rise home-rise-3 mt-6">

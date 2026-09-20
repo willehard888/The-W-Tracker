@@ -2,7 +2,8 @@ import Capacitor
 
 /// Root bridge view controller.
 ///
-/// Registers the App-target-local plugins (`HealthNight`, `BarcodeScan`)
+/// Registers the App-target-local plugins (`HealthNight`, `BarcodeScan`,
+/// `RecoveryAudio`)
 /// explicitly. This is the Capacitor-documented way to register a plugin that
 /// is NOT an npm package: `capacitorDidLoad()` runs after the bridge is
 /// created, and `registerPluginInstance` bypasses the `autoRegisterPlugins`
@@ -17,5 +18,6 @@ class MainViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(HealthNight())
         bridge?.registerPluginInstance(BarcodeScan())
+        bridge?.registerPluginInstance(RecoveryAudio())
     }
 }

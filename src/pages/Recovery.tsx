@@ -58,8 +58,8 @@ import { whyThis } from "@/lib/recovery/explain";
 import { movementSeconds, RECOVERY_BY_ID, type RecoveryMovement } from "@/data/recovery";
 import { ROUTINE_BY_ID, SHELF_LABEL, routineArt, routineSession } from "@/data/recovery-routines";
 import { CHECKIN_HABITS } from "@/lib/checkin-habits";
-import { IllustrationPlayer, IllustrationThumb } from "@/components/coach/ExerciseIllustration";
-import { BreathFigure, BreathPacer, GuidedCue, armChime } from "@/components/recovery/StepVisual";
+import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
+import { BreathFigure, BreathPacer, GuidedCue, ORB_PACE, armChime } from "@/components/recovery/StepVisual";
 import { hasVoice, needsSeek, setVoiceOn, voiceOn, voiceSrc } from "@/lib/recovery/voice";
 import { holdAudioSession, releaseAudioSession } from "@/lib/recovery/audio-session";
 
@@ -391,10 +391,19 @@ export default function Recovery() {
         <PageBar onBack={() => backOr(navigate, home)} title="Recovery" />
         <div className="px-4 pt-6 pb-6">
           <div className="home-rise">
-            {/* A one-item routine has no list under it, so its own drawing —
-                the one its library row wears — gives the screen a subject. */}
-            {session.movements.length === 1 && routineArt(routine) && (
-              <IllustrationThumb ex={{ idNum: routineArt(routine)!, title: routine.name }} size={96} className="mb-5 rounded-2xl" />
+            {/* The routine's drawing in the runner's own frame, at rest: the
+                intro and the first second of the session are the same picture,
+                so Start reads as "begin", not as a change of screen. (It was a
+                96 pt thumb with the figure lost in it.) */}
+            {routineArt(routine) && (
+              <BreathFigure
+                art={routineArt(routine)!}
+                title={routine.name}
+                pace={ORB_PACE}
+                elapsedMs={0}
+                running={false}
+                className="h-44 w-full mb-5"
+              />
             )}
             <p className="eyebrow-sm text-muted-foreground">{SHELF_LABEL[routine.shelf]}</p>
             <h1 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight text-balance">

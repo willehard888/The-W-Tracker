@@ -95,7 +95,7 @@ problem; a send that never happened is ours.
 ## The simulator
 
 ```bash
-npx cap copy ios
+npm run ios:copy
 ```
 
 then build `ios/App/App.xcworkspace`, scheme `App`, on an iPhone simulator, and

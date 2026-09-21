@@ -475,10 +475,12 @@ const Profile = () => {
       />
 
       {/* Tabs — the app-wide segmented control language */}
-      <div className={cn(SEGMENT_TRACK, "home-rise home-rise-2 mb-5")}>
+      <div className={cn(SEGMENT_TRACK, "home-rise home-rise-2 mb-5")} role="tablist" aria-label="Profile">
         {(["stats", "badges", "settings"] as const).map((t) => (
           <button
             key={t}
+            role="tab"
+            aria-selected={profileTab === t}
             onClick={() => { void hapticSelection(); setProfileTab(t); }}
             className={cn(
               "flex-1 min-h-11 rounded-lg text-dense font-black capitalize transition-colors",

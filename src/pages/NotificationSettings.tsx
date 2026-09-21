@@ -162,7 +162,7 @@ const NotificationSettings = () => {
     : prefs.streak_guard ? "Reminders on."
     : "Streak guard is off.";
   const standing =
-    perm === "denied" ? "iOS is blocking everything from The W Tracker. Allow it in Settings and this screen takes over from there."
+    perm === "denied" ? "iOS is blocking everything from Whealth Factory. Allow it in Settings and this screen takes over from there."
     : perm === "prompt" ? "Turn them on so your streak guard and coach can actually reach you. Everything below stays in your control."
     : prefs.streak_guard ? `Your streak guard fires at ${previewTime}${perm === "granted" ? " on this device" : ""}.`
     : "Switch the streak guard on and one warning lands before midnight.";
@@ -205,7 +205,7 @@ const NotificationSettings = () => {
                 <span className="font-display text-meta font-black text-primary-foreground leading-none">W</span>
               </div>
               <span className="flex-1 text-label font-semibold text-foreground/75">
-                The W Tracker
+                Whealth Factory
               </span>
               <span className="text-label tabular-nums text-foreground/75">
                 {prefs.streak_guard ? previewTime : "muted"}

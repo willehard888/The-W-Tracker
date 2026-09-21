@@ -55,10 +55,12 @@ const Squad = () => {
   return (
     <div className="flex flex-col">
       <div className="home-rise px-4 pt-3 pb-2 flex items-center gap-2">
-        <div ref={squadTargetRef} className={cn(SEGMENT_TRACK, "flex-1")}>
+        <div ref={squadTargetRef} className={cn(SEGMENT_TRACK, "flex-1")} role="tablist" aria-label="Squad">
           {SUB.map((s) => (
             <button
               key={s.key}
+              role="tab"
+              aria-selected={tab === s.key}
               onClick={() => { hapticSelection(); setTab(s.key); }}
               className={cn(
                 "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-meta font-black transition-colors",

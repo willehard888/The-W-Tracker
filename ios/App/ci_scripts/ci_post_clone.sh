@@ -180,6 +180,9 @@ echo "🔄 Copying web bundle into iOS project (cap copy, not sync)..."
 # LOCALLY and commit both the resulting CapApp-SPM/Package.swift change
 # AND the regenerated Package.resolved.
 npx cap copy ios 2>&1 || echo "⚠️ cap copy had warnings — continuing"
+# The hidden sourcemaps (12 MB) exist for Sentry, not for the phone: they
+# are never fetched by the WebView, so they leave the bundle here.
+find ios/App/App/public -name '*.map' -delete
 
 # ---------------------------------------------------------------------------
 # CocoaPods

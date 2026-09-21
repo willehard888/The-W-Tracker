@@ -144,7 +144,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
         {streak >= 7 && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-6 bottom-0 h-px"
+            className="pointer-events-none absolute inset-x-6 bottom-0 h-px status-flame-rim"
             style={{
               background: `linear-gradient(90deg, transparent 0%, ${
                 isApex
@@ -155,7 +155,6 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
                   ? "hsl(var(--gold) / 0.8)"
                   : "hsl(18 92% 56% / 0.7)"
               } 50%, transparent 100%)`,
-              animation: "flame-rim-pulse 4.5s ease-in-out infinite",
             }}
           />
         )}

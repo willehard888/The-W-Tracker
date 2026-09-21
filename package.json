@@ -16,6 +16,7 @@
     "type-debt": "node scripts/type-debt.mjs",
     "type-debt:update": "node scripts/type-debt.mjs --update",
     "perf:snapshot": "node scripts/perf-snapshot.mjs",
+    "ios:copy": "cap copy ios && find ios/App/App/public -name '*.map' -delete",
     "ios:clean": "bash scripts/ios-clean.sh",
     "deploy:functions": "bash scripts/deploy-backend.sh",
     "vault:lint": "node scripts/vault-content.mjs",

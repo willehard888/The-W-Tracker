@@ -159,7 +159,7 @@ const Leaderboard = () => {
 
   const { data: myRankData } = useMyRank(profile?.user_id);
 
-  const { data: activeSeason, isLoading: seasonMetaLoading } = useQuery({
+  const { data: activeSeason, isLoading: seasonMetaLoading, isError: seasonMetaError, refetch: refetchSeasonMeta } = useQuery({
     queryKey: ["active-season"],
     staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
@@ -241,7 +241,7 @@ const Leaderboard = () => {
     : allTimeLoading || totalCount === undefined;
   // A failed fetch used to read "the board is warming up" — an empty board and
   // a dead connection are different screens.
-  const boardError = mode === "season" ? seasonError : allTimeError;
+  const boardError = mode === "season" ? seasonMetaError || seasonError : allTimeError;
 
   // Who is just above you: the lead of the person one place up, when both of
   // you are on the visible board. Off the board, the beat states rank alone.
@@ -455,7 +455,7 @@ const Leaderboard = () => {
           "the board is warming up" before data lands. */}
       {!boardLoading && boardError && currentLeaders.length === 0 && (
         <div className="home-rise home-rise-2">
-          <ErrorState title="Couldn't load the board" onRetry={() => { void refetchAllTime(); void refetchSeason(); }} />
+          <ErrorState title="Couldn't load the board" onRetry={() => { void refetchAllTime(); void refetchSeasonMeta(); void refetchSeason(); }} />
         </div>
       )}
       {!boardLoading && !boardError && currentLeaders.length === 0 && (

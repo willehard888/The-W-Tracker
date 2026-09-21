@@ -214,7 +214,7 @@ const Auth = () => {
                   placeholder="your_handle"
                   maxLength={20}
                   className={cn(
-                    "h-12 pl-8 rounded-xl text-sm",
+                    "h-12 pl-8 rounded-xl text-copy",
                     nameStatus === "taken" && "border-destructive/60",
                     nameStatus === "available" && "border-xp-green/60",
                   )}
@@ -247,7 +247,7 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="h-12 rounded-xl text-sm"
+              className="h-12 rounded-xl text-copy"
               required
             />
           </div>
@@ -263,7 +263,7 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 minLength={6}
-                className="h-12 rounded-xl pr-12 text-sm"
+                className="h-12 rounded-xl pr-12 text-copy"
                 required
               />
               <Button

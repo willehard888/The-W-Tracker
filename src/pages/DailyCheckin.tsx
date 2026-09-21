@@ -1117,7 +1117,7 @@ const DailyCheckin = () => {
                   onChange={(e) => setSportQuery(e.target.value)}
                   placeholder="Search sports…"
                   aria-label="Search sports"
-                  className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-dense outline-none focus:border-gold/50 transition-colors"
+                  className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-copy outline-none focus:border-gold/50 transition-colors"
                 />
                 {sportQuery && (
                   <button

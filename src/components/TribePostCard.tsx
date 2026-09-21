@@ -114,7 +114,7 @@ const CommentThread = ({
                   onChange={(e) => setDraft(e.target.value.slice(0, 300))}
                   rows={2}
                   autoFocus
-                  className="w-full bg-background/50 border border-[hsl(var(--ember))]/30 focus:border-[hsl(var(--ember))] rounded-lg px-2 py-1.5 text-xs text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-[hsl(var(--ember))]/30"
+                  className="w-full bg-background/50 border border-[hsl(var(--ember))]/30 focus:border-[hsl(var(--ember))] rounded-lg px-2 py-1.5 text-copy text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-[hsl(var(--ember))]/30"
                   onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); cancelEdit(); } }}
                 />
                 <div className="flex items-center justify-end gap-1.5">
@@ -693,7 +693,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                       maxLength={300}
                       className={cn(
-                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
+                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-copy text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
                         replyTo
                           ? "border-[hsl(var(--ember))]/40 focus:ring-[hsl(var(--ember))]/50 focus:border-[hsl(var(--ember))]/60"
                           : "border-border focus:ring-[hsl(var(--ember))]/40 focus:border-[hsl(var(--ember))]/40",

@@ -156,7 +156,7 @@ const Messages = () => {
       {/* Search is a mode: while typing, results take the list's place. */}
       <div className="home-rise home-rise-1 mb-4 relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/75" aria-hidden />
-        <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search users…" className="h-11 rounded-xl pl-9 pr-11 text-dense" />
+        <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search users…" className="h-11 rounded-xl pl-9 pr-11 text-copy" />
         {searchQuery && (
           <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground/75 hover:text-foreground">
             <X size={14} />

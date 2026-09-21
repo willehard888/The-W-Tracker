@@ -52,8 +52,11 @@ export const fetchActiveSeason = async () => {
   // state, so throw and let react-query show the retry.
   const { data: ensured, error: ensureErr } = await supabase.rpc("ensure_active_leaderboard_season");
   if (ensureErr) throw ensureErr;
-  if (Array.isArray(ensured)) return ensured[0];
-  return ensured;
+  const season = Array.isArray(ensured) ? ensured[0] : ensured;
+  // No row is the same failure as an error row — react-query rejects an
+  // undefined result, but as a console warning the page never saw.
+  if (!season) throw new Error("No active season");
+  return season;
 };
 
 /**

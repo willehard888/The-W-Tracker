@@ -43,7 +43,7 @@ export const WelcomeSlide = ({ onNext }: { onNext: () => void }) => (
       <div className="absolute inset-0 -m-6 rounded-full bg-gold/15 blur-3xl" aria-hidden />
       <BrandLogo size={88} className="relative rounded-2xl shadow-[0_8px_32px_hsl(var(--gold)/0.45)]" priority />
     </div>
-    <h1 className="font-display text-4xl font-black tracking-tight mb-3">Welcome to The W.</h1>
+    <h1 className="font-display text-4xl font-black tracking-tight mb-3">Welcome to Whealth Factory.</h1>
     <p className="text-muted-foreground text-base leading-relaxed mb-10 max-w-[280px]">
       The game where showing up wins. 60 seconds to build your setup.
     </p>

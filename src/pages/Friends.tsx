@@ -136,7 +136,7 @@ const Friends = () => {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Add a friend by username"
-              className="h-11 rounded-xl pl-9 pr-9 text-dense"
+              className="h-11 rounded-xl pl-9 pr-9 text-copy"
             />
           </div>
 

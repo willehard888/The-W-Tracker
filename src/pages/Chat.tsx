@@ -392,7 +392,7 @@ const Chat = () => {
               onChange={(e) => setText(e.target.value)}
               placeholder={partner?.username ? `Message @${partner.username}` : "Message…"}
               maxLength={1000}
-              className="h-11 rounded-full px-4 text-sm"
+              className="h-11 rounded-full px-4 text-copy"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

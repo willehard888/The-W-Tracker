@@ -128,11 +128,13 @@ const TribeLeaderboard = () => {
       </header>
 
       {/* Period segment */}
-      <div className={cn("home-rise home-rise-1", SEGMENT_TRACK, "mt-4 mb-4")}>
+      <div className={cn("home-rise home-rise-1", SEGMENT_TRACK, "mt-4 mb-4")} role="tablist" aria-label="Period">
         {(["weekly", "all_time"] as const).map((p) => (
           <button
             key={p}
             type="button"
+            role="tab"
+            aria-selected={period === p}
             onClick={() => setPeriod(p)}
             className={cn(
               "flex-1 min-h-11 rounded-lg text-meta font-bold transition-colors",

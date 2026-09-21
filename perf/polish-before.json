@@ -1,0 +1,119 @@
+{
+  "boot": {
+    "js": [
+      {
+        "file": "index-CCn8cxFy.js",
+        "stem": "index.js",
+        "raw": 364865,
+        "gzip": 121331
+      },
+      {
+        "file": "capacitor-DGvdJ33E.js",
+        "stem": "capacitor.js",
+        "raw": 29688,
+        "gzip": 10070
+      },
+      {
+        "file": "vendor-C0P1osC4.js",
+        "stem": "vendor.js",
+        "raw": 207350,
+        "gzip": 68493
+      },
+      {
+        "file": "query-BbksaNwd.js",
+        "stem": "query.js",
+        "raw": 43188,
+        "gzip": 12863
+      },
+      {
+        "file": "supabase-DnQPXzQo.js",
+        "stem": "supabase.js",
+        "raw": 191268,
+        "gzip": 50440
+      },
+      {
+        "file": "ui-5kISVB3u.js",
+        "stem": "ui.js",
+        "raw": 74766,
+        "gzip": 22335
+      },
+      {
+        "file": "icons-7mqF8afP.js",
+        "stem": "icons.js",
+        "raw": 60686,
+        "gzip": 11921
+      }
+    ],
+    "css": [
+      {
+        "file": "index-DUHnFp2_.css",
+        "stem": "index.css",
+        "raw": 220654,
+        "gzip": 34747
+      }
+    ]
+  },
+  "totals": {
+    "bootJs": {
+      "raw": 971811,
+      "gzip": 297453
+    },
+    "css": {
+      "raw": 220654,
+      "gzip": 34747
+    }
+  },
+  "sentry": {
+    "file": "sentry-lite-DuQrJc-n.js",
+    "stem": "sentry-lite.js",
+    "raw": 80967,
+    "gzip": 27379,
+    "hits": 99,
+    "preloaded": false
+  },
+  "largestNonBoot": [
+    {
+      "file": "exercises-Bl1G2OrA.js",
+      "stem": "exercises.js",
+      "raw": 640611,
+      "gzip": 105983
+    },
+    {
+      "file": "html2canvas.esm-ClQmKH__.js",
+      "stem": "html2canvas.esm.js",
+      "raw": 201782,
+      "gzip": 47894
+    },
+    {
+      "file": "gold-lines-BDS6P0JG.js",
+      "stem": "gold-lines.js",
+      "raw": 164821,
+      "gzip": 31541
+    },
+    {
+      "file": "ExerciseCoachingBlock-BzXekF40.js",
+      "stem": "ExerciseCoachingBlock.js",
+      "raw": 140299,
+      "gzip": 31132
+    },
+    {
+      "file": "index-CsGifAlV.js",
+      "stem": "index.js",
+      "raw": 135972,
+      "gzip": 46229
+    }
+  ],
+  "indexCss": {
+    "bytes": 106716,
+    "keyframes": 119,
+    "infinite": 28
+  },
+  "raf": 18,
+  "tsx": {
+    "raf": 18,
+    "backdropBlur": 10,
+    "mixBlend": 18,
+    "transitionAll": 0,
+    "filterBlur": 14
+  }
+}

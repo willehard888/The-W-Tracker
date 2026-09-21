@@ -1,5 +1,8 @@
 import { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle } from "lucide-react";
 import { captureException } from "@/lib/observability";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   children: ReactNode;
@@ -27,6 +30,10 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ componentStack: info.componentStack ?? null });
   }
 
+  // Most render crashes are one bad response; mounting the subtree again
+  // is enough, and cheaper than a reload that drops every cached query.
+  private reset = () => this.setState({ hasError: false, error: null, componentStack: null });
+
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
@@ -49,9 +56,21 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-full flex flex-col items-center justify-center gap-4 p-6 text-left max-w-md mx-auto">
-          <p className="text-white/90 text-sm font-bold text-center">
-            Something went wrong. Please reload the app.
-          </p>
+          <EmptyState
+            icon={AlertTriangle}
+            title="Something went wrong"
+            description="This screen hit a snag. Try again, or reload the app."
+            action={
+              <div className="flex items-center gap-2">
+                <Button variant="gold-outline" size="sm" className="min-h-11" onClick={this.reset}>
+                  Try again
+                </Button>
+                <Button variant="ghost" size="sm" className="min-h-11" onClick={() => window.location.reload()}>
+                  Reload
+                </Button>
+              </div>
+            }
+          />
           {showDetails && (
           <details
             className="w-full rounded-lg border border-white/15 bg-black/40 p-3 text-meta text-white/75 leading-relaxed"
@@ -72,12 +91,6 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
           </details>
           )}
-          <button
-            className="px-4 py-2 rounded-lg bg-gold text-black text-sm font-semibold"
-            onClick={() => window.location.reload()}
-          >
-            Reload
-          </button>
         </div>
       );
     }

@@ -2231,6 +2231,12 @@
   will-change: opacity, transform;
   pointer-events: none;
 }
+/* The hot-streak rim under the header (StatusHeader). A class, not an
+   inline animation, so the coarse-pointer switch below reaches it. */
+.status-flame-rim {
+  animation: flame-rim-pulse 4.5s ease-in-out infinite;
+  will-change: opacity;
+}
 .status-legend-conic-spin {
   animation: status-legend-conic-spin 18s linear infinite;
   will-change: transform;
@@ -2241,6 +2247,7 @@
   .status-amber-ring-breathe,
   .status-heat-shimmer,
   .status-flame-flicker,
+  .status-flame-rim,
   .status-coal-pulse,
   .status-legend-conic-spin {
     animation: none !important;
@@ -2737,7 +2744,12 @@ p, span.selectable, input, textarea, [contenteditable] {
   .animate-scale-pulse,
   .status-amber-ring-breathe,
   .status-flame-flicker,
+  .status-flame-rim,
+  .status-ember-rise,
+  .status-heat-shimmer,
+  .status-coal-pulse,
   .status-legend-conic-spin,
+  .badge-shine,
   .apex-aura-large,
   .breathing-glow::after,
   .streak-fx-aurora,
@@ -2748,6 +2760,10 @@ p, span.selectable, input, textarea, [contenteditable] {
   .streak-fx-twinkle {
     animation: none !important;
   }
+  /* The header loops sit on every screen; stopped, an ember is a stray dot
+     and the rim reads at its dimmest frame, so each rests at a still state. */
+  .status-ember-rise { opacity: 0; }
+  .status-flame-rim { opacity: 0.7; }
 }
 
 /* ============================================================

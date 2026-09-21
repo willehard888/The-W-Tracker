@@ -21,8 +21,12 @@ npx tsc -p tsconfig.app.json --noEmit && node scripts/type-debt.mjs && node scri
 Then, for anything the app shell renders:
 
 ```bash
-npx cap copy ios
+npm run ios:copy
 ```
+
+(`cap copy ios`, then the hidden sourcemaps are deleted from
+`ios/App/App/public` — 12 MB the WebView never fetches. `dist/` keeps them for
+the Sentry upload. `ci_post_clone.sh` does the same.)
 
 What each step protects:
 
@@ -75,7 +79,7 @@ answering 42501.
 
 ## 3. Shipping a build
 
-1. Gate green, `npx cap copy ios`, simulator walk (see RUNBOOK).
+1. Gate green, `npm run ios:copy`, simulator walk (see RUNBOOK).
 2. One commit per workstream, then a **single** `git push origin main`. A newer
    push cancels a running Xcode Cloud run, so batch the work.
 3. `node scratchpad/xc/newest.mjs` for the new run; poll it. If 15 minutes pass

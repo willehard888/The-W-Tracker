@@ -143,7 +143,7 @@ const EveningReflectionCard = () => {
                   value={win}
                   onChange={(e) => setWin(e.target.value.slice(0, 200))}
                   placeholder="What worked today?"
-                  className="w-full rounded-lg bg-card/60 border border-border/50 px-3 py-2 text-sm focus:outline-none focus:border-gold/60"
+                  className="w-full rounded-lg bg-card/60 border border-border/50 px-3 py-2 text-copy focus:outline-none focus:border-gold/60"
                 />
               </div>
               <div className="space-y-1.5">
@@ -152,7 +152,7 @@ const EveningReflectionCard = () => {
                   value={friction}
                   onChange={(e) => setFriction(e.target.value.slice(0, 200))}
                   placeholder="What got in the way?"
-                  className="w-full rounded-lg bg-card/60 border border-border/50 px-3 py-2 text-sm focus:outline-none focus:border-gold/60"
+                  className="w-full rounded-lg bg-card/60 border border-border/50 px-3 py-2 text-copy focus:outline-none focus:border-gold/60"
                 />
               </div>
 

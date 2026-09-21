@@ -129,7 +129,7 @@ const BadgeCompare = () => {
               setSearchQuery(e.target.value);
               if (e.target.value.length < 2) setSelectedUser(null);
             }}
-            className="h-11 rounded-xl pl-10 text-sm"
+            className="h-11 rounded-xl pl-10 text-copy"
           />
         </div>
 

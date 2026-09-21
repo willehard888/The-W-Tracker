@@ -283,7 +283,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
                   <input
                     type="text" inputMode="decimal" value={weight} placeholder="kg" aria-label="Weight in kilograms"
                     onChange={(e) => setWeight(decimalInput(e.target.value))}
-                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-dense text-center outline-none focus:border-gold/50"
+                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-copy text-center outline-none focus:border-gold/50"
                   />
                 </div>
                 <span className="text-muted-foreground text-xs font-black">×</span>
@@ -291,7 +291,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
                   <input
                     type="number" inputMode="numeric" value={reps} placeholder="reps"
                     onChange={(e) => setReps(e.target.value)}
-                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-dense text-center outline-none focus:border-gold/50"
+                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-copy text-center outline-none focus:border-gold/50"
                   />
                 </div>
                 {/* Felt RPE. Optional — leaving it blank falls back to the
@@ -302,7 +302,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
                     placeholder={block.rpe ? `RPE ${block.rpe}` : "RPE"}
                     aria-label="Felt RPE, 1 to 10"
                     onChange={(e) => setRpe(e.target.value)}
-                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-dense text-center outline-none focus:border-gold/50"
+                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-copy text-center outline-none focus:border-gold/50"
                   />
                 </div>
                 <button

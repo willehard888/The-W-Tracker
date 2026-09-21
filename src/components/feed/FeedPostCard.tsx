@@ -422,7 +422,7 @@ const FeedPostCard = memo(function FeedPostCard({
                     aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                     maxLength={300}
                     className={cn(
-                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-xs text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
+                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-copy text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
                       replyTo
                         ? "border-gold/40 focus:ring-gold/50 focus:border-gold/60"
                         : "border-border focus:ring-gold/40 focus:border-gold/40",

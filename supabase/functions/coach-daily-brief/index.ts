@@ -23,7 +23,7 @@ const TONE_LINE: Record<string, string> = {
   drill_sergeant: "Tone: drill sergeant — clipped, demanding, zero excuses, but never cruel.",
   calm_mentor: "Tone: calm mentor — measured, warm, surgical. Like a wise senior coach.",
   scientist: "Tone: scientist — precise, evidence-flavoured, references numbers cleanly.",
-  hype: "Tone: high-energy hype — punchy, alive, charged. Never cheesy.",
+  hype: "Tone: high energy — punchy, alive, charged. The energy is in the verbs and the specifics, not the punctuation: no capitalised words for emphasis, no \"let's go\", no \"crushed\", one exclamation mark at the very most. Never cheesy.",
 };
 
 Deno.serve(async (req) => {
@@ -53,13 +53,16 @@ Deno.serve(async (req) => {
     const today = localDayKey(clampTzOffset(body?.tz_offset_minutes));
 
     if (!force) {
-      const { data: cached } = await sb
-        .from("coach_daily_briefs")
-        .select("payload, brief_date")
-        .eq("user_id", uid)
-        .eq("brief_date", today)
-        .maybeSingle();
-      if (cached?.payload) return json({ brief: cached.payload, cached: true });
+      const [{ data: cached }, { data: now }] = await Promise.all([
+        sb.from("coach_daily_briefs").select("payload, brief_date").eq("user_id", uid).eq("brief_date", today).maybeSingle(),
+        sb.from("profiles").select("status_tier").eq("user_id", uid).maybeSingle(),
+      ]);
+      // A brief written this morning kept calling the member a Recruit after
+      // the check-in that promoted them. Briefs stored before `tier` existed
+      // carry none and are served as they are.
+      const p = cached?.payload as { tier?: string } | null | undefined;
+      const outdated = !!p?.tier && !!now?.status_tier && p.tier !== now.status_tier;
+      if (cached?.payload && !outdated) return json({ brief: cached.payload, cached: true });
     }
 
     // Gather context in parallel
@@ -170,7 +173,7 @@ ${INNER_WORK_BLOCK}
 ${LONGEVITY_BLOCK}
 ${WISDOM_BLOCK}
 
-Write the daily brief — 2-3 sentences, second person. No sign-off: the surface
+Write the daily brief — 2-3 sentences and 60 words at the very most, second person. It is read on a phone between two other things: every sentence either states a fact about their week or tells them what to do today. Do not recite their tier, level or streak back to them unless it changed today. No sign-off: the surface
 rendering this already labels itself "AI Coach", and ai-coach is instructed the
 same way, so a signature only repeats the name and eats space in previews.
 Reference ONE concrete recent stat and ONE adjustment to today's session if warranted.
@@ -246,6 +249,7 @@ Also produce:
     }
 
     payload.session_focus = todaySession?.focus ?? null;
+    payload.tier = (profile as { status_tier?: string }).status_tier ?? null;
     payload.week = weekIdx;
     payload.day_index = dayIdx;
 

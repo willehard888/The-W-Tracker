@@ -43,9 +43,9 @@ Deno.serve(async (req) => {
 
     const payload =
       kind === "friend_request"
-        ? { title: "👋 New friend request", body: `${name} wants to be friends. Accept from your notifications.`, data: { route: "/notifications" } }
+        ? { title: "New friend request", body: `${name} wants to be friends. Accept from your notifications.`, data: { route: "/notifications" } }
         : kind === "friend_accepted"
-        ? { title: "🤝 Request accepted", body: `${name} accepted your friend request.`, data: { route: "/friends" } }
+        ? { title: "Request accepted", body: `${name} accepted your friend request.`, data: { route: "/friends" } }
         : isBattlePushKind(kind)
         ? battlePushCopy(kind, name)
         : null;

@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         const where = ev.meeting_url ? "online" : (ev.place || "meetup");
         sent += await pushTo(
           ids,
-          `${ev.title} — ${label} 📅`,
+          `${ev.title} — ${label}`,
           `Your tribe meets ${label} (${where}). Show up.`,
           `/tribes/${ev.tribe_id}`,
         );

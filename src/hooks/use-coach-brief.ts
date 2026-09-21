@@ -31,12 +31,14 @@ export interface CoachBrief {
 
 
 export const useCoachBrief = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { hasAccess, loading: accessLoading } = useTrialAccess();
   const date = localDateKey();
 
   const query = useQuery<CoachBrief | null>({
-    queryKey: ["coach-brief", user?.id, date],
+    // The tier is part of the key: a promotion asks again, and the server
+    // rewrites a brief that was written under the old one.
+    queryKey: ["coach-brief", user?.id, date, profile?.status_tier ?? null],
     // Mirror the server's has_active_access gate — calling anyway meant every
     // expired-trial user fired two 403s at the edge function on each visit.
     enabled: !!user?.id && !accessLoading && hasAccess,

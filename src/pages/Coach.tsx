@@ -751,7 +751,7 @@ const ChatSheet = ({
               className={m.role === "user"
                 ? cn("max-w-[82%] rounded-2xl rounded-br-md px-3.5 py-2.5 bg-gold text-primary-foreground text-sm whitespace-pre-wrap", i === popIdx && "commit-pop")
                 : cn(
-                    "max-w-[88%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm prose prose-invert prose-sm prose-p:my-1.5 prose-strong:text-foreground",
+                    "max-w-[88%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm coach-md",
                     m.failed
                       ? "bg-destructive/10 border border-destructive/30 cursor-pointer"
                       : m.isFaq

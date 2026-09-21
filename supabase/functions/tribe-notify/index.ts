@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         const challenger = await tribeName((b as any).challenger_tribe_id);
         recipients = [(b as any).opponent_owner_id];
         push = {
-          title: "Battle challenge ⚔️",
+          title: "Battle challenge",
           body: `${challenger} challenged your tribe to a ${(b as any).duration_days}-day battle. Accept?`,
           route: `/tribes/${(b as any).opponent_tribe_id}/battles`,
         };
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
         ])).flat();
         recipients = members;
         push = {
-          title: w ? "Battle decided ⚔️" : "Battle ends in a draw",
+          title: w ? "Battle decided" : "Battle ends in a draw",
           body: w
             ? `${w === (b as any).challenger_tribe_id ? cName : oName} takes it ${score}. Winners earn +50 XP.`
             : `${cName} vs ${oName} ends ${score}.`,
@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
         ]);
         recipients = [(inv as any).invitee_id];
         push = {
-          title: "Tribe invite 🤝",
+          title: "Tribe invite",
           body: `@${(inviter as any)?.username ?? "someone"} invited you to join ${name}.`,
           route: "/squad?tab=tribes",
         };
@@ -110,12 +110,12 @@ Deno.serve(async (req) => {
         const pay = (ms as any).payload ?? {};
         push = (ms as any).kind === "tier_up"
           ? {
-              title: `${name} tiered up 🔥`,
+              title: `${name} tiered up`,
               body: `The collective fire hit ${TIER_NAMES[Number(pay.tier)] ?? "a new tier"} — ${pay.streak ?? "?"} combined days.`,
               route: `/tribes/${(ms as any).tribe_id}`,
             }
           : {
-              title: `${name} crushed the weekly goal 🏆`,
+              title: `${name} crushed the weekly goal`,
               body: `${pay.target ?? "?"} check-ins together. +25 XP each — claimed.`,
               route: `/tribes/${(ms as any).tribe_id}`,
             };

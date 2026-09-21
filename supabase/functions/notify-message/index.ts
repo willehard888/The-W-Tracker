@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
     await serviceClient.from("notifications").insert({
       user_id: receiver_id,
       kind: "message",
-      title: `💬 ${senderUsername} sent you a message`,
+      title: `${senderUsername} sent you a message`,
       body: previewText,
       route: `/chat/${user.id}`,
       actor_id: user.id,
@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
     }
 
     const payload = {
-      title: `💬 ${senderUsername} sent you a message`,
+      title: `${senderUsername} sent you a message`,
       body: previewText,
       data: { route: "/messages" },
       threadId: "social",

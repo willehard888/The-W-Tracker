@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
       ? `money ok`
       : `money ${webhookPurchases ?? 0}w/${purchases}c ⚠`;
 
-    const title = "📊 The numbers";
+    const title = "The numbers";
     const body =
       `WAU ${wau} (${deltaStr}) · ${newUsers ?? 0} new · ` +
       `${purchases} purchase${purchases === 1 ? "" : "s"} · ${trials} trials · ` +

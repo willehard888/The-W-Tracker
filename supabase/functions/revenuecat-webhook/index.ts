@@ -330,13 +330,13 @@ Deno.serve(async (req) => {
               if (tokens.length > 0) {
                 const results = await sendApnsBatch(tokens, gotMonth
                   ? {
-                      title: "+1 free month unlocked! 🎁",
+                      title: "+1 free month unlocked",
                       body: `@${(who as any)?.username ?? "A friend"} went Premium — 30 days of free membership added.`,
                       data: { route: "/referrals" },
                       threadId: "social",
                     }
                   : {
-                      title: "Your recruit went Premium 💎",
+                      title: "Your recruit went Premium",
                       body: `@${(who as any)?.username ?? "A friend"} converted (+500 XP). ${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`,
                       data: { route: "/referrals" },
                       threadId: "social",
@@ -347,7 +347,7 @@ Deno.serve(async (req) => {
               await supabase.from("notifications").insert({
                 user_id: referrerId,
                 kind: "referral_converted",
-                title: gotMonth ? "+1 free month unlocked! 🎁" : "Your recruit went Premium 💎",
+                title: gotMonth ? "+1 free month unlocked" : "Your recruit went Premium",
                 body: gotMonth ? "30 days of free membership added." : `${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`,
                 route: "/referrals",
                 actor_id: appUserId,

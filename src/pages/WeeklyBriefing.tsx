@@ -193,7 +193,7 @@ const WeeklyBriefing = () => {
         </header>
 
         {/* ── THE BODY — the letter itself. ── */}
-        <div className="home-rise home-rise-1 mt-5 prose prose-invert prose-sm max-w-none prose-p:text-foreground/85 prose-p:leading-relaxed prose-strong:text-foreground prose-headings:text-foreground">
+        <div className="home-rise home-rise-1 mt-5 text-note text-foreground/85 coach-md">
           <ReactMarkdown>{briefing.summary_md}</ReactMarkdown>
         </div>
 

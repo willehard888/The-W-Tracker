@@ -133,7 +133,8 @@ const rewriteBrief = (qc: ReturnType<typeof useQueryClient>, userId: string | un
   if (!userId) return;
   void supabase.functions
     .invoke("coach-daily-brief", { body: { tz_offset_minutes: new Date().getTimezoneOffset(), force: true } })
-    .then(({ data }) => { if (data?.brief) qc.setQueryData(["coach-brief", userId, localDateKey()], data.brief); })
+    // setQueriesData: the key carries the tier after the day (use-coach-brief), and a prefix matches it.
+    .then(({ data }) => { if (data?.brief) qc.setQueriesData({ queryKey: ["coach-brief", userId, localDateKey()] }, data.brief); })
     .catch(() => { /* the cached brief stays; tomorrow's is written fresh */ });
 };
 

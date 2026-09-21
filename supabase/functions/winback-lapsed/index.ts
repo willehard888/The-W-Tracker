@@ -12,9 +12,9 @@ const corsHeaders = {
 // tier fires once (exact-day match in users_lapsed), so a user gets at most one
 // of these on days 3, 7, and 14 after their last active day.
 const TIERS: Array<{ daysAgo: number; title: string; body: string }> = [
-  { daysAgo: 3,  title: "Your streak misses you 🔥",   body: "It's been 3 days. One check-in gets you right back on track." },
-  { daysAgo: 7,  title: "The climb continued 🏔️",      body: "Your tribe kept stacking Ws this week. Jump back in — you haven't lost your spot." },
-  { daysAgo: 14, title: "Restart everything in 60s ⚡", body: "Two weeks out, but momentum is one check-in away. Come reclaim it." },
+  { daysAgo: 3,  title: "Your streak misses you",   body: "It's been 3 days. One check-in gets you right back on track." },
+  { daysAgo: 7,  title: "The climb continued",      body: "Your tribe kept stacking Ws this week. Jump back in — you haven't lost your spot." },
+  { daysAgo: 14, title: "Restart everything in 60s", body: "Two weeks out, but momentum is one check-in away. Come reclaim it." },
 ];
 
 Deno.serve(async (req) => {

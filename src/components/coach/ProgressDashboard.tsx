@@ -143,7 +143,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
         {loading && !read ? (
           <p className="text-meta text-muted-foreground">Reading your last 7 days…</p>
         ) : read ? (
-          <div className="text-dense prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-strong:text-gold">
+          <div className="text-dense coach-md coach-md-gold">
             <ReactMarkdown>{read}</ReactMarkdown>
           </div>
         ) : (

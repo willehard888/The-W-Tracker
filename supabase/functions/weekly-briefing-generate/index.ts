@@ -394,7 +394,7 @@ Rules:
 
       if (tokens && tokens.length > 0) {
         const pushResults = await sendApnsBatch(tokens, {
-          title: "📊 Your weekly briefing is ready",
+          title: "Your weekly briefing is ready",
           body: parsed.headline ?? "Tap to see your week.",
           data: { route: `/briefing/${inserted.id}` },
           threadId: "coach",

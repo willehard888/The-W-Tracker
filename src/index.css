@@ -2939,3 +2939,39 @@ p, span.selectable, input, textarea, [contenteditable] {
 .vault-body ol { list-style: decimal; padding-left: 1.25rem; }
 .vault-body ul { list-style: disc; padding-left: 1.25rem; }
 .vault-body li + li { margin-top: 0.25rem; }
+
+/* Coach markdown — the chat, the progress read, the weekly briefing. These
+   carried Tailwind's `prose` classes, which do nothing here (the typography
+   plugin was never registered): preflight then strips list markers, heading
+   weight and paragraph spacing, so a plan the coach wrote as a numbered list
+   arrived as one undivided block of text. */
+.coach-md { line-height: 1.55; }
+.coach-md > * + * { margin-top: 0.6rem; }
+.coach-md strong { color: hsl(var(--foreground)); font-weight: 700; }
+.coach-md em { font-style: italic; }
+.coach-md ol { list-style: decimal; padding-left: 1.35rem; }
+.coach-md ul { list-style: disc; padding-left: 1.2rem; }
+.coach-md li { padding-left: 0.15rem; }
+.coach-md li + li { margin-top: 0.35rem; }
+.coach-md li::marker { color: hsl(var(--gold) / 0.85); font-weight: 700; font-variant-numeric: tabular-nums; }
+.coach-md li > ul, .coach-md li > ol { margin-top: 0.3rem; }
+.coach-md h1, .coach-md h2, .coach-md h3, .coach-md h4 {
+  font-family: theme('fontFamily.display');
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: hsl(var(--foreground));
+  line-height: 1.25;
+}
+.coach-md h1, .coach-md h2 { font-size: 1.0625rem; }
+.coach-md h3, .coach-md h4 { font-size: 0.9375rem; }
+.coach-md * + h1, .coach-md * + h2, .coach-md * + h3, .coach-md * + h4 { margin-top: 1rem; }
+.coach-md hr { border: 0; border-top: 1px solid hsl(var(--border) / 0.5); margin: 0.9rem 0; }
+.coach-md blockquote { border-left: 2px solid hsl(var(--gold) / 0.5); padding-left: 0.75rem; color: hsl(var(--foreground) / 0.85); }
+.coach-md code { font-size: 0.92em; padding: 0.05rem 0.3rem; border-radius: 0.3rem; background: hsl(var(--foreground) / 0.08); }
+.coach-md a { color: hsl(var(--gold)); text-decoration: underline; text-underline-offset: 2px; }
+/* A table is how the model lays out sets × reps; it scrolls inside the bubble
+   instead of widening it. */
+.coach-md table { display: block; overflow-x: auto; border-collapse: collapse; font-size: 0.92em; font-variant-numeric: tabular-nums; }
+.coach-md th, .coach-md td { text-align: left; padding: 0.3rem 0.75rem 0.3rem 0; border-bottom: 1px solid hsl(var(--border) / 0.4); white-space: nowrap; }
+.coach-md th { font-weight: 700; color: hsl(var(--muted-foreground)); }
+.coach-md.coach-md-gold strong { color: hsl(var(--gold)); }

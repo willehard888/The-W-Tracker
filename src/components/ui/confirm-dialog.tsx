@@ -8,6 +8,9 @@ import {
  * alert mid-flow was the one un-branded surface left in the tribe screens.
  * Same anatomy as Profile's delete-account dialog, minus the type-to-confirm
  * (these actions are smaller and reversible by recreating).
+ *
+ * `tone="neutral"` for a confirm that loses nothing (finish a session early,
+ * add estimated items anyway): red there cried wolf beside "your sets are saved".
  */
 const ConfirmDialog = ({
   open,
@@ -15,6 +18,7 @@ const ConfirmDialog = ({
   title,
   description,
   actionLabel = "Delete",
+  tone = "destructive",
   onConfirm,
 }: {
   open: boolean;
@@ -22,6 +26,7 @@ const ConfirmDialog = ({
   title: string;
   description?: string;
   actionLabel?: string;
+  tone?: "destructive" | "neutral";
   onConfirm: () => void;
 }) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -33,7 +38,9 @@ const ConfirmDialog = ({
       <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
         <AlertDialogAction
-          className="[background:hsl(var(--destructive))] text-destructive-foreground [text-shadow:none] before:hidden after:hidden shadow-[var(--shadow-2)] hover:shadow-[var(--shadow-2)] hover:brightness-110"
+          className={tone === "destructive"
+            ? "[background:hsl(var(--destructive))] text-destructive-foreground [text-shadow:none] before:hidden after:hidden shadow-[var(--shadow-2)] hover:shadow-[var(--shadow-2)] hover:brightness-110"
+            : undefined}
           onClick={onConfirm}
         >
           {actionLabel}

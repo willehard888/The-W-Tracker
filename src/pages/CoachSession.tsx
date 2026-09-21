@@ -42,6 +42,9 @@ import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboardin
 import { dayFocus } from "@/lib/training/session";
 import { fmtInt, fmtUnit, NBSP } from "@/lib/format";
 import { ErrorState } from "@/components/ui/error-state";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLastCheckin } from "@/hooks/use-last-checkin";
+import { useCheckinDay } from "@/hooks/use-checkin-day";
 import {
   buildSessionPlan,
   sessionProgress,
@@ -245,6 +248,12 @@ const SetRow = ({
 
 const CoachSession = () => {
   const navigate = useNavigate();
+  // Whether today's check-in is still open — the summary's main action leads
+  // there, and after an evening session on a day already locked it led to
+  // "Already logged today".
+  const { profile } = useAuth();
+  const { data: lastCheckin } = useLastCheckin(profile?.user_id);
+  const { canCheckin } = useCheckinDay(lastCheckin?.checked_in_at);
   const params = useParams<{ week: string; day: string }>();
   const week = Number(params.week);
   const day = Number(params.day);
@@ -524,7 +533,7 @@ const CoachSession = () => {
           )}
 
           <p className="home-rise home-rise-2 mt-4 text-dense text-muted-foreground leading-snug">
-            Weights saved. Today counts toward your check-in.
+            {canCheckin ? "Weights saved. Today counts toward your check-in." : "Weights saved. Today is already locked in."}
           </p>
 
           {/* The offer sits between what was done and what happens next, which
@@ -593,10 +602,10 @@ const CoachSession = () => {
                 } catch {
                   toast.error("Couldn't save the session — your sets are still logged.");
                 }
-                navigate("/checkin");
+                navigate(canCheckin ? "/checkin" : "/");
               }}
             >
-              {isFinishing ? <Loader2 aria-hidden size={16} className="animate-spin" /> : "Finish and check in"}
+              {isFinishing ? <Loader2 aria-hidden size={16} className="animate-spin" /> : canCheckin ? "Finish and check in" : "Finish"}
             </Button>
             <Button
               variant="ghost"
@@ -812,6 +821,7 @@ const CoachSession = () => {
         title="Finish with sets still open?"
         description="Your logged sets are saved."
         actionLabel="Finish"
+        tone="neutral"
         onConfirm={() => { setFinishAsk(false); setShowSummary(true); }}
       />
       <ExercisePickerSheet

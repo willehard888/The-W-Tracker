@@ -190,6 +190,11 @@ const TrainingZone = () => {
   const done = logs.some(
     (l) => l.week === currentWeek && l.day_index === todayDayIndex && l.completed,
   );
+  // Same word the focus-session row above uses: with sets already logged the
+  // card said "Start", as if the first set had not counted.
+  const inProgress = !done && logs.some(
+    (l) => l.week === currentWeek && l.day_index === todayDayIndex && l.status === "in_progress",
+  );
 
   const emptyOwnWeek = (week?.days ?? []).length > 0 && (week?.days ?? []).every((d) => isRestDay(d)) && program.generated_with === "manual_v1";
 
@@ -261,7 +266,7 @@ const TrainingZone = () => {
               {dayFocus(day) || "Today's session"}
             </p>
             <p className="text-meta text-muted-foreground leading-snug mt-0.5">
-              {done ? "Logged today" : daySummary(day) || "Tap to see today's exercises"}
+              {done ? "Logged today" : inProgress ? `In progress · ${daySummary(day)}` : daySummary(day) || "Tap to see today's exercises"}
             </p>
           </>
         )}
@@ -272,7 +277,7 @@ const TrainingZone = () => {
       {isTrainingDay(day) && !done && (
         <div className="pr-2 shrink-0">
           <Button variant="outline" size="sm" className="min-h-11" onClick={startSession}>
-            Start
+            {inProgress ? "Continue" : "Start"}
           </Button>
         </div>
       )}

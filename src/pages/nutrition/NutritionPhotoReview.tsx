@@ -616,6 +616,7 @@ const NutritionPhotoReview = () => {
         title={`${estimates} ${estimates === 1 ? "item is an estimate" : "items are estimates"}`}
         description="Check them, or add anyway — grams can still be edited in the diary."
         actionLabel="Add anyway"
+        tone="neutral"
         onConfirm={() => {
           setConfirmOpen(false);
           void commit();

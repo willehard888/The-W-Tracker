@@ -60,7 +60,8 @@ export default function RecoveryOffer({
           <p className="text-note font-bold leading-tight">
             {source === "rest_day" ? "Move, then loosen off." : "Loosen up what you trained."}
           </p>
-          <p className="text-meta text-muted-foreground leading-snug mt-1 capitalize">
+          {/* first-letter, not `capitalize`: that made it "Lats, Biceps And Upper Back · 6 Min". */}
+          <p className="text-meta text-muted-foreground leading-snug mt-1 first-letter:uppercase">
             {areas.length ? listAreas(areas) : "General mobility"}
             <span className="tabular-nums"> · {minutes} min</span>
           </p>

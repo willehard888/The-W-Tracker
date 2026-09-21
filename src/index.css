@@ -2004,6 +2004,10 @@
     text-shadow: none;
   }
 
+  /* A container a library focuses for you shows nothing at all — neither the
+     gold ring below nor the browser's own blue outline. */
+  [tabindex="-1"]:focus-visible { outline: none; }
+
   /* Unified focus-visible ring for ALL interactive elements */
   a:focus-visible,
   input:focus-visible,

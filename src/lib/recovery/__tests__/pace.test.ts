@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { breathPhase, cueIndex, cycleSec, pacerScale } from "@/lib/recovery/pace";
+import { breathFullness, breathPhase, cueIndex, cycleSec, pacerScale } from "@/lib/recovery/pace";
 import type { BreathPhase } from "@/data/recovery";
 
 const BOX: BreathPhase[] = [["In", 4], ["Hold", 4], ["Out", 4], ["Hold", 4]];
@@ -40,6 +40,15 @@ describe("pacerScale", () => {
   it("tops up on a second inhale instead of restarting", () => {
     expect(pacerScale(SIGH, 0)).toBe(0.85);
     expect(pacerScale(SIGH, 1)).toBe(1);
+  });
+});
+
+describe("breathFullness", () => {
+  it("is full after an in-breath, empty after an out-breath, and held through a hold", () => {
+    expect(breathFullness(BOX, 0)).toBeCloseTo(1);
+    expect(breathFullness(BOX, 1)).toBeCloseTo(1);
+    expect(breathFullness(BOX, 2)).toBeCloseTo(0);
+    expect(breathFullness(BOX, 3)).toBeCloseTo(0);
   });
 });
 

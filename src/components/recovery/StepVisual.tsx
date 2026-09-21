@@ -12,7 +12,9 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
-import { breathPhase, cueIndex, cycleSec, pacerScale } from "@/lib/recovery/pace";
+import { breathFullness, breathPhase, cueIndex, cycleSec, pacerScale } from "@/lib/recovery/pace";
+import { illustrationFrame } from "@/components/coach/ExerciseIllustration";
+import { GOLD_LINES, goldThumb } from "@/components/coach/gold-lines";
 import type { BreathPhase } from "@/data/recovery";
 
 // ── The chime ───────────────────────────────────────────────────────────────
@@ -53,6 +55,94 @@ const WORD: Record<BreathPhase[0], string> = { In: "Breathe in", Hold: "Hold", O
 const EASE = "cubic-bezier(0.37, 0, 0.63, 1)";
 const easeInOut = (t: number) => -(Math.cos(Math.PI * Math.min(1, Math.max(0, t))) - 1) / 2;
 
+/** Where in the current phase the clock is, and what the pacer aims at. */
+const phaseAt = (pace: BreathPhase[], elapsedMs: number) => {
+  const point = breathPhase(pace, elapsedMs);
+  const cycleMs = cycleSec(pace) * 1000;
+  const intoCycle = Math.max(0, elapsedMs) % cycleMs;
+  const phaseStart = pace.slice(0, point.index).reduce((sum, [, s]) => sum + s * 1000, 0);
+  const phaseMs = point.sec * 1000;
+  const phaseElapsed = intoCycle - phaseStart;
+  const prev = (point.index - 1 + pace.length) % pace.length;
+  return { point, cycleMs, phaseMs, phaseElapsed, prev, remaining: Math.max(0, phaseMs - phaseElapsed) };
+};
+
+/**
+ * Running: aim at the end of this phase and let one CSS transition carry it
+ * there. Paused: sit exactly where the breath was. The first frame always
+ * paints where the breath actually is, so there is something to move from —
+ * aiming straight at the target on mount drew a full circle under "Breathe in".
+ */
+const useArmed = () => {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setArmed(true)));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return armed;
+};
+
+/**
+ * The drawing, breathing on the same clock as the ring.
+ *
+ * The library's player cross-fades its two frames every 2.4 s regardless —
+ * right for a rep, wrong for a breath, where a figure that never settles
+ * reads as cheap. Here the exhaled frame is the resting state and the
+ * inhaled frame fades in over the in-breath, holds, and fades out over the
+ * out-breath, so what the athlete sees is the pace they are following.
+ */
+export function BreathFigure({
+  art,
+  title,
+  pace,
+  elapsedMs,
+  running,
+  className,
+}: {
+  art: string;
+  title: string;
+  pace: BreathPhase[];
+  elapsedMs: number;
+  running: boolean;
+  className?: string;
+}) {
+  const { point, phaseMs, phaseElapsed, prev, remaining } = phaseAt(pace, elapsedMs);
+  const armed = useArmed();
+  const from = breathFullness(pace, prev);
+  const to = breathFullness(pace, point.index);
+  const here = from + (to - from) * easeInOut(phaseElapsed / phaseMs);
+  const full = running && armed ? to : here;
+  const transition = running && armed ? `opacity ${remaining}ms ${EASE}` : "none";
+  return (
+    <div className={cn("relative overflow-hidden rounded-2xl border border-gold/25 bg-black", className)} aria-hidden>
+      <img
+        src={goldThumb(art)}
+        alt=""
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-contain p-4 opacity-50"
+        style={{ filter: "blur(6px)" }}
+      />
+      <img
+        src={illustrationFrame(art, "relaxation")}
+        alt={`${title} — breathed out`}
+        loading="eager"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-contain p-4 motion-reduce:!transition-none"
+        style={{ filter: GOLD_LINES, opacity: 1 - full, transition }}
+      />
+      <img
+        src={illustrationFrame(art, "tension")}
+        alt={`${title} — breathed in`}
+        loading="eager"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-contain p-4 motion-reduce:!transition-none"
+        style={{ filter: GOLD_LINES, opacity: full, transition }}
+      />
+      <div aria-hidden className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+    </div>
+  );
+}
+
 export function BreathPacer({
   pace,
   elapsedMs,
@@ -65,27 +155,13 @@ export function BreathPacer({
   /** Under a guided cue: smaller, dimmer, no words, no haptics. */
   quiet?: boolean;
 }) {
-  const point = breathPhase(pace, elapsedMs);
-  const cycleMs = cycleSec(pace) * 1000;
-  const intoCycle = Math.max(0, elapsedMs) % cycleMs;
-  const phaseStart = pace.slice(0, point.index).reduce((sum, [, s]) => sum + s * 1000, 0);
-  const phaseMs = point.sec * 1000;
-  const phaseElapsed = intoCycle - phaseStart;
-  const from = pacerScale(pace, (point.index - 1 + pace.length) % pace.length);
+  const { point, cycleMs, phaseMs, phaseElapsed, prev, remaining } = phaseAt(pace, elapsedMs);
+  const from = pacerScale(pace, prev);
   const to = pacerScale(pace, point.index);
-
-  // Running: aim at the end of this phase and let the transition carry it
-  // there. Paused: sit exactly where the breath was. The first frame always
-  // paints where the breath actually is, so there is something to move from —
-  // aiming straight at the target on mount drew a full circle under "Breathe in".
-  const [armed, setArmed] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => requestAnimationFrame(() => setArmed(true)));
-    return () => cancelAnimationFrame(id);
-  }, []);
+  const armed = useArmed();
   const here = from + (to - from) * easeInOut(phaseElapsed / phaseMs);
   const scale = running && armed ? to : here;
-  const transition = running && armed ? `transform ${Math.max(0, phaseMs - phaseElapsed)}ms ${EASE}` : "none";
+  const transition = running && armed ? `transform ${remaining}ms ${EASE}` : "none";
 
   const beat = Math.floor(Math.max(0, elapsedMs) / cycleMs) * pace.length + point.index;
   const lastBeat = useRef(beat);
@@ -123,17 +199,20 @@ export function BreathPacer({
 }
 
 // ── Guided ──────────────────────────────────────────────────────────────────
-/** An unhurried in-and-out for the orb behind a guided cue; nothing to follow. */
-const ORB_PACE: BreathPhase[] = [["In", 5.5], ["Out", 5.5]];
+/** An unhurried in-and-out behind a guided cue; nothing to follow. */
+export const ORB_PACE: BreathPhase[] = [["In", 5.5], ["Out", 5.5]];
 
 export function GuidedCue({
   cues,
   elapsedMs,
   running,
+  figure,
 }: {
   cues: [number, string][];
   elapsedMs: number;
   running: boolean;
+  /** The session's drawing; it breathes at the orb's pace in place of the orb. */
+  figure?: { art: string; title: string };
 }) {
   const index = cueIndex(cues, elapsedMs);
   const shown = useRef(index);
@@ -147,7 +226,11 @@ export function GuidedCue({
 
   return (
     <div className="flex flex-col items-center text-center">
-      <BreathPacer pace={ORB_PACE} elapsedMs={elapsedMs} running={running} quiet />
+      {figure ? (
+        <BreathFigure art={figure.art} title={figure.title} pace={ORB_PACE} elapsedMs={elapsedMs} running={running} className="h-40 w-full" />
+      ) : (
+        <BreathPacer pace={ORB_PACE} elapsedMs={elapsedMs} running={running} quiet />
+      )}
       <p key={index} className="mt-6 min-h-[4.5rem] text-lead font-bold leading-snug text-balance animate-fade-in" aria-live="polite">
         {cues[index][1]}
       </p>

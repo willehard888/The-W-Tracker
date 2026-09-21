@@ -22,19 +22,45 @@ import {
   routineMovements,
   routinesWith,
   type Routine,
-  type Shelf,
 } from "@/data/recovery-routines";
 import { IllustrationPlayer, IllustrationThumb } from "@/components/coach/ExerciseIllustration";
-import { BreathPacer } from "@/components/recovery/StepVisual";
+import { BreathFigure, BreathPacer, ORB_PACE } from "@/components/recovery/StepVisual";
 
-const SHELVES: Shelf[] = ["mobility", "body", "breath", "sleep", "mind"];
-const SHELF_SHORT: Record<Shelf, string> = {
-  mobility: "Mobility",
-  body: "Body care",
-  breath: "Breath",
-  sleep: "Sleep",
-  mind: "Meditation",
+/**
+ * The four shelves the founder asked for, by name: stretches, rolling,
+ * breathing, meditation. A routine sits where its practice does, not where
+ * its habit does — "4-7-8 in bed" ticks the sleep habit but is a breathing
+ * exercise, and the sleep wind-downs are guided rest, so they file under
+ * meditation. Guided sessions are listed as routines only: each one IS its
+ * routine, and a second row for the same session would be a duplicate.
+ */
+type Section = {
+  key: string;
+  label: string;
+  /** What the collapsed movement list is called. */
+  noun: string;
+  routine: (r: Routine) => boolean;
+  item: (m: RecoveryMovement) => boolean;
 };
+const SECTIONS: Section[] = [
+  { key: "stretch", label: "Stretching", noun: "stretches", routine: (r) => r.shelf === "mobility", item: (m) => itemShelf(m) === "mobility" },
+  { key: "roll", label: "Rolling", noun: "rolling movements", routine: (r) => r.shelf === "body", item: (m) => itemShelf(m) === "body" },
+  {
+    key: "breath",
+    label: "Breathing",
+    noun: "patterns",
+    routine: (r) => r.shelf === "breath" || r.id === "four-seven-eight-sleep",
+    item: (m) => m.type === "breathing",
+  },
+  {
+    key: "mind",
+    label: "Meditation and sleep",
+    noun: "sessions",
+    routine: (r) => r.shelf === "mind" || (r.shelf === "sleep" && r.id !== "four-seven-eight-sleep"),
+    item: () => false,
+  },
+];
+
 /** The session a member is handed when they have not picked anything: the
  *  general opener the builder itself starts with. */
 const BUILT_FOR_YOU_ART = { idNum: "0301", title: "Cat-cow" };
@@ -67,20 +93,88 @@ const ItemMeta = ({ m }: { m: RecoveryMovement }) => (
 const haystack = (m: RecoveryMovement) =>
   [m.name, m.type, m.equipment, ...m.areas, ...m.steps].join(" ").toLowerCase();
 
+const RoutineRow = ({ r, onOpen }: { r: Routine; onOpen: () => void }) => {
+  // A routine's picture is one of its own movements, drawn — never a shelf
+  // glyph that six other routines would also show.
+  const art = routineArt(r);
+  return (
+    <li>
+      <button type="button" onClick={onOpen} className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
+        {art && <IllustrationThumb ex={{ idNum: art, title: r.name }} size={48} />}
+        <span className="flex-1 min-w-0">
+          <span className="block text-note font-semibold leading-tight truncate">{r.name}</span>
+          <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{r.blurb}</span>
+        </span>
+        <span className="text-label font-bold text-muted-foreground tabular-nums shrink-0">{describeLength(routineSec(r))}</span>
+      </button>
+    </li>
+  );
+};
+
+const ItemRow = ({ m, onOpen, lazy }: { m: RecoveryMovement; onOpen: () => void; lazy?: boolean }) => (
+  <li style={lazy ? { contentVisibility: "auto", containIntrinsicSize: "auto 65px" } : undefined}>
+    <button type="button" onClick={onOpen} className="press w-full min-h-11 flex items-center gap-3 py-2 text-left">
+      <ItemThumb m={m} />
+      <span className="flex-1 min-w-0">
+        <span className="block text-note font-semibold leading-tight truncate">{m.name}</span>
+        <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate"><ItemMeta m={m} /></span>
+      </span>
+      <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
+    </button>
+  </li>
+);
+
+/** Long lists start folded; a short one (the five breathing patterns) is shown outright. */
+const FOLD_ABOVE = 12;
+
+const ShelfSection = ({ section, onOpen }: { section: Section; onOpen: (id: string) => void }) => {
+  const navigate = useNavigate();
+  const routines = ROUTINES.filter(section.routine);
+  const items = LIBRARY_ITEMS.filter(section.item);
+  const [open, setOpen] = useState(items.length <= FOLD_ABOVE);
+  return (
+    <section aria-labelledby={`sec-${section.key}`} className="mb-7">
+      <h2 id={`sec-${section.key}`} className="text-label font-bold text-muted-foreground mb-2">
+        {section.label}
+      </h2>
+      <ul className="divide-y divide-border/35 border-y border-border/35">
+        {routines.map((r) => (
+          <RoutineRow key={r.id} r={r} onOpen={() => { hapticImpact("light"); navigate(`/recovery?routine=${r.id}`); }} />
+        ))}
+      </ul>
+      {items.length > 0 && (
+        <>
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => { hapticSelection(); setOpen((o) => !o); }}
+            className="press mt-2 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
+          >
+            {open ? "Hide" : "All"} {items.length} {section.noun}
+            <ChevronRight aria-hidden size={13} className={cn("transition-transform", open && "rotate-90")} />
+          </button>
+          {open && (
+            <ul className="divide-y divide-border/35 border-t border-border/35">
+              {items.map((m, i) => (
+                <ItemRow key={m.id} m={m} onOpen={() => onOpen(m.id)} lazy={i >= 8} />
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </section>
+  );
+};
+
 export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
   const navigate = useNavigate();
-  const [shelf, setShelf] = useState<Shelf | null>(null);
   const [query, setQuery] = useState("");
-
-  const routines = useMemo(() => ROUTINES.filter((r) => !shelf || r.shelf === shelf), [shelf]);
-  const items = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return LIBRARY_ITEMS.filter(
-      (m) =>
-        (!shelf || itemShelf(m) === shelf || (shelf === "sleep" && routinesWith(m.id).some((r) => r.shelf === "sleep"))) &&
-        (!q || haystack(m).includes(q)),
-    );
-  }, [shelf, query]);
+  const q = query.trim().toLowerCase();
+  const hits = useMemo(() => (q ? LIBRARY_ITEMS.filter((m) => haystack(m).includes(q)) : []), [q]);
+  const routineHits = useMemo(
+    () => (q ? ROUTINES.filter((r) => `${r.name} ${r.blurb}`.toLowerCase().includes(q)) : []),
+    [q],
+  );
 
   const go = (path: string) => { hapticImpact("light"); navigate(path); };
 
@@ -102,69 +196,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
         <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
       </button>
 
-      <div className="-mx-4 px-4 overflow-x-auto no-scrollbar mb-4">
-        <div className="flex gap-1.5 w-max">
-          {[null, ...SHELVES].map((s) => {
-            const active = shelf === s;
-            return (
-              <button
-                key={s ?? "all"}
-                type="button"
-                aria-pressed={active}
-                onClick={(e) => {
-                  hapticImpact("light");
-                  setShelf(s);
-                  // The last pills sit past the edge; the chosen one comes into view.
-                  e.currentTarget.scrollIntoView?.({ inline: "nearest", block: "nearest", behavior: "smooth" });
-                }}
-                className={cn(
-                  "press relative shrink-0 rounded-full px-3 py-1.5 text-meta font-black border transition-colors",
-                  "before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-['']",
-                  active ? "bg-gold/[0.12] text-gold border-gold/50" : "bg-secondary/40 border-border/50 text-muted-foreground",
-                )}
-              >
-                {s ? SHELF_SHORT[s] : "All"}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {!query && (
-        <section aria-labelledby="routines-h" className="mb-6">
-          <h2 id="routines-h" className="text-label font-bold text-muted-foreground mb-2">Routines</h2>
-          <ul className="divide-y divide-border/35 border-y border-border/35">
-            {routines.map((r) => {
-              // A routine's picture is one of its own movements, drawn — never
-              // a shelf glyph that six other routines would also show.
-              const art = routineArt(r);
-              return (
-                <li key={r.id}>
-                  <button
-                    type="button"
-                    onClick={() => go(`/recovery?routine=${r.id}`)}
-                    className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
-                  >
-                    {art && <IllustrationThumb ex={{ idNum: art, title: r.name }} size={48} />}
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-note font-semibold leading-tight truncate">{r.name}</span>
-                      <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{r.blurb}</span>
-                    </span>
-                    <span className="text-label font-bold text-muted-foreground tabular-nums shrink-0">
-                      {describeLength(routineSec(r))}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
-      <h2 className="text-label font-bold text-muted-foreground mb-2">
-        {shelf ? SHELF_LABEL[shelf] : "Every movement"}
-      </h2>
-      <div className="relative mb-3">
+      <div className="relative mb-6">
         <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
         <Input
           value={query}
@@ -184,26 +216,23 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
           </button>
         )}
       </div>
-      <ul className="divide-y divide-border/35 border-t border-border/35">
-        {items.map((m, i) => (
-          <li key={m.id} style={i < 8 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
-            <button
-              type="button"
-              onClick={() => onOpen(m.id)}
-              className="press w-full min-h-11 flex items-center gap-3 py-2 text-left"
-            >
-              <ItemThumb m={m} />
-              <span className="flex-1 min-w-0">
-                <span className="block text-note font-semibold leading-tight truncate">{m.name}</span>
-                <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate"><ItemMeta m={m} /></span>
-              </span>
-              <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
-            </button>
-          </li>
-        ))}
-      </ul>
-      {items.length === 0 && (
-        <p className="text-center text-sm text-muted-foreground py-10">Nothing matches. Try another word.</p>
+
+      {q ? (
+        <>
+          <ul className="divide-y divide-border/35 border-y border-border/35">
+            {routineHits.map((r) => (
+              <RoutineRow key={r.id} r={r} onOpen={() => go(`/recovery?routine=${r.id}`)} />
+            ))}
+            {hits.map((m, i) => (
+              <ItemRow key={m.id} m={m} onOpen={() => onOpen(m.id)} lazy={i >= 8} />
+            ))}
+          </ul>
+          {hits.length + routineHits.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-10">Nothing matches. Try another word.</p>
+          )}
+        </>
+      ) : (
+        SECTIONS.map((section) => <ShelfSection key={section.key} section={section} onOpen={onOpen} />)
       )}
 
       <p className="mt-8 text-center text-label text-muted-foreground/75">
@@ -213,17 +242,24 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
   );
 }
 
-/** A breathing pattern, breathing, on its detail page: its own clock, no session. */
-const PacerPreview = ({ pace }: { pace: NonNullable<RecoveryMovement["pace"]> }) => {
+/**
+ * A breathing pattern or a guided session on its own page: the drawing
+ * breathing at the pattern's pace, with the ring under it for a pattern the
+ * athlete follows. Its own clock, no session.
+ */
+const BreathPreview = ({ m }: { m: RecoveryMovement }) => {
   const [start] = useState(() => Date.now());
   const [now, setNow] = useState(start);
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(id);
   }, []);
+  const pace = m.pace ?? ORB_PACE;
+  const elapsedMs = now - start;
   return (
-    <div className="surface-card surface-card-quiet flex justify-center py-7">
-      <BreathPacer pace={pace} elapsedMs={now - start} running quiet={false} />
+    <div className="surface-card surface-card-quiet flex flex-col items-center px-4 pt-4 pb-6">
+      {m.art && <BreathFigure art={m.art} title={m.name} pace={pace} elapsedMs={elapsedMs} running className="h-44 w-full mb-5" />}
+      {m.pace && <BreathPacer pace={m.pace} elapsedMs={elapsedMs} running quiet={false} />}
     </div>
   );
 };
@@ -248,10 +284,10 @@ export function RecoverDetail({ m, onBack }: { m: RecoveryMovement; onBack: () =
         </header>
 
         <div className="home-rise home-rise-1 mt-4">
-          {m.art ? (
+          {m.pace || m.cues ? (
+            <BreathPreview m={m} />
+          ) : m.art ? (
             <IllustrationPlayer ex={{ idNum: m.art, title: m.name }} playingLabel="Into position" />
-          ) : m.pace ? (
-            <PacerPreview pace={m.pace} />
           ) : null}
         </div>
 

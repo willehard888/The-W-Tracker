@@ -59,7 +59,7 @@ import { movementSeconds, RECOVERY_BY_ID, type RecoveryMovement } from "@/data/r
 import { ROUTINE_BY_ID, SHELF_LABEL, routineSession } from "@/data/recovery-routines";
 import { CHECKIN_HABITS } from "@/lib/checkin-habits";
 import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
-import { BreathPacer, GuidedCue, armChime } from "@/components/recovery/StepVisual";
+import { BreathFigure, BreathPacer, GuidedCue, armChime } from "@/components/recovery/StepVisual";
 import { hasVoice, needsSeek, setVoiceOn, voiceOn, voiceSrc } from "@/lib/recovery/voice";
 import { holdAudioSession, releaseAudioSession } from "@/lib/recovery/audio-session";
 
@@ -655,22 +655,41 @@ export default function Recovery() {
         </div>
 
         <div className="home-rise home-rise-1 mt-6">
-          {movement.art ? (
+          {/* Breathing leads with the ring — it is what the athlete follows —
+              and the drawing breathes on the same clock beside it. The looping
+              player is for a rep; a figure that never settles reads as cheap. */}
+          {movement.pace ? (
+            <div className="surface-card surface-card-quiet flex flex-col items-center px-4 pt-4 pb-6">
+              {movement.art && (
+                <BreathFigure
+                  key={movement.id}
+                  art={movement.art}
+                  title={movement.name}
+                  pace={movement.pace}
+                  elapsedMs={elapsedMs}
+                  running={running}
+                  className="h-40 w-full mb-5"
+                />
+              )}
+              <BreathPacer pace={movement.pace} elapsedMs={elapsedMs} running={running} />
+              <p className="mt-2 text-label text-muted-foreground tabular-nums">{clock(left)} left</p>
+            </div>
+          ) : movement.cues ? (
+            <div className="surface-card surface-card-quiet px-5 pt-4 pb-7">
+              <GuidedCue
+                cues={movement.cues}
+                elapsedMs={elapsedMs}
+                running={running}
+                figure={movement.art ? { art: movement.art, title: movement.name } : undefined}
+              />
+              <p className="mt-3 text-label text-muted-foreground tabular-nums text-center">{clock(left)} left</p>
+            </div>
+          ) : movement.art ? (
             // Drawn: the movement itself, with the time under it.
             <>
               <IllustrationPlayer key={movement.id} ex={{ idNum: movement.art, title: movement.name }} playingLabel="Into position" />
               <HoldBar ring={ring} left={left} />
             </>
-          ) : movement.pace ? (
-            <div className="surface-card surface-card-quiet flex flex-col items-center justify-center py-7">
-              <BreathPacer pace={movement.pace} elapsedMs={elapsedMs} running={running} />
-              <p className="mt-2 text-label text-muted-foreground tabular-nums">{clock(left)} left</p>
-            </div>
-          ) : movement.cues ? (
-            <div className="surface-card surface-card-quiet px-5 py-7">
-              <GuidedCue cues={movement.cues} elapsedMs={elapsedMs} running={running} />
-              <p className="mt-3 text-label text-muted-foreground tabular-nums text-center">{clock(left)} left</p>
-            </div>
           ) : (
             <div className="surface-card surface-card-quiet flex flex-col items-center justify-center py-8">
               <div

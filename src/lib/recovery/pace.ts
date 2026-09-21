@@ -39,6 +39,14 @@ export function pacerScale(pace: BreathPhase[], index: number): number {
   return index === 0 ? 0.55 : pacerScale(pace, index - 1);
 }
 
+/**
+ * How full the breath is at the END of phase `index`, 0 (breathed out) to 1
+ * (breathed in) — the pacer circle's scale, on a unit range, so a drawing can
+ * cross-fade between its exhaled and inhaled frames on the same clock.
+ */
+export const breathFullness = (pace: BreathPhase[], index: number): number =>
+  (pacerScale(pace, index) - 0.55) / 0.45;
+
 /** The cue showing at `elapsedMs`: the last one whose second has passed. */
 export function cueIndex(cues: [number, string][], elapsedMs: number): number {
   let at = 0;

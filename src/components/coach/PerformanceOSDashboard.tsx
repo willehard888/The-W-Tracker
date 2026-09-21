@@ -1,16 +1,21 @@
 import { fmtDate } from "@/lib/format";
 import { m } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, Sparkles, Calendar, RefreshCw } from "lucide-react";
+import { Calendar, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePerformanceSnapshots, useLatestWeeklyReview } from "@/hooks/use-performance-snapshots";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { friendlyError, readEdgeError } from "@/lib/error-copy";
-import Sparkline from "@/components/coach/Sparkline";
 
+/**
+ * The weekly review: its three component scores (once a review has written
+ * them), the review itself, and the button that asks for one. The index card
+ * that used to lead this block was the Whealth Index under a second name
+ * ("Performance score") and a staler value; Progress's summary shows the index
+ * once, from the reader Journey uses.
+ */
 const PerformanceOSDashboard = () => {
   const { data: snaps, isLoading } = usePerformanceSnapshots(28);
   const { data: review } = useLatestWeeklyReview();
@@ -33,15 +38,9 @@ const PerformanceOSDashboard = () => {
   };
 
   if (isLoading) {
-    return <div className="h-32 rounded-2xl bg-card/40 border border-border/40 animate-pulse" />;
+    // The height of what usually follows (the button), not of the card that left.
+    return <div className="h-9 rounded-md bg-card/40 skeleton-block" aria-hidden />;
   }
-
-  const values = (snaps ?? []).map((s) => s.performance_score);
-  const latest = values[values.length - 1] ?? null;
-  const prev = values[values.length - 2] ?? null;
-  const delta = latest != null && prev != null ? latest - prev : 0;
-  const TrendIcon = delta > 1 ? TrendingUp : delta < -1 ? TrendingDown : Minus;
-  const trendColor = delta > 1 ? "text-xp-green" : delta < -1 ? "text-rose-400" : "text-muted-foreground";
 
   // Average components over last 7 days
   const last7 = (snaps ?? []).slice(-7);
@@ -63,37 +62,6 @@ const PerformanceOSDashboard = () => {
 
   return (
     <div className="space-y-3">
-      {/* Performance Score Card */}
-      <m.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-border/40 bg-gradient-to-br from-[hsl(255_18%_8%)] to-[hsl(255_22%_5%)] p-4 overflow-hidden shadow-[0_12px_28px_-16px_hsl(0_0%_0%/0.7)]"
-      >
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <p className="text-label font-bold text-gold/80">Performance score</p>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className="font-display text-4xl font-black tabular-nums leading-none">
-                {latest ?? "—"}
-              </span>
-              <span className="text-xs text-muted-foreground">/ 100</span>
-              {delta !== 0 && latest != null && (
-                <span className={cn("inline-flex items-center gap-0.5 text-meta font-bold", trendColor)}>
-                  <TrendIcon size={11} /> {Math.abs(delta)}
-                </span>
-              )}
-            </div>
-            <p className="text-label text-muted-foreground mt-1">28-day trend</p>
-          </div>
-          <Sparkles aria-hidden size={16} className="text-gold/70" />
-        </div>
-        {values.length < 2 ? (
-          <div className="h-12 flex items-center text-label text-muted-foreground">Not enough data yet.</div>
-        ) : (
-          <Sparkline values={values} domain={[0, 100]} className="w-full h-12" />
-        )}
-      </m.div>
-
       {/* Component breakdown — only once a weekly review has written it. */}
       {hasParts && (
       <div className="grid grid-cols-3 gap-2">

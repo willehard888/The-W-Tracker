@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import { Loader2, RefreshCw, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { CoachProgram, ProgramLog } from "@/hooks/use-coach-program";
+import { CoachProgram } from "@/hooks/use-coach-program";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Sparkline from "@/components/coach/Sparkline";
@@ -14,23 +13,18 @@ import { friendlyError, readEdgeError } from "@/lib/error-copy";
 
 interface Props {
   program: CoachProgram;
-  currentWeek: number;
-  logs: ProgramLog[];
 }
 
-const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
+/** The slower reads under Progress's summary card: 28 days of XP and the
+ *  coach's read of the week (with its three measured stats once it answers).
+ *  Week compliance lives in the page's summary now, not in a card of its own. */
+const ProgressDashboard = ({ program }: Props) => {
   const { user } = useAuth();
   const [read, setRead] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const targets = program.plan_json.weekly_check_targets;
-
-  // Compliance for current week
-  const weekLogs = logs.filter((l) => l.week === currentWeek && l.completed).length;
-  const weekDays = program.plan_json.weeks.find((w) => w.week === currentWeek)?.days ?? [];
-  const activeTargetDays = weekDays.filter((d) => d.focus.toLowerCase() !== "rest").length || 1;
-  const compliance = Math.round((weekLogs / activeTargetDays) * 100);
 
   // 28 days of XP, one number per local calendar day. react-query owns the
   // cache: the raw effect refetched on every mount of the dashboard.
@@ -80,20 +74,6 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
 
   return (
     <div className="space-y-4">
-      {/* Compliance */}
-      <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.08] to-card p-4">
-        <div className="flex items-baseline justify-between mb-2">
-          <p className="text-label font-bold text-gold">
-            Week {currentWeek} compliance
-          </p>
-          <p className="font-display text-3xl font-black text-gold leading-none">{compliance}%</p>
-        </div>
-        <Progress value={compliance} />
-        <p className="text-meta text-muted-foreground mt-2">
-          {weekLogs} of {activeTargetDays} planned sessions logged.
-        </p>
-      </div>
-
       {/* Stat trio (last 7d). It arrives with the coach's read: before that
           it was three dashes repeating the strip at the top of the page. */}
       {stats && (

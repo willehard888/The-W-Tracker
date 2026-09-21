@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useJourney, weeklyXp, type JourneyReflection } from "@/hooks/use-journey";
 import { useWhealthSnapshots } from "@/hooks/use-whealth-snapshots";
 import { useLiveWhealthIndex } from "@/hooks/use-live-whealth-index";
+import { useWhealthHeadline } from "@/hooks/use-whealth-headline";
 import PillarSheet from "@/components/journey/PillarSheet";
 import type { PillarScores } from "@/lib/whealth-index";
 import { useRecentNights } from "@/hooks/use-night-metrics";
@@ -77,17 +78,12 @@ const Journey = () => {
   const { data: liveIndex } = useLiveWhealthIndex();
   const latestSnap = snapshots?.[0];
   const priorSnap = snapshots && snapshots.length > 1 ? snapshots[snapshots.length - 1] : undefined;
-  const priorDate = priorSnap ? fmtDate(priorSnap.snapshotDate + "T00:00:00") : undefined;
-  const heroOverall = liveIndex?.overall ?? latestSnap?.overall ?? null;
+  // The headline numbers come from the reader Progress shares, so the two
+  // screens cannot show two values for one index again.
+  const headline = useWhealthHeadline();
+  const priorDate = headline.priorDate;
+  const heroOverall = headline.overall;
   const heroPillars = liveIndex?.overall != null ? liveIndex.pillars : latestSnap?.pillars;
-  const overallHistory = useMemo(
-    () =>
-      [...(snapshots ?? [])]
-        .reverse()
-        .map((s) => s.overall)
-        .filter((v): v is number => v != null),
-    [snapshots],
-  );
   const [openPillar, setOpenPillar] = useState<keyof PillarScores | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const { data: nights } = useRecentNights(30);
@@ -147,13 +143,10 @@ const Journey = () => {
           <div className="home-rise home-rise-1 mt-6">
             <WhealthIndexCard
               overall={heroOverall}
-              priorOverall={priorSnap?.overall ?? undefined}
+              priorOverall={headline.priorOverall}
               priorDate={priorDate}
-              live={liveIndex?.overall != null}
-              // The dial shows the live score; the line was drawn from the
-              // nightly snapshots alone, so it could end on a rise (82 on
-              // Sep 17) beside "−12" and a dial reading 56. Today is a point too.
-              history={liveIndex?.overall != null ? [...overallHistory, liveIndex.overall] : overallHistory}
+              live={headline.live}
+              history={headline.history}
               onShare={() => setShareOpen(true)}
             />
           </div>

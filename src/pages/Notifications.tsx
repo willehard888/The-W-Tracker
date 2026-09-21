@@ -23,6 +23,13 @@ import { cn } from "@/lib/utils";
 import { battleTypeInfo } from "@/components/battles/battle-types";
 
 /** kind → icon for rows without an actor avatar. */
+/**
+ * Push titles open or close with an emoji ("💬 x sent you a message") — right
+ * for a lock screen, a second mark in a row that already leads with its icon.
+ */
+const plainTitle = (title: string): string =>
+  title.replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+|[\p{Extended_Pictographic}\uFE0F\u200D\s]+$/gu, "");
+
 const KIND_ICONS: Record<string, typeof Bell> = {
   friend_request: Users,
   friend_accepted: Users,
@@ -130,7 +137,7 @@ const Notifications = () => {
       const { error } = await supabase.rpc("respond_to_battle", { battle_id: battleId, accept, p_tz_offset_minutes: new Date().getTimezoneOffset() });
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["battles"] });
-    }, accept ? "Battle accepted! ⚔️" : "Battle declined");
+    }, accept ? "Battle accepted" : "Battle declined");
 
   const markAllRead = async () => {
     const { error } = await supabase.rpc("mark_notifications_read", {});
@@ -270,17 +277,21 @@ const Notifications = () => {
                     <Icon size={16} className={cn("shrink-0 mt-0.5", isUnread ? "text-foreground" : "text-muted-foreground/75")} aria-hidden />
                     <span className="flex-1 min-w-0">
                       <span className={cn("block text-dense leading-snug", isUnread ? "font-bold text-foreground" : "font-semibold text-foreground/85")}>
-                        {n.title}
+                        {plainTitle(n.title)}
                       </span>
                       {n.body && <span className="block text-meta text-muted-foreground leading-snug mt-0.5 line-clamp-2">{n.body}</span>}
                       <span className="block text-label text-muted-foreground/75 mt-1">{fmtRelative(n.created_at)}</span>
                     </span>
-                    {isUnread && <span className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
+                    {isUnread && <span role="img" className="h-2 w-2 rounded-full bg-ember shrink-0 mt-1.5" aria-label="Unread" />}
                   </>
                 );
                 return (
                   // Entrance on a wrapper: the keyframe pins transform, which would kill the row's press.
-                  <div key={n.id} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${140 + i * 40}ms` } : undefined}>
+                  <div
+                    key={n.id}
+                    className={cn(i < 4 && "animate-fade-in-up")}
+                    style={i < 4 ? { animationDelay: `${140 + i * 40}ms` } : { contentVisibility: "auto", containIntrinsicSize: "auto 68px" }}
+                  >
                     {tappable ? (
                       <button type="button" onClick={() => openNotification(n)} className={rowClass}>{row}</button>
                     ) : (

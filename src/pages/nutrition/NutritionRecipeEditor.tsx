@@ -182,7 +182,7 @@ const NutritionRecipeEditor = () => {
           {error ? (
             <ErrorState title="Couldn't load this recipe" onRetry={refetch} />
           ) : (
-            <EmptyState title="Recipe not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition/recipes", { replace: true })}>All recipes</Button>} />
+            <EmptyState title="Recipe not found" description="It may have been deleted." action={<Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => navigate("/nutrition/recipes", { replace: true })}>All recipes</Button>} />
           )}
         </div>
       </div>

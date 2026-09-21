@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Copy, Check, Share2, Image as ImageIcon } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -35,7 +36,7 @@ const Referrals = () => {
   // MUST run before the early return — a hook after `return null` crashes with
   // "Rendered more hooks than during the previous render" the moment profile
   // resolves (same class of bug already fixed in Paywall.tsx).
-  const { data: recruits, isLoading: recruitsLoading } = useMyReferrals();
+  const { data: recruits, isLoading: recruitsLoading, isError: recruitsFailed, refetch: refetchRecruits } = useMyReferrals();
 
   if (!profile) return null;
 
@@ -158,6 +159,10 @@ const Referrals = () => {
               ))}
             </div>
           </section>
+        )}
+        {/* A failed load used to read as "nobody came". */}
+        {recruitsFailed && !recruits && (
+          <ErrorState size="compact" className="mt-7" title="Couldn't load your recruits" onRetry={refetchRecruits} />
         )}
         {!recruitsLoading && (recruits?.length ?? 0) > 0 && (
           <section className="home-rise home-rise-3 mt-7">

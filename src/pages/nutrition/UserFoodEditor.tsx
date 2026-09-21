@@ -187,7 +187,7 @@ const UserFoodEditor = () => {
           {existing.error ? (
             <ErrorState title="Couldn't load this food" onRetry={existing.refetch} />
           ) : (
-            <EmptyState title="Food not found" description="It may have been deleted." action={<Button variant="outline" onClick={() => navigate("/nutrition")}>Back to the diary</Button>} />
+            <EmptyState title="Food not found" description="It may have been deleted." action={<Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => navigate("/nutrition")}>Back to the diary</Button>} />
           )}
         </div>
       </div>

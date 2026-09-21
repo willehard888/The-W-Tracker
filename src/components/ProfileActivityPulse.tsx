@@ -4,6 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Activity, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * For the member's OWN profile only: RLS lets a member read their own
+ * check-ins and nobody else's, so on another profile this query is always
+ * empty — and the pill told every visitor that a Legend with 12 560 XP had
+ * "No activity yet". A pulse on other profiles needs a server-side signal.
+ */
 interface ProfileActivityPulseProps {
   userId: string;
 }

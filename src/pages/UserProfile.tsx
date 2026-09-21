@@ -283,9 +283,11 @@ const UserProfile = () => {
               ) : undefined
             }
             afterPills={
-              <div className="mt-3 flex justify-center">
-                <ProfileActivityPulse userId={userId!} />
-              </div>
+              isOwnProfile ? (
+                <div className="mt-3 flex justify-center">
+                  <ProfileActivityPulse userId={userId!} />
+                </div>
+              ) : undefined
             }
           />
         </div>
@@ -381,7 +383,7 @@ const UserProfile = () => {
                 const key = e?.message?.match(/not_friends|self_battle|battle_exists|unauthorized|health_sync_required|unknown_type|unknown_duration/)?.[0];
                 const msg = ({
                   not_friends: "You can only battle friends. Add them first.",
-                  self_battle: "Can't challenge yourself!",
+                  self_battle: "You can't challenge yourself.",
                   battle_exists: "You already have a battle going with them.",
                   unauthorized: "Please sign in.",
                   health_sync_required: "Connect Apple Health and sync today to battle on steps, sleep or calories.",
@@ -424,7 +426,7 @@ const UserProfile = () => {
         {/* ── PROOF — the media grid, edge to edge ── */}
         {mediaPosts && mediaPosts.length > 0 && (
           <div className="home-rise home-rise-4 mt-7">
-            <p className="text-label font-bold text-muted-foreground mb-2">Posts · {mediaPosts.length}</p>
+            <h2 className="text-label font-bold text-muted-foreground mb-2">Posts · {mediaPosts.length}</h2>
             <div className="-mx-4 grid grid-cols-3 gap-[2px]">
               {mediaPosts.map((p: any) => {
                 const isVideo = !!p.video_url;
@@ -462,12 +464,12 @@ const UserProfile = () => {
           <div className="mt-7 surface-card surface-card-quiet px-4 py-3">
             <div className="flex items-center gap-2">
               <Medal size={14} className="text-muted-foreground shrink-0" aria-hidden />
-              <h2 className="flex-1 text-dense font-bold">Season Champion</h2>
+              <h2 className="flex-1 text-dense font-bold">Season champion</h2>
               <span className="font-display font-black text-lead tabular-nums leading-none">{championHistory.wins}×</span>
             </div>
             <div className="mt-1 divide-y divide-border/35">
               {championHistory.seasons.map((s: any, i: number) => (
-                <div key={i} className="py-2 flex items-center justify-between text-meta">
+                <div key={s.name ?? i} className="py-2 flex items-center justify-between text-meta">
                   <span className="text-muted-foreground">{s.name}</span>
                   <span className="font-semibold tabular-nums">{fmtUnit(s.points, "XP")}</span>
                 </div>
@@ -478,9 +480,8 @@ const UserProfile = () => {
 
         {/* ── BADGES ── */}
         <div className="mt-7">
-          <h2 className="font-display font-bold text-sm mb-3 tracking-tight">
-            Badges ({earnedBadges.length})
-          </h2>
+          {/* Same grammar as "Posts · 3" above it — the page had two heading styles. */}
+          <h2 className="text-label font-bold text-muted-foreground mb-2">Badges · {earnedBadges.length}</h2>
           {earnedBadges.length === 0 ? (
             <EmptyState size="compact" icon={Award} title="No badges earned yet" />
           ) : (

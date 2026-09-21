@@ -705,7 +705,7 @@ const NutritionDiary = () => {
               title="This food isn't available"
               description="It may have been removed from the catalog."
               action={
-                <Button variant="outline" onClick={() => setSheet({ view: "search", slot: sheet.slot })}>
+                <Button variant="gold-outline" size="sm" className="min-h-11" onClick={() => setSheet({ view: "search", slot: sheet.slot })}>
                   Search instead
                 </Button>
               }

@@ -1,7 +1,7 @@
 import { fmtDate, fmtInt } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Compass } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Compass } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJourney, weeklyXp, type JourneyReflection } from "@/hooks/use-journey";
@@ -150,7 +150,10 @@ const Journey = () => {
               priorOverall={priorSnap?.overall ?? undefined}
               priorDate={priorDate}
               live={liveIndex?.overall != null}
-              history={overallHistory}
+              // The dial shows the live score; the line was drawn from the
+              // nightly snapshots alone, so it could end on a rise (82 on
+              // Sep 17) beside "−12" and a dial reading 56. Today is a point too.
+              history={liveIndex?.overall != null ? [...overallHistory, liveIndex.overall] : overallHistory}
               onShare={() => setShareOpen(true)}
             />
           </div>
@@ -228,7 +231,7 @@ const Journey = () => {
                 <TrendRow
                   title="Momentum"
                   sub={`XP per week · ${xpWeeks.length} complete weeks`}
-                  delta={xpPct != null ? `${signed(xpPct)}%` : xpDelta != null ? `${signed(xpDelta)} xp` : null}
+                  delta={xpPct != null ? (xpPct === 0 ? null : `${signed(xpPct)}%`) : xpDelta ? `${signed(xpDelta)} xp` : null}
                   good={(xpDelta ?? 0) >= 0}
                 />
               )}
@@ -244,7 +247,7 @@ const Journey = () => {
                 <TrendRow
                   title="Resting heart rate"
                   sub={`HealthKit · ${rhrSeries[rhrSeries.length - 1]} bpm last night, lower is better`}
-                  delta={rhrDelta != null ? `${signed(rhrDelta, 1)} bpm` : null}
+                  delta={rhrDelta != null && Math.abs(rhrDelta) >= 0.1 ? `${signed(rhrDelta, 1)} bpm` : null}
                   good={(rhrDelta ?? 0) <= 0}
                 />
               )}
@@ -294,8 +297,12 @@ const TrendRow = ({ title, sub, delta, good }: { title: string; sub: string; del
       <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{sub}</span>
     </span>
     {delta && (
-      <span className={cn("shrink-0 font-display text-read font-black tabular-nums", good ? "text-xp-green" : "text-destructive")}>
+      // The sign says which way the number moved; whether that was good (a
+      // falling resting pulse is) was carried by colour alone.
+      <span className={cn("shrink-0 inline-flex items-center gap-0.5 font-display text-read font-black tabular-nums", good ? "text-xp-green" : "text-destructive")}>
+        {good ? <ArrowUpRight aria-hidden size={14} /> : <ArrowDownRight aria-hidden size={14} />}
         {delta}
+        <span className="sr-only">{good ? " — better" : " — worse"}</span>
       </span>
     )}
   </div>

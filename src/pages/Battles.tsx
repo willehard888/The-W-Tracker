@@ -45,7 +45,7 @@ const BattlesSkeleton = () => (
 
 const CREATE_ERRORS: Record<string, string> = {
   not_friends: "You can only battle friends. Add them first.",
-  self_battle: "Can't challenge yourself!",
+  self_battle: "You can't challenge yourself.",
   battle_exists: "You already have a battle going with them.",
   unauthorized: "Please sign in.",
   health_sync_required: "Connect Apple Health and sync today to battle on steps, sleep or calories.",

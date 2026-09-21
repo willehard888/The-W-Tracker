@@ -153,7 +153,7 @@ const ExerciseMissing = ({ onBack }: { onBack: () => void }) => (
         icon={BookOpen}
         title="This movement isn’t in the library"
         description="The link may be old, or the movement was renamed."
-        action={<Button variant="outline" onClick={onBack}>Browse the library</Button>}
+        action={<Button variant="gold-outline" size="sm" className="min-h-11" onClick={onBack}>Browse the library</Button>}
       />
     </div>
   </div>

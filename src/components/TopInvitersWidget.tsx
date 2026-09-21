@@ -6,6 +6,7 @@ import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 
 interface TopInvitersWidgetProps {
@@ -33,11 +34,11 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
   const hasMySignups = (myStats?.signupCount ?? 0) > 0;
 
   return (
-    <section className={cn("rounded-xl border border-border bg-card p-4", className)}>
+    <section className={cn("surface-card p-4", className)}>
       <header className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Trophy aria-hidden size={16} className="text-gold shrink-0" />
-          <h2 className="font-display font-bold text-sm tracking-tight truncate">Top Inviters This Month</h2>
+          <h2 className="font-display font-bold text-sm tracking-tight truncate">Top inviters this month</h2>
         </div>
         <span className="text-label font-bold shrink-0 whitespace-nowrap text-muted-foreground">
           Resets 1st
@@ -60,20 +61,17 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
       )}
 
       {!isLoading && (!inviters || inviters.length === 0) && (
-        <div className="py-6 text-center">
-          <div className="h-10 w-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-2">
-            <Rocket aria-hidden size={18} className="text-gold" />
-          </div>
-          <p className="text-sm font-semibold mb-1">Be the first inviter this month 🚀</p>
-          <p className="text-xs text-muted-foreground mb-3">
-            Climb this board — every paid invite earns XP, credits & badges.
-          </p>
-          {!hideEmptyCta && (
-            <Button variant="ember" size="sm" onClick={() => navigate("/referrals")}>
+        <EmptyState
+          size="compact"
+          icon={Rocket}
+          title="Be the first inviter this month"
+          description="Every paid invite earns XP, credits and badges."
+          action={hideEmptyCta ? undefined : (
+            <Button variant="ember" size="sm" className="min-h-11" onClick={() => navigate("/referrals")}>
               Get your link
             </Button>
           )}
-        </div>
+        />
       )}
 
       {!isLoading && inviters && inviters.length > 0 && (

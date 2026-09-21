@@ -1,3 +1,4 @@
+import { fmtDate } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { Check, Lock, Play, Square } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -170,7 +171,7 @@ const PracticeLoop = ({
           label="Practise"
           state={state.practiced ? "done" : state.stage === "practice" ? "current" : "ahead"}
           accent={accent}
-          doneLine={`Practised${progress?.practiced_at ? " · " + new Date(progress.practiced_at).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""}.`}
+          doneLine={`Practised${progress?.practiced_at ? " · " + fmtDate(progress.practiced_at) : ""}.`}
         >
           <PracticeBox
             steps={article.try_today}

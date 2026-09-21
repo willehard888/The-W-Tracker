@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -135,7 +135,7 @@ const Friends = () => {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Add a friend by username"
+              placeholder="Add a friend by username" {...SEARCH_FIELD}
               className="h-11 rounded-xl pl-9 pr-9 text-copy"
             />
           </div>

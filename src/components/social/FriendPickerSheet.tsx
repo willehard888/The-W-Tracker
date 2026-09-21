@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Search, Flame, ChevronRight, UserPlus } from "lucide-react";
@@ -40,7 +40,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search friends"
+              placeholder="Search friends" {...SEARCH_FIELD}
               className="h-11 rounded-xl pl-9 pr-9 text-copy"
             />
           </div>

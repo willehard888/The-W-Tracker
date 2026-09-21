@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import NutritionTargets from "@/pages/nutrition/NutritionTargets";
@@ -37,7 +37,8 @@ describe("NutritionTargets", () => {
     expect(screen.getByText("Set what a good day looks like.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Use these targets" })).toBeInTheDocument();
     // Mifflin: 10·78 + 6.25·182 − 5·34 + 5 = 1752.5 · 1.375 · 0.85 = 2048 → 2050
-    expect(screen.getByText(/2 050|2,050/)).toBeInTheDocument();
+    // Headline and the macro row under it: both grouped the same way now.
+    expect(screen.getAllByText(/2 050|2,050/)).toHaveLength(2);
   });
 
   it("saves the four proposed numbers with the method and activity", async () => {
@@ -50,6 +51,20 @@ describe("NutritionTargets", () => {
     expect(patch.activity_level).toBe("moderate");
     for (const k of ["kcal", "protein_g", "carbs_g", "fat_g"]) expect(typeof patch[k]).toBe("number");
     expect(patch.protein_g).toBe(170); // 2.2 g/kg × 78 = 171.6 → 170
+  });
+
+  it("does not offer a switch to the targets already in force", async () => {
+    // Save the proposal once, then hand the same numbers back as the stored row.
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Use these targets" }));
+    await waitFor(() => expect(targetsState.save).toHaveBeenCalled());
+    const saved = targetsState.save.mock.calls.at(-1)![0];
+    cleanup();
+    targetsState.targets = { ...saved, effective_from: "2026-09-04" };
+    renderPage();
+    expect(screen.getByText("Proposed targets · in use")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Use these targets" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Adjust" })).toBeInTheDocument();
   });
 
   it("a failed read retries instead of proposing targets that would save over the real ones", () => {

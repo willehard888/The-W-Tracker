@@ -8,7 +8,7 @@ import { backOr } from "@/lib/nav";
 import { Activity, BookOpen, ChevronRight, Dumbbell, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
@@ -61,6 +61,9 @@ const GROUPS: Array<{ label: string; match: (m: string) => boolean }> = [
 // every step of all 268 exercises on each keystroke allocated ~240 kB of
 // strings per character and dropped frames while typing.
 const haystackCache = new Map<string, string>();
+/** The source data calls bodyweight work "body": "Abdominals · Body". */
+const equipLabel = (e: string) => (e === "body" ? "bodyweight" : e);
+
 const haystack = (e: { slug: string; title: string; primary: string[]; secondary: string[]; equipment: string[]; steps: string[] }) => {
   let h = haystackCache.get(e.slug);
   if (h === undefined) {
@@ -101,7 +104,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
       <header className="home-rise">
         <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{ex.title}</h1>
         <p className="mt-1.5 text-dense text-muted-foreground capitalize">
-          {[...ex.equipment, ex.type].filter(Boolean).join(" · ")}
+          {[...ex.equipment.map(equipLabel), ex.type].filter(Boolean).join(" · ")}
         </p>
         {(ex.primary.length > 0 || ex.secondary.length > 0) && (
           <p className="text-dense text-muted-foreground">
@@ -256,7 +259,7 @@ const Exercises = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Search ${fmtInt(ILLUSTRATED_EXERCISES.length)} exercises…`}
-              aria-label="Search exercises"
+              aria-label="Search exercises" {...SEARCH_FIELD}
               className="pl-9 pr-11"
             />
             {query && (
@@ -308,7 +311,7 @@ const Exercises = () => {
                   <span className="flex-1 min-w-0">
                     <span className="block text-note font-semibold leading-tight truncate">{ex.title}</span>
                     <span className="block text-meta text-muted-foreground leading-snug mt-0.5 capitalize truncate">
-                      {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.join(", ")}` : ""}
+                      {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.map(equipLabel).join(", ")}` : ""}
                     </span>
                   </span>
                   <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />

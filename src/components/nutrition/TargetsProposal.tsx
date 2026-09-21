@@ -28,8 +28,11 @@ const TargetsProposal = ({
   onUse,
   onAdjust,
   busy,
+  inUse,
 }: {
   result: TargetResult;
+  /** The proposal is what is already in force — nothing to switch to. */
+  inUse?: boolean;
   /** Sex not set on the profile — the BMR used the male/female midpoint. */
   sexAssumed?: boolean;
   onUse: () => void;
@@ -52,7 +55,7 @@ const TargetsProposal = ({
   }
 
   const notes: string[] = [
-    `${result.method === "katch" ? "Katch-McArdle (body-fat based)" : "Mifflin-St Jeor"} · BMR ${result.bmr} kcal · maintenance ${result.tdee} kcal with ${ACTIVITY_COPY[result.activity_level] ?? result.activity_level}.`,
+    `${result.method === "katch" ? "Katch-McArdle (body-fat based)" : "Mifflin-St Jeor"} · BMR ${fmtInt(result.bmr)} kcal · maintenance ${fmtInt(result.tdee)} kcal with ${ACTIVITY_COPY[result.activity_level] ?? result.activity_level}.`,
     GOAL_COPY[result.goal] ?? "",
   ];
   if (sexAssumed) notes.push("Sex not set — using the average of the male and female formulas.");
@@ -62,7 +65,7 @@ const TargetsProposal = ({
   return (
     <div className="surface-card p-4 space-y-4">
       <div>
-        <p className="text-label font-bold text-gold/85 mb-1">Proposed targets</p>
+        <p className="text-label font-bold text-gold/85 mb-1">{inUse ? "Proposed targets · in use" : "Proposed targets"}</p>
         <p className="font-display text-[30px] font-black tracking-tight leading-none tabular-nums">
           {fmtInt(result.kcal)}
           <span className="text-read text-muted-foreground font-bold"> kcal / day</span>
@@ -77,11 +80,15 @@ const TargetsProposal = ({
           </li>
         ))}
       </ul>
+      {/* When the proposal IS the targets in force, the loud button offered a
+          switch to where you already are; only the way to change them stays. */}
       <div className="flex gap-2 pt-1">
-        <Button size="lg" className="flex-1" onClick={onUse} loading={busy} disabled={busy}>
-          Use these targets
-        </Button>
-        <Button size="lg" variant="outline" onClick={onAdjust} disabled={busy}>
+        {!inUse && (
+          <Button size="lg" className="flex-1" onClick={onUse} loading={busy} disabled={busy}>
+            Use these targets
+          </Button>
+        )}
+        <Button size="lg" variant="outline" className={inUse ? "flex-1" : undefined} onClick={onAdjust} disabled={busy}>
           Adjust
         </Button>
       </div>

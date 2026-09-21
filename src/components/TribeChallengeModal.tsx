@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check, Search, Swords, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -103,7 +103,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search tribe by name…"
+            placeholder="Search tribe by name…" {...SEARCH_FIELD}
             className="pl-9 h-11"
           />
         </div>

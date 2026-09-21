@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserSearch } from "@/hooks/use-user-search";
 import { avatarUrl } from "@/lib/img";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, UserPlus, Check, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -93,7 +93,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by username…"
+            placeholder="Search by username…" {...SEARCH_FIELD}
             className="pl-9 h-11"
             autoFocus
           />

@@ -28,7 +28,7 @@ import { cancelLapsedReengagement } from "@/lib/streak-notifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { pageKey } from "@/lib/nav";
 import { setNavigator } from "@/lib/router-bridge";
-import { BrowserRouter, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation, useNavigate, useNavigationType } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RevenueCatProvider } from "@/contexts/RevenueCatContext";
@@ -311,14 +311,19 @@ const AppRoutes = () => {
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const onScroll = () => {
-      if (TAB_ROOTS.has(keyRef.current)) savedScroll.set(keyRef.current, el.scrollTop);
-    };
+    const onScroll = () => { savedScroll.set(keyRef.current, el.scrollTop); };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
+  // Any page keeps its place when you come BACK to it (a pop): the Recover
+  // library → a routine → back landed at the top of a forty-row list. Opened
+  // fresh (a push), everything but the four roots still starts at the top.
+  const navType = useNavigationType();
   useLayoutEffect(() => {
-    scrollContainerRef.current?.scrollTo(0, TAB_ROOTS.has(key) ? (savedScroll.get(key) ?? 0) : 0);
+    const keep = TAB_ROOTS.has(key) || navType === "POP";
+    scrollContainerRef.current?.scrollTo(0, keep ? (savedScroll.get(key) ?? 0) : 0);
+    // navType belongs to the same navigation as `key`; keyed on the page only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
   // No web version of the app: on the public site only the legal pages and

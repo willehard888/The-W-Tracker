@@ -189,7 +189,10 @@ const Vault = () => {
         <section className="home-rise home-rise-2 mt-7" aria-label="Paths">
           <h3 className="font-display text-head font-black tracking-tight leading-none">Paths</h3>
           <p className="text-meta text-muted-foreground mt-1">Pieces in walking order around one change. The next step is always the first you have not practised.</p>
-          <div className="no-scrollbar -mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+          {/* scroll-px-4: mandatory snapping aligns a card to the scroller's
+              edge, which is the SCREEN edge here (-mx-4) — without it the
+              first card sat flush at x = 0, outside the page gutter. */}
+          <div className="no-scrollbar -mx-4 mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
             {VAULT_PATHS.map((p) => {
               const pp = pathProgress(p.steps, practicedSlugs);
               const accent = DIMENSION_ACCENT[p.dimension];

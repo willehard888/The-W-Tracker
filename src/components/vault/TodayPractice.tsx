@@ -17,7 +17,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
 
   if (loading && !pick) {
     return (
-      <div className={cn("px-1.5", className)} aria-hidden>
+      <div className={className} aria-hidden>
         <span className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />
         <div className="h-6 w-4/5 rounded-lg bg-card/40 skeleton-block" />
         <div className="h-4 w-3/5 rounded-lg bg-card/40 skeleton-block mt-2" />
@@ -36,7 +36,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
         hapticImpact("light");
         onOpen(article.slug);
       }}
-      className={cn("group relative block w-full text-left px-1.5 active:opacity-80 transition-opacity", className)}
+      className={cn("group relative block w-full text-left active:opacity-80 transition-opacity", className)}
     >
       <span aria-hidden className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />
       <p className="text-label font-bold text-muted-foreground">

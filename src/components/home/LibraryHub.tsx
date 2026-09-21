@@ -49,7 +49,9 @@ const ROWS = [
     key: "vault",
     path: "/vault",
     title: "The Vault",
-    sub: "Wisdom, inner work, longevity, recovery, training, mind, nervous system, nutrition",
+    // Fits the row: eight shelves in a line that truncates after four read
+    // "…recovery, tra…" on every phone.
+    sub: "Wisdom, inner work, longevity and mind",
     chip: "Premium",
     chipGold: true,
   },

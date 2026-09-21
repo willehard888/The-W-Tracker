@@ -214,7 +214,14 @@ const NutritionTargets = () => {
         </div>
 
         <div className="home-rise home-rise-2 space-y-4">
-          <TargetsProposal result={result} sexAssumed={result.ok && sexAssumed} onUse={useProposal} onAdjust={openAdjust} busy={saving} />
+          <TargetsProposal
+            result={result}
+            sexAssumed={result.ok && sexAssumed}
+            inUse={result.ok && !!targets && targets.kcal === result.kcal && Math.round(targets.protein_g) === result.protein_g && Math.round(targets.carbs_g) === result.carbs_g && Math.round(targets.fat_g) === result.fat_g}
+            onUse={useProposal}
+            onAdjust={openAdjust}
+            busy={saving}
+          />
 
           {adjusting && (
             <div className="surface-card surface-card-quiet p-4 space-y-3 home-rise">

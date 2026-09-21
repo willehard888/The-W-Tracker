@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import MoreSection from "@/components/ui/more-section";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { friendlyError } from "@/lib/error-copy";
@@ -533,15 +534,7 @@ const NutritionDiary = () => {
         {loading ? (
           <BodySkeleton />
         ) : failed ? (
-          <EmptyState
-            title="Couldn't load this day"
-            description={friendlyError(dayError)}
-            action={
-              <Button variant="outline" onClick={() => void refetch()}>
-                Retry
-              </Button>
-            }
-          />
+          <ErrorState title="Couldn't load this day" description={friendlyError(dayError)} onRetry={refetch} />
         ) : (
           <>
             {/* ── OPENING BEAT — the day's verdict, one line. The hero is a

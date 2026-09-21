@@ -56,9 +56,9 @@ import { clearDeferredRecovery } from "@/lib/recovery/deferred";
 import { preferredLength, rememberLength } from "@/lib/recovery/preferences";
 import { whyThis } from "@/lib/recovery/explain";
 import { movementSeconds, RECOVERY_BY_ID, type RecoveryMovement } from "@/data/recovery";
-import { ROUTINE_BY_ID, SHELF_LABEL, routineSession } from "@/data/recovery-routines";
+import { ROUTINE_BY_ID, SHELF_LABEL, routineArt, routineSession } from "@/data/recovery-routines";
 import { CHECKIN_HABITS } from "@/lib/checkin-habits";
-import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
+import { IllustrationPlayer, IllustrationThumb } from "@/components/coach/ExerciseIllustration";
 import { BreathFigure, BreathPacer, GuidedCue, armChime } from "@/components/recovery/StepVisual";
 import { hasVoice, needsSeek, setVoiceOn, voiceOn, voiceSrc } from "@/lib/recovery/voice";
 import { holdAudioSession, releaseAudioSession } from "@/lib/recovery/audio-session";
@@ -391,6 +391,11 @@ export default function Recovery() {
         <PageBar onBack={() => backOr(navigate, home)} title="Recovery" />
         <div className="px-4 pt-6 pb-6">
           <div className="home-rise">
+            {/* A one-item routine has no list under it, so its own drawing —
+                the one its library row wears — gives the screen a subject. */}
+            {session.movements.length === 1 && routineArt(routine) && (
+              <IllustrationThumb ex={{ idNum: routineArt(routine)!, title: routine.name }} size={96} className="mb-5 rounded-2xl" />
+            )}
             <p className="eyebrow-sm text-muted-foreground">{SHELF_LABEL[routine.shelf]}</p>
             <h1 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight text-balance">
               {routine.name}
@@ -748,16 +753,19 @@ export default function Recovery() {
         )}
 
         <div className="home-rise home-rise-4 mt-6 flex gap-2">
-          <Button
-            variant="ghost"
-            size="lg"
-            className="shrink-0 px-4"
-            aria-label="Previous movement"
-            disabled={index === 0 && side === 0}
-            onClick={() => { hapticImpact("light"); back(); }}
-          >
-            <ChevronLeft size={18} aria-hidden />
-          </Button>
+          {/* No "previous" in a session that only has one step (and one side). */}
+          {(total > 1 || movement.sides === 2) && (
+            <Button
+              variant="ghost"
+              size="lg"
+              className="shrink-0 px-4"
+              aria-label="Previous movement"
+              disabled={index === 0 && side === 0}
+              onClick={() => { hapticImpact("light"); back(); }}
+            >
+              <ChevronLeft size={18} aria-hidden />
+            </Button>
+          )}
           <Button
             variant="outline"
             size="lg"
@@ -802,10 +810,14 @@ export default function Recovery() {
           End session
         </Button>
 
-        <p className="mt-4 text-label text-muted-foreground/75 text-center tabular-nums">
-          {index + 1} of {total} ·{" "}
-          {describeLength(session.movements.reduce((s, m) => s + movementSeconds(m), 0))} total
-        </p>
+        {/* A one-step session already says its length in the bar and counts
+            down above: "1 of 1 · 5 min total" only repeated both. */}
+        {total > 1 && (
+          <p className="mt-4 text-label text-muted-foreground/75 text-center tabular-nums">
+            {index + 1} of {total} ·{" "}
+            {describeLength(session.movements.reduce((s, m) => s + movementSeconds(m), 0))} total
+          </p>
+        )}
       </div>
     </div>
   );

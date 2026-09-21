@@ -48,12 +48,15 @@ const FoodResultRow = ({
         className="flex-1 min-w-0 min-h-11 py-2.5 text-left active:opacity-70 transition-opacity"
       >
         <p className="text-read font-bold leading-tight truncate">{food.name}</p>
+        {/* Numbers first, brand last: the line truncates, and with a long brand
+            in front ("COCA-COLA SERVICES SA/NV · …") it was the kcal and the
+            protein — what you pick a food by — that fell off the end. */}
         <p className="text-meta text-muted-foreground leading-snug truncate">
-          {food.brand ? `${food.brand} · ` : ""}
           {food.isRecipe ? "per serving" : "per 100 g"}
           {food.kcal != null && ` · ${Math.round(food.kcal)} kcal`}
           {food.protein != null && ` · P ${Math.round(food.protein)}`}
           {tag && <span className="text-label font-bold ml-1.5 text-muted-foreground/75">{tag}</span>}
+          {food.brand ? ` · ${food.brand}` : ""}
         </p>
       </button>
       {onToggleFavorite && (

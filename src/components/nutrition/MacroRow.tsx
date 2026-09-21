@@ -1,3 +1,5 @@
+import { fmtInt } from "@/lib/format";
+
 /**
  * Protein leads, the rest recede — the macro grammar shared by the curated
  * recipe detail, the diary's nutrient previews and user recipes. One gold tile
@@ -11,7 +13,9 @@ export interface MacroSummary {
   fat: number;
 }
 
-const fmt = (n: number) => (Number.isFinite(n) ? Math.round(n).toString() : "—");
+// fmtInt groups thousands the house way: the row said "2200 kcal" right under
+// a headline reading "2 200 kcal / day".
+const fmt = (n: number) => fmtInt(n);
 
 const MacroRow = ({ nutrition, className }: { nutrition: MacroSummary; className?: string }) => (
   <div className={["flex items-stretch gap-3", className].filter(Boolean).join(" ")}>

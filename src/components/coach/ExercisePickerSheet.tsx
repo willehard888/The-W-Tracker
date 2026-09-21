@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { Thumb } from "@/components/coach/FocusSessionSheet";
 import { useEngine, useMuscleBalance, type Engine, type Focus, type SessionBlock } from "@/hooks/use-focus-session";
@@ -124,7 +124,7 @@ const ExercisePickerSheet = ({ open, onClose, title, current, exclude, onPick }:
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search movements"
+              placeholder="Search movements" {...SEARCH_FIELD}
               aria-label="Search movements"
               className="pl-9 text-copy"
             />

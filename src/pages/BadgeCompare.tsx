@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Shield, Check, Minus } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
@@ -123,7 +123,7 @@ const BadgeCompare = () => {
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <Input
             type="text"
-            placeholder="Search by username"
+            placeholder="Search by username" {...SEARCH_FIELD}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

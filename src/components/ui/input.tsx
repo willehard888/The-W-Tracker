@@ -24,4 +24,11 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 );
 Input.displayName = "Input";
 
-export { Input };
+/**
+ * Spread onto every search field. iOS capitalises the first letter and
+ * autocorrects what it takes for a typo — "maito" became "Maito" with "Mauro"
+ * on offer, and a username search was one space away from another name.
+ */
+const SEARCH_FIELD = { autoCapitalize: "none", autoCorrect: "off", spellCheck: false, enterKeyHint: "search" } as const;
+
+export { Input, SEARCH_FIELD };

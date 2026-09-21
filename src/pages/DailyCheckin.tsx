@@ -1,4 +1,5 @@
 import { backOr } from "@/lib/nav";
+import { SEARCH_FIELD } from "@/components/ui/input";
 import { useSessionDoneToday } from "@/hooks/use-session-done-today";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { getEffectiveStreak } from "@/lib/streak";
@@ -1119,7 +1120,7 @@ const DailyCheckin = () => {
                 <input
                   value={sportQuery}
                   onChange={(e) => setSportQuery(e.target.value)}
-                  placeholder="Search sports…"
+                  placeholder="Search sports…" {...SEARCH_FIELD}
                   aria-label="Search sports"
                   className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-copy outline-none focus:border-gold/50 transition-colors"
                 />

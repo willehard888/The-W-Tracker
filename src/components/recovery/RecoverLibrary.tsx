@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { describeLength } from "@/lib/recovery/build-session";
@@ -201,7 +201,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search stretches, breathing, sleep…"
+          placeholder="Search stretches, breathing, sleep…" {...SEARCH_FIELD}
           aria-label="Search recovery"
           className="pl-9 pr-11"
         />

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Lock, Loader2, Users, Check, X } from "lucide-react";
 import { toast } from "sonner";
@@ -142,7 +142,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search all tribes (public & private)"
+          placeholder="Search all tribes (public & private)" {...SEARCH_FIELD}
           aria-label="Search tribes"
           className="pl-9 pr-9 h-10 bg-card/60 border-border focus-visible:ring-[hsl(var(--ember))]/40"
         />

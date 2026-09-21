@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useScrollContainer } from "@/contexts/ScrollContainerContext";
@@ -203,7 +203,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search recipes or ingredients"
+              placeholder="Search recipes or ingredients" {...SEARCH_FIELD}
               aria-label="Search recipes or ingredients"
               className="h-11 rounded-xl pl-9 pr-9 text-note"
             />

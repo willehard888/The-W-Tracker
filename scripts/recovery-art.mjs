@@ -17,6 +17,12 @@
 //     --shift=N: move the second frame by N px, when a prop is mostly hidden
 //             behind the figure and --align finds nothing to match.
 //   node scripts/recovery-art.mjs contact <out.png> <sheet.png...>   (review, 4 per image)
+//   node scripts/recovery-art.mjs breathe <id...|all>
+//     The breathing and guided figures: rebuilds BOTH frames from the exhaled
+//     drawing, the inhaled one by a smooth warp of the rib cage (BREATH below).
+//     A generated pair is two separate drawings — 20–70 % of one frame's ink had
+//     no partner within 3 px in the other — and the runner cross-fades them on
+//     the breath, so every line doubled. From one drawing, only the chest moves.
 //   then: node scripts/bake-gold-thumbs.mjs && npx vite-node scripts/generate-illustration-frames.mts
 //
 // Raw sheets stay outside the repo; only the traced output is committed.
@@ -147,6 +153,78 @@ async function trace(sheet, id, step = false, align = false, manual = 0) {
   console.log(`ok ${id} ${width}x${height} ${out.relaxation.length}+${out.tension.length} bytes${shift ? ` (aligned ${shift}px)` : ""}`);
 }
 
+/**
+ * Where each figure breathes, in the frame's own 0–1 coordinates:
+ * [cx, cy, RX, RY, kx, ky]. (cx, cy) is what stays put — the sternum for a
+ * figure seen from the front, the SPINE for one seen from the side, the BACK
+ * on the floor for one lying down — RX/RY the reach of the movement, kx/ky how
+ * far the rib cage opens along each axis (0.07 = 7 % at the centre, falling
+ * smoothly to nothing at the reach, so no line ever breaks).
+ */
+const BREATH = {
+  "0323": [0.33, 0.43, 0.36, 0.26, 0.07, 0.035], // seated, three-quarter view
+  "0373": [0.31, 0.33, 0.40, 0.22, 0.07, 0.02],  // on a bench, side view
+  "0374": [0.22, 0.235, 0.85, 0.075, 0.07, 0.0], // standing, side view
+  "0375": [0.50, 0.42, 0.42, 0.24, 0.06, 0.03],  // seated, front view, hand on chest
+  "0376": [0.27, 0.72, 0.13, 0.75, 0.0, 0.16],   // supine, hand on belly
+  "0377": [0.235, 0.75, 0.12, 0.80, 0.0, 0.16],  // supine
+  "0378": [0.27, 0.58, 0.12, 0.55, 0.0, 0.16],   // supine, arms out
+  "0379": [0.33, 0.41, 0.36, 0.26, 0.07, 0.035], // seated, three-quarter view
+  "0380": [0.24, 0.31, 0.45, 0.20, 0.07, 0.02],  // on a bench, side view
+  "0381": [0.26, 0.60, 0.12, 0.65, 0.0, 0.16],   // supine
+  "0382": [0.22, 0.24, 0.95, 0.075, 0.07, 0.0],  // standing, side view
+  "0383": [0.40, 0.62, 0.16, 0.70, 0.03, 0.10],  // side-lying
+};
+
+async function breathe(ids) {
+  for (const id of ids) {
+    const spec = BREATH[id];
+    if (!spec) return refuse(`no BREATH entry for ${id}`);
+    const [cx, cy, RX, RY, kx, ky] = spec;
+    const src = `public/illustrations/frames/${id}-relaxation.svg`;
+    const vb = (await sharp(src).metadata());
+    const box = /viewBox="0 0 (\d+) (\d+)"/.exec((await import("node:fs")).readFileSync(src, "utf8"));
+    const [vw, vh] = box ? [Number(box[1]), Number(box[2])] : [vb.width, vb.height];
+    // Twice the frame's own size: a 3 px line is 6 px here, enough for the
+    // bilinear sampling below to keep its edge.
+    const w = vw * 2, h = vh * 2;
+    const { data } = await sharp(src, { density: 300 }).flatten({ background: "#ffffff" })
+      .resize(w, h, { fit: "fill" }).greyscale().raw().toBuffer({ resolveWithObject: true });
+    const at = (x, y) => {
+      const x0 = Math.max(0, Math.min(w - 1, Math.floor(x))), y0 = Math.max(0, Math.min(h - 1, Math.floor(y)));
+      const x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1), fx = x - x0, fy = y - y0;
+      return (data[y0 * w + x0] * (1 - fx) + data[y0 * w + x1] * fx) * (1 - fy)
+           + (data[y1 * w + x0] * (1 - fx) + data[y1 * w + x1] * fx) * fy;
+    };
+    const warped = Buffer.alloc(w * h);
+    const px = cx * w, py = cy * h, rx = RX * w, ry = RY * h;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const ux = (x - px) / rx, uy = (y - py) / ry, r2 = ux * ux + uy * uy;
+      if (r2 >= 1) { warped[y * w + x] = data[y * w + x]; continue; }
+      const f = (1 - r2) * (1 - r2);
+      // Inverse map: this output pixel shows what stood closer to the centre.
+      warped[y * w + x] = Math.round(at(px + (x - px) / (1 + kx * f), py + (y - py) / (1 + ky * f)));
+    }
+    const png = (buf) => sharp(buf, { raw: { width: w, height: h, channels: 1 } }).png().toBuffer();
+    const out = {};
+    // Both frames through the same raster and the same tracer, so everything
+    // outside the chest is the same drawing to the pixel.
+    for (const [state, buf] of [["relaxation", data], ["tension", warped]]) {
+      let svg = await traceSvg(await png(buf));
+      // Traced at 2×, shown in the frame's own units: the viewBox does not
+      // grow, so running this again starts from the same size.
+      svg = svg.replace(/<svg[^>]*>/, `<svg width="${Math.round((275 * vw) / vh)}pt" height="275pt" viewBox="0 0 ${vw} ${vh}" xmlns="http://www.w3.org/2000/svg">`)
+        .replace("<path ", '<g transform="scale(0.5)"><path ').replace("</svg>", "</g></svg>");
+      if (svg.length > 60_000) return refuse(`${id} ${state} SVG is ${svg.length} bytes`);
+      out[state] = svg;
+    }
+    for (const [state, svg] of Object.entries(out)) writeFileSync(`public/illustrations/frames/${id}-${state}.svg`, svg);
+    await sharp(Buffer.from(out.tension), { density: 150 }).resize({ width: 112 }).flatten({ background: "#ffffff" })
+      .webp({ quality: 80 }).toFile(`public/illustrations/${id}.webp`);
+    console.log(`ok ${id} ${w}x${h} ${out.relaxation.length}+${out.tension.length} bytes`);
+  }
+}
+
 /** Four sheets on one image, labelled by file name, for reviewing a batch by eye. */
 async function contact(out, sheets) {
   const cell = { w: W / 2, h: H / 2 };
@@ -171,4 +249,5 @@ else if (cmd === "trace") {
   await trace(args[0], args[1], args.includes("--step"), args.includes("--align"), manual);
 }
 else if (cmd === "contact") await contact(args[0], args.slice(1));
-else { console.error("usage: refs <outDir> <ids...> | trace <sheet.png> <id> | contact <out.png> <sheets...>"); process.exit(1); }
+else if (cmd === "breathe") await breathe(args[0] === "all" ? Object.keys(BREATH) : args);
+else { console.error("usage: refs <outDir> <ids...> | trace <sheet.png> <id> | contact <out.png> <sheets...> | breathe <id...|all>"); process.exit(1); }

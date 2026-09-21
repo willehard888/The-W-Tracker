@@ -54,7 +54,10 @@ const Scale = ({
 
 const EveningReflectionCard = () => {
   const { reflection, isLoading, submit } = useTodayReflection();
-  const [open, setOpen] = useState(false);
+  // The card only lives on its own page now (the page mounts it once the
+  // reflection has loaded), so an unlogged night opens as the form: collapsed,
+  // the page's one job was a second tap away.
+  const [open, setOpen] = useState(() => !reflection);
   const [energy, setEnergy] = useState<number | null>(null);
   const [sleep, setSleep] = useState<number | null>(null);
   const [mood, setMood] = useState<number | null>(null);

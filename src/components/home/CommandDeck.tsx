@@ -176,7 +176,7 @@ const CommandDeck = ({
             <div className="min-w-0 flex-1">
               <p className="text-label font-bold text-gold/85 mb-0.5">Lock your day</p>
               <p className="font-display font-black text-head leading-none tracking-tight">
-                Daily Check-In
+                Daily check-in
               </p>
               <p className="text-meta text-muted-foreground mt-1 leading-snug">
                 {streak > 0 ? `Defend your ${streak}-day streak.` : "Start your streak. Earn XP. Climb."}

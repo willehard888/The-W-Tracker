@@ -454,9 +454,12 @@ const Index = () => {
       </div>
       {/* Recent Badges */}
       <div className="mb-2">
-        <div className="flex items-end justify-between mb-3 px-0.5">
-          <h2 className="font-display font-bold text-base tracking-tight leading-none">
-            Recent Badges
+        {/* The unsized button takes the 44 pt floor and centres its label,
+            so the row centres too — bottom-aligned, the label sat 14 px above
+            the heading. */}
+        <div className="flex items-center justify-between mb-2 px-0.5">
+          <h2 className="font-display font-bold text-copy tracking-tight leading-none">
+            Recent badges
           </h2>
           <button
             onClick={() => navigate("/profile")}
@@ -467,7 +470,7 @@ const Index = () => {
         </div>
         {userBadges && userBadges.length > 0 ? (
           <div className="grid grid-cols-3 gap-3">
-            {userBadges.map((ub: any) => (
+            {userBadges.map((ub) => ub.badges && (
               <BadgeCard
                 key={ub.id}
                 name={ub.badges.name}
@@ -485,7 +488,7 @@ const Index = () => {
               canCheckin ? (
                 <button
                   onClick={() => navigate("/checkin")}
-                  className="text-xs font-bold text-gold active:opacity-70 transition-opacity inline-flex items-center gap-1"
+                  className="min-h-11 text-xs font-bold text-gold active:opacity-70 transition-opacity inline-flex items-center gap-1"
                 >
                   Lock today <ChevronRight aria-hidden size={12} />
                 </button>

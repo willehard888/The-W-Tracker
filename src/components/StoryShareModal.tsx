@@ -451,8 +451,8 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
       <div className="absolute inset-0 bg-background/95" />
 
       <div className="relative flex flex-col items-center gap-3 w-full max-w-[320px]" onClick={(e) => e.stopPropagation()}>
-        <button aria-label="Close" onClick={onClose} className="absolute -top-1 -right-1 z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors">
-          <X size={16} />
+        <button aria-label="Close" onClick={onClose} className="absolute -top-1 -right-1 z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors before:absolute before:-inset-1.5 before:content-['']">
+          <X aria-hidden size={16} />
         </button>
 
         {/* Preview Card */}

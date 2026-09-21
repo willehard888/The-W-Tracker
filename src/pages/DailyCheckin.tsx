@@ -744,12 +744,14 @@ const DailyCheckin = () => {
             const top = (myTribes ?? [])[0];
             if (top) {
               const others = tribeIds.length - 1;
+              // Short title: beside the Open button the toast has room for
+              // about sixteen characters before the tribe's name wraps.
               toast.success(
-                `${top.name} +1 → ${(top.collective_streak ?? 0) + 1}d`,
+                `${top.name} · ${(top.collective_streak ?? 0) + 1}d`,
                 {
                   description: others > 0
-                    ? `You fed ${tribeIds.length} fires today. Tap to see the tribe.`
-                    : "Your check-in feeds the collective fire. Tap to see it.",
+                    ? `Your check-in fed ${tribeIds.length} fires today. Tap to see the tribe.`
+                    : "Your check-in fed the collective fire. Tap to see it.",
                   duration: 5000,
                   action: { label: "Open", onClick: () => navigate(`/tribes/${top.id}`) },
                 },
@@ -820,7 +822,7 @@ const DailyCheckin = () => {
           <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already logged today</h1>
           <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
           <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in <MidnightCountdown /></p>
-          <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
+          <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>Back to Today</Button>
         </div>
       </div>
     );
@@ -836,7 +838,7 @@ const DailyCheckin = () => {
             </div>
             <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in</h1>
             <p className="text-muted-foreground text-sm mb-8">Your day is locked in. Nice work.</p>
-            <Button variant="ember" size="lg" onClick={() => navigate("/")}>Back to Dashboard</Button>
+            <Button variant="ember" size="lg" onClick={() => navigate("/")}>Back to Today</Button>
           </div>
         }
       >

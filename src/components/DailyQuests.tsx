@@ -98,7 +98,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
             <Target aria-hidden size={16} className="text-gold" />
           </div>
           <div>
-            <p className="font-display font-bold text-sm tracking-tight">Daily Quests</p>
+            <p className="font-display font-bold text-sm tracking-tight">Daily quests</p>
             <p className="text-label text-muted-foreground">Bonus objectives — refreshes daily</p>
           </div>
         </div>
@@ -147,7 +147,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
       {totalBonus > 0 && (
         <div className="mt-3 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-gold/10 border border-gold/20">
           <Zap aria-hidden size={12} className="text-gold" />
-          <span className="text-xs font-bold text-gold">Quest Bonus: +{totalBonus} XP</span>
+          <span className="text-xs font-bold text-gold">Quest bonus · +{totalBonus} XP</span>
         </div>
       )}
     </div>

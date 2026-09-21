@@ -29,7 +29,7 @@ export const SHARED_CHECKIN_HABITS: SharedCheckinHabit[] = [
   { key: "workout", label: "Workout", pillar: "movement", column: "workout" },
   { key: "hydration", label: "3L+ water", pillar: "nutrition" },
   { key: "meditation", label: "Meditation", pillar: "mind", column: "meditation_morning" },
-  { key: "steps_8k", label: "8,000+ steps", pillar: "movement" },
+  { key: "steps_8k", label: "8 000+ steps", pillar: "movement" },
   { key: "extra_workout", label: "Second session", pillar: "movement", column: "extra_workout", cadence: "bonus" },
   { key: "zone2", label: "Zone-2 cardio", pillar: "movement" },
   { key: "mobility", label: "Mobility / stretch", pillar: "movement" },

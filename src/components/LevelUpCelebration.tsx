@@ -90,12 +90,12 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
         <p className="text-label font-bold text-gold/70 mb-1"
           style={{ animation: phase === "show" ? "fade-in 0.5s ease-out 0.3s both" : undefined }}
         >
-          New Level Reached
+          New level reached
         </p>
         <h1 className="font-display text-3xl font-black tracking-tight text-foreground mb-1"
           style={{ animation: phase === "show" ? "fade-in 0.5s ease-out 0.5s both" : undefined }}
         >
-          LEVEL UP! 🚀
+          Level {newLevel}.
         </h1>
         <p className="text-sm text-muted-foreground"
           style={{ animation: phase === "show" ? "fade-in 0.5s ease-out 0.7s both" : undefined }}

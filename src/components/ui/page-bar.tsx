@@ -8,6 +8,10 @@ import { cn } from "@/lib/utils";
  * one right-hand action. Owns the safe-area inset (the brand header is hidden
  * on every sub-page) and sticks so the way out never scrolls away. A node
  * `title` (date strip, partner row) renders in the same slot without an h1.
+ *
+ * Opaque on purpose: at 97 % the rows scrolling underneath still showed
+ * through as a ghost on the 1.8 %-lightness ground — nothing blurs, so
+ * there was nothing to gain from the 3 %.
  */
 const PageBar = ({
   title,
@@ -22,7 +26,7 @@ const PageBar = ({
 }) => (
   <header
     className={cn(
-      "shrink-0 safe-top z-20 bg-[hsl(var(--background)/0.97)] chrome-top-elevated px-2 pt-3 pb-2 flex items-center gap-1",
+      "shrink-0 safe-top z-20 bg-background chrome-top-elevated px-2 pt-3 pb-2 flex items-center gap-1",
       sticky && "sticky top-0",
     )}
   >

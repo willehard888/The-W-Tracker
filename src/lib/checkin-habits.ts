@@ -59,7 +59,7 @@ export const CHECKIN_HABITS: CheckinHabit[] = [
   { key: "meditation", label: "Meditation", emoji: "🧘", pillar: "mind", xp: 15, column: "meditation_morning", verify: "mindfulness", core: true, note: "Auto-verified from Apple Health mindful minutes." },
 
   // ── Movement (new) ────────────────────────────────────────────────────────
-  { key: "steps_8k", label: "8,000+ steps", emoji: "🚶", pillar: "movement", xp: 20, verify: "steps", note: "Daily steps strongly predict longevity." },
+  { key: "steps_8k", label: "8 000+ steps", emoji: "🚶", pillar: "movement", xp: 20, verify: "steps", note: "Daily steps strongly predict longevity." },
   { key: "extra_workout", label: "Second session", emoji: "⚡", pillar: "movement", xp: 25, column: "extra_workout", cadence: "bonus" },
   { key: "zone2", label: "Zone-2 cardio", emoji: "🫀", pillar: "movement", xp: 20, verify: "workout", note: "Builds your aerobic base + mitochondria." },
   { key: "mobility", label: "Mobility / stretch", emoji: "🤸", pillar: "movement", xp: 15 },

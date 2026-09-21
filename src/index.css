@@ -1644,7 +1644,10 @@
   [style*="flame-lightning"],
   [style*="tfl-"],
   [style*="tribeflame-"],
-  [style*="ember-seed"] {
+  [style*="ember-seed"],
+  /* ConfettiBurst: the particles start at opacity 0 and only the animation
+     shows them, so stopping it is the same as not firing the burst. */
+  [style*="confetti-"] {
     animation: none !important;
   }
 }

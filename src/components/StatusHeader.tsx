@@ -129,7 +129,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
           just a subtle backdrop blur so scrolled content reads cleanly under
           it. No glass tint, no tier colour wash (those made the top bar look
           like a different shade than the page). */}
-      <div className="relative bg-[hsl(var(--background)/0.97)] hairline-bottom border-x-0 border-t-0 border-b-0 rounded-none chrome-top-elevated">
+      <div className="relative bg-background hairline-bottom border-x-0 border-t-0 border-b-0 rounded-none chrome-top-elevated">
         {/* Tier colour wash REMOVED — kept transparent so the bar is one tone
             with the body (was a teal/amber tint that read as "different
             colour" at the top of the screen). */}

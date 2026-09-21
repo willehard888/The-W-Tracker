@@ -77,16 +77,19 @@ const TierPromotionCelebration = () => {
             aria-modal="true"
             aria-label="Tier promotion"
             className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center px-6"
-            style={{ background: heroGradient, backdropFilter: "blur(20px)" }}
+            // The gradient is 95–98 % opaque: the blur it used to carry was a
+            // full-screen filter pass under the confetti for nothing visible.
+            style={{ background: heroGradient }}
           >
             <ConfettiBurst active={showCelebration} />
 
             <button
               onClick={() => setShowCelebration(false)}
-              className="absolute top-6 right-6 p-2 rounded-full bg-secondary/60 hover:bg-secondary"
+              className="absolute right-6 p-2 rounded-full bg-secondary/60 hover:bg-secondary before:absolute before:-inset-1.5 before:content-['']"
+              style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
               aria-label="Close"
             >
-              <X size={16} />
+              <X aria-hidden size={16} />
             </button>
 
             <div className="text-center max-w-sm">
@@ -96,7 +99,7 @@ const TierPromotionCelebration = () => {
                 transition={{ delay: 0.1 }}
                 className="text-label font-bold text-gold/80 mb-3"
               >
-                Status Promotion
+                Status promotion
               </m.p>
 
               <m.div

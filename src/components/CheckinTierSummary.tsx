@@ -364,10 +364,10 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           className="grid grid-cols-2 gap-2"
         >
           <Button variant="gold-outline" size="lg" onClick={onProfile}>
-            View Profile
+            View profile
           </Button>
           <Button variant="ember" size="lg" onClick={onDashboard}>
-            Dashboard
+            Back to Today
           </Button>
         </m.div>
 

@@ -348,7 +348,9 @@ const Paywall = () => {
         {/* FOOTER: restore, the pilot door, and the two links App Review
             requires (Terms of Use / EULA and Privacy Policy). All 44 pt. */}
         <div className="home-rise home-rise-2 mt-5">
-          <div className="flex items-center justify-center">
+          {/* Wraps: on a 375 pt phone the three links are wider than the
+              screen, and App Review reads the last two. */}
+          <div className="flex flex-wrap items-center justify-center">
             <button type="button" onClick={handleRestore} className={quiet}>Restore purchases</button>
             <button type="button" onClick={() => navigate("/terms")} className={quiet}>Terms of Use</button>
             <button type="button" onClick={() => navigate("/privacy")} className={quiet}>Privacy Policy</button>

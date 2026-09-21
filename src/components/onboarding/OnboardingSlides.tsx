@@ -154,7 +154,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
 export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
     <p className="text-label font-bold text-muted-foreground mb-2">Your free trial</p>
-    <h1 className="font-display text-[28px] leading-tight font-black tracking-tight text-center mb-1.5">
+    <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
       Fourteen days, all in.
     </h1>
     <p className="text-sm text-muted-foreground text-center mb-7">
@@ -209,7 +209,7 @@ export const PushSlide = ({ onEnable, onSkip, busy }: { onEnable: () => void; on
     <button
       type="button"
       onClick={onSkip}
-      className="mt-4 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1"
+      className="mt-2 min-h-11 px-4 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
     >
       Not now
     </button>
@@ -222,7 +222,7 @@ export const FinaleSlide = ({ goal, onNext }: { goal?: string; onNext: () => voi
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto w-full">
       <FlameHero size={56} box="w-44 h-44" />
-      <h1 className="font-display text-[28px] leading-tight font-black tracking-tight mt-4 mb-1.5">
+      <h1 className="font-display text-beat leading-tight font-black tracking-tight mt-4 mb-1.5">
         Setup done. Time for your first W.
       </h1>
       {goalOpt && (

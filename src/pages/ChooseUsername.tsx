@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -156,7 +157,9 @@ const ChooseUsername = () => {
             ) : availability === "checking" ? (
               <p className="text-label text-muted-foreground mt-1.5">Checking availability…</p>
             ) : availability === "available" ? (
-              <p className="commit-pop origin-left text-label text-xp-green mt-1.5 font-bold">@{username} is yours ✓</p>
+              <p className="commit-pop origin-left text-label text-xp-green mt-1.5 font-bold inline-flex items-center gap-1">
+                  <Check aria-hidden size={12} strokeWidth={3} /> @{username} is yours
+                </p>
             ) : (
               <p className="text-label text-muted-foreground mt-1.5">3–20 characters: a-z, 0-9 and _</p>
             )}

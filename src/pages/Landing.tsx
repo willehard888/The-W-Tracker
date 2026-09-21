@@ -33,7 +33,10 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
   useEffect(() => { void trackAnon("landing_viewed"); }, []);
 
   return (
-    <div ref={ref} className="min-h-full gradient-dark flex flex-col overflow-hidden relative">
+    // safe-top: this page has neither the brand header nor a PageBar, the two
+    // things that own the status-bar inset everywhere else — its logo sat
+    // under the clock and the wordmark behind the Dynamic Island.
+    <div ref={ref} className="min-h-full gradient-dark flex flex-col overflow-hidden relative safe-top">
       {/* Single composited atmosphere layer — replaces three stacked gradients */}
       <div
         aria-hidden
@@ -85,7 +88,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             onClick={() => navigate("/auth?mode=signup")}
             className="w-full group text-base"
           >
-            Start Your Journey
+            Start your journey
             <ArrowRight aria-hidden
               size={18}
               className="transition-transform group-hover:translate-x-1"

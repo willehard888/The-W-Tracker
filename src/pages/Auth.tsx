@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAnon } from "@/lib/analytics";
 import { toast } from "sonner";
@@ -168,8 +168,18 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6 py-10">
-      <div className="w-full max-w-sm">
+    // The sign-up form is about as tall as a phone, so centring it put the
+    // logo under the Dynamic Island: the padding carries the safe areas. And
+    // `my-auto` on the child instead of `justify-center` here, which clips the
+    // top of content taller than the screen where no scroll can reach it.
+    <div
+      className="min-h-full gradient-dark flex flex-col items-center px-6"
+      style={{
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.5rem)",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+      }}
+    >
+      <div className="w-full max-w-sm my-auto">
         {/* ── OPENING BEAT — the brand mark, then one line that knows why
                you are here. ── */}
         <header className="home-rise flex flex-col items-center text-center mb-8">
@@ -223,7 +233,9 @@ const Auth = () => {
               {nameStatus === "taken" ? (
                 <p className="text-label text-destructive mt-1.5 font-bold">@{username} is taken — pick another.</p>
               ) : nameStatus === "available" ? (
-                <p className="commit-pop origin-left text-label text-xp-green mt-1.5 font-bold">@{username} is yours ✓</p>
+                <p className="commit-pop origin-left text-label text-xp-green mt-1.5 font-bold inline-flex items-center gap-1">
+                  <Check aria-hidden size={12} strokeWidth={3} /> @{username} is yours
+                </p>
               ) : nameStatus === "checking" ? (
                 <p className="text-label text-muted-foreground mt-1.5">Checking availability…</p>
               ) : (

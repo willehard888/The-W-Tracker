@@ -1,7 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
+
+const auth = vi.hoisted(() => ({ user: { id: "u1" } as { id: string } | null, loading: false }));
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => auth }));
 
 /**
  * The active pill used to be a framer layoutId span per tab, which measured
@@ -13,6 +16,8 @@ const at = (path: string) =>
 const indicators = (root: HTMLElement) => root.querySelectorAll<HTMLElement>("[data-nav-indicator]");
 
 describe("BottomNav", () => {
+  beforeEach(() => { auth.user = { id: "u1" }; auth.loading = false; });
+
   it("slides one indicator to the active tab's column", () => {
     const root = at("/leaderboard");
     const ind = indicators(root);
@@ -30,5 +35,13 @@ describe("BottomNav", () => {
   it("leaves the workout and a chat thread alone", () => {
     expect(at("/coach/session/x").querySelector("nav")).toBeNull();
     expect(at("/chat/abc").querySelector("nav")).toBeNull();
+  });
+
+  it("shows no tabs to a signed-out visitor, but holds them while auth resolves", () => {
+    auth.user = null;
+    expect(at("/reset-password").querySelector("nav")).toBeNull();
+    expect(at("/terms").querySelector("nav")).toBeNull();
+    auth.loading = true;
+    expect(at("/").querySelector("nav")).not.toBeNull();
   });
 });

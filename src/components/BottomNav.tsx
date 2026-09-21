@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { memo, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Four focused tabs: show up (Today) → belong (Squad: feed/tribes/friends) →
 // see where you stand (Ranks) → identity (Profile). Coach (the brain) is
@@ -72,6 +73,7 @@ const prefetchRoute = (path: string) => {
 
 const BottomNav = () => {
   const location = useLocation();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const pressedAt = useRef<{ path: string; t: number } | null>(null);
 
@@ -99,9 +101,14 @@ const BottomNav = () => {
 
   // The active workout owns the whole screen: nothing should compete with the
   // set in front of the athlete, and a stray tab tap mid-session loses their place.
+  // …and a visitor who is not signed in has no tabs to go to: the bar showed
+  // on /reset-password, the legal pages, a shared profile and the 404, and
+  // every tab on it bounced to the landing page. It stays while auth is still
+  // resolving, so a member's cold start does not pop the bar in.
   if (HIDDEN_PATHS.has(location.pathname)
       || location.pathname.startsWith("/chat/")
-      || location.pathname.startsWith("/coach/session/")) {
+      || location.pathname.startsWith("/coach/session/")
+      || (!loading && !user)) {
     return null;
   }
 

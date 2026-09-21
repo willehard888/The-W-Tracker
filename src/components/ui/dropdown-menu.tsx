@@ -50,13 +50,20 @@ DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayNam
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 6, ...props }, ref) => (
+>(({ className, sideOffset = 6, onCloseAutoFocus, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
       className={cn(contentBase, className)}
       {...props}
+      // Radix hands focus back to the trigger on close, and a scripted focus
+      // matches :focus-visible — on a phone the ⋮ kept a gold ring after the
+      // menu was dismissed. A keyboard still gets its place back.
+      onCloseAutoFocus={(e) => {
+        onCloseAutoFocus?.(e);
+        if (window.matchMedia?.("(pointer: coarse)").matches) e.preventDefault();
+      }}
     />
   </DropdownMenuPrimitive.Portal>
 ));

@@ -141,6 +141,8 @@ const RecoveryCard = () => {
         </>
       )}
 
+      {/* No vitals, no row: empty, it still held its margin open under the header. */}
+      {(last!.resting_hr != null || last!.respiratory_rate != null) && (
       <div className="flex items-center gap-4 mb-3">
         {last!.resting_hr != null && (
           <div className="flex items-center gap-1.5">
@@ -162,6 +164,7 @@ const RecoveryCard = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* 14-night RHR trajectory — proof of getting fitter over time, not just
           last night. Falling line = improving; labeled so DOWN reads as good. */}

@@ -56,7 +56,9 @@ const ProgressDashboard = ({ program }: Props) => {
   const fetchRead = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("coach-progress-read");
+      const { data, error } = await supabase.functions.invoke("coach-progress-read", {
+        body: { tz_offset_minutes: new Date().getTimezoneOffset() },
+      });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       setRead((data as any).read);
@@ -77,9 +79,13 @@ const ProgressDashboard = ({ program }: Props) => {
       {/* Stat trio (last 7d). It arrives with the coach's read: before that
           it was three dashes repeating the strip at the top of the page. */}
       {stats && (
+      <div>
+      {/* Named, because the summary above counts the program's week: "2" here
+          under "1 of 1 sessions" read as a disagreement. */}
+      <p className="text-label font-bold text-muted-foreground/75 mb-2">Last 7 days</p>
       <div className="grid grid-cols-3 gap-2">
         <Tile
-          label="Workouts"
+          label="Training days"
           value={`${stats?.workouts ?? "–"}`}
           target={`/${targets.workouts}`}
         />
@@ -93,6 +99,7 @@ const ProgressDashboard = ({ program }: Props) => {
           value={stats?.avg_hydration_l != null ? `${stats.avg_hydration_l}L` : "–"}
           target={`/${targets.hydration_l}L`}
         />
+      </div>
       </div>
       )}
 

@@ -58,10 +58,10 @@ Deno.serve(async (req) => {
         sb.from("profiles").select("status_tier").eq("user_id", uid).maybeSingle(),
       ]);
       // A brief written this morning kept calling the member a Recruit after
-      // the check-in that promoted them. Briefs stored before `tier` existed
-      // carry none and are served as they are.
+      // the check-in that promoted them. A brief stored before `tier` existed
+      // carries none and is written again once.
       const p = cached?.payload as { tier?: string } | null | undefined;
-      const outdated = !!p?.tier && !!now?.status_tier && p.tier !== now.status_tier;
+      const outdated = !!now?.status_tier && p?.tier !== now.status_tier;
       if (cached?.payload && !outdated) return json({ brief: cached.payload, cached: true });
     }
 

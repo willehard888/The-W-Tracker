@@ -1,6 +1,7 @@
 // coach-progress-read — Premium-only. Generates a short coach read of last 7d progress vs program targets.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
+import { clampTzOffset, localDayKey } from "../_shared/local-day.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -90,7 +91,15 @@ Deno.serve(async (req) => {
     ]);
 
     const n = checks?.length ?? 0;
-    const workouts = n ? checks!.filter((c: any) => c.workout).length : 0;
+    // A training day is a check-in's workout tick or a completed program
+    // session, the rule the page's summary and the Coach state card count by.
+    // Counting ticks alone, this read "0 workouts" under "1 of 1 sessions".
+    const tz = clampTzOffset((await req.json().catch(() => ({})))?.tz_offset_minutes);
+    const day = (iso: string) => localDayKey(tz, new Date(iso).getTime());
+    const workouts = new Set([
+      ...(checks ?? []).filter((c: any) => c.workout).map((c: any) => day(c.checked_in_at)),
+      ...(logs ?? []).filter((l: any) => l.completed).map((l: any) => day(l.logged_at)),
+    ]).size;
     const avgSleep = n ? (checks!.reduce((s: number, c: any) => s + Number(c.sleep_hours ?? 0), 0) / n) : 0;
     const avgHydr = n ? (checks!.reduce((s: number, c: any) => s + Number(c.hydration_liters ?? 0), 0) / n) : 0;
     const sessionsLogged = logs?.filter((l: any) => l.completed).length ?? 0;
@@ -102,7 +111,7 @@ Deno.serve(async (req) => {
 
     const summary = `Last 7 days:
 - Check-ins: ${n}/7
-- Workouts: ${workouts}${targets ? ` (target ${targets.workouts})` : ""}
+- Training days: ${workouts}${targets ? ` (target ${targets.workouts})` : ""}
 - Program sessions completed: ${sessionsLogged}
 - Avg sleep: ${avgSleep.toFixed(1)} h${targets ? ` (target ${targets.sleep_avg_h})` : ""}
 - Avg hydration: ${avgHydr.toFixed(1)} L${targets ? ` (target ${targets.hydration_l})` : ""}

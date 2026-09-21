@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { backOr } from "@/lib/nav";
-import TribeFireLite from "@/components/TribeFireLite";
+import TribeFireCanvas from "@/components/tribe/TribeFireCanvas";
 import { tierPalette } from "@/lib/tribe-streak";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
 
@@ -79,7 +79,7 @@ const TribeNew = () => {
         p_visibility: visibility,
       });
       if (error) {
-        toast.error(friendlyError(error));
+        toast.error(friendlyError(error, "Couldn't create the tribe. Try again."));
         return;
       }
       // Best-effort activity tag — never block navigation on it.
@@ -94,7 +94,7 @@ const TribeNew = () => {
       toast.success("Tribe created");
       navigate(`/tribes/${data}`);
     } catch (e: any) {
-      toast.error(friendlyError(e, "Could not create the tribe. Try again."));
+      toast.error(friendlyError(e, "Couldn't create the tribe. Try again."));
     } finally {
       setSubmitting(false);
     }
@@ -122,7 +122,8 @@ const TribeNew = () => {
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,hsl(var(--gold)/0.12)_0%,transparent_65%)]"
           />
           <div className="relative flex flex-col items-center text-center px-5 pt-5 pb-5">
-            <TribeFireLite tier={3} palette={tierPalette(3)} variant="standard" size={75} className="mb-1" />
+            {/* The tribe page's own fire, so the preview promises what they get. */}
+            <TribeFireCanvas tier={3} palette={tierPalette(3)} size={72} className="mb-1" />
             <p className={cn(
               "font-display text-xl font-black tracking-tight leading-tight",
               name.trim() ? "text-foreground" : "text-muted-foreground/75",
@@ -163,7 +164,7 @@ const TribeNew = () => {
                 <Check aria-hidden size={14} className="text-xp-green" />
               )}
               {nameStatus === "taken" && (
-                <X size={14} className="text-destructive" />
+                <X aria-hidden size={14} className="text-destructive" />
               )}
             </div>
           </div>
@@ -196,7 +197,7 @@ const TribeNew = () => {
                       size="pill"
                       onClick={() => setActivity(name === activity ? "" : name)}
                     >
-                      <Icon size={12} strokeWidth={2.4} />
+                      <Icon aria-hidden size={12} strokeWidth={2.4} />
                       {name}
                     </Button>
                   ))}

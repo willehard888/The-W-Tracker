@@ -386,7 +386,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
       }
     },
     onSuccess: () => {
-      toast.success(post.kudosed ? "Kudos removed" : "Kudos! 🏆");
+      toast.success(post.kudosed ? "Kudos removed" : "Kudos sent");
       onChanged();
     },
     onError: (e: any) => toast.error(friendlyError(e, "Kudos failed")),

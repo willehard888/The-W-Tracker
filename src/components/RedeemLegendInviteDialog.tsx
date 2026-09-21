@@ -50,7 +50,7 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
       if (error) throw error;
       const result = data as any;
       if (!result?.success) {
-        toast.error(REASON_COPY[result?.reason] ?? "Could not redeem code");
+        toast.error(REASON_COPY[result?.reason] ?? "Couldn't redeem code");
         return;
       }
       toast.success("Welcome to the Legend tier", {

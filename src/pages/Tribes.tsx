@@ -25,10 +25,11 @@ import { hapticNotification, hapticSelection } from "@/lib/haptics";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import TribeFireLite from "@/components/TribeFireLite";
 import TribeEmberSeed from "@/components/TribeEmberSeed";
+import TribeFireCanvas from "@/components/tribe/TribeFireCanvas";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon } from "@/lib/tribe-activities";
 import { fetchMyTribeMembership, fetchTribesPage, EMPTY_TRIBES_PAGE, type Tribe, type TribesPageData } from "@/lib/tribes-query";
-import { collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette, withAlpha } from "@/lib/tribe-streak";
+import { collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette, withAlpha, KINDLING_PALETTE, COLD_PLATE } from "@/lib/tribe-streak";
 
 interface Invite {
   id: string;
@@ -293,13 +294,13 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
     }
     if (t.visibility === "private") {
       return (
-        <Button size="sm" variant="ember-glass" className={cls} disabled={joiningId === t.id} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
+        <Button size="sm" variant="ember-glass" className={cls} disabled={joiningId !== null} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
           <Lock aria-hidden size={11} /> {wide ? "Request to join" : "Request"}
         </Button>
       );
     }
     return (
-      <Button size="sm" variant="ember" className={cls} disabled={joiningId === t.id} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
+      <Button size="sm" variant="ember" className={cls} disabled={joiningId !== null} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
         Join
       </Button>
     );
@@ -311,6 +312,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
     const cTier = collectiveStreakTier(cStreak);
     const cAccent = collectiveAccent(cStreak);
     const edge = cTier >= 0 ? cAccent : "hsl(var(--ember))";
+    const plate = cTier >= 0 ? cAccent : COLD_PLATE;
     const p = pulse.get(t.id);
     const spotsLeft = t.member_cap != null ? Math.max(0, t.member_cap - t.member_count) : null;
     const ev = data.nextEvents.get(t.id);
@@ -352,15 +354,20 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         />
 
         <div className="relative flex items-center gap-4">
+          {/* The same fire as the tribe page, at card size: the canvas flame
+              on its ember plate, kindling while the tribe is cold. The card
+              used to draw the lite SVG (and a seed when cold), so the fire a
+              member saw here was not the one they found inside. */}
           <div
+            aria-hidden
             className="relative shrink-0 w-[84px] h-[88px] flex items-end justify-center"
-            style={intakeStyle(pulses)}
+            style={{ "--pl-hi": withAlpha(plate, 0.95), "--pl-lo": withAlpha(plate, 0.45) } as React.CSSProperties}
           >
+            <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-[2px] w-[60px] h-[8px] rounded-full bg-[radial-gradient(60%_120%_at_50%_0%,var(--pl-hi),var(--pl-lo)_55%,transparent_78%)] shadow-[0_0_18px_4px_var(--pl-lo)]" />
             {cTier >= 0 ? (
-              <TribeFireLite aria-hidden tier={cTier} palette={collectivePalette(cStreak)} size={66} variant="standard" />
+              <TribeFireCanvas tier={cTier} palette={collectivePalette(cStreak)} size={64} pulseToken={pulses} className="absolute bottom-0 left-1/2 -translate-x-1/2" />
             ) : (
-              // Cold ≠ dead: the ember seed is the premium waiting state.
-              <TribeEmberSeed aria-hidden size={76} />
+              <TribeFireCanvas tier={0} kindling palette={KINDLING_PALETTE} size={64} pulseToken={pulses} className="absolute bottom-0 left-1/2 -translate-x-1/2" />
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -390,7 +397,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               </span>
               {p && p.checked > 0 && (
                 <span className="inline-flex items-center gap-1 text-meta font-bold tabular-nums text-[hsl(var(--ember))]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))] animate-pulse" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))]" />
                   {p.checked}/{p.total} lit today
                 </span>
               )}
@@ -524,7 +531,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 )}
                 {p && p.checked > 0 && (
                   <span className="inline-flex items-center gap-1 text-label font-bold tabular-nums text-[hsl(var(--ember))]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))] animate-pulse" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--ember))]" />
                     {p.checked}/{p.total} lit today
                   </span>
                 )}
@@ -562,7 +569,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             {invites.map((inv) => (
               <div
                 key={inv.id}
-                className="rounded-xl p-3 border border-[hsl(var(--ember))]/35 bg-gradient-to-br from-[hsl(var(--ember))]/8 via-card/70 to-gold/5"
+                className="rounded-2xl p-3 border border-[hsl(var(--ember))]/35 bg-gradient-to-br from-[hsl(var(--ember))]/8 via-card/70 to-gold/5"
               >
                 <div className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(var(--ember))]/30 to-gold/15 border border-[hsl(var(--ember))]/40 flex items-center justify-center shrink-0">
@@ -581,7 +588,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     variant="ember"
                     onClick={() => handleInviteResponse(inv, true)}
                     disabled={respondingId === inv.id}
-                    className="flex-1 h-8 before:absolute before:-inset-2 before:content-['']"
+                    className="flex-1 min-h-11"
                   >
                     <Check aria-hidden size={12} /> Accept
                   </Button>
@@ -590,7 +597,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     variant="outline"
                     onClick={() => handleInviteResponse(inv, false)}
                     disabled={respondingId === inv.id}
-                    className="flex-1 h-8 before:absolute before:-inset-2 before:content-['']"
+                    className="flex-1 min-h-11"
                   >
                     <X aria-hidden size={12} /> Decline
                   </Button>

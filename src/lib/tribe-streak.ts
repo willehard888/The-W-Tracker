@@ -111,6 +111,10 @@ export const KINDLING_PALETTE: FlamePalette = {
   text:  "hsl(24 80% 62%)",
 };
 
+/** One warm tone for a cold fire's accent and its ember plate (hero and My Tribes card). */
+export const COLD_ACCENT = "hsl(24 60% 58%)";
+export const COLD_PLATE = "hsl(22 96% 54%)";
+
 /** Palette for a tier index (-1..6). */
 export const tierPalette = (tier: number): FlamePalette =>
   tier >= 0 && tier <= 6 ? TIER_PALETTES[tier] : COLD_PALETTE;

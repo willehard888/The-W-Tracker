@@ -219,14 +219,16 @@ const TribeLeaderboard = () => {
       )}
       </div>
 
-      {/* Sticky my-tribe footer: solid tint, no blur over a scrolling list. */}
-      {myBest && (
+      {/* Sticky my-tribe footer: solid, no blur over a scrolling list. Only
+          once the board is longer than a screenful — on a short board it
+          repeated the row sitting right above it. */}
+      {myBest && rows.length > 8 && (
         <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+72px)] left-0 right-0 px-4 z-30 pointer-events-none">
           <div className="home-rise home-rise-3 max-w-md mx-auto pointer-events-auto">
             <button
               type="button"
               onClick={() => navigate(`/tribes/${myBest.tribe_id}`)}
-              className="w-full min-h-11 rounded-xl px-3 py-2.5 border border-gold/40 bg-[hsl(var(--background)/0.96)] shadow-[var(--shadow-3)] flex items-center gap-3"
+              className="w-full min-h-11 rounded-xl px-3 py-2.5 border border-gold/40 bg-background shadow-[var(--shadow-3)] flex items-center gap-3"
             >
               <span className={"text-label font-bold text-muted-foreground/75 shrink-0"}>Your tribe</span>
               <span className="font-bold text-sm truncate flex-1 text-left tabular-nums">

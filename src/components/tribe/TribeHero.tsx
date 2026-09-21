@@ -18,6 +18,8 @@ import {
   collectivePalette,
   withAlpha,
   KINDLING_PALETTE,
+  COLD_ACCENT,
+  COLD_PLATE,
 } from "@/lib/tribe-streak";
 
 export interface TribeMember {
@@ -94,10 +96,6 @@ const SegmentBar = ({ pct, color }: { pct: number; color: string }) => (
     })}
   </div>
 );
-
-/** One warm tone for a cold hero (it used to drift across four). */
-const COLD_ACCENT = "hsl(24 60% 58%)";
-const COLD_PLATE = "hsl(22 96% 54%)";
 
 const LABEL = "text-label font-bold text-muted-foreground";
 
@@ -227,7 +225,7 @@ const TribeHero = ({
       {!isCold && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-3xl p-px opacity-85 [background:linear-gradient(135deg,transparent_0%,var(--acc-b)_50%,transparent_100%)] [mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] [mask-composite:exclude] [-webkit-mask-composite:xor] animate-[flame-rim-pulse_4.5s_ease-in-out_infinite]"
+          className="pointer-events-none absolute inset-0 rounded-3xl p-px opacity-85 [background:linear-gradient(135deg,transparent_0%,var(--acc-b)_50%,transparent_100%)] [mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] [mask-composite:exclude] [-webkit-mask-composite:xor] status-flame-rim"
         />
       )}
 

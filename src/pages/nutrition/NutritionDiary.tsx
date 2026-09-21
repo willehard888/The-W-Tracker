@@ -424,7 +424,7 @@ const NutritionDiary = () => {
         onClick: () => void logMeal({ date, slot: meal.meal_slot, items: [input] })
           .catch((e) => {
             captureException(e, { where: "diary.undoRemove" });
-            toast.error("Could not put that back — log it again.");
+            toast.error("Couldn't put that back — log it again.");
           }),
       },
     } : undefined);

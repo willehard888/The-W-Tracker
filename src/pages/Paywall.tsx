@@ -282,7 +282,7 @@ const Paywall = () => {
       toast.success("Purchases restored.");
       hapticNotification("success");
     } catch {
-      toast.error("Could not restore purchases.");
+      toast.error("Couldn't restore purchases.");
       hapticNotification("error");
     }
   };

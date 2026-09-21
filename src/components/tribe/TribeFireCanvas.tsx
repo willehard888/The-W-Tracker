@@ -41,6 +41,8 @@ interface TribeFireCanvasProps {
   className?: string;
 }
 
+const FADE_SIDES = "linear-gradient(90deg, transparent 0%, #000 15%, #000 85%, transparent 100%)";
+
 /** hsl(...) → hsl(... / a) for canvas paints (tokens pre-resolved). */
 const a = (hsl: string, alpha: number) =>
   hsl.startsWith("hsl(") ? `${hsl.slice(0, -1)} / ${alpha})` : hsl;
@@ -400,7 +402,16 @@ const TribeFireCanvas = ({ tier, palette, size, pulseToken, kindling = false, pa
     <canvas
       ref={canvasRef}
       className={className}
-      style={{ display: "block", contain: "layout" }}
+      // The halo is wider than the canvas (H0 × 1.16 against a width of
+      // `size`), so its light was cut off in a straight line down both sides
+      // — a faint box around the fire on any lit ground. The flame's body
+      // spans 19–81 % of the width; the mask only fades the halo's edges.
+      style={{
+        display: "block",
+        contain: "layout",
+        maskImage: FADE_SIDES,
+        WebkitMaskImage: FADE_SIDES,
+      }}
       aria-hidden
     />
   );

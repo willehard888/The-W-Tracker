@@ -77,12 +77,12 @@ export function useModeration() {
         thumbnail = await generateThumbnail(file, 256);
       } catch (e) {
         setState("error");
-        setMessage("Could not process image");
+        setMessage("Couldn't process image");
         return {
           action: "block",
           blocked: true,
           reason: "thumbnail_failed",
-          friendlyMessage: "Could not process this image. Try another.",
+          friendlyMessage: "Couldn't process this image. Try another.",
         };
       }
 

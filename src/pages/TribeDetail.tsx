@@ -449,14 +449,22 @@ const TribeDetail = () => {
 
   // Timeline — posts and milestones interleaved by time. Milestones give
   // even a quiet tribe a heartbeat (founded, joins, tier-ups, wins).
-  const timeline = useMemo(
-    () =>
-      [
-        ...posts.map((p) => ({ t: Date.parse(p.created_at), post: p, ms: null as Milestone | null })),
-        ...milestones.map((m) => ({ t: Date.parse(m.created_at), post: null as TribePostCardPost | null, ms: m })),
-      ].sort((a, b) => b.t - a.t),
-    [posts, milestones],
-  );
+  const timeline = useMemo(() => {
+    // Someone who left and came back writes a join line every time; the
+    // ledger arrives newest first, so only their latest one is kept.
+    const joined = new Set<unknown>();
+    const lines = milestones.filter((m) => {
+      if (m.kind !== "member_joined") return true;
+      const who = m.payload?.username ?? m.payload?.user_id;
+      if (joined.has(who)) return false;
+      joined.add(who);
+      return true;
+    });
+    return [
+      ...posts.map((p) => ({ t: Date.parse(p.created_at), post: p, ms: null as Milestone | null })),
+      ...lines.map((m) => ({ t: Date.parse(m.created_at), post: null as TribePostCardPost | null, ms: m })),
+    ].sort((a, b) => b.t - a.t);
+  }, [posts, milestones]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -545,7 +553,7 @@ const TribeDetail = () => {
       toast.success("Posted");
       invalidateTribe();
     } catch (e: any) {
-      toast.error(friendlyError(e, "Could not post. Try again."));
+      toast.error(friendlyError(e, "Couldn't post. Try again."));
     } finally {
       setPosting(false);
       setUploadPhase(null);
@@ -797,7 +805,7 @@ const TribeDetail = () => {
                     {challenge.progress}/{challenge.target} check-ins together
                   </span>
                   <span className="text-meta tabular-nums text-muted-foreground">
-                    {done ? "Crushed · +25 XP each" : failed ? "last week missed" : `${daysLeft}d left · ${pct}%`}
+                    {done ? "Crushed · +25 XP each" : failed ? "Last week missed" : `${daysLeft}d left · ${pct}%`}
                   </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">

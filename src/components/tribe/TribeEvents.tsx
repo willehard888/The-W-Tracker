@@ -510,7 +510,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
               className="min-h-11"
               onClick={() => setKind(k)}
             >
-              <Icon size={14} /> {label}
+              <Icon aria-hidden size={14} /> {label}
             </Button>
           ))}
         </div>
@@ -592,7 +592,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                 className="min-h-11"
                 onClick={() => { setMode(m); setModeTouched(true); }}
               >
-                <Icon size={14} /> {label}
+                <Icon aria-hidden size={14} /> {label}
               </Button>
             ))}
           </div>

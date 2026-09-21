@@ -231,7 +231,7 @@ export const useEditProgram = (program: CoachProgram | null) => {
     },
     onError: (e: unknown) => {
       void qc.invalidateQueries({ queryKey: ["coach-program"] });
-      toast.error("Could not save the change", { description: e instanceof Error ? e.message : undefined });
+      toast.error("Couldn't save the change", { description: e instanceof Error ? e.message : undefined });
     },
     onSettled: () => void qc.invalidateQueries({ queryKey: ["focus-session"] }),
   });

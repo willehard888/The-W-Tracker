@@ -459,7 +459,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       toast.success("Comment updated");
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Could not update. Try again.")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't update. Try again.")),
   });
 
   const deleteComment = useMutation({
@@ -477,7 +477,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       queryClient.invalidateQueries({ queryKey: ["feed-comments"] });
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Could not delete. Try again.")),
+    onError: (e: any) => toast.error(friendlyError(e, "Couldn't delete. Try again.")),
   });
 
   // Memoize comment tree — avoids rebuilding the entire tree on every render.
@@ -836,7 +836,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             <span className="text-label text-muted-foreground">({unresolvedReportsCount})</span>
           </div>
           {unresolvedReportsCount === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">No pending reports 🎉</p>
+            <p className="text-xs text-muted-foreground text-center py-4">No pending reports</p>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {reports?.map((report: any) => (

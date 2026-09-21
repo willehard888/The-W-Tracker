@@ -36,3 +36,6 @@ if (typeof Element.prototype.scrollIntoView !== "function") {
 Object.defineProperty(HTMLMediaElement.prototype, "play", { configurable: true, value: () => Promise.resolve() });
 Object.defineProperty(HTMLMediaElement.prototype, "pause", { configurable: true, value: () => {} });
 Object.defineProperty(HTMLMediaElement.prototype, "load", { configurable: true, value: () => {} });
+// Same for canvas: no 2D context in jsdom. Components that draw (the tribe
+// fire) already return early on a null context.
+Object.defineProperty(HTMLCanvasElement.prototype, "getContext", { configurable: true, value: () => null });

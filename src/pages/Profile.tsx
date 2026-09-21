@@ -95,7 +95,7 @@ const Profile = () => {
       toast.success("Account deleted");
       navigate("/landing", { replace: true });
     } catch {
-      toast.error("Could not delete account");
+      toast.error("Couldn't delete account");
     } finally {
       setDeletingAccount(false);
     }

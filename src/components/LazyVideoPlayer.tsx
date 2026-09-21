@@ -55,7 +55,9 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
     <div
       className={cn("relative bg-black rounded-2xl overflow-hidden", className)}
       onClick={toggleMute}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMute(); } }}
       role="button"
+      tabIndex={0}
       aria-label={muted ? "Tap to unmute" : "Tap to mute"}
     >
       <video
@@ -69,12 +71,12 @@ const LazyVideoPlayer = ({ src, className }: LazyVideoPlayerProps) => {
       />
 
       {/* Sound indicator (purely visual — the whole surface is the tap target) */}
-      <div className="absolute bottom-2 right-2 h-9 w-9 rounded-full bg-black/55 backdrop-blur-sm flex items-center justify-center text-white pointer-events-none">
+      <div className="absolute bottom-2 right-2 h-9 w-9 rounded-full bg-black/70 flex items-center justify-center text-white pointer-events-none">
         {muted ? <VolumeX aria-hidden size={16} /> : <Volume2 aria-hidden size={16} />}
       </div>
 
       {muted && showHint && (
-        <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/55 backdrop-blur-sm text-label font-bold text-white pointer-events-none">
+        <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/70 text-label font-bold text-white pointer-events-none">
           Tap for sound
         </div>
       )}

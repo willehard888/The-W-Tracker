@@ -68,7 +68,7 @@ const PracticeLoop = ({
       await complete.mutateAsync({ articleId: article.id, quizScore });
       void track(FUNNEL.lessonCompleted, { ...props, quiz: quizScore });
     } catch (e: unknown) {
-      toast.error("Could not save progress", { description: e instanceof Error ? e.message : undefined });
+      toast.error("Couldn't save progress", { description: e instanceof Error ? e.message : undefined });
     }
   };
 
@@ -86,7 +86,7 @@ const PracticeLoop = ({
       }
       onPracticed?.(r);
     } catch (e: unknown) {
-      toast.error("Could not record the practice", { description: e instanceof Error ? e.message : undefined });
+      toast.error("Couldn't record the practice", { description: e instanceof Error ? e.message : undefined });
     }
   };
 
@@ -336,7 +336,7 @@ const AnswerBox = ({
             try {
               await onSave(text);
             } catch (e: unknown) {
-              toast.error("Could not save", { description: e instanceof Error ? e.message : undefined });
+              toast.error("Couldn't save", { description: e instanceof Error ? e.message : undefined });
             }
           }}
         >

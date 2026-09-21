@@ -745,9 +745,11 @@ const DailyCheckin = () => {
             if (top) {
               const others = tribeIds.length - 1;
               // Short title: beside the Open button the toast has room for
-              // about sixteen characters before the tribe's name wraps.
+              // about sixteen characters before the tribe's name wraps. The
+              // column already includes this check-in (it follows member
+              // streaks since 20260922140000), so no "+ 1" on top of it.
               toast.success(
-                `${top.name} · ${(top.collective_streak ?? 0) + 1}d`,
+                `${top.name} · ${top.collective_streak ?? 0}d`,
                 {
                   description: others > 0
                     ? `Your check-in fed ${tribeIds.length} fires today. Tap to see the tribe.`

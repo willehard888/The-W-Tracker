@@ -82,8 +82,12 @@ import {
 
 /** "62.5 kg" keeps its half; fmtInt would round a plate pair away. */
 const fmtKg = (n: number) => (Number.isInteger(n) ? fmtUnit(n, "kg") : `${n}${NBSP}kg`);
+// A set logged without a load (bodyweight, a machine you didn't note) reads
+// "6 reps", not "— × 6": the dash looked like a value that failed to save.
 const setLine = (w: string, r: string) =>
-  `${w === "" ? "—" : fmtKg(Number(w))} × ${r === "" ? "—" : fmtInt(Number(r))}`;
+  w === ""
+    ? (r === "" ? "—" : `${fmtInt(Number(r))} reps`)
+    : `${fmtKg(Number(w))} × ${r === "" ? "—" : fmtInt(Number(r))}`;
 
 /** `[−] value [+] unit` — two 44 pt targets around a typed field. */
 const Stepper = ({

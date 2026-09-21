@@ -5,6 +5,7 @@ import { Plus, Target, TrendingUp, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fmtDate } from "@/lib/format";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useCoachGoals } from "@/hooks/use-coach-goals";
@@ -34,7 +35,7 @@ const computePace = (g: { baseline_value: number | null; current_value: number |
 };
 
 const GoalTrackerCard = () => {
-  const { goals, activeGoal, upsert, updateProgress, remove } = useCoachGoals();
+  const { goals, activeGoal, isLoading, isError, refetch, upsert, updateProgress, remove } = useCoachGoals();
   const [adding, setAdding] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   // Inline progress entry; replaced a window.prompt (grey system alert, text keyboard).
@@ -71,9 +72,14 @@ const GoalTrackerCard = () => {
       hapticImpact("light");
       toast.success("Goal locked");
     } catch (e: any) {
-      toast.error(friendlyError(e, "Failed"));
+      toast.error(friendlyError(e, "Couldn't save your goal. Try again."));
     }
   };
+
+  // Not knowing is not "no goal": while loading, or after a failed load, the
+  // card used to invite a member who HAS a goal to set one (a second row).
+  if (isLoading) return <div className="h-[132px] rounded-2xl bg-card/40 skeleton-block" aria-hidden />;
+  if (isError) return <ErrorState size="compact" title="Couldn't load your goal" onRetry={refetch} />;
 
   if (!activeGoal && !adding) {
     return (
@@ -81,7 +87,7 @@ const GoalTrackerCard = () => {
         icon={Target}
         title="Set your North Star goal"
         description="e.g. Bench 100 kg by August."
-        action={<Button variant="ember" size="sm" onClick={() => setAdding(true)}>Set a goal</Button>}
+        action={<Button variant="ember" size="sm" className="min-h-11" onClick={() => setAdding(true)}>Set a goal</Button>}
       />
     );
   }

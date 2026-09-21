@@ -2,6 +2,7 @@ import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import { Dumbbell, Sparkles } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
+import { ErrorState } from "@/components/ui/error-state";
 import { useAuth } from "@/contexts/AuthContext";
 import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import ProgressDashboard from "@/components/coach/ProgressDashboard";
@@ -22,7 +23,7 @@ const CoachProgress = () => {
   const navigate = useNavigate();
   const { profile, isElite } = useAuth();
   const { program, currentWeek, logs } = useCoachProgram();
-  const { data: recent } = useRecentCheckins(7);
+  const { data: recent, isError: recentFailed, refetch: refetchRecent } = useRecentCheckins(7);
   // Core 4 hit-rate from the same rows (habits live in the check-in now).
   const coreHitRate = recent && recent.length > 0
     ? Math.round(
@@ -32,7 +33,7 @@ const CoachProgress = () => {
 
   const checkinsThisWeek = recent?.length ?? 0;
   const sleepAvg = recent && recent.length > 0
-    ? (recent.reduce((s, r) => s + r.sleep_hours, 0) / recent.length).toFixed(1)
+    ? `${(recent.reduce((s, r) => s + r.sleep_hours, 0) / recent.length).toFixed(1)}h`
     : "—";
   const workoutsThisWeek = recent?.filter((r) => r.workout).length ?? 0;
 
@@ -50,10 +51,16 @@ const CoachProgress = () => {
         {/* Standing: one quiet row, the Core 4 rate the single gold note. */}
         <div className="home-rise home-rise-1 mt-4 surface-card surface-card-quiet px-4 py-3 flex items-baseline gap-x-4 gap-y-1 flex-wrap tabular-nums">
           <span className="text-meta text-muted-foreground">Streak <b className="text-read font-display font-black text-foreground">{profile?.streak ? `${profile.streak}d` : "—"}</b></span>
-          <span className="text-meta text-muted-foreground">Sleep <b className="text-read font-display font-black text-foreground">{sleepAvg}h</b></span>
-          <span className="text-meta text-muted-foreground">Workouts <b className="text-read font-display font-black text-foreground">{workoutsThisWeek}/7</b></span>
+          <span className="text-meta text-muted-foreground">Sleep <b className="text-read font-display font-black text-foreground">{sleepAvg}</b></span>
+          {/* A dash until the rows are here: "0/7" while loading (or after a
+              failed load) was a number nobody measured. */}
+          <span className="text-meta text-muted-foreground">Workouts <b className="text-read font-display font-black text-foreground">{recent ? `${workoutsThisWeek}/7` : "—"}</b></span>
           <span className="text-meta text-muted-foreground ml-auto">Core 4 <b className="text-read font-display font-black text-gold glow-gold-text">{coreHitRate == null ? "—" : `${coreHitRate}%`}</b></span>
         </div>
+
+        {recentFailed && !recent && (
+          <ErrorState size="compact" className="mt-4" title="Couldn't load your last seven days" onRetry={refetchRecent} />
+        )}
 
         <div className="home-rise home-rise-2 mt-4">
           {isElite ? (

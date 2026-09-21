@@ -67,7 +67,7 @@ const PerformanceOSDashboard = () => {
       >
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-label font-bold text-gold/80">Performance Score</p>
+            <p className="text-label font-bold text-gold/80">Performance score</p>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="font-display text-4xl font-black tabular-nums leading-none">
                 {latest ?? "—"}

@@ -141,7 +141,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
           <ExerciseTile group={group} size={40} />
         )}
         <div className="flex-1 min-w-0">
-          <span className="font-bold text-sm text-foreground block truncate">{block.name}</span>
+          {/* Two lines before an ellipsis: beside the prescription a long name
+              lost the word that tells two lifts apart ("Reverse Grip Bent-Ov…"). */}
+          <span className="font-bold text-sm leading-snug text-foreground line-clamp-2">{block.name}</span>
           {logged && (
             <span className="text-label font-bold text-xp-green inline-flex items-center gap-1">
               <Check aria-hidden size={12} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}{existing!.weight != null && existing!.reps != null ? " × " : ""}{existing!.reps != null ? `${existing!.reps}` : ""} logged

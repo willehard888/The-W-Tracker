@@ -23,7 +23,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
         <Button variant="ghost" size="icon" aria-label="Back" onClick={() => { hapticImpact("light"); onClose(); }}>
           <ChevronLeft aria-hidden size={18} />
         </Button>
-        <p className="font-display text-read font-black tracking-tight">Coach Playbook</p>
+        <p className="font-display text-read font-black tracking-tight">Coach playbook</p>
       </div>
 
       <div className="shrink-0 px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">

@@ -35,7 +35,7 @@ const CoachMemoryScreen = () => {
       if (!id) toast.info("Already remembered");
       else { toast.success("Locked in"); hapticImpact("light"); }
       setDraft("");
-    } catch (e: any) { toast.error(friendlyError(e, "Failed")); }
+    } catch (e: any) { toast.error(friendlyError(e, "Couldn't save that. Try again.")); }
   };
 
   return (

@@ -153,7 +153,7 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
         setTimeout(() => setConfetti(false), 1600);
       }
       // No XP toast — missions are accountability, not an XP source.
-      toast.success("Done ✓");
+      toast.success("Done");
     } catch (e: any) {
       toast.error(friendlyError(e, "Couldn't log that"));
     } finally {

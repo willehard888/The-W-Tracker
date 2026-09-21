@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 import { useCoachBrief } from "@/hooks/use-coach-brief";
 import { stripCoachSignoff } from "@/lib/coach-signoff";
 
+/** The model titles its labels ("Sleep Target"); the app writes sentence case.
+ *  Only Capitalised words are lowered, so "RPE" and "HRV" keep their caps. */
+const sentenceLabel = (label: string): string =>
+  label.replace(/(?<=\s)[A-Z][a-z]+/g, (w) => w.toLowerCase());
+
 /** The screen's one felt number. Hidden until today's plan exists. */
 const Readiness = ({ score }: { score: number | null }) =>
   score == null ? null : (
@@ -49,7 +54,9 @@ const CoachBriefHero = ({
       <div className="flex items-start justify-between gap-3">
         <Readiness score={readiness} />
         {brief?.ribbon && (
-          <span className="eyebrow-sm ml-auto pt-1 truncate max-w-[55%]">{brief.ribbon}</span>
+          // Two lines, not an ellipsis: the ribbon ends on its one piece of
+          // news ("… · on track"), and that was the part being cut.
+          <span className="eyebrow-sm ml-auto pt-1 max-w-[58%] text-right leading-snug line-clamp-2">{brief.ribbon}</span>
         )}
       </div>
 
@@ -64,7 +71,7 @@ const CoachBriefHero = ({
           {brief.prescriptions?.length > 0 && (
             <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-meta text-muted-foreground">
               {brief.prescriptions.map((p, i) => (
-                <span key={i}>{p.label} <b className="font-black text-foreground tabular-nums">{p.value}</b></span>
+                <span key={i}>{sentenceLabel(p.label)} <b className="font-black text-foreground tabular-nums">{p.value}</b></span>
               ))}
             </p>
           )}

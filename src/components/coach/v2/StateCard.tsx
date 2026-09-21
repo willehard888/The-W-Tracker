@@ -23,28 +23,29 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
     if (!recent || recent.length === 0) {
       return {
         headline: "No check-ins yet — your first one starts the read",
-        detail: "Tap the Check-in tab below.",
+        clean: false,
+        detail: "Lock today from the Today tab.",
         sleepAvg: null as number | null,
         hydrationAvg: null as number | null,
       };
     }
     const sleepAvg = recent.reduce((s, r) => s + r.sleep_hours, 0) / recent.length;
     const hydroAvg = recent.reduce((s, r) => s + r.hydration_liters, 0) / recent.length;
+    const workoutDays = recent.filter((r) => r.workout).length;
     const meditationDays = recent.filter((r) => r.meditation_morning || r.meditation_evening).length;
 
-    // Headline picks the weakest signal so the user knows where to push.
-    // "Foundation looks clean" only fires if every input is in the green zone.
-    let headline: string;
-    if (sleepAvg < 7) {
-      headline = `Slept ${sleepAvg.toFixed(1)}h avg — sleep is dragging recovery down`;
-    } else if (hydroAvg < 2) {
-      headline = `${hydroAvg.toFixed(1)}L water avg — hydration is light`;
-    } else if (meditationDays < 2) {
-      headline = `Mindfulness barely registered this week — easy win`;
-    } else {
-      headline = "Foundation looks clean. Stack the next lever.";
-    }
-    return { headline, detail: null, sleepAvg, hydrationAvg: hydroAvg };
+    // The headline names the SAME gap as the row under it. It used to run its
+    // own ladder (sleep → water → mindfulness) while the row's picker also
+    // checks training days, so a light week read "Mindfulness barely
+    // registered" over "Movement is the gap". One picker, thresholds mirrored.
+    const weakest = findWeakestPillarSmart([], { sleepAvg, hydrationAvg: hydroAvg, workoutDays, meditationDays });
+    const headline =
+      weakest === "sleep" && sleepAvg < 7 ? `Slept ${sleepAvg.toFixed(1)}h avg — sleep is dragging recovery down`
+      : weakest === "nutrition" && hydroAvg < 2 ? `${hydroAvg.toFixed(1)}L water avg — hydration is light`
+      : weakest === "movement" && workoutDays < 3 ? `Trained ${workoutDays} of the last ${recent.length} days — movement is light`
+      : weakest === "stress" && meditationDays < 2 ? "Mindfulness barely registered this week — easy win"
+      : null;
+    return { headline: headline ?? "Foundation looks clean. Stack the next lever.", clean: headline === null, detail: null, sleepAvg, hydrationAvg: hydroAvg };
   }, [recent]);
 
   const weakestPillar = useMemo(() => {
@@ -93,7 +94,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
       >
         <span className="text-lg shrink-0" aria-hidden>{pillarMeta.emoji}</span>
         <span className="flex-1 min-w-0">
-          <span className={cn("block text-dense font-bold leading-tight", pillarMeta.tint.text)}>{pillarMeta.name} is the gap</span>
+          <span className={cn("block text-dense font-bold leading-tight", pillarMeta.tint.text)}>{signal.clean ? `Next lever · ${pillarMeta.name}` : `${pillarMeta.name} is the gap`}</span>
           <span className="block text-label text-muted-foreground leading-snug mt-0.5 line-clamp-1">{pillarMeta.blurb}</span>
         </span>
         <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />

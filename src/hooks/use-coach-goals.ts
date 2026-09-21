@@ -72,6 +72,8 @@ export const useCoachGoals = () => {
     goals: query.data ?? [],
     activeGoal: (query.data ?? []).find((g) => g.status === "active") ?? null,
     isLoading: query.isLoading,
+    isError: query.isError && !query.data,
+    refetch: query.refetch,
     upsert: upsert.mutateAsync,
     updateProgress: updateProgress.mutateAsync,
     remove: remove.mutateAsync,

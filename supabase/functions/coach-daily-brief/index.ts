@@ -178,7 +178,7 @@ End with a single clear action for the next 24h.
 
 Also produce:
 - ribbon: ≤10 words ("Week N · Goal · status")
-- prescriptions: 3 short label/value pairs (sleep target, protein target, today's intent — fitted to the user)
+- prescriptions: 3 short label/value pairs (sleep target, protein target, today's intent — fitted to the user); labels in sentence case ("Sleep target", not "Sleep Target")
 - suggested_questions: 3 sharp questions the user might ask, tailored to today.`;
 
     // Per-member daily cap before the model call (same atomic counter as the

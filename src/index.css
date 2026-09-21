@@ -2014,7 +2014,10 @@
   [role="option"]:focus-visible,
   [role="tab"]:focus-visible,
   [role="link"]:focus-visible,
-  [tabindex]:focus-visible {
+  /* Not tabindex="-1": that is a container a library focuses for you (a menu,
+     a sheet, a dialog), never a control you reach — it put a gold ring round
+     every dropdown the moment it opened, and squared its corners to 6 px. */
+  [tabindex]:not([tabindex="-1"]):focus-visible {
     outline: none;
     box-shadow:
       0 0 0 2px hsl(var(--background)),

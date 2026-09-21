@@ -37,7 +37,7 @@ const RequirementRow = ({
               : "bg-secondary/40 border-border text-muted-foreground",
           )}
         >
-          {met ? <Check aria-hidden size={14} /> : <Icon size={14} />}
+          {met ? <Check aria-hidden size={14} /> : <Icon aria-hidden size={14} />}
         </div>
         <span
           className={cn(
@@ -129,7 +129,7 @@ const NextTierProgress = ({ className, ladder, fallback }: { className?: string;
             label={`${tierBandLabel(r.next.key)} rank`}
             current={Math.round(r.percentile)}
             target={req.percentile}
-            unit="%ile"
+            unit="percentile"
             progress={r.percentileProgress}
           />
           {req.activeDays > 0 && (

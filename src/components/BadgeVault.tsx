@@ -270,6 +270,8 @@ const BadgeVault = ({
         {availableCategories.map((cat) => (
           <button
             key={cat.id}
+            type="button"
+            aria-pressed={activeCategory === cat.id}
             onClick={() => setActiveCategory(cat.id)}
             className={cn(
               "px-3 py-1.5 rounded-full text-meta font-bold whitespace-nowrap transition-[background-color,color,border-color] duration-200 border shrink-0",

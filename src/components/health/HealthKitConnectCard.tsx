@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Heart, Check, ShieldCheck, WifiOff } from "lucide-react";
+import { Heart, RefreshCw, ShieldCheck, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useHealthKit } from "@/hooks/use-healthkit";
@@ -139,7 +139,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
           </p>
         </div>
         <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-meta" loading={syncing} onClick={() => { void syncToday(); }}>
-          <Check aria-hidden size={11} /> Sync
+          <RefreshCw aria-hidden size={11} /> Sync
         </Button>
       </div>
     );
@@ -162,7 +162,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
         </p>
       </div>
       <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-meta" loading={syncing} onClick={() => { void syncToday(); }}>
-        <Check aria-hidden size={11} /> Sync
+        <RefreshCw aria-hidden size={11} /> Sync
       </Button>
     </div>
   );

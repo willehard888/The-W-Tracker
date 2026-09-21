@@ -77,9 +77,9 @@ const BeatSkeleton = () => (
 const BoardSkeleton = () => (
   <div>
     <div className="grid grid-cols-3 gap-2 items-end">
-      <Block height={150} className="!rounded-2xl" />
-      <Block height={176} delay={40} className="!rounded-2xl" />
-      <Block height={134} delay={80} className="!rounded-2xl" />
+      <Block height={160} className="!rounded-2xl" />
+      <Block height={188} delay={40} className="!rounded-2xl" />
+      <Block height={144} delay={80} className="!rounded-2xl" />
     </div>
     <div className="mt-4 divide-y divide-border/35">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -365,10 +365,9 @@ const Leaderboard = () => {
           <div
             aria-hidden
             className="absolute left-1/2 -translate-x-1/2 top-0 w-56 h-56 pointer-events-none -z-10 opacity-70"
-            style={{
-              background: "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.35) 0%, transparent 60%)",
-              filter: "blur(12px)",
-            }}
+            // A radial gradient is already soft; the 12 px blur it carried
+            // was a filter layer over the podium for nothing the eye could see.
+            style={{ background: "radial-gradient(circle at 50% 30%, hsl(var(--gold) / 0.3) 0%, hsl(var(--gold) / 0.08) 42%, transparent 66%)" }}
           />
           <div className="grid grid-cols-3 gap-2 items-end">
             {([1, 0, 2] as const).map((i) => {
@@ -477,7 +476,7 @@ const Leaderboard = () => {
       <div className="home-rise home-rise-4 mt-6 surface-card surface-card-quiet overflow-hidden">
         <SettingsRow
           icon={Swords}
-          label="1v1 Battles"
+          label="1v1 battles"
           sub="Challenge a friend — winner takes the score"
           onClick={() => navigate("/battles")}
         />
@@ -492,7 +491,7 @@ const Leaderboard = () => {
 
       {championData?.recent?.length ? (
         <section className="mt-8">
-          <h2 className="font-display font-bold text-base tracking-tight">Hall of Champions</h2>
+          <h2 className="font-display font-bold text-copy tracking-tight">Hall of champions</h2>
           <ul className="mt-1 divide-y divide-border/35">
             {championData.recent.map((row) => (
               <li key={`${row.season_id}-${row.user_id}`} className="flex items-center justify-between gap-2 py-2.5 text-sm">
@@ -523,10 +522,13 @@ const ORDINAL: Record<number, string> = { 1: "1st", 2: "2nd", 3: "3rd" };
 
 // Stepped heights keep the podium silhouette; only #1 wears the full surface
 // and the gold border — #2 and #3 are quiet so the leader is the spectacle.
+// The step is a floor per rank, not a by-product of content: the cards sit
+// bottom-aligned, so a third place with a streak line under its name stood
+// taller than a second place without one.
 const PODIUM = {
-  1: { label: "1st", shape: "pt-8 pb-5 border-gold/60" },
-  2: { label: "2nd", shape: "surface-card-quiet pt-5 pb-4 mt-6" },
-  3: { label: "3rd", shape: "surface-card-quiet pt-5 pb-3.5 mt-10" },
+  1: { label: "1st", shape: "pt-8 pb-5 min-h-[188px] border-gold/60" },
+  2: { label: "2nd", shape: "surface-card-quiet pt-5 pb-4 min-h-[160px]" },
+  3: { label: "3rd", shape: "surface-card-quiet pt-5 pb-3.5 min-h-[144px]" },
 } as const;
 
 const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCardProps) => {
@@ -536,7 +538,7 @@ const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCar
       type="button"
       onClick={onClick}
       className={cn(
-        "surface-card flex flex-col items-center px-2 text-center",
+        "surface-card flex flex-col items-center justify-center px-2 text-center",
         PODIUM[rank].shape,
         isMe && "ring-1 ring-gold/40",
       )}

@@ -120,7 +120,9 @@ const RecoveryCard = () => {
         <span className={cn("text-label font-bold ml-auto", statusColor)}>{status}</span>
       </div>
 
-      {last!.sleep_total_min != null && (
+      {/* No stages, no bar: an empty track over "0h 0m asleep" is a fake zero
+          sitting right under "No sleep data". */}
+      {hasSleep && last!.sleep_total_min != null && (
         <>
           <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-secondary/50 mb-1.5">
             <span style={{ width: `${(deep / span) * 100}%` }} className="bg-[hsl(245_60%_55%)]" />
@@ -189,13 +191,14 @@ const RecoveryCard = () => {
             <button
               key={f}
               type="button"
+              aria-pressed={on}
               onClick={() => toggleFactor(f)}
               className={cn(
-                "relative min-h-9 rounded-full px-3 text-label font-bold border transition-colors capitalize before:absolute before:-inset-1 before:content-['']",
+                "relative min-h-9 rounded-full px-3 text-label font-bold border transition-colors before:absolute before:-inset-1 before:content-['']",
                 on ? "bg-gold text-primary-foreground border-transparent" : "bg-secondary/40 border-border/50 text-muted-foreground",
               )}
             >
-              {f}
+              {f[0].toUpperCase() + f.slice(1)}
             </button>
           );
         })}

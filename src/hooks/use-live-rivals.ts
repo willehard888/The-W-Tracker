@@ -28,12 +28,19 @@ export const useLiveRivals = (userId?: string, myScore?: number) => {
 
       const select = "user_id, username, display_name, avatar_url, status_tier, rank_score";
 
+      // Someone you blocked is not offered back to you as the person to chase.
+      const { data: blockedRows } = await supabase
+        .from("blocked_users")
+        .select("blocked_id")
+        .eq("blocker_id", userId);
+      const skip = `(${[userId, ...(blockedRows ?? []).map((b) => b.blocked_id)].join(",")})`;
+
       const [aboveRes, belowRes] = await Promise.all([
         supabase
           .from("profiles")
           .select(select)
           .gt("rank_score", myScore)
-          .neq("user_id", userId)
+          .not("user_id", "in", skip)
           .order("rank_score", { ascending: true })
           .limit(1)
           .maybeSingle(),
@@ -41,7 +48,7 @@ export const useLiveRivals = (userId?: string, myScore?: number) => {
           .from("profiles")
           .select(select)
           .lt("rank_score", myScore)
-          .neq("user_id", userId)
+          .not("user_id", "in", skip)
           .gt("rank_score", 0)
           .order("rank_score", { ascending: false })
           .limit(1)

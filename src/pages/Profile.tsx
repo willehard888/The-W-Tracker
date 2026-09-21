@@ -431,10 +431,10 @@ const Profile = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuItem onClick={() => { hapticSelection(); setProfileTab("settings"); }}>
-              <SettingsIcon aria-hidden size={14} className="mr-2 text-muted-foreground" /> Open Settings
+              <SettingsIcon aria-hidden size={14} className="mr-2 text-muted-foreground" /> Open settings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { hapticSelection(); signOut(); }}>
-              <LogOut aria-hidden size={14} className="mr-2 text-muted-foreground" /> Sign Out
+              <LogOut aria-hidden size={14} className="mr-2 text-muted-foreground" /> Sign out
             </DropdownMenuItem>
             {/* Delete Account lives ONLY in Settings behind the
                 type-to-confirm dialog — no quick path to a destructive
@@ -729,7 +729,7 @@ const Profile = () => {
           <div className="flex gap-2 pt-2 home-rise home-rise-2">
             <Button variant="secondary" size="sm" className="flex-1" onClick={signOut}>
               <LogOut aria-hidden size={14} />
-              Sign Out
+              Sign out
             </Button>
             {/* Both delete entry points (this Settings button + the kebab
                 menu item) converge on the single hardened, type-to-confirm
@@ -741,7 +741,7 @@ const Profile = () => {
               onClick={() => { setDeleteConfirmText(""); setDeleteDialogOpen(true); }}
             >
               <Trash2 aria-hidden size={14} />
-              Delete Account
+              Delete account
             </Button>
 
             {/* Controlled delete-confirm — both entry points (Settings button
@@ -777,7 +777,7 @@ const Profile = () => {
                   />
                 </div>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Keep Account</AlertDialogCancel>
+                  <AlertDialogCancel>Keep account</AlertDialogCancel>
                   <AlertDialogAction
                     className="[background:hsl(var(--destructive))] text-destructive-foreground [text-shadow:none] before:hidden after:hidden shadow-[var(--shadow-2)] hover:shadow-[var(--shadow-2)] hover:brightness-110"
                     onClick={performAccountDeletion}
@@ -787,7 +787,7 @@ const Profile = () => {
                       deleteConfirmText.trim() !== profile.username
                     }
                   >
-                    {deletingAccount ? "Deleting…" : "Delete Permanently"}
+                    {deletingAccount ? "Deleting…" : "Delete permanently"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

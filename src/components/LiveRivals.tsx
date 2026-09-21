@@ -32,12 +32,15 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
     >
       <div className="flex items-center justify-between mb-3">
         <p className="text-label font-bold font-display text-muted-foreground">
-          Live Rivals
+          Live rivals
         </p>
         <button
           type="button"
           onClick={() => navigate("/leaderboard")}
-          className="text-label text-gold/70 font-bold hover:text-gold transition-colors"
+          // Sized, so the global 44 pt floor does not stretch the header row
+          // (it opened a 28 pt hole above the first rival); the hit area
+          // stays 44 pt through the ::before.
+          className="relative h-6 text-label text-gold/70 font-bold hover:text-gold transition-colors before:absolute before:-inset-x-2 before:-inset-y-2.5 before:content-['']"
         >
           Leaderboard →
         </button>

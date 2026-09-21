@@ -121,7 +121,6 @@ describe("tierBandLabel — bands derive from the requirement, one source", () =
   });
   it("static percentile strings agree with the derived band (no drift)", () => {
     for (const t of TIER_ORDER) {
-      if (t === "recruit") continue;
       expect(getTierConfig(t).percentile).toBe(tierBandLabel(t));
     }
   });

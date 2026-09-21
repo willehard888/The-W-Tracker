@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { downscaleImage } from "@/lib/downscale-image";
 import { uniqueChannelName } from "@/lib/realtime";
 import { readLocal, writeLocal } from "@/lib/storage";
@@ -99,7 +100,7 @@ const Battles = () => {
   // participants query when the IDs themselves haven't changed.
   const participantIds = useMemo(
     () => battles
-      ? [...new Set(battles.flatMap((b: any) => [b.challenger_id, b.opponent_id]))]
+      ? [...new Set(battles.flatMap((b) => [b.challenger_id, b.opponent_id]))]
       : [],
     [battles],
   );
@@ -135,19 +136,19 @@ const Battles = () => {
     writeLocal(dismissKey, next.join(","));
   };
 
-  const pendingBattles = battles?.filter((b: any) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
-  const activeBattles = battles?.filter((b: any) => b.status === "active") || [];
-  const myPending = battles?.filter((b: any) => b.status === "pending" && b.challenger_id === profile?.user_id) || [];
+  const pendingBattles = battles?.filter((b) => b.status === "pending" && b.opponent_id === profile?.user_id) || [];
+  const activeBattles = battles?.filter((b) => b.status === "active") || [];
+  const myPending = battles?.filter((b) => b.status === "pending" && b.challenger_id === profile?.user_id) || [];
   // The opponent said no. The row used to vanish from the challenger's screen
   // with the status only ever stored, so the challenge read as lost in transit.
   const declinedBattles = battles?.filter(
-    (b: any) => b.status === "declined" && b.challenger_id === profile?.user_id && !dismissedDeclined.includes(b.id),
+    (b) => b.status === "declined" && b.challenger_id === profile?.user_id && !dismissedDeclined.includes(b.id),
   ) || [];
-  const completedBattles = battles?.filter((b: any) => b.status === "completed") || [];
+  const completedBattles = battles?.filter((b) => b.status === "completed") || [];
 
   // The hero is the live battle with the fewest days left; the rest are rows.
   const liveSorted = [...activeBattles].sort(
-    (a: any, b: any) => battleDay(a.start_date, a.end_date).left - battleDay(b.start_date, b.end_date).left,
+    (a, b) => battleDay(a.start_date, a.end_date).left - battleDay(b.start_date, b.end_date).left,
   );
   const hero = liveSorted[0];
   const otherLive = liveSorted.slice(1);
@@ -286,7 +287,7 @@ const Battles = () => {
     setActiveProofBattleId(null);
   };
 
-  const getOpponent = (battle: any) => {
+  const getOpponent = (battle: Tables<"battles">) => {
     const oppId = battle.challenger_id === profile?.user_id ? battle.opponent_id : battle.challenger_id;
     // Unreachable while `participants` is still resolving — the list holds its
     // skeleton until then (see the render gate), because this placeholder used

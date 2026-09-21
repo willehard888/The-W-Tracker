@@ -45,7 +45,9 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     label: "Recruit",
     shortLabel: "REC",
     emoji: "⬛",
-    percentile: "Bottom 50%",
+    // Operator asks for the top 75 %, so the entry rung is not "Bottom 50 %";
+    // tierBandLabel already calls it this.
+    percentile: "Entry",
     message: "Nobody knows your name yet. Change that.",
     pressureMessage: "Others are moving ahead of you",
     color: "muted",
@@ -63,7 +65,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
     label: "Recruit",
     shortLabel: "REC",
     emoji: "⬛",
-    percentile: "Bottom 50%",
+    percentile: "Entry",
     message: "Nobody knows your name yet. Change that.",
     pressureMessage: "Others are moving ahead of you",
     color: "muted",

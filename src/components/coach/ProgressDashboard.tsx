@@ -94,7 +94,9 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
         </p>
       </div>
 
-      {/* Stat trio (last 7d) */}
+      {/* Stat trio (last 7d). It arrives with the coach's read: before that
+          it was three dashes repeating the strip at the top of the page. */}
+      {stats && (
       <div className="grid grid-cols-3 gap-2">
         <Tile
           label="Workouts"
@@ -112,6 +114,7 @@ const ProgressDashboard = ({ program, currentWeek, logs }: Props) => {
           target={`/${targets.hydration_l}L`}
         />
       </div>
+      )}
 
       {/* XP trend */}
       <div className="rounded-2xl border border-border/60 bg-card/60 p-4">

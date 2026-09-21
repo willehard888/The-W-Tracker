@@ -320,8 +320,25 @@ const AppRoutes = () => {
   // fresh (a push), everything but the four roots still starts at the top.
   const navType = useNavigationType();
   useLayoutEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
     const keep = TAB_ROOTS.has(key) || navType === "POP";
-    scrollContainerRef.current?.scrollTo(0, keep ? (savedScroll.get(key) ?? 0) : 0);
+    const target = keep ? (savedScroll.get(key) ?? 0) : 0;
+    el.scrollTo(0, target);
+    if (target === 0) return;
+    // A page whose content lands after the first paint (the Coach's plan, a
+    // profile's cards) is shorter on return than it was when left, so the
+    // restore clamps — seen on Coach → a sub-page → back. Re-apply while the
+    // page grows, until it fits, the member touches the screen, or 1.5 s pass.
+    // `target` lives here because the clamped scroll event overwrites the map.
+    let tries = 12;
+    const stop = () => { window.clearInterval(timer); el.removeEventListener("touchstart", stop); };
+    const timer = window.setInterval(() => {
+      if (el.scrollTop < target) el.scrollTo(0, target);
+      if (el.scrollTop >= target - 1 || --tries <= 0) stop();
+    }, 120);
+    el.addEventListener("touchstart", stop, { passive: true });
+    return stop;
     // navType belongs to the same navigation as `key`; keyed on the page only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);

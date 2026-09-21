@@ -115,7 +115,7 @@ const EveningReflectionCard = () => {
               {done ? "Tonight's reflection logged" : "Evening reflection"}
             </p>
             <p className="text-label text-muted-foreground truncate">
-              {done ? "Tomorrow's plan will adapt to it." : "30 seconds — feeds tomorrow's plan."}
+              {done ? "Tomorrow's plan will adapt to it." : "Sixty seconds. Feeds tomorrow's plan."}
             </p>
           </div>
         </div>

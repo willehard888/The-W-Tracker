@@ -53,6 +53,10 @@ const PerformanceOSDashboard = () => {
   // Keys must match what coach-weekly-review actually WRITES (sleep_pts,
   // train_pts, consistency_pts, energy_pts) — the old rpe_pts/missed_pts were
   // coach-daily-plan's readiness keys, so two tiles rendered a permanent 0.
+  // Two writers fill `components`: coach-weekly-review (the *_pts keys below)
+  // and the nightly index snapshot (a per-pillar breakdown, no *_pts). With
+  // only nightly rows the three tiles read 0/40 · 0/25 · 0/20 under an 82.
+  const hasParts = last7.some((x) => (x.components as Record<string, unknown> | null)?.sleep_pts != null);
   const sleepAvg = avgComponent("sleep_pts");
   const recoveryAvg = avgComponent("energy_pts");
   const consistencyAvg = avgComponent("consistency_pts");
@@ -90,7 +94,8 @@ const PerformanceOSDashboard = () => {
         )}
       </m.div>
 
-      {/* Component breakdown */}
+      {/* Component breakdown — only once a weekly review has written it. */}
+      {hasParts && (
       <div className="grid grid-cols-3 gap-2">
         {[
           { label: "Sleep", val: sleepAvg, max: 40 },
@@ -109,6 +114,7 @@ const PerformanceOSDashboard = () => {
           </div>
         ))}
       </div>
+      )}
 
       {/* Latest weekly review */}
       {review && (

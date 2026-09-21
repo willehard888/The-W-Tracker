@@ -164,9 +164,21 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
   // Loading / first-generation state.
   if ((isLoading || generating) && !plan) {
     return (
+      // In the loaded card's silhouette: as two lines of text it was ~70 pt
+      // against a ~400 pt plan, so everything below jumped down mid-tap the
+      // moment the missions arrived.
       <div className="surface-card surface-card-quiet p-4">
         <p className="text-dense font-bold">Building today's plan…</p>
         <p className="text-meta text-muted-foreground mt-0.5">Reading your recent recovery, training and streak.</p>
+        <div className="mt-3 divide-y divide-border/35" aria-hidden>
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="py-3.5">
+              <div className="h-4 w-2/5 rounded bg-card/40 skeleton-block" />
+              <div className="h-3 w-4/5 rounded bg-card/40 skeleton-block mt-2" />
+              <div className="h-3 w-3/5 rounded bg-card/40 skeleton-block mt-1.5" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

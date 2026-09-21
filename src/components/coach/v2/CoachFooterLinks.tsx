@@ -10,7 +10,7 @@ import { DoorRow } from "@/components/coach/rows";
 const CoachFooterLinks = () => {
   const navigate = useNavigate();
   const links = [
-    { icon: Target, label: "Long-term goal", path: "/coach/goal" },
+    { icon: Target, label: "North Star goal", path: "/coach/goal" },
     { icon: Moon, label: "Evening reflection", path: "/coach/reflect" },
     { icon: BarChart3, label: "Weekly review", path: "/coach/progress" },
   ];

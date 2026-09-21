@@ -9,6 +9,7 @@ import ProgressDashboard from "@/components/coach/ProgressDashboard";
 import { DoorRow } from "@/components/coach/rows";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
+import { localDateKey } from "@/lib/date";
 
 /**
  * /coach/progress — your last 7-30 days at a glance.
@@ -35,7 +36,17 @@ const CoachProgress = () => {
   const sleepAvg = recent && recent.length > 0
     ? `${(recent.reduce((s, r) => s + r.sleep_hours, 0) / recent.length).toFixed(1)}h`
     : "—";
-  const workoutsThisWeek = recent?.filter((r) => r.workout).length ?? 0;
+  // A training day is one you ticked in the check-in OR one where a session
+  // was finished in the runner: counting only the tick read "Workouts 0/7"
+  // right above "1 of 1 planned sessions logged".
+  const weekAgo = Date.now() - 7 * 86_400_000;
+  const workoutDays = new Set<string>([
+    ...(recent ?? []).filter((r) => r.workout).map((r) => localDateKey(new Date(r.checked_in_at))),
+    ...logs
+      .filter((l) => l.completed && new Date(l.logged_at).getTime() >= weekAgo)
+      .map((l) => localDateKey(new Date(l.logged_at))),
+  ]);
+  const workoutsThisWeek = workoutDays.size;
 
   return (
     <div className="min-h-full">

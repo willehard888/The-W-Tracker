@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
+import { useCoachProgram } from "@/hooks/use-coach-program";
+import { localDateKey } from "@/lib/date";
 import { PILLARS } from "@/lib/wellness-framework";
 import { findWeakestPillarSmart } from "@/lib/coach/pick-free-move";
 
@@ -18,6 +20,16 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
   const { profile } = useAuth();
   const { reflection } = useTodayReflection();
   const { data: recent } = useRecentCheckins(7);
+  // Training days = the check-in's tick OR a session finished in the runner;
+  // the tick alone said "no training" minutes after a logged session.
+  const { logs } = useCoachProgram();
+  const trainedDays = useMemo(() => {
+    const weekAgo = Date.now() - 7 * 86_400_000;
+    return new Set<string>([
+      ...(recent ?? []).filter((r) => r.workout).map((r) => localDateKey(new Date(r.checked_in_at))),
+      ...logs.filter((l) => l.completed && new Date(l.logged_at).getTime() >= weekAgo).map((l) => localDateKey(new Date(l.logged_at))),
+    ]).size;
+  }, [recent, logs]);
 
   const signal = useMemo(() => {
     if (!recent || recent.length === 0) {
@@ -31,7 +43,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
     }
     const sleepAvg = recent.reduce((s, r) => s + r.sleep_hours, 0) / recent.length;
     const hydroAvg = recent.reduce((s, r) => s + r.hydration_liters, 0) / recent.length;
-    const workoutDays = recent.filter((r) => r.workout).length;
+    const workoutDays = trainedDays;
     const meditationDays = recent.filter((r) => r.meditation_morning || r.meditation_evening).length;
 
     // The headline names the SAME gap as the row under it. It used to run its
@@ -42,11 +54,12 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
     const headline =
       weakest === "sleep" && sleepAvg < 7 ? `Slept ${sleepAvg.toFixed(1)}h avg — sleep is dragging recovery down`
       : weakest === "nutrition" && hydroAvg < 2 ? `${hydroAvg.toFixed(1)}L water avg — hydration is light`
-      : weakest === "movement" && workoutDays < 3 ? `Trained ${workoutDays} of the last ${recent.length} days — movement is light`
+      : weakest === "movement" && workoutDays < 3
+        ? (workoutDays === 0 ? "No training logged this week — movement is light" : `${workoutDays} training day${workoutDays === 1 ? "" : "s"} this week — movement is light`)
       : weakest === "stress" && meditationDays < 2 ? "Mindfulness barely registered this week — easy win"
       : null;
     return { headline: headline ?? "Foundation looks clean. Stack the next lever.", clean: headline === null, detail: null, sleepAvg, hydrationAvg: hydroAvg };
-  }, [recent]);
+  }, [recent, trainedDays]);
 
   const weakestPillar = useMemo(() => {
     // Build signals from recent check-ins so the picker uses real behaviour,
@@ -56,13 +69,13 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
     const signals = recent && recent.length > 0 ? {
       sleepAvg: recent.reduce((s, r) => s + r.sleep_hours, 0) / recent.length,
       hydrationAvg: recent.reduce((s, r) => s + r.hydration_liters, 0) / recent.length,
-      workoutDays: recent.filter((r) => r.workout).length,
+      workoutDays: trainedDays,
       meditationDays: recent.filter((r) => r.meditation_morning || r.meditation_evening).length,
     } : undefined;
     // Protocol-habit adoption no longer exists (habits live in the check-in),
     // so the pillar read comes purely from the last 7 days of signals.
     return findWeakestPillarSmart([], signals);
-  }, [recent]);
+  }, [recent, trainedDays]);
   const pillarMeta = PILLARS[weakestPillar];
 
   return (

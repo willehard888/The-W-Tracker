@@ -5,7 +5,6 @@ import { Reply, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
-import { initialsOf } from "@/components/StatusAvatar";
 
 export interface CommentThreadProps {
   node: CommentNode;
@@ -77,7 +76,7 @@ const CommentThread = memo(function CommentThread({
           />
         )}
         <div className="h-7 w-7 rounded-full gradient-gold flex items-center justify-center text-label font-black text-primary-foreground shrink-0 mt-0.5">
-          {initialsOf(username)}
+          {username.charAt(0)?.toUpperCase() || "?"}
         </div>
         <div className="flex-1 min-w-0">
           <div

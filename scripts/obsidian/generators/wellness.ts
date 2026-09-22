@@ -66,7 +66,7 @@ export function generate(): GeneratedNote[] {
   for (const meta of Object.values(PILLARS)) {
     const protos = protocolsByPillar(meta.id);
     const body = [
-      `# ${meta.name}`, "", `> ${meta.blurb}`, "",
+      `# ${meta.emoji} ${meta.name}`, "", `> ${meta.blurb}`, "",
       `## Protokollat (${protos.length})`,
       ...protos.map((p) => `- ${wikilink(paths.protocol(p.pillar, p.title), p.title)} · \`${p.evidence}\``),
       "",
@@ -76,7 +76,7 @@ export function generate(): GeneratedNote[] {
     ].join("\n");
     notes.push({
       path: paths.pillar(meta.name),
-      frontmatter: { title: `Pillar - ${meta.name}`, type: "pillar", pillar: meta.id, tags: [`wellness/${meta.id}`] },
+      frontmatter: { title: `Pillar - ${meta.name}`, type: "pillar", pillar: meta.id, emoji: meta.emoji, tags: [`wellness/${meta.id}`] },
       body, source: SRC, sourceId: `pillar:${meta.id}`,
     });
   }
@@ -89,7 +89,7 @@ export function generate(): GeneratedNote[] {
   ];
   for (const meta of Object.values(PILLARS)) {
     const protos = protocolsByPillar(meta.id);
-    idx.push(`## ${wikilink(paths.pillar(meta.name), meta.name)} (${protos.length})`);
+    idx.push(`## ${meta.emoji} ${wikilink(paths.pillar(meta.name), meta.name)} (${protos.length})`);
     idx.push(...protos.map((p) => `- ${wikilink(paths.protocol(p.pillar, p.title), p.title)} · \`${EVIDENCE_META[p.evidence].label}\``));
     idx.push("");
   }

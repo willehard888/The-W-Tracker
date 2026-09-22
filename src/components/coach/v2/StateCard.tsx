@@ -9,7 +9,6 @@ import { useCoachProgram } from "@/hooks/use-coach-program";
 import { localDateKey } from "@/lib/date";
 import { PILLARS } from "@/lib/wellness-framework";
 import { findWeakestPillarSmart } from "@/lib/coach/pick-free-move";
-import Mark from "@/components/Mark";
 
 /**
  * Your read: where you are right now, from the last 7 days of check-ins.
@@ -106,7 +105,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
         onClick={() => onAsk ? onAsk(`Help me improve my ${pillarMeta.name.toLowerCase()} this week — one concrete change.`) : navigate("/coach")}
         className="press mt-3 pt-3 w-full min-h-11 border-t border-border/35 flex items-center gap-3 text-left"
       >
-        <Mark family="pillar" id={pillarMeta.id} size={24} />
+        <span className="text-lg shrink-0" aria-hidden>{pillarMeta.emoji}</span>
         <span className="flex-1 min-w-0">
           <span className={cn("block text-dense font-bold leading-tight", pillarMeta.tint.text)}>{signal.clean ? `Next lever · ${pillarMeta.name}` : `${pillarMeta.name} is the gap`}</span>
           <span className="block text-label text-muted-foreground leading-snug mt-0.5 line-clamp-1">{pillarMeta.blurb}</span>

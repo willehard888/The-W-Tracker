@@ -5,7 +5,6 @@ import { personalPalette, withAlpha } from "@/lib/tribe-streak";
 import { personalStreakTier } from "@/lib/streak";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/img";
-import { initialsOf } from "@/components/StatusAvatar";
 
 interface Contributor {
   user_id: string;
@@ -108,7 +107,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                     <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 56)} alt={m.username} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
-                      {initialsOf(m.username)}
+                      {m.username.slice(0, 2).toUpperCase()}
                     </div>
                   )}
                 </div>

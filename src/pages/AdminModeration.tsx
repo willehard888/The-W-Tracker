@@ -177,7 +177,7 @@ export default function AdminModeration() {
       {!isLoading && queue && queue.length === 0 && (
         <div className="text-center py-16">
           <CheckCircle2 aria-hidden className="h-10 w-10 mx-auto mb-3 text-gold/70" />
-          <p className="text-sm font-semibold text-muted-foreground">Queue clear</p>
+          <p className="text-sm font-semibold text-muted-foreground">Queue clear 🎉</p>
         </div>
       )}
 

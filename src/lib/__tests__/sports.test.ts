@@ -57,7 +57,7 @@ describe("sport catalog invariants", () => {
   });
 
   it("sportLabel formats persisted ids and hides none", () => {
-    expect(sportLabel("tennis")).toBe("Tennis");
+    expect(sportLabel("tennis")).toBe("🎾 Tennis");
     expect(sportLabel("none")).toBeNull();
     expect(sportLabel(null)).toBeNull();
   });

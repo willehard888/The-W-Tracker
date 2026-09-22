@@ -15,7 +15,6 @@ import { goldThumb } from "@/components/coach/gold-lines";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { sessionMinutes, useBuildFocusSession, useMuscleBalance, useSwapExercise, type BuiltSession, type Feel, type Focus } from "@/hooks/use-focus-session";
 import { track, FUNNEL } from "@/lib/analytics";
-import { initialsOf } from "@/components/StatusAvatar";
 
 /**
  * Train today — say what you want (the muscles, the minutes, how it should
@@ -60,7 +59,7 @@ export const Thumb = ({ slug, name }: { slug: string; name: string }) => {
       {ill ? (
         <img src={goldThumb(ill.idNum)} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain p-0.5" />
       ) : (
-        <span className="text-label font-black text-muted-foreground">{initialsOf(name)}</span>
+        <span className="text-label font-black text-muted-foreground">{name.slice(0, 2).toUpperCase()}</span>
       )}
     </div>
   );

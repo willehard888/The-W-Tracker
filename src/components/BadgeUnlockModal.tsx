@@ -4,7 +4,6 @@ import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
-import Mark from "@/components/Mark";
 
 interface BadgeUnlockModalProps {
   badge: { name: string; icon: string; rarity: string; description?: string } | null;
@@ -167,7 +166,7 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action }: BadgeUnlock
         >
           <div
             className={cn(
-              "relative h-32 w-32 rounded-full border-2 flex items-center justify-center transition-[border-color,box-shadow] duration-700",
+              "relative h-32 w-32 rounded-full border-2 flex items-center justify-center text-6xl transition-[border-color,box-shadow] duration-700",
               style.ring,
               style.glow,
               isLegendary && "badge-shine"
@@ -182,7 +181,7 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action }: BadgeUnlock
                 : "hsl(225, 16%, 10%)",
             }}
           >
-            <Mark family="badge" id={badge.name} size={88} fallback={<span className="text-6xl">{badge.icon}</span>} />
+            {badge.icon}
             {/* Decorative outer ring */}
             {isEpicPlus && (
               <div className={cn(

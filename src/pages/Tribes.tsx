@@ -30,7 +30,6 @@ import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon } from "@/lib/tribe-activities";
 import { fetchMyTribeMembership, fetchTribesPage, EMPTY_TRIBES_PAGE, type Tribe, type TribesPageData } from "@/lib/tribes-query";
 import { collectiveStreakTier, collectiveTierName, collectiveAccent, collectivePalette, withAlpha, KINDLING_PALETTE, COLD_PLATE } from "@/lib/tribe-streak";
-import { initialsOf } from "@/components/StatusAvatar";
 
 interface Invite {
   id: string;
@@ -428,7 +427,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                       <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 40)} alt={m.username} className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
-                        {initialsOf(m.username)}
+                        {m.username.slice(0, 2).toUpperCase()}
                       </div>
                     )}
                   </div>

@@ -24,6 +24,7 @@ export interface TierRequirements {
 export interface TierConfig {
   label: string;
   shortLabel: string;
+  emoji: string;
   percentile: string;
   message: string;
   pressureMessage: string;
@@ -43,6 +44,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   recruit: {
     label: "Recruit",
     shortLabel: "REC",
+    emoji: "⬛",
     // Operator asks for the top 75 %, so the entry rung is not "Bottom 50 %";
     // tierBandLabel already calls it this.
     percentile: "Entry",
@@ -62,6 +64,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   normal: {
     label: "Recruit",
     shortLabel: "REC",
+    emoji: "⬛",
     percentile: "Entry",
     message: "Nobody knows your name yet. Change that.",
     pressureMessage: "Others are moving ahead of you",
@@ -79,6 +82,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   operator: {
     label: "Operator",
     shortLabel: "OPR",
+    emoji: "🟢",
     percentile: "Top 75%",
     message: "You showed up. Most never do.",
     pressureMessage: "Don't lose your position",
@@ -96,6 +100,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   performer: {
     label: "Performer",
     shortLabel: "PRF",
+    emoji: "🔵",
     percentile: "Top 50%",
     message: "You're outworking half the field.",
     pressureMessage: "You're ahead — for now",
@@ -113,6 +118,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   high_performer: {
     label: "High Performer",
     shortLabel: "HPR",
+    emoji: "🟣",
     percentile: "Top 30%",
     message: "They see you climbing. They're nervous.",
     pressureMessage: "Others are catching up",
@@ -130,6 +136,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   elite: {
     label: "Elite",
     shortLabel: "ELT",
+    emoji: "👑",
     percentile: "Top 20%",
     message: "You did what 80% couldn't. Stay there.",
     pressureMessage: "Don't lose your status",
@@ -147,6 +154,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   apex: {
     label: "Apex",
     shortLabel: "APX",
+    emoji: "⚡",
     percentile: "Top 10%",
     message: "Top 10%. The rest are watching.",
     pressureMessage: "Every day matters at this level",
@@ -165,6 +173,7 @@ export const TIER_CONFIG: Record<StatusTier, TierConfig> = {
   legend: {
     label: "Legend",
     shortLabel: "LGD",
+    emoji: "🔱",
     percentile: "Top 1%",
     message: "Untouchable. Your name lives forever here.",
     pressureMessage: "The Founders Circle is watching",

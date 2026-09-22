@@ -48,7 +48,7 @@ type StepKey =
 
 const QUESTION_STEPS: StepKey[] = ["goal", "sports", "frequency", "struggle"];
 
-const SPORT_OPTIONS = SPORTS.map((s) => ({ v: s.id, label: s.label, mark: s.id, markFamily: "sport" as const }));
+const SPORT_OPTIONS = SPORTS.map((s) => ({ v: s.id, label: s.label, emoji: s.emoji }));
 
 /**
  * A force-quit at question three used to cost every answer given so far —

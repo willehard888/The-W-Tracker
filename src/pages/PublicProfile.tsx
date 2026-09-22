@@ -104,7 +104,7 @@ const PublicProfile = () => {
       const tier = getTierConfig(profile.status_tier || 'recruit');
       document.title = `@${profile.username} · ${tier.label} · Whealth Factory`;
       const desc = document.querySelector('meta[name="description"]');
-      const text = `${tier.label} · Level ${profile.level ?? 1} · ${profile.streak ?? 0}d streak · ${fmtInt(profile.xp ?? 0)} XP`;
+      const text = `${tier.emoji} ${tier.label} · Level ${profile.level ?? 1} · ${profile.streak ?? 0}d streak · ${fmtInt(profile.xp ?? 0)} XP`;
       if (desc) desc.setAttribute('content', text);
       else {
         const m = document.createElement('meta');

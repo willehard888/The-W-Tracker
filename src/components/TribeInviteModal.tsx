@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { cn } from "@/lib/utils";
-import { initialsOf } from "@/components/StatusAvatar";
 
 interface Props {
   tribeId: string;
@@ -115,7 +114,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
                     <img loading="lazy" decoding="async" src={avatarUrl(u.avatar_url, 48)} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
-                      {initialsOf(u.username)}
+                      {u.username.slice(0, 2).toUpperCase()}
                     </div>
                   )}
                 </div>

@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
-import Mark from "@/components/Mark";
 
 /**
  * Pre-chat mood capture — shown above the chat body when today has
@@ -18,8 +17,8 @@ import Mark from "@/components/Mark";
  * Skipped automatically by the caller when today's reflection exists.
  */
 
-const ENERGY_MARKS = ["energy-1", "energy-2", "energy-3", "energy-4", "energy-5"] as const;
-const MOOD_MARKS = ["mood-1", "mood-2", "mood-3", "mood-4", "mood-5"] as const;
+const ENERGY_EMOJI = ["😴", "😪", "🙂", "😊", "⚡"] as const;
+const MOOD_EMOJI = ["😢", "😕", "😐", "🙂", "😄"] as const;
 
 interface Props {
   onCaptured: (snapshot: { energy: number; mood: number }) => void;
@@ -68,10 +67,10 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
       </div>
 
       <p className="text-meta text-muted-foreground mb-1.5">How's your energy?</p>
-      <MarkRow value={energy} onChange={setEnergy} marks={ENERGY_MARKS} />
+      <EmojiRow value={energy} onChange={setEnergy} emojis={ENERGY_EMOJI} />
 
       <p className="text-meta text-muted-foreground mb-1.5 mt-3">And your mood?</p>
-      <MarkRow value={mood} onChange={setMood} marks={MOOD_MARKS} />
+      <EmojiRow value={mood} onChange={setMood} emojis={MOOD_EMOJI} />
 
       <Button
         variant="ember"
@@ -86,11 +85,11 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
   );
 };
 
-const MarkRow = ({
-  value, onChange, marks,
-}: { value: number; onChange: (v: number) => void; marks: readonly string[] }) => (
+const EmojiRow = ({
+  value, onChange, emojis,
+}: { value: number; onChange: (v: number) => void; emojis: readonly string[] }) => (
   <div className="flex gap-1.5">
-    {marks.map((e, i) => {
+    {emojis.map((e, i) => {
       const v = i + 1;
       const active = value === v;
       return (
@@ -98,13 +97,13 @@ const MarkRow = ({
           key={v}
           type="button"
           onClick={() => { hapticImpact("light"); onChange(v); }}
-          className={`press flex-1 h-11 rounded-xl flex items-center justify-center transition-colors border ${
+          className={`press flex-1 h-11 rounded-xl text-lg transition-colors border ${
             active ? "bg-gold/15 border-gold/60" : "surface-inset border-border/40"
           }`}
           aria-pressed={active}
           aria-label={`Rate ${v} of 5`}
         >
-          <Mark family="mood" id={e} size={28} />
+          {e}
         </button>
       );
     })}

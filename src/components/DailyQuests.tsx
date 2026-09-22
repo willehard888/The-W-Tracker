@@ -1,32 +1,32 @@
 import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Zap, Target, CheckCircle2, Clock, Flame } from "lucide-react";
-import Mark from "@/components/Mark";
 
 interface Quest {
   id: string;
   title: string;
   description: string;
   xpReward: number;
+  emoji: string;
   checkFn: (checkinData: any) => boolean;
 }
 
-export const ALL_QUESTS: Quest[] = [
-  { id: "cold_shower", title: "Ice Warrior", description: "Take a cold shower today", xpReward: 15, checkFn: (d) => d.coldShower },
-  { id: "double_meditation", title: "Zen Master", description: "Meditate morning AND evening", xpReward: 20, checkFn: (d) => d.meditationAm && d.meditationPm },
-  { id: "hydration_max", title: "Hydration King", description: "Drink 4L+ water today", xpReward: 15, checkFn: (d) => d.hydration >= 4 },
-  { id: "no_phone", title: "Digital Detox", description: "No phone morning AND evening", xpReward: 20, checkFn: (d) => d.noPhoneAm && d.noPhonePm },
-  { id: "perfect_sleep", title: "Sleep Champion", description: "Get exactly 8-9 hours of sleep", xpReward: 15, checkFn: (d) => d.sleep >= 8 && d.sleep <= 9 },
-  { id: "full_nutrition", title: "Fuel Machine", description: "Healthy food + protein intake", xpReward: 15, checkFn: (d) => d.healthyFood && d.protein },
+const ALL_QUESTS: Quest[] = [
+  { id: "cold_shower", title: "Ice Warrior", description: "Take a cold shower today", xpReward: 15, emoji: "🧊", checkFn: (d) => d.coldShower },
+  { id: "double_meditation", title: "Zen Master", description: "Meditate morning AND evening", xpReward: 20, emoji: "🧘", checkFn: (d) => d.meditationAm && d.meditationPm },
+  { id: "hydration_max", title: "Hydration King", description: "Drink 4L+ water today", xpReward: 15, emoji: "💧", checkFn: (d) => d.hydration >= 4 },
+  { id: "no_phone", title: "Digital Detox", description: "No phone morning AND evening", xpReward: 20, emoji: "📵", checkFn: (d) => d.noPhoneAm && d.noPhonePm },
+  { id: "perfect_sleep", title: "Sleep Champion", description: "Get exactly 8-9 hours of sleep", xpReward: 15, emoji: "😴", checkFn: (d) => d.sleep >= 8 && d.sleep <= 9 },
+  { id: "full_nutrition", title: "Fuel Machine", description: "Healthy food + protein intake", xpReward: 15, emoji: "🥗", checkFn: (d) => d.healthyFood && d.protein },
   // Generalized from the old combat-only "Fighter Spirit": fires when today's
   // workout is one of the athlete's OWN sports (athlete profile sports[]).
-  { id: "own_sport", title: "Own Turf", description: "Train one of your own sports today", xpReward: 25, checkFn: (d) => d.sportCategory !== "none" && Array.isArray(d.mySports) && d.mySports.includes(d.sportCategory) },
-  { id: "extra_grind", title: "Double Session", description: "Complete an extra workout", xpReward: 20, checkFn: (d) => d.extraWorkout },
+  { id: "own_sport", title: "Own Turf", description: "Train one of your own sports today", xpReward: 25, emoji: "🎯", checkFn: (d) => d.sportCategory !== "none" && Array.isArray(d.mySports) && d.mySports.includes(d.sportCategory) },
+  { id: "extra_grind", title: "Double Session", description: "Complete an extra workout", xpReward: 20, emoji: "💪", checkFn: (d) => d.extraWorkout },
   // Social loop: only fires for tribe members — the day's effort feeds the fire.
-  { id: "tribe_player", title: "Tribe Player", description: "Complete 3+ tasks as a tribe member", xpReward: 10, checkFn: (d) => d.inTribe === true && d.completedCount >= 3 },
-  { id: "early_bird", title: "Early Bird", description: "Sleep 7h+ and no phone in the morning", xpReward: 15, checkFn: (d) => d.sleep >= 7 && d.noPhoneAm },
-  { id: "total_discipline", title: "Total Discipline", description: "Complete 8+ tasks in one day", xpReward: 30, checkFn: (d) => d.completedCount >= 8 },
-  { id: "bookworm", title: "Bookworm", description: "Read for 30 minutes today", xpReward: 15, checkFn: (d) => d.reading },
+  { id: "tribe_player", title: "Tribe Player", description: "Complete 3+ tasks as a tribe member", xpReward: 10, emoji: "🔥", checkFn: (d) => d.inTribe === true && d.completedCount >= 3 },
+  { id: "early_bird", title: "Early Bird", description: "Sleep 7h+ and no phone in the morning", xpReward: 15, emoji: "🌅", checkFn: (d) => d.sleep >= 7 && d.noPhoneAm },
+  { id: "total_discipline", title: "Total Discipline", description: "Complete 8+ tasks in one day", xpReward: 30, emoji: "👑", checkFn: (d) => d.completedCount >= 8 },
+  { id: "bookworm", title: "Bookworm", description: "Read for 30 minutes today", xpReward: 15, emoji: "📖", checkFn: (d) => d.reading },
 ];
 
 // Seeded random based on date to get consistent daily quests
@@ -119,7 +119,7 @@ const DailyQuests = ({ checkinData, onBonusXpChange }: DailyQuestsProps) => {
                 : "border-border/50 bg-card/50"
             )}
           >
-            <Mark family="quest" id={quest.id} size={24} />
+            <span aria-hidden className="text-lg w-7 text-center">{quest.emoji}</span>
             <div className="flex-1 min-w-0">
               <p className={cn(
                 "text-xs font-bold",

@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Crown, Lock } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Crown, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
-import { TIER_CONFIG, TIER_ORDER, canonicalTier, getTierConfig, tierRequirementLines, type StatusTier } from "@/lib/status-tiers";
+import { TIER_CONFIG, TIER_ORDER, getTierConfig, tierRequirementLines, type StatusTier } from "@/lib/status-tiers";
 import { RedeemLegendInviteDialog } from "@/components/RedeemLegendInviteDialog";
-import Mark from "@/components/Mark";
 
 interface TierLadderProps {
   currentTier: string;
@@ -71,7 +70,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
         onClick={() => { setExpanded(nextKey ?? null); setOpen(true); }}
         className="w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
       >
-        <TierMark rank={currentRank} className="h-10 w-10"><Mark family="tier" id={canonicalTier(currentTier)} size={32} /></TierMark>
+        <TierMark rank={currentRank} className="h-10 w-10 text-label">{current.shortLabel}</TierMark>
         <span className="flex-1 min-w-0">
           <span className="block text-dense font-semibold truncate">Ladder</span>
           <span className="block text-label text-muted-foreground truncate mt-0.5">
@@ -96,7 +95,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
         {/* HERO — the rung you stand on, and the one after it */}
         <div className="surface-card p-4 mt-1">
           <div className="flex items-center gap-3">
-            <TierMark rank={currentRank} className="h-14 w-14"><Mark family="tier" id={canonicalTier(currentTier)} size={46} /></TierMark>
+            <TierMark rank={currentRank} className="h-14 w-14 text-read">{current.shortLabel}</TierMark>
             <div className="flex-1 min-w-0">
               <p className="font-display font-black text-major leading-none tracking-tight">{current.label}</p>
               <p className="text-meta text-muted-foreground mt-1.5">{current.percentile}</p>
@@ -133,8 +132,8 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
                   onClick={() => setExpanded(isOpen ? null : key)}
                   className="w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
-                  <TierMark rank={cfg.rank} className={cn("h-9 w-9", !held && !isCurrent && "opacity-70")}>
-                    <Mark family="tier" id={key} size={30} />
+                  <TierMark rank={cfg.rank} className={cn("h-9 w-9 text-label", !held && !isCurrent && "opacity-70")}>
+                    {held ? <Check size={15} strokeWidth={3} aria-hidden /> : isLegend && !isCurrent ? <Crown size={14} aria-hidden /> : cfg.shortLabel}
                   </TierMark>
                   <span className="flex-1 min-w-0">
                     <span className={cn("block text-note font-semibold leading-tight truncate", !held && !isCurrent && "text-foreground/85")}>{cfg.label}</span>

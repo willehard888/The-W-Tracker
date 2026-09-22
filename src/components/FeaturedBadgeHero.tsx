@@ -1,7 +1,6 @@
 import { m } from "framer-motion";
 import { Crown, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Mark from "@/components/Mark";
 
 interface FeaturedBadgeHeroProps {
   name: string;
@@ -75,7 +74,7 @@ const FeaturedBadgeHero = ({ name, icon, rarity }: FeaturedBadgeHeroProps) => {
           cfg.border,
         )}
       >
-        <Mark family="badge" id={name} size={20} className="relative z-[2]" fallback={<span className="relative z-[2] text-base leading-none">{icon}</span>} />
+        <span className="relative z-[2] text-base leading-none">{icon}</span>
       </div>
 
       <div className="flex flex-col items-start leading-none">

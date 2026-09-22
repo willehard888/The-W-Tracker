@@ -19,6 +19,7 @@ export interface PillarMeta {
   blurb: string;
   /** Tailwind class fragments (border / chip / glow tints) */
   tint: { border: string; chip: string; glow: string; text: string };
+  emoji: string;
 }
 
 export interface ProtocolDose {
@@ -57,6 +58,7 @@ export const PILLARS: Record<PillarId, PillarMeta> = {
       glow: "from-indigo-400/15 to-transparent",
       text: "text-indigo-300",
     },
+    emoji: "🌙",
   },
   movement: {
     id: "movement",
@@ -68,6 +70,7 @@ export const PILLARS: Record<PillarId, PillarMeta> = {
       glow: "from-gold/15 to-transparent",
       text: "text-gold",
     },
+    emoji: "💪",
   },
   nutrition: {
     id: "nutrition",
@@ -79,6 +82,7 @@ export const PILLARS: Record<PillarId, PillarMeta> = {
       glow: "from-emerald-400/15 to-transparent",
       text: "text-emerald-300",
     },
+    emoji: "🥩",
   },
   stress: {
     id: "stress",
@@ -90,6 +94,7 @@ export const PILLARS: Record<PillarId, PillarMeta> = {
       glow: "from-violet-400/15 to-transparent",
       text: "text-violet-300",
     },
+    emoji: "🧘",
   },
   recovery: {
     id: "recovery",
@@ -101,6 +106,7 @@ export const PILLARS: Record<PillarId, PillarMeta> = {
       glow: "from-rose-400/15 to-transparent",
       text: "text-rose-300",
     },
+    emoji: "🔥",
   },
   connection: {
     id: "connection",
@@ -112,6 +118,7 @@ export const PILLARS: Record<PillarId, PillarMeta> = {
       glow: "from-sky-400/15 to-transparent",
       text: "text-sky-300",
     },
+    emoji: "🤝",
   },
 };
 

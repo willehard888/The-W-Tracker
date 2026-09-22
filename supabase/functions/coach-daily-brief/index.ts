@@ -2,10 +2,10 @@
 // from the AI Coach. Cached per user per day in coach_daily_briefs.
 import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { sportBreakdown } from "../_shared/sports.ts";
+import { sportBreakdown, sportName } from "../_shared/sports.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
-import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
+import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
@@ -134,6 +134,10 @@ Deno.serve(async (req) => {
     // Last night's recovery — so the brief can explain WHY they feel how they feel.
     const nightSignals = await gatherNightSignals(sb, uid).catch(() => ({ hasData: false }));
     const causalBlock = buildCausalBlock(nightSignals as any);
+    // Sessions the watch recorded, by sport — a Polar tennis match the member
+    // never checked in for is still a tennis match to the coach.
+    const healthDays = await gatherHealthWorkouts(sb, 7);
+    const workoutsBlock = buildWorkoutsBlock(healthDays, (id) => sportName(id) ?? id);
 
     // Whealth Index snapshot — the morning brief cites the real computed
     // state, not vibes. Fail-open.
@@ -170,7 +174,7 @@ Athlete:
 
 Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts${sports7 ? ` (${sports7})` : ""}.
-${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${whealthBlock}
+${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${whealthBlock}
 ${INNER_WORK_BLOCK}
 ${LONGEVITY_BLOCK}
 ${WISDOM_BLOCK}

@@ -10,6 +10,7 @@
  * watch connects, never reached the app until a cold start.
  */
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { hasHealthConsent, markHealthConnected } from "@/lib/health/health-consent";
 import { isHealthKitAvailable, readTodaySnapshot, type DaySnapshot } from "@/lib/health/healthkit";
 import { syncNightMetrics } from "@/lib/health/night-metrics";
@@ -38,6 +39,9 @@ export async function syncDaySnapshot(): Promise<DaySnapshot | null> {
     _body_fat_pct: snap.body_fat_pct ?? undefined,
     _vo2max: snap.vo2max ?? undefined,
     _sources: snap.sources.length ? snap.sources : undefined,
+    // The sport used to stop here: count and minutes went up, "tennis" did not.
+    _primary_sport: snap.primary_sport ?? undefined,
+    _workouts: snap.workouts.length ? (snap.workouts as unknown as Json) : undefined,
   });
   if (error) throw new Error(error.message);
   return snap;

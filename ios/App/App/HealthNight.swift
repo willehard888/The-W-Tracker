@@ -221,21 +221,35 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
         sum(.distanceCycling, unit: .meter(), key: "distance_cycle_m")
         sum(.flightsClimbed, unit: .count(), key: "flights")
 
-        // Workouts — count, total minutes, the longest one's sport, its source.
+        // Workouts — every session with its sport, span, calories, distance,
+        // average heart rate and the app that recorded it. A Polar tennis match
+        // used to leave here as "62 minutes": the JS kept only a count and the
+        // longest session's sport. HR comes from the workout's own statistics
+        // (`.heartRate` is already in readTypes, so the consent sheet is unchanged).
         group.enter()
         let sort = [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)]
+        let iso = ISO8601DateFormatter()
+        let bpm = HKUnit.count().unitDivided(by: .minute())
         let wq = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sort) { _, samples, _ in
             var list: [[String: Any]] = []
             var longest: HKWorkout?
             for case let w as HKWorkout in (samples ?? []) {
                 source(w.sourceRevision.source.name)
                 let kcal = w.totalEnergyBurned?.doubleValue(for: .kilocalorie())
-                list.append([
+                var row: [String: Any] = [
                     "type": Self.workoutTypeName[w.workoutActivityType.rawValue] ?? "other",
                     "duration_s": w.duration,
                     "kcal": kcal ?? 0,
-                    "source": w.sourceRevision.source.name
-                ])
+                    "source": w.sourceRevision.source.name,
+                    "start": iso.string(from: w.startDate),
+                    "end": iso.string(from: w.endDate)
+                ]
+                if let m = w.totalDistance?.doubleValue(for: .meter()), m.isFinite, m > 0 { row["distance_m"] = m }
+                if #available(iOS 16.0, *), let hr = HKObjectType.quantityType(forIdentifier: .heartRate),
+                   let avg = w.statistics(for: hr)?.averageQuantity()?.doubleValue(for: bpm), avg.isFinite, avg > 0 {
+                    row["avg_hr"] = avg
+                }
+                list.append(row)
                 if longest == nil || w.duration > longest!.duration { longest = w }
             }
             put("workouts", list)

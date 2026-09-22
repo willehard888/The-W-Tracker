@@ -54,10 +54,18 @@ import {
 } from "@/lib/checkin-habits";
 import { habitsEarnedToday } from "@/lib/recovery/completion";
 import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
-import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou } from "@/lib/sports";
+import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou, sportLabel } from "@/lib/sports";
 import { useRecentSports } from "@/hooks/use-recent-sports";
 import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
 import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
+import type { DayWorkout } from "@/lib/health/healthkit";
+
+/** "Tennis 62 min · Gym 45 min · Polar Flow" — what Health recorded today, by sport. */
+const healthSessionsLine = (sessions: DayWorkout[]): string => {
+  const parts = sessions.slice(0, 3).map((w) => `${sportLabel(w.sport) ?? "Workout"} ${w.duration_min} min`);
+  const sources = Array.from(new Set(sessions.map((w) => w.source).filter((v): v is string => !!v)));
+  return [...parts, ...sources.slice(0, 1)].join(" · ");
+};
 
 // Sport catalog now lives in src/lib/sports.ts — shared with the athlete
 // profile, quests and (via the persisted sport column) the AI coach.
@@ -261,6 +269,9 @@ const DailyCheckin = () => {
   const [sportQuery, setSportQuery] = useState("");
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [detectedSportId, setDetectedSportId] = useState<string | null>(null);
+  /** Every sport Health recorded today, longest first (Polar tennis + a gym session both show). */
+  const [detectedSports, setDetectedSports] = useState<string[]>([]);
+  const [healthSessions, setHealthSessions] = useState<DayWorkout[]>([]);
   const recentSports = useRecentSports();
 
   const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
@@ -289,7 +300,7 @@ const DailyCheckin = () => {
   const moderation = useModeration();
 
   const selectedSport = SPORT_CATEGORIES.find((s) => s.id === sportCategory) ?? SPORT_CATEGORIES[0];
-  const forYou = buildForYou(detectedSportId, athlete?.sports, recentSports);
+  const forYou = buildForYou(detectedSports, athlete?.sports, recentSports);
   const workout = sportCategory !== "none";
   const isRestDay = restDay && !workout;
 
@@ -302,6 +313,11 @@ const DailyCheckin = () => {
     healthKit.syncToday().then((snap) => {
       if (!alive || !snap) return;
       const workoutDone = (snap.workout_count ?? 0) >= 1 || (snap.workout_minutes ?? 0) >= 15;
+      // Every session Health recorded, longest first — the "For you" row shows
+      // each with its Detected badge; the longest one pre-selects.
+      const sessions = [...snap.workouts].sort((a, b) => b.duration_min - a.duration_min);
+      setHealthSessions(sessions);
+      setDetectedSports(Array.from(new Set(sessions.map((w) => w.sport))));
       // Apple told us WHICH sport — pre-select it once (user can still change).
       // Never override a choice the user already made (Rest day sets "none"
       // on purpose — the async HK snapshot must not turn it back into a workout).
@@ -1049,6 +1065,8 @@ const DailyCheckin = () => {
                 <p className="text-xs text-muted-foreground">
                   {isRestDay
                     ? "Rest day — logged"
+                    : healthSessions.length > 0
+                    ? healthSessionsLine(healthSessions)
                     : workout
                     ? "Tap Trained to change sport"
                     : detected.workout ? "Health saw a workout — pick your sport" : "Did you train today?"}
@@ -1103,7 +1121,7 @@ const DailyCheckin = () => {
                       <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
                       <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
                         {sport.label}
-                        {detectedSportId === sport.id && (
+                        {detectedSports.includes(sport.id) && (
                           <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
                         )}
                       </span>

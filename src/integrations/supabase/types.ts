@@ -1479,7 +1479,9 @@ export type Database = {
           sleep_hours: number | null
           snapshot_date: string
           source: string
+          primary_sport: string | null
           sources: string[]
+          workouts: Json
           steps: number | null
           updated_at: string
           user_id: string
@@ -1500,7 +1502,9 @@ export type Database = {
           sleep_hours?: number | null
           snapshot_date: string
           source?: string
+          primary_sport?: string | null
           sources?: string[]
+          workouts?: Json
           steps?: number | null
           updated_at?: string
           user_id: string
@@ -1521,7 +1525,9 @@ export type Database = {
           sleep_hours?: number | null
           snapshot_date?: string
           source?: string
+          primary_sport?: string | null
           sources?: string[]
+          workouts?: Json
           steps?: number | null
           updated_at?: string
           user_id?: string
@@ -4501,11 +4507,13 @@ export type Database = {
           _mindful_minutes?: number
           _sleep_hours?: number
           _source?: string
+          _primary_sport?: string
           _sources?: string[]
           _steps?: number
           _vo2max?: number
           _workout_count?: number
           _workout_minutes?: number
+          _workouts?: Json
         }
         Returns: Json
       }

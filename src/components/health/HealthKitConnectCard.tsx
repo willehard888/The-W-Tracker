@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { hasHealthConsent, hasStaleHealthConsent } from "@/lib/health/health-consent";
 import { track, FUNNEL } from "@/lib/analytics";
+import { sportById } from "@/lib/sports";
+import { localDateKey } from "@/lib/date";
 
 /**
  * "Connect Apple Health" — a quiet support row for Home, Coach and Profile.
@@ -38,7 +40,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
     verified_pct: number;
     is_verified_performer: boolean;
   } | null>(null);
-  const [today, setToday] = useState<{ sources: string[]; hasData: boolean } | null>(null);
+  const [today, setToday] = useState<{ sources: string[]; hasData: boolean; sessions: string } | null>(null);
 
   // Verification stats (server-computed over the last 14 days).
   useEffect(() => {
@@ -67,7 +69,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
     since.setDate(since.getDate() - 3);
     void supabase
       .from("health_sync_snapshots")
-      .select("snapshot_date, steps, workout_count, sleep_hours, active_kcal, sources")
+      .select("snapshot_date, steps, workout_count, sleep_hours, active_kcal, sources, workouts")
       .eq("user_id", user.id)
       .gte("snapshot_date", since.toISOString().slice(0, 10))
       .order("snapshot_date", { ascending: false })
@@ -81,7 +83,18 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
         for (const src of lastSnapshot?.sources ?? []) stored.add(src);
         const liveHasData = !!lastSnapshot && (lastSnapshot.steps != null || lastSnapshot.workout_count != null
           || lastSnapshot.sleep_hours != null || lastSnapshot.active_kcal != null);
-        setToday({ sources: Array.from(stored).sort(), hasData: withData.length > 0 || liveHasData });
+        // Today's sessions by sport — "Tennis 62 min · Gym 45 min" — the line
+        // that says a Polar session arrived as what it was. The live read wins
+        // over the stored row; the stored row covers a cold start.
+        type StoredWorkout = { sport?: string; duration_min?: number };
+        const storedToday = (rows.find((r) => r.snapshot_date === localDateKey())?.workouts as StoredWorkout[] | null) ?? [];
+        const sessions = lastSnapshot ? lastSnapshot.workouts : storedToday;
+        const line = sessions
+          .filter((w) => w.sport && Number(w.duration_min) > 0)
+          .slice(0, 3)
+          .map((w) => `${sportById(w.sport).label} ${w.duration_min} min`)
+          .join(" · ");
+        setToday({ sources: Array.from(stored).sort(), hasData: withData.length > 0 || liveHasData, sessions: line });
       });
     return () => { alive = false; };
   }, [user?.id, connected, lastSnapshot]);
@@ -160,6 +173,9 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
           {stats?.verified_count ?? 0}/{stats?.total_checkins ?? 0} verified in 14 days
           {stats?.is_verified_performer ? "" : " · 70% earns the badge"}
         </p>
+        {today?.sessions && (
+          <p className="text-label text-foreground/85 leading-snug mt-0.5 tabular-nums truncate">Today · {today.sessions}</p>
+        )}
       </div>
       <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-meta" loading={syncing} onClick={() => { void syncToday(); }}>
         <RefreshCw aria-hidden size={11} /> Sync

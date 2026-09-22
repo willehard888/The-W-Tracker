@@ -7,7 +7,7 @@ describe("assembleDaySnapshot", () => {
     expect(s).toEqual({
       date: "2026-09-13",
       steps: null, distance_m: null, flights: null,
-      workout_count: null, workout_minutes: null, primary_sport: null,
+      workout_count: null, workout_minutes: null, primary_sport: null, workouts: [],
       sleep_hours: null, active_kcal: null, mindful_minutes: null,
       body_mass_kg: null, body_fat_pct: null, vo2max: null,
       sources: [],
@@ -25,6 +25,32 @@ describe("assembleDaySnapshot", () => {
     expect(s.workout_count).toBe(2);
     expect(s.workout_minutes).toBe(55);
     expect(s.primary_sport).toBe("run");
+  });
+
+  it("keeps every session as the sport it was, oldest first, with its numbers", () => {
+    // A Polar tennis match and a gym session: the day used to leave as
+    // "107 minutes, gym" — the match vanished because gym was longer.
+    const s = assembleDaySnapshot("2026-09-23", {
+      available: true,
+      workouts: [
+        { type: "traditionalStrengthTraining", duration_s: 2700, kcal: 310, source: "Whealth Factory", start: "2026-09-23T07:00:00Z" },
+        { type: "tennis", duration_s: 3720, kcal: 480.4, avg_hr: 142.6, distance_m: 0, source: "Polar Flow", start: "2026-09-23T17:00:00Z" },
+        { type: "cooldown", duration_s: 300, source: "Polar Flow", start: "2026-09-23T18:02:00Z" },
+        { type: "walking", duration_s: 0, source: "Apple Watch" },
+      ],
+    }, null, null);
+    expect(s.primary_sport).toBe("tennis");
+    expect(s.workouts).toEqual([
+      { sport: "gym", hk_type: "traditionalStrengthTraining", duration_min: 45, kcal: 310, distance_m: null, avg_hr: null, source: "Whealth Factory", start: "2026-09-23T07:00:00Z" },
+      { sport: "tennis", hk_type: "tennis", duration_min: 62, kcal: 480, distance_m: null, avg_hr: 143, source: "Polar Flow", start: "2026-09-23T17:00:00Z" },
+    ]);
+  });
+
+  it("caps the list at 20 and survives an old plugin without start dates", () => {
+    const many = Array.from({ length: 25 }, () => ({ type: "walking", duration_s: 120 }));
+    const s = assembleDaySnapshot("2026-09-23", { available: true, workouts: many }, null, null);
+    expect(s.workouts).toHaveLength(20);
+    expect(s.workouts[0]).toMatchObject({ sport: "walk", duration_min: 2, start: null, source: null });
   });
 
   it("falls back to the plugin's primary_type when workouts carry no type", () => {

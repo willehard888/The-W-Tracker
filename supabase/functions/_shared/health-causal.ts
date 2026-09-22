@@ -38,6 +38,64 @@ export interface NightSignals {
   training?: { workoutMin: number | null; activeKcal: number | null; distanceM: number | null; lastRpe: number | null; sources: string[] };
 }
 
+/** One session as the client stored it (upsert_health_snapshot re-shapes the keys). */
+export interface HealthWorkout {
+  sport: string;
+  duration_min: number;
+  kcal?: number | null;
+  distance_m?: number | null;
+  avg_hr?: number | null;
+  source?: string | null;
+  start?: string | null;
+}
+export interface HealthWorkoutDay { date: string; workouts: HealthWorkout[] }
+
+/**
+ * The sessions Apple Health holds for the last `days` days, by day — a Polar
+ * tennis match with its minutes, heart rate and the app that recorded it.
+ * Independent of the night data: a member without a sleep tracker still
+ * trains. Best-effort; empty on any failure.
+ */
+export async function gatherHealthWorkouts(supabase: AnyClient, days = 7): Promise<HealthWorkoutDay[]> {
+  try {
+    const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+    const { data } = await supabase
+      .from("health_sync_snapshots")
+      .select("snapshot_date, workouts")
+      .gte("snapshot_date", since)
+      .order("snapshot_date", { ascending: false })
+      .limit(days);
+    return ((data ?? []) as Array<{ snapshot_date: string; workouts: unknown }>)
+      .map((r) => ({
+        date: r.snapshot_date,
+        workouts: (Array.isArray(r.workouts) ? r.workouts : []).filter(
+          (w: any): w is HealthWorkout => typeof w?.sport === "string" && Number(w?.duration_min) > 0,
+        ),
+      }))
+      .filter((d) => d.workouts.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+/** The prompt block; "" when Health recorded no sessions in the window. */
+export function buildWorkoutsBlock(days: HealthWorkoutDay[], sportName: (id: string) => string): string {
+  if (!days.length) return "";
+  const lines = days.map((d) => {
+    const parts = d.workouts.map((w) => {
+      const bits = [`${sportName(w.sport)} ${w.duration_min} min`];
+      if (w.avg_hr) bits.push(`avg HR ${w.avg_hr}`);
+      if (w.kcal) bits.push(`${w.kcal} kcal`);
+      if (w.distance_m && w.distance_m >= 500) bits.push(`${(w.distance_m / 1000).toFixed(1)} km`);
+      if (w.source) bits.push(`via ${w.source}`);
+      return bits.join(", ");
+    });
+    return `- ${d.date}: ${parts.join(" · ")}`;
+  });
+  return `WORKOUTS RECORDED BY APPLE HEALTH (last 7 days; the sport is the device's own, whether or not the member checked in):
+${lines.join("\n")}`;
+}
+
 export async function gatherNightSignals(supabase: AnyClient, _userId: string): Promise<NightSignals> {
   try {
     // 14 days is all the block uses (baseline = up to 14 prior rows) — 30

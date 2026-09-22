@@ -40,6 +40,9 @@ export interface DaySnapshot {
   /** Sport id (src/lib/sports.ts) of the day's LONGEST workout — pre-fills
    *  the check-in sport picker. */
   primary_sport: string | null;
+  /** Every session of the day, oldest first — the sport as the app names it,
+   *  its numbers, and the app that recorded it ("Polar Flow"). */
+  workouts: DayWorkout[];
   /** Last night, from the same plugin's sleep query. */
   sleep_hours: number | null;
   active_kcal: number | null;
@@ -51,6 +54,40 @@ export interface DaySnapshot {
   /** Distinct source apps that wrote anything today. Empty when nothing did. */
   sources: string[];
 }
+
+export interface DayWorkout {
+  /** Sport id (src/lib/sports.ts); "other" when HealthKit's type has no row. */
+  sport: string;
+  /** camelCase HKWorkoutActivityType, kept for the label of an "other". */
+  hk_type: string;
+  duration_min: number;
+  kcal: number | null;
+  distance_m: number | null;
+  avg_hr: number | null;
+  source: string | null;
+  /** ISO-8601; null on a build that predates it. */
+  start: string | null;
+}
+
+/** The day's sessions as the app names them; warm-ups and transitions drop. */
+const MAX_WORKOUTS = 20;
+const assembleWorkouts = (day: DayResult | null): DayWorkout[] =>
+  (day?.workouts ?? [])
+    .filter((w) => Number.isFinite(Number(w.duration_s)) && Number(w.duration_s) > 0)
+    .map((w) => ({ w, sport: sportFromHealthKit(w.type) }))
+    .filter((x): x is { w: NonNullable<DayResult["workouts"]>[number]; sport: string } => x.sport != null)
+    .map(({ w, sport }) => ({
+      sport,
+      hk_type: typeof w.type === "string" ? w.type : "other",
+      duration_min: Math.max(1, Math.round(Number(w.duration_s) / 60)),
+      kcal: whole(w.kcal) || null,
+      distance_m: whole(w.distance_m) || null,
+      avg_hr: whole(w.avg_hr) || null,
+      source: typeof w.source === "string" && w.source ? w.source : null,
+      start: typeof w.start === "string" && w.start ? w.start : null,
+    }))
+    .sort((a, b) => (a.start ?? "").localeCompare(b.start ?? ""))
+    .slice(0, MAX_WORKOUTS);
 
 const isIos = () => Capacitor.getPlatform() === "ios";
 
@@ -89,6 +126,7 @@ export function assembleDaySnapshot(
     workout_count: workouts.length || null,
     workout_minutes: totalSeconds > 0 ? Math.round(totalSeconds / 60) : null,
     primary_sport: sportFromHealthKit(longest?.type ?? day?.primary_type),
+    workouts: assembleWorkouts(day),
     sleep_hours: sleepHours,
     active_kcal: whole(day?.active_kcal),
     mindful_minutes: whole(day?.mindful_minutes),

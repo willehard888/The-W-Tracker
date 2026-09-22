@@ -56,7 +56,18 @@ export interface DayResult {
   distance_walk_m?: number;
   distance_cycle_m?: number;
   flights?: number;
-  workouts?: Array<{ type?: string; duration_s?: number; kcal?: number; source?: string }>;
+  workouts?: Array<{
+    type?: string;
+    duration_s?: number;
+    kcal?: number;
+    source?: string;
+    /** ISO-8601, set by HealthNight ≥ the 2026-09-23 build. */
+    start?: string;
+    end?: string;
+    distance_m?: number;
+    /** Average heart rate over the session (workout statistics), bpm. */
+    avg_hr?: number;
+  }>;
   /** camelCase HKWorkoutActivityType of the day's longest workout. */
   primary_type?: string;
   mindful_minutes?: number;

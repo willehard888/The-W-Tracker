@@ -20,7 +20,7 @@ import {
 } from "../_shared/coach-persona.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
-import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
+import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
 import { WISDOM_BLOCK } from "../_shared/wisdom-catalog.ts";
@@ -514,7 +514,8 @@ Deno.serve(async (req) => {
 
     const progressionBlock = buildProgressionBlock(progression);
     const causalBlock = buildCausalBlock(nightSignals as any);
-    const workoutLogBlock = [progressionBlock, causalBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
+    const workoutsBlock = buildWorkoutsBlock(await gatherHealthWorkouts(supabase, 7), (id) => sportName(id) ?? id);
+    const workoutLogBlock = [progressionBlock, causalBlock, workoutsBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
 
     // Long-term memory block — injected right after the athlete file so the
     // coach actually KNOWS the athlete across sessions.

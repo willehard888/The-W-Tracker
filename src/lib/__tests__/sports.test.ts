@@ -87,6 +87,14 @@ describe("sportFromHealthKit", () => {
     }
   });
 
+  it("has no dead keys: every HealthKit name in the map is one HealthNight can emit", () => {
+    // HealthKit has no floorball type; a `floorball` key sat in the map for a
+    // year and could never match. The plugin's table is camelCase HK names.
+    expect(sportFromHealthKit("floorball")).toBe("other");
+    expect(sportFromHealthKit("pickleball")).toBe("padel");
+    expect(sportFromHealthKit("paddleSports")).toBe("rowing");
+  });
+
   it("non-workouts and unknowns behave", () => {
     expect(sportFromHealthKit("cooldown")).toBeNull();
     expect(sportFromHealthKit("transition")).toBeNull();
@@ -99,6 +107,11 @@ describe("buildForYou", () => {
   it("orders detected → profile → recent, deduped, max 5", () => {
     const out = buildForYou("tennis", ["gym", "tennis", "run"], ["swim", "gym", "yoga", "hiit"]);
     expect(out.map((s) => s.id)).toEqual(["tennis", "gym", "run", "swim", "yoga"]);
+  });
+
+  it("lists every detected sport of the day, longest first, ahead of the profile", () => {
+    const out = buildForYou(["tennis", "gym"], ["run"], ["swim"]);
+    expect(out.map((s) => s.id)).toEqual(["tennis", "gym", "run", "swim"]);
   });
 
   it("filters unknown/legacy ids and handles empty inputs", () => {

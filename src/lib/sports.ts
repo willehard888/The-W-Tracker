@@ -101,18 +101,20 @@ export const sportsByGroup = (): Array<{ group: SportGroup; sports: Sport[] }> =
 
 /**
  * The "For you" shortlist for the check-in picker: dedup union of the
- * HealthKit-detected sport (today), the athlete's profile sports and their
- * recent check-in sports — in that priority order, max 5. In practice this
- * covers ~all real picks, so the 24-sport catalog can stay collapsed.
+ * HealthKit-detected sports (today, every session — a tennis match and a gym
+ * session both show), the athlete's profile sports and their recent check-in
+ * sports — in that priority order, max 5. In practice this covers ~all real
+ * picks, so the 24-sport catalog can stay collapsed.
  */
 export const buildForYou = (
-  detected: string | null | undefined,
+  detected: string | string[] | null | undefined,
   profileSports: string[] | null | undefined,
   recent: string[] | null | undefined,
 ): Sport[] => {
   const seen = new Set<string>();
   const out: Sport[] = [];
-  for (const id of [detected, ...(profileSports ?? []), ...(recent ?? [])]) {
+  const detectedIds = Array.isArray(detected) ? detected : [detected];
+  for (const id of [...detectedIds, ...(profileSports ?? []), ...(recent ?? [])]) {
     if (!id || seen.has(id)) continue;
     const sport = SPORTS.find((s) => s.id === id);
     if (!sport) continue; // unknown/legacy ids never render a broken row
@@ -155,7 +157,9 @@ const HEALTHKIT_SPORT: Record<string, string> = {
   skatingSports: "skate",
   americanFootball: "team", australianFootball: "team", rugby: "team",
   volleyball: "team", handball: "team", lacrosse: "team", cricket: "team",
-  baseball: "team", softball: "team", floorball: "floorball",
+  baseball: "team", softball: "team",
+  // HealthKit has no floorball type: a Polar floorball session arrives as
+  // `hockey` (→ icehockey) or `other`. No key here — one was dead for a year.
 };
 
 /**

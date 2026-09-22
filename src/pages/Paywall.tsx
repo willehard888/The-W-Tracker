@@ -34,12 +34,13 @@ type PurchaseStatus = "idle" | "purchasing" | "verifying" | "pending" | "error";
 const quiet = "press min-h-11 px-3 text-meta text-muted-foreground";
 
 const Paywall = () => {
-  const { user, isElite, isPremium, checkSubscription, profile, subscriptionLoading } = useAuth();
+  const { user, isElite, isPremium, checkSubscription, profile, subscriptionLoading, signOut } = useAuth();
   const isAdmin = useIsAdmin(user?.id);
   const {
     purchasePremiumPlan, restorePurchases,
     rcLoading, rcReady,
     monthlyPriceLabel, yearlyPriceLabel, yearlyAvailable,
+    trialOffer,
   } = useRevenueCat();
   const navigate = useNavigate();
   const isNative = isNativePlatform();
@@ -295,10 +296,15 @@ const Paywall = () => {
       <PageBar onBack={leave} />
 
       <div className="px-4 pt-3 pb-6">
-        {/* BEAT: what this buys, or how long it is already free. */}
+        {/* BEAT: what this buys, or how long it is already free. A new account
+            meets this screen straight after sign-up: the trial is the door. */}
         <header className="home-rise">
           <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
-            {creditsActive ? `Free until ${creditsUntilLabel}.` : "Everything the ritual unlocks."}
+            {creditsActive
+              ? `Free until ${creditsUntilLabel}.`
+              : isNative && trialOffer && trialOffer.eligible !== false
+                ? `Start your ${trialOffer.label} free.`
+                : "Everything the ritual unlocks."}
           </h1>
           <p className="mt-1.5 text-dense text-muted-foreground">
             {creditsActive
@@ -341,6 +347,7 @@ const Paywall = () => {
                 setErrorMessage(null);
               }}
               onCta={isNative ? handleNativePurchase : handleWebPurchase}
+              trial={trialOffer}
             />
           )}
         </div>
@@ -358,6 +365,18 @@ const Paywall = () => {
           {/* Pilot testers redeem free access here instead of purchasing, so the
               paywall and the real store flow stay live during the pilot. */}
           <PilotCodeRedeem />
+          {/* A brand-new account has nowhere behind this screen: every route
+              redirects here until the trial has started. Without this door a
+              member who signed in to the wrong account could only delete the app. */}
+          {!isPremium && !forced && (
+            <button
+              type="button"
+              onClick={() => { void signOut(); }}
+              className="press mx-auto mt-2 block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
+            >
+              Not now — sign out
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import {
   useCallback,
   useMemo,
   ReactNode,
+  useRef,
 } from "react";
 import { useAuth } from "./AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +46,31 @@ export interface PurchaseOutcome {
   sandbox?: boolean | null;
 }
 
+/**
+ * The subscriptions carry an App Store introductory free trial (two weeks,
+ * scripts/asc-intro-offer.mjs). What the paywall says about it comes from the
+ * store, never from a constant: the offer's length rides on the product
+ * (`introPrice`), and whether THIS Apple ID still qualifies is
+ * `checkTrialOrIntroductoryPriceEligibility` — one trial per Apple ID across
+ * the group, so a member who used it on another account is ineligible.
+ */
+export interface StoreTrialOffer {
+  /** "14 days" / "1 month" — the store's own period, humanised. */
+  label: string;
+  days: number;
+  /** null while the store has not answered; Apple's sheet is authoritative either way. */
+  eligible: boolean | null;
+}
+
+/** The member's own subscription state, from the entitlement RevenueCat holds. */
+export interface StoreSubscription {
+  /** In the introductory free trial right now. */
+  inTrial: boolean;
+  /** Trial (or paid period) ends here; null when unknown. */
+  expiresAt: Date | null;
+  willRenew: boolean | null;
+}
+
 interface RevenueCatContextType {
   rcElite: boolean;
   rcLoading: boolean;
@@ -53,6 +79,11 @@ interface RevenueCatContextType {
   yearlyPriceLabel: string | null;
   /** True only when the store actually has an annual package available. */
   yearlyAvailable: boolean;
+  /** The free trial on the current offering's monthly package; null = none. */
+  trialOffer: StoreTrialOffer | null;
+  subscription: StoreSubscription;
+  /** Opens the App Store's manage-subscriptions sheet (cancel, change plan). */
+  manageSubscriptions: () => Promise<void>;
   packages: any[];
   purchase: (pkg: any) => Promise<PurchaseOutcome>;
   purchaseProduct: (productId: string) => Promise<PurchaseOutcome>;
@@ -222,6 +253,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
   const userId = user?.id ?? null;
   const [rcElite, setRcElite] = useState(false);
   const [packages, setPackages] = useState<any[]>([]);
+  const [trialOffer, setTrialOffer] = useState<StoreTrialOffer | null>(null);
+  const [subscription, setSubscription] = useState<StoreSubscription>({ inTrial: false, expiresAt: null, willRenew: null });
+  const managementUrl = useRef<string | null>(null);
   const [rcLoading, setRcLoading] = useState(true);
   const [rcReady, setRcReady] = useState(false);
   const [monthlyPriceLabel, setMonthlyPriceLabel] = useState<string | null>(null);
@@ -245,9 +279,47 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       updateRevenueCatDebug({
         entitlement: elite ? ENTITLEMENT : null,
       });
+      const ent = info?.entitlements?.active?.[ENTITLEMENT];
+      if (typeof info?.managementURL === "string" && info.managementURL) managementUrl.current = info.managementURL;
+      const expires = ent?.expirationDate ? new Date(ent.expirationDate) : null;
+      setSubscription({
+        inTrial: String(ent?.periodType ?? "").toUpperCase() === "TRIAL",
+        expiresAt: expires && Number.isFinite(expires.getTime()) ? expires : null,
+        willRenew: typeof ent?.willRenew === "boolean" ? ent.willRenew : null,
+      });
     },
     [userId],
   );
+
+  /**
+   * The trial on the offering's monthly package, and whether this Apple ID
+   * still gets it. Fails open to "unknown": the paywall then shows the trial
+   * copy and Apple's sheet says the truth.
+   */
+  const readTrialOffer = useCallback(async (monthly: any) => {
+    const intro = storeProduct(monthly)?.introPrice;
+    if (!intro || Number(intro.price) !== 0) {
+      setTrialOffer(null);
+      updateRevenueCatDebug({ trialOffer: intro ? `intro ${intro.priceString ?? intro.price} ${intro.periodNumberOfUnits} ${intro.periodUnit}` : "none on product" });
+      return;
+    }
+    const units = Number(intro.periodNumberOfUnits) || 0;
+    const unit = String(intro.periodUnit ?? "").toUpperCase();
+    const days = unit === "DAY" ? units : unit === "WEEK" ? units * 7 : unit === "MONTH" ? units * 30 : unit === "YEAR" ? units * 365 : 0;
+    const label = unit === "WEEK" && units === 2 ? "14 days" : unit === "DAY" ? `${units} days` : unit === "WEEK" ? `${units} week${units === 1 ? "" : "s"}` : unit === "MONTH" ? `${units} month${units === 1 ? "" : "s"}` : `${days} days`;
+    let eligible: boolean | null = null;
+    try {
+      const id = productId(storeProduct(monthly));
+      if (id) {
+        const map = await CapPurchases.checkTrialOrIntroductoryPriceEligibility({ productIdentifiers: [id] });
+        const status = Number(map?.[id]?.status);
+        // 2 = eligible, 1 = ineligible, 0 = unknown, 3 = no intro offer exists
+        eligible = status === 2 ? true : status === 1 ? false : null;
+      }
+    } catch { /* unknown */ }
+    setTrialOffer({ label, days, eligible });
+    updateRevenueCatDebug({ trialOffer: `free ${label} · eligible=${eligible === null ? "unknown" : eligible}` });
+  }, []);
 
   /** Fetch the monthly product directly and set the price label. */
   const loadMonthlyPrice = useCallback(async () => {
@@ -368,6 +440,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
               const label = priceLabel(storeProduct(monthly));
               if (label) setMonthlyPriceLabel(label);
               updateRevenueCatDebug({ monthlyPriceLabel: label });
+              void readTrialOffer(monthly);
             }
 
             const annual = current.availablePackages.find(isAnnualPackage);
@@ -414,7 +487,7 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     })();
 
     return () => { cancelled = true; };
-  }, [userId, applyElite, loadMonthlyPrice]);
+  }, [userId, applyElite, loadMonthlyPrice, readTrialOffer]);
 
   // ─── Re-check entitlements when the app returns from background ──────
   // A subscription can be purchased, renewed, expired, or refunded while the
@@ -573,6 +646,12 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [applyElite]);
 
+  // Apple's subscriptions page (RevenueCat hands the URL on customerInfo);
+  // the same door Profile's "Manage subscription" row opens.
+  const manageSubscriptions = useCallback(async () => {
+    window.open(managementUrl.current ?? "https://apps.apple.com/account/subscriptions", "_blank");
+  }, []);
+
   const value = useMemo<RevenueCatContextType>(
     () => ({
       rcElite,
@@ -581,6 +660,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       monthlyPriceLabel,
       yearlyPriceLabel,
       yearlyAvailable: yearlyPriceLabel !== null,
+      trialOffer,
+      subscription,
+      manageSubscriptions,
       packages,
       purchase,
       purchaseProduct,
@@ -593,6 +675,9 @@ export const RevenueCatProvider = ({ children }: { children: ReactNode }) => {
       rcReady,
       monthlyPriceLabel,
       yearlyPriceLabel,
+      trialOffer,
+      subscription,
+      manageSubscriptions,
       packages,
       purchase,
       purchaseProduct,

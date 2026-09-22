@@ -403,7 +403,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // profile.is_elite by checkSubscription + the realtime sub), OR referral free
   // credits, OR an apex subscriber, OR a pinned Legend (Founders Circle).
   // This is what gates the whole app behind the 8,99 €/mo subscription
-  // (ProtectedRoute in App.tsx: membership OR live 14-day trial passes).
+  // (ProtectedRoute in App.tsx: membership passes — the App Store's free
+  // trial IS membership, RevenueCat grants is_elite on INITIAL_PURCHASE).
   //
   // CRITICAL: gate on `profile !== null` (not just `user !== null`) —
   // consumers that read `isElite` pair it with profile data reads, and

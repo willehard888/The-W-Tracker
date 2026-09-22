@@ -372,8 +372,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         ctx.fillText(code, cx, boxY + 50);
         ctx.restore();
 
-        // Value line — the trial pitch is gone (every new user gets the trial
-        // anyway); sell what the app IS.
+        // Value line — no trial pitch on a share card; sell what the app IS.
         ctx.fillStyle = "rgba(255,255,255,0.5)";
         ctx.font = "600 11.5px 'Inter', system-ui, sans-serif";
         ctx.fillText("AI coach · daily check-ins · the full system", cx, centerY + 82);

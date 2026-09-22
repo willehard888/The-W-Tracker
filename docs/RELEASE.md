@@ -154,9 +154,10 @@ When Apple says it is done, check before submitting anything:
 
 ## 5. Review notes, in short
 
-The reviewer needs to know: the 14-day trial is in-app and starts at signup (the
-trial pill in the header opens the paywall); subscriptions live in the "Whealth
-Factory" group; HealthKit is optional and read-only unless the two writes are
+The reviewer needs to know: a new account meets the paywall right after sign-up
+and both subscriptions carry a 14-day App Store free trial (starting it opens the
+app; the pilot code in the notes is the other door); subscriptions live in the
+"Whealth Factory" group; HealthKit is optional and read-only unless the two writes are
 opted into; model calls go to OpenAI and Google through OpenRouter and are gated
 behind the AI-consent sheet (guideline 5.1.2(i)) while automated moderation is
 disclosed and not switchable (guideline 1.2); report and block are on every

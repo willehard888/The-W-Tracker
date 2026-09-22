@@ -218,18 +218,43 @@ Deno.serve(async (req) => {
     const patch = decision.patch;
     const isElite = patch ? patch.is_elite ?? null : null;
 
-    if (patch?.is_elite === true) {
-      // Server-truth purchase event — the client-side purchase_completed only
+    // The free trial is Apple's (a two-week introductory offer): the funnel's
+    // trial events come from here now, not from Home. An INITIAL_PURCHASE in
+    // period_type TRIAL is `trial_started`; a paid start is `purchase_completed`;
+    // the first RENEWAL after a trial is the conversion (Apple charged); an
+    // EXPIRATION in period_type TRIAL is `trial_expired` (never converted).
+    // admin_metrics_overview and founder-digest read these names unchanged.
+    const inTrial = String(event.period_type ?? "").toUpperCase() === "TRIAL";
+    // The first RENEWAL of a product whose only earlier ledger row is its
+    // INITIAL_PURCHASE is the trial converting — the first time Apple charged.
+    const firstRenewal = async (): Promise<boolean> => {
+      if (event.type !== "RENEWAL" || !productId) return false;
+      const { data } = await supabase
+        .from("webhook_events")
+        .select("event_type")
+        .eq("source", "revenuecat")
+        .eq("app_user_id", appUserId)
+        .eq("product_id", productId)
+        .neq("event_id", eventId ?? "")
+        .in("event_type", ["INITIAL_PURCHASE", "RENEWAL"]);
+      const types = (data ?? []).map((r: { event_type: string }) => r.event_type);
+      return types.includes("INITIAL_PURCHASE") && !types.includes("RENEWAL");
+    };
+    const funnelEvent =
+      event.type === "INITIAL_PURCHASE" && patch?.is_elite === true ? (inTrial ? "trial_started" : "purchase_completed")
+      : event.type === "RENEWAL" && patch?.is_elite === true && !inTrial && (await firstRenewal()) ? "purchase_completed"
+      : event.type === "EXPIRATION" && inTrial ? "trial_expired"
+      : null;
+    if (funnelEvent) {
+      // Server-truth funnel event — the client-side purchase_completed only
       // fires when the app is foregrounded through the whole flow; the webhook
-      // is the ledger. INITIAL_PURCHASE only (renewals aren't conversions).
-      if (event.type === "INITIAL_PURCHASE") {
-        const { error: evErr } = await supabase.from("analytics_events").insert({
-          user_id: appUserId,
-          event: "purchase_completed",
-          props: { source: "revenuecat_webhook", store: event.store ?? null, product_id: productId ?? null, environment },
-        });
-        if (evErr) console.warn("purchase analytics insert failed:", evErr.message);
-      }
+      // is the ledger.
+      const { error: evErr } = await supabase.from("analytics_events").insert({
+        user_id: appUserId,
+        event: funnelEvent,
+        props: { source: "revenuecat_webhook", store: event.store ?? null, product_id: productId ?? null, environment, period_type: event.period_type ?? null },
+      });
+      if (evErr) console.warn("funnel analytics insert failed:", evErr.message);
     }
 
     if (event.type === "CANCELLATION") {

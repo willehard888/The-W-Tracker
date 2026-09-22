@@ -3,8 +3,8 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import TierUsername from "@/components/TierUsername";
 import { memo, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRevenueCat } from "@/contexts/RevenueCatContext";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
-import { useTrialAccess } from "@/hooks/use-trial-access";
 import { getEffectiveStreak } from "@/lib/streak";
 import { pickDaily } from "@/lib/daily-rotation";
 import { getTierConfig, getNextTier, TIER_ORDER, formatTier, topShareLabel, canonicalTier } from "@/lib/status-tiers";
@@ -44,7 +44,14 @@ const BRAND_ROUTES = new Set(["/", "/squad", "/leaderboard", "/profile"]);
 
 const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
   const { user, profile, isElite } = useAuth();
-  const { isInTrial, daysRemaining, hoursRemaining } = useTrialAccess();
+  // The free trial is Apple's: RevenueCat's entitlement says whether the
+  // member is inside it and when it ends. Tapping opens the App Store's own
+  // manage-subscriptions sheet — that is where the trial is cancelled.
+  const { subscription, manageSubscriptions } = useRevenueCat();
+  const isInTrial = isElite && subscription.inTrial;
+  const msRemaining = subscription.expiresAt ? Math.max(0, subscription.expiresAt.getTime() - Date.now()) : 0;
+  const daysRemaining = Math.ceil(msRemaining / 86_400_000);
+  const hoursRemaining = Math.ceil(msRemaining / 3_600_000);
   const navigate = useNavigate();
   // Live rank — the SAME get_user_rank source and shared cache every other
   // surface uses, so the header can never contradict the profile nameplate.
@@ -81,12 +88,14 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
   // Tier progress: position within full hierarchy (0..1)
   const tierProgress = (TIER_ORDER.indexOf(tier) + 1) / TIER_ORDER.length;
 
-  // The trial is a GIFT (full access), not a countdown to doom — and since the
-  // hard paywall has been on since 2026-09-01, expiry is a real cliff. Only flag the very last
-  // day as time-sensitive; otherwise present it as the premium state it is.
-  const trialUrgent = isInTrial && !isElite && daysRemaining <= 1;
+  // The trial is full membership, not a countdown to doom. The last day is
+  // flagged because that is when Apple charges; otherwise it reads as the
+  // premium state it is.
+  const trialUrgent = isInTrial && daysRemaining <= 1;
   const trialLabel =
-    daysRemaining > 1
+    !subscription.expiresAt
+      ? "Trial"
+      : daysRemaining > 1
       ? `${daysRemaining}d`
       : hoursRemaining > 1
       ? `${hoursRemaining}h`
@@ -330,20 +339,10 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
                 Apex
               </span>
             </div>
-          ) : isElite ? (
-            <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55 animate-breathe-soft">
-              <Crown aria-hidden size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
-              {/* Membership indicator — NOT the earned "Elite" rank tier (that's
-                  shown in the tier row above). Buying a subscription must never
-                  read as having earned the Elite status. */}
-              <span className="relative z-10 text-label font-bold text-primary-foreground uppercase tracking-wider">
-                Premium
-              </span>
-            </div>
           ) : isInTrial ? (
             <button
-              onClick={() => navigate("/paywall")}
-              aria-label="Free trial — full access. Tap to see membership."
+              onClick={() => { void manageSubscriptions(); }}
+              aria-label={trialUrgent ? "Your free trial ends within a day. Tap to manage the subscription." : "Free trial — full access. Tap to manage the subscription."}
               className={cn(
                 "press shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors ",
                 trialUrgent
@@ -355,12 +354,22 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
               {/* Narrow screens keep just crown + days — the long label was
                   squeezing the tier row into "RE…" next to the next-tier chip. */}
               <span className="hidden min-[400px]:inline text-label font-bold uppercase tracking-wider">
-                {trialUrgent ? `Ends in ${trialLabel}` : `Full access · ${trialLabel}`}
+                {trialUrgent ? `Ends in ${trialLabel}` : `Trial · ${trialLabel}`}
               </span>
               <span className="min-[400px]:hidden text-label font-bold uppercase tracking-wider">
                 {trialLabel}
               </span>
             </button>
+          ) : isElite ? (
+            <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55 animate-breathe-soft">
+              <Crown aria-hidden size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
+              {/* Membership indicator — NOT the earned "Elite" rank tier (that's
+                  shown in the tier row above). Buying a subscription must never
+                  read as having earned the Elite status. */}
+              <span className="relative z-10 text-label font-bold text-primary-foreground uppercase tracking-wider">
+                Premium
+              </span>
+            </div>
           ) : null}
         </div>
         )}

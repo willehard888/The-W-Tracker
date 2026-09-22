@@ -63,7 +63,7 @@ live, and Space Grotesk capitals.
 - **Tiers:** app-coloured pills climb as a stair, Recruit up to Legend. They
   light one by one as you scroll past.
 - **Inside:** one grouped list with hairline rows, like the app's Library card.
-- **Arrival:** 14 days, no card, and the App Store badge.
+- **Arrival:** 14 days free, and the App Store badge.
 - **Company footer:** legal name, business ID, address and email, plus Terms,
   Privacy and Support.
 

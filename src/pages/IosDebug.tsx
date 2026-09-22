@@ -82,6 +82,7 @@ const IosDebug = () => {
         <Field label="appUserId" value={stringify(state.revenuecat.appUserId)} />
         <Field label="entitlement" value={stringify(state.revenuecat.entitlement)} />
         <Field label="monthlyPrice" value={stringify(state.revenuecat.monthlyPriceLabel)} />
+        <Field label="trialOffer" value={stringify(state.revenuecat.trialOffer)} />
         <Field label="loadedProductIds" value={stringify(state.revenuecat.loadedProductIds)} />
         <Field label="offeringPackageIds" value={stringify(state.revenuecat.offeringPackageIds)} />
         <Field label="offeringProductIds" value={stringify(state.revenuecat.offeringProductIds)} />

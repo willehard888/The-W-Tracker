@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTrialAccess } from "@/hooks/use-trial-access";
 import TodayPractice from "@/components/vault/TodayPractice";
 
 // Lazy: the quote pool is for non-members only (see InsightQuote).
@@ -20,9 +19,8 @@ const InsightQuote = lazy(() => import("@/components/home/InsightQuote"));
 const DailyInsightCard = () => {
   const navigate = useNavigate();
   const { isPremium } = useAuth();
-  const { isInTrial } = useTrialAccess();
 
-  if (isPremium || isInTrial) {
+  if (isPremium) {
     return <TodayPractice onOpen={(slug) => navigate(`/vault?lesson=${slug}`)} />;
   }
   // The fallback holds the quote's height so Home does not jump when it lands.

@@ -44,8 +44,8 @@ const Vault = () => {
   // in that state this effect bounced a PAYING member to the paywall on a slow
   // cold start. `loading` here is true until the answer exists — the same flag
   // ProtectedRoute waits on.
-  const { isInTrial, loading: accessLoading } = useTrialAccess();
-  const hasVaultAccess = isPremium || isInTrial;
+  const { loading: accessLoading } = useTrialAccess();
+  const hasVaultAccess = isPremium;
   // `wasRead` is the row's state when its sheet opened: a row that turns read
   // while the sheet is up gets its commit-pop when the sheet closes, not
   // while it is hidden behind it.

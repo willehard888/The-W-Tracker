@@ -30,8 +30,8 @@ const TermsOfUse = () => {
 
         <section>
           <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">3. Subscriptions</h2>
-          <p>New accounts get full access free for 14 days. It needs no payment details and does not turn into a paid subscription by itself.</p>
-          <p className="mt-2">After that, Whealth Factory Premium is an auto-renewing subscription, monthly or yearly, bought through Apple. The price is shown in the app before you buy and varies by region. Payment is charged to your Apple Account when you confirm the purchase, and the subscription renews automatically unless you cancel it at least 24 hours before the end of the current period. Manage or cancel it in Settings on your iPhone: tap your name, then Subscriptions. Refunds are handled by Apple at reportaproblem.apple.com.</p>
+          <p>Whealth Factory Premium is an auto-renewing subscription, monthly or yearly, bought through Apple. New subscriptions start with a 14-day free trial through the App Store: the subscription renews automatically at the end of the trial, at the price shown, unless you cancel it at least 24 hours before the trial ends. The trial is available once per Apple Account.</p>
+          <p className="mt-2">The price is shown in the app before you buy and varies by region. Payment is charged to your Apple Account when the free trial ends (or when you confirm a purchase without one), and the subscription renews automatically unless you cancel it at least 24 hours before the end of the current period. Manage or cancel it in Settings on your iPhone: tap your name, then Subscriptions. Refunds are handled by Apple at reportaproblem.apple.com.</p>
           <p className="mt-2">Apple's Licensed Application End User License Agreement also applies to the iOS app.</p>
         </section>
 

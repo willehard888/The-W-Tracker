@@ -57,7 +57,7 @@ APPLE HEALTH
 • Optional. Reads sleep, steps and active energy to verify your day and inform your coach. You choose what to share
 
 MEMBERSHIP
-Full access is free for 14 days, with no payment details. After that, Whealth Factory Premium is an auto-renewing subscription: Premium Monthly (1 month) or Premium Yearly (1 year). Prices are shown in the app before you buy and vary by region. Payment is charged to your Apple Account at confirmation of purchase. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period. Manage or cancel it any time in your Apple Account settings.
+Whealth Factory Premium is an auto-renewing subscription: Premium Monthly (1 month) or Premium Yearly (1 year), each with a 14-day free trial for new subscribers. Prices are shown in the app before you buy and vary by region. Payment is charged to your Apple Account when the free trial ends, and the subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period. Manage or cancel it any time in your Apple Account settings.
 
 Whealth Factory is not a medical device and does not give medical advice.
 
@@ -101,7 +101,7 @@ APPLE HEALTH
 • Vapaaehtoinen. Lukee unen, askeleet ja aktiivisen energian päiväsi vahvistamiseen ja koutsin tueksi. Sinä päätät, mitä jaat
 
 JÄSENYYS
-Kaikki ominaisuudet ovat käytössä ilmaiseksi 14 päivää ilman maksutietoja. Sen jälkeen Whealth Factory Premium on automaattisesti uusiutuva tilaus: Premium Monthly (1 kuukausi) tai Premium Yearly (1 vuosi). Hinnat näkyvät sovelluksessa ennen ostoa ja vaihtelevat alueittain. Maksu veloitetaan Apple-tililtäsi oston vahvistuksen yhteydessä. Tilaus uusiutuu automaattisesti, ellei sitä peruta vähintään 24 tuntia ennen kuluvan jakson päättymistä. Voit hallita tilausta ja perua sen milloin tahansa Apple-tilisi asetuksissa.
+Whealth Factory Premium on automaattisesti uusiutuva tilaus: Premium Monthly (1 kuukausi) tai Premium Yearly (1 vuosi), molemmissa 14 päivän ilmainen kokeilu uusille tilaajille. Hinnat näkyvät sovelluksessa ennen ostoa ja vaihtelevat alueittain. Maksu veloitetaan Apple-tililtäsi kokeilujakson päättyessä. Tilaus uusiutuu automaattisesti, ellei sitä peruta vähintään 24 tuntia ennen kuluvan jakson päättymistä. Voit hallita tilausta ja perua sen milloin tahansa Apple-tilisi asetuksissa.
 
 Sovellus on englanninkielinen. Whealth Factory ei ole lääkinnällinen laite eikä anna lääketieteellisiä neuvoja.
 
@@ -111,7 +111,7 @@ Tietosuojaseloste: ${SITE}/privacy`;
 const REVIEW_NOTES = `Whealth Factory is a discipline and training app: a daily check-in (habits, sleep, training), an AI coach, training programs with 260+ illustrated exercises, a food diary, a library of short lessons (the Vault) and a social layer (feed, tribes, direct messages, 1v1 battles).
 
 ACCESS AND SUBSCRIPTION
-- Every new account gets full access for 14 days with no payment details (an in-app trial, not a store trial). The paywall is reached from the trial pill in the header on Home, and automatically when the trial ends.
+- A new account meets the paywall right after sign-up. Both subscriptions carry a 14-day free trial as an App Store introductory offer; starting it (or redeeming a pilot code) opens the app. Reviewer: use a sandbox Apple Account, or the pilot code below.
 - Subscriptions are auto-renewing, in the group "Whealth Factory": WhealthFactory499 (monthly) and WhealthFactoryYearly (yearly). Restore Purchases, Terms of Use and Privacy Policy are on the paywall. There is no other way to pay.
 - "Have a free pilot code?" on the paywall redeems complimentary access issued by our team to early testers. Codes are never sold.
 
@@ -139,7 +139,7 @@ const LISTING = {
     version: {
       description: EN_DESCRIPTION,
       keywords: "habit tracker,workout,gym,nutrition,calories,macros,streak,stoic,sleep,fitness,self improvement",
-      promotionalText: "Lock in your day, train with a coach that adapts to you, eat to your target and climb the ranks. Discipline you can see. Free for 14 days, no card.",
+      promotionalText: "Lock in your day, train with a coach that adapts to you, eat to your target and climb the ranks. Discipline you can see. 14 days free.",
       supportUrl: SUPPORT_URL,
       marketingUrl: SITE,
     },
@@ -149,7 +149,7 @@ const LISTING = {
     version: {
       description: FI_DESCRIPTION,
       keywords: "tavat,treeniohjelma,sali,ravinto,kalorit,makrot,putki,uni,kuntoilu,itsensä kehittäminen,stoalaisuus",
-      promotionalText: "Lukitse päiväsi, treenaa sinuun mukautuvan koutsin kanssa, syö tavoitteesi mukaan ja nouse rankingissa. Kuri, jonka näkee. 14 päivää ilmaiseksi, ei korttia.",
+      promotionalText: "Lukitse päiväsi, treenaa sinuun mukautuvan koutsin kanssa, syö tavoitteesi mukaan ja nouse rankingissa. Kuri, jonka näkee. 14 päivää ilmaiseksi.",
       supportUrl: SUPPORT_URL,
       marketingUrl: SITE,
     },

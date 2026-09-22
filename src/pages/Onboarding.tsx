@@ -15,7 +15,6 @@ import {
   WelcomeSlide,
   CoreLoopSlide,
   ClimbSlide,
-  TrialSlide,
   PushSlide,
   FinaleSlide,
 } from "@/components/onboarding/OnboardingSlides";
@@ -44,7 +43,7 @@ import { captureException } from "@/lib/observability";
 
 type StepKey =
   | "welcome" | "goal" | "sports" | "frequency" | "struggle"
-  | "loop" | "climb" | "trial" | "push" | "finale";
+  | "loop" | "climb" | "push" | "finale";
 
 const QUESTION_STEPS: StepKey[] = ["goal", "sports", "frequency", "struggle"];
 
@@ -93,7 +92,9 @@ const Onboarding = () => {
   }, []);
 
   const steps = useMemo<StepKey[]>(() => {
-    const base: StepKey[] = ["welcome", "goal", "sports", "frequency", "struggle", "loop", "climb", "trial"];
+    // No trial slide: the free trial started on the paywall before this
+    // flow (App Store introductory offer). The climb is the commitment beat.
+    const base: StepKey[] = ["welcome", "goal", "sports", "frequency", "struggle", "loop", "climb"];
     if (includePush) base.push("push");
     base.push("finale");
     return base;
@@ -153,10 +154,10 @@ const Onboarding = () => {
     advance(key, answer);
   };
 
-  const enterTrialCommit = () => {
+  const commitToTheClimb = () => {
     setConfetti(true);
     hapticNotification("success");
-    advance("trial");
+    advance("climb");
   };
 
   const handleEnablePush = async () => {
@@ -270,8 +271,7 @@ const Onboarding = () => {
           )}
 
           {step === "loop" && <CoreLoopSlide struggle={answers.struggle} onNext={() => advance("loop")} />}
-          {step === "climb" && <ClimbSlide onNext={() => advance("climb")} />}
-          {step === "trial" && <TrialSlide onNext={enterTrialCommit} />}
+          {step === "climb" && <ClimbSlide onNext={commitToTheClimb} />}
           {step === "push" && <PushSlide onEnable={handleEnablePush} onSkip={handleSkipPush} busy={pushBusy} />}
           {step === "finale" && <FinaleSlide goal={answers.primary_goal} onNext={() => finish(false)} />}
         </m.div>

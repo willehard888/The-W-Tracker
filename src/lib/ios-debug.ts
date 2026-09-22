@@ -22,6 +22,8 @@ export interface RevenueCatDebugState {
   offeringPackageIds: string[];
   offeringProductIds: string[];
   monthlyPriceLabel: string | null;
+  /** The store's introductory offer on the monthly product, and this Apple ID's eligibility. */
+  trialOffer: string | null;
   lastProductFetchError: string | null;
   lastOfferingError: string | null;
   lastPurchaseError: string | null;
@@ -75,6 +77,7 @@ const defaultState: IosDebugState = {
     offeringPackageIds: [],
     offeringProductIds: [],
     monthlyPriceLabel: null,
+    trialOffer: null,
     lastProductFetchError: null,
     lastOfferingError: null,
     lastPurchaseError: null,

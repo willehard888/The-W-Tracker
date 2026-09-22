@@ -1,6 +1,6 @@
 /**
  * The paywall harness: `?paywallDev=1` forces the paywall gate CLOSED so the
- * offer screen can be exercised without waiting fourteen days; `?paywallDev=0`
+ * offer screen can be exercised as a member; `?paywallDev=0`
  * releases it. It never opens access — it only shows the paywall to someone
  * who would otherwise pass. Sticky through sessionStorage because SPA
  * navigation drops the query. Live in dev builds and for admin accounts in

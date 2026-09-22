@@ -1,4 +1,4 @@
-import { Flame, Zap, TrendingUp, Bell, Check, Sparkles, Bot, BookOpen, Users, ArrowRight } from "lucide-react";
+import { Flame, Zap, TrendingUp, Bell, Bot, BookOpen, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BrandLogo from "@/components/BrandLogo";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig } from "@/lib/status-tiers";
@@ -150,45 +150,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
   </div>
 );
 
-/* ── 7. Commitment: free trial ── */
-export const TrialSlide = ({ onNext }: { onNext: () => void }) => (
-  <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-    <p className="text-label font-bold text-muted-foreground mb-2">Your free trial</p>
-    <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
-      Fourteen days, all in.
-    </h1>
-    <p className="text-sm text-muted-foreground text-center mb-7">
-      No payment. No card. Just show up.
-    </p>
-
-    <div className="w-full surface-card p-4 space-y-3 mb-9">
-      {[
-        "Your AI coach — briefs, programs, answers",
-        "The Library — courses, recipes, exercises",
-        "Tribes & 1v1 battles",
-        "Full stats, streaks & rank ladder",
-      ].map((line, i) => (
-        <div key={line} className="flex items-center gap-2.5 animate-fade-in-up"  style={{ animationDelay: `${100 + Math.min(i, 3) * 60}ms` }}>
-          <span className="h-5 w-5 rounded-full bg-[hsl(var(--xp-green))]/15 border border-[hsl(var(--xp-green))]/40 flex items-center justify-center shrink-0">
-            <Check aria-hidden size={11} className="text-[hsl(var(--xp-green))]" />
-          </span>
-          <span className="text-sm font-semibold text-foreground/90">{line}</span>
-        </div>
-      ))}
-      <p className="text-xs text-muted-foreground pt-1 border-t border-border/40">
-        The deal: one check-in a day. That's the whole game. Posting to the feed
-        comes with membership.
-      </p>
-    </div>
-
-    <Button variant="ember" size="xl" className="w-full max-w-xs" onClick={onNext}>
-      <Sparkles aria-hidden size={16} />
-      I'm in
-    </Button>
-  </div>
-);
-
-/* ── 8. Push priming (native only) ── */
+/* ── 7. Push priming (native only) ── */
 export const PushSlide = ({ onEnable, onSkip, busy }: { onEnable: () => void; onSkip: () => void; busy?: boolean }) => (
   <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto w-full">
     <div className="relative mb-7">

@@ -21,6 +21,13 @@ interface PremiumHeroProps {
   yearlyAvailable?: boolean;
   /** Web has no store: the footnote points at the app instead of a price. */
   native?: boolean;
+  /**
+   * The App Store free trial on this subscription, from the store product
+   * (`introPrice`), and whether this Apple ID still qualifies. Null = no
+   * offer; `eligible: false` = used already (one trial per Apple ID). Apple's
+   * sheet is authoritative: the copy follows the store, never a constant.
+   */
+  trial?: { label: string; eligible: boolean | null } | null;
 }
 
 /** What the membership unlocks, as hairline rows under the plan card. */
@@ -96,10 +103,13 @@ const PremiumHero = ({
   yearlyDiscountPct = 17,
   yearlyAvailable = true,
   native = true,
+  trial = null,
 }: PremiumHeroProps) => {
-  // Monthly-first: the product is 8,99 €/mo (the 14-day in-app trial happens
-  // BEFORE this screen). Yearly is the savings option, not the default.
+  // Monthly-first: the product is 8,99 €/mo. Yearly is the savings option,
+  // not the default.
   const [plan, setPlan] = useState<BillingPlan>("monthly");
+  // The trial copy shows unless the store said this Apple ID is ineligible.
+  const withTrial = native && !!trial && trial.eligible !== false;
   // If the store can't fulfill a yearly plan, never let the choice sit on it.
   const isYearly = yearlyAvailable && plan === "yearly";
   const activePrice = isYearly ? yearlyPriceLabel : monthlyPriceLabel;
@@ -109,21 +119,27 @@ const PremiumHero = ({
   const ctaLabel =
     status === "purchasing" ? "Opening Apple…"
     : status === "verifying" ? "Confirming access…"
+    : withTrial ? "Start free trial"
     : "Unlock full access";
 
-  // No "free trial" language here: the 14-day trial is in-app and already
-  // running (or spent) by the time this screen shows, and the store product
-  // has no introductory offer. Claiming a store trial risks App Review.
-  // The price line stays a price line. The full renewal terms (App Review
-  // 3.1.2) are the paragraph under the button — saying them twice, once in
-  // half and once in full, read as legal noise stacked on legal noise.
+  // The trial is an App Store introductory offer (two weeks, on both
+  // subscriptions): the price after it and the renewal are on this screen
+  // because Apple requires them where the purchase starts. The full renewal
+  // terms (App Review 3.1.2) are the paragraph under the button.
   // "Price locked" is the product's own promise, kept.
-  const footnote = native
-    ? `${activePrice}${cadence}. Price locked while you stay subscribed.`
-    : "Subscribe in the iOS app.";
+  const footnote = !native
+    ? "Subscribe in the iOS app."
+    : withTrial
+      ? `${trial!.label} free, then ${activePrice}${cadence}. Price locked while you stay subscribed.`
+      : `${activePrice}${cadence}. Price locked while you stay subscribed.`;
 
   return (
     <div>
+      {withTrial && (
+        <p className="mb-3 text-center text-dense font-bold text-gold">
+          Start with {trial!.label} free · cancel anytime in Settings
+        </p>
+      )}
       {/* HERO: the plan card. */}
       <div className="surface-card p-3">
         <div role="radiogroup" aria-label="Billing period" className="space-y-2">
@@ -200,9 +216,9 @@ const PremiumHero = ({
             the purchase starts from, not only in the Terms link. This is the
             only such screen in the app — everything else routes here. */}
         <p className="mt-2 text-center text-label text-muted-foreground leading-snug">
-          The subscription renews automatically. Your Apple Account is charged when you confirm the purchase, and
-          again each period unless you cancel at least 24 hours before the current period ends. Manage or cancel
-          the subscription in your Apple Account settings.
+          {withTrial
+            ? `The subscription renews automatically. Your Apple Account is charged ${activePrice}${cadence} when the free trial ends, and again each period unless you cancel at least 24 hours before the current period ends. Manage or cancel the subscription in your Apple Account settings.`
+            : "The subscription renews automatically. Your Apple Account is charged when you confirm the purchase, and again each period unless you cancel at least 24 hours before the current period ends. Manage or cancel the subscription in your Apple Account settings."}
         </p>
       </div>
 

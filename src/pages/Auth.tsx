@@ -188,7 +188,7 @@ const Auth = () => {
             {mode === "login" ? "Welcome back." : "Earn your status."}
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
-            {mode === "login" ? "Your streak is waiting." : "Free for 14 days. No card."}
+            {mode === "login" ? "Your streak is waiting." : "14 days free, then 8,99 €/month."}
           </p>
         </header>
 
@@ -241,10 +241,11 @@ const Auth = () => {
               ) : (
                 <p className="text-label text-muted-foreground mt-1.5">Locked permanently once set.</p>
               )}
-              {/* The trial, one line. The only gold on the screen is the number. */}
+              {/* The trial, one line. The only gold on the screen is the number.
+                  It is an App Store free trial, started right after this screen. */}
               <p className="text-meta text-muted-foreground mt-3 leading-snug">
                 {refCode && (invitedBy ? `@${invitedBy} invited you. ` : "You were invited. ")}
-                <span className="text-gold font-bold">14-day</span> free trial, full access. Cancel anytime.
+                Start with <span className="text-gold font-bold">14 days</span> free · cancel anytime in Settings.
                 {refCode && " Your referrer earns +50 XP when you verify."}
               </p>
             </div>

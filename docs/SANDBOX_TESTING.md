@@ -41,11 +41,14 @@ Both ASC scripts take `--key <p8> --key-id <id> --issuer <uuid>` or the
 2. Prices should read the store's price for the device's region (8,99 € / 89,99 € in
    Finland). If they read the hard-coded fallback and the CTA says "Store not ready", read
    `/ios-debug`'s RevenueCat block.
-3. **Cancel**: Unlock → Apple sheet → Cancel → back to the offer, one `purchase_cancelled`.
-4. **Monthly**: Unlock → Subscribe → "Confirming access…" → Home. Expect: one
-   `webhook_events` row for the user, `profiles.is_premium = true`, one
-   `purchase_completed` with `props.environment = 'SANDBOX'` from the webhook and one with
-   `props.sandbox = true` from the client.
+3. **Cancel**: Start free trial → Apple sheet → Cancel → back to the offer, one `purchase_cancelled`.
+4. **Monthly**: Start free trial → Apple's sheet reads "2 weeks free, then 8,99 €" (an
+   Apple ID that used the trial before sees the price alone and the CTA "Unlock full
+   access") → Subscribe → "Confirming access…" → Home. Expect: one `webhook_events` row
+   for the user (`INITIAL_PURCHASE`, `period_type = TRIAL`), `profiles.is_premium = true`,
+   one `trial_started` from the webhook (`purchase_completed` when no trial applied) and
+   one `purchase_completed` with `props.sandbox = true` from the client. In the sandbox the
+   two-week trial lasts about 3 minutes.
 5. **Renewals**: a sandbox tester renews a month every 5 minutes; a TestFlight purchase on
    the device's own Apple ID renewed on a ~1 day clock instead (RevenueCat: "renews in
    9 hours"). `RENEWAL` webhooks arrive as the periods end, `is_premium` stays true.
@@ -57,7 +60,8 @@ Both ASC scripts take `--key <p8> --key-id <id> --issuer <uuid>` or the
 7. **Restore**: Paywall → Restore → `purchase_restored`.
 8. **Expiry**: after the sixth renewal `EXPIRATION` sets `is_premium / is_elite = false`
    (~35 min for a sandbox tester's monthly, days on the TestFlight clock). The QA account
-   keeps access through its credits.
+   keeps access through its credits. A trial that lapses without converting arrives as
+   `EXPIRATION` with `period_type = TRIAL` → `trial_expired`.
 
 Proven 2026-09-15/16 on willehard: monthly `INITIAL_PURCHASE`, then monthly → yearly
 `PRODUCT_CHANGE` to `WhealthFactoryYearly`, both `SANDBOX`, flags true. Still unobserved:

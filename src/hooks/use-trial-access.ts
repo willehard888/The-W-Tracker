@@ -1,89 +1,26 @@
 import { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Mirrors the server gate has_active_access(): a flat 14 days for everyone
-// (migration 20260901120000 — the old 7-organic/14-referred split collapsed
-// when the app-wide paywall launched). Drift between this constant and the
-// SQL interval is exactly the "silently dark on day 8" bug class.
-const TRIAL_DURATION_DAYS = 14;
-const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
-
+/**
+ * Can this member walk the app? Mirrors the server gate `has_active_access()`
+ * (migration 20260923110000): membership, apex, or credits. The in-app
+ * 14-day trial is gone — the free trial is an App Store introductory offer,
+ * started on the paywall right after sign-up, and RevenueCat's
+ * INITIAL_PURCHASE grants membership like any purchase (`period_type` TRIAL
+ * shows in `useStoreTrial`, RevenueCatContext).
+ *
+ * `loading` is true until the profile is known: the router never gates on a
+ * cold start — a flash-redirect to /paywall taught members to distrust it.
+ */
 interface TrialAccess {
-  /** True if user is subscribed OR is within the 14-day free trial */
   hasAccess: boolean;
-  /** True only when on free trial (not Elite) */
-  isInTrial: boolean;
-  /** Whole days remaining in trial (0 when expired or Elite) */
-  daysRemaining: number;
-  /** Hours remaining in trial (0 when expired or Elite) */
-  hoursRemaining: number;
-  /** Total ms remaining (0 when expired or Elite) */
-  msRemaining: number;
-  /** Trial expired AND not Elite */
-  isExpired: boolean;
   loading: boolean;
 }
 
-/**
- * Computes trial status purely on the client from `profile.trial_started_at`.
- * Server-side enforcement lives in `has_active_access(user_id)` SQL function.
- */
 export const useTrialAccess = (): TrialAccess => {
   const { profile, isElite, loading } = useAuth();
-
-  return useMemo(() => {
-    if (loading || !profile) {
-      return {
-        hasAccess: false,
-        isInTrial: false,
-        daysRemaining: 0,
-        hoursRemaining: 0,
-        msRemaining: 0,
-        isExpired: false,
-        loading: true,
-      };
-    }
-
-    if (isElite) {
-      return {
-        hasAccess: true,
-        isInTrial: false,
-        daysRemaining: 0,
-        hoursRemaining: 0,
-        msRemaining: 0,
-        isExpired: false,
-        loading: false,
-      };
-    }
-
-    // Read at compute time: the value refreshes whenever a consumer re-renders
-    // (navigation, the 5-minute profile refetch) — day/hour accuracy for a
-    // chip, without a 60 s interval re-rendering every consumer on Home.
-    const now = Date.now();
-    const startedAtRaw = profile.trial_started_at
-      ? new Date(profile.trial_started_at).getTime()
-      : new Date(profile.created_at).getTime();
-    // NaN guard: a missing/invalid timestamp otherwise rendered "NaNd" in the
-    // trial pill and made isExpired permanently false.
-    const startedAt = Number.isFinite(startedAtRaw) ? startedAtRaw : now;
-
-    const elapsed = now - startedAt;
-    // Clamp to the trial length: a fresh signup's trial_started_at can sit
-    // milliseconds in the FUTURE (server clock skew), and an unclamped
-    // remainder of 14.000x days ceils to a "15D" chip.
-    const msRemaining = Math.min(TRIAL_DURATION_MS, Math.max(0, TRIAL_DURATION_MS - elapsed));
-    const isExpired = msRemaining <= 0;
-    const daysRemaining = Math.ceil(msRemaining / (24 * 60 * 60 * 1000));
-    const hoursRemaining = Math.ceil(msRemaining / (60 * 60 * 1000));
-
-    return {
-      hasAccess: !isExpired,
-      isInTrial: !isExpired,
-      daysRemaining,
-      hoursRemaining,
-      msRemaining,
-      isExpired,
-      loading: false,
-    };
-  }, [profile, isElite, loading]);
+  return useMemo(
+    () => (loading || !profile ? { hasAccess: false, loading: true } : { hasAccess: isElite, loading: false }),
+    [profile, isElite, loading],
+  );
 };

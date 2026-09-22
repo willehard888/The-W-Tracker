@@ -111,26 +111,27 @@ import { fetchMyTribeMembership, fetchTribesPage } from "@/lib/tribes-query";
 import { fetchVaultArticleSummaries, vaultArticlesKey } from "@/hooks/use-vault-articles";
 import { afterIdle, onIdle } from "@/lib/idle";
 
-// Paths reachable WITHOUT an active subscription/trial — the paywall itself,
-// onboarding, the username picker, and legal pages — so a gated user can
-// still subscribe, finish setup and read terms.
+// Paths reachable WITHOUT membership — the paywall itself and the legal
+// pages — so a gated member can subscribe (or start the store trial), redeem a
+// pilot code, and read the terms. Onboarding and the username picker are NOT
+// here: the paywall is the first door after sign-up (2026-09-22), and setup
+// comes after the trial has started.
 const ACCESS_EXEMPT = new Set([
   "/paywall",
-  "/onboarding",
-  "/choose-username",
   "/privacy",
   "/terms",
   "/reset-password",
 ]);
 
 // Master switch for the hard paywall gate in ProtectedRoute. ON since the
-// 8,99 €/mo launch (2026-09-01): members and 14-day trialists pass, everyone
-// else lands on /paywall. Pilot testers get through by redeeming a pilot code,
-// which grants membership credits — not by the gate being open.
+// 8,99 €/mo launch (2026-09-01). Members pass — and the App Store's two-week
+// free trial IS membership (RevenueCat grants is_elite on INITIAL_PURCHASE,
+// period_type TRIAL) — everyone else lands on /paywall. Pilot testers get
+// through by redeeming a pilot code, which grants membership credits.
 const PAYWALL_ENABLED = true;
 
 // Harness (?paywallDev=1 / ?paywallDev=0): force the gate closed to exercise
-// the paywall without waiting 14 days. Sticky via sessionStorage (SPA
+// the paywall as a member. Sticky via sessionStorage (SPA
 // navigation drops the query string). Live in dev builds and for admin
 // accounts in any build — sandbox purchases are driven on the simulator and
 // TestFlight. It only ever closes the gate, never opens it.
@@ -148,8 +149,8 @@ const forcedPaywall = (isAdmin: boolean): boolean => {
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, loading } = useAuth();
-  // Membership OR live 14-day trial (hook is isElite-aware) — called before
-  // any early return so the hook order stays stable.
+  // Membership (the store trial included) — called before any early return so
+  // the hook order stays stable.
   const trial = useTrialAccess();
   // Admins may force the paywall shut on themselves (the sandbox harness).
   const isAdmin = useIsAdmin(user?.id);
@@ -161,11 +162,26 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   const path = pathname.replace(/\/+$/, "") || "/";
 
+  // Hard paywall, first: a new account meets it right after sign-up and
+  // starts the App Store trial (or redeems a pilot code) before anything else.
+  // trial.hasAccess = membership (credits/apex/legend ride the same flag).
+  // Never gate while the profile is still loading — a flash-redirect to
+  // /paywall on every cold start taught members to distrust the app.
+  //
+  // ACCESS_EXEMPT keeps the paywall itself and the legal pages reachable —
+  // without it a gated member is bounced in a loop with no way to pay, redeem
+  // a pilot code, or read the terms.
+  const gated =
+    (PAYWALL_ENABLED && !trial.loading && !trial.hasAccess) || forcedPaywall(isAdmin);
+  if (gated && !ACCESS_EXEMPT.has(path)) {
+    return <Navigate to="/paywall" replace />;
+  }
+
   // DB-driven username gate: anyone whose handle wasn't their own choice
   // (Apple/OAuth placeholder, collision suffix, legacy auto-generation)
-  // picks one before anything else. Replaces the old Apple-only
-  // sessionStorage gate — the flag rides on the profile row itself.
-  if (profile?.username_is_auto === true && path !== "/choose-username") {
+  // picks one before the app. Replaces the old Apple-only sessionStorage
+  // gate — the flag rides on the profile row itself.
+  if (profile?.username_is_auto === true && path !== "/choose-username" && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/choose-username" replace />;
   }
 
@@ -174,22 +190,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // flow; localStorage stays as a sync fast-path cache for the same device.
   const onboardedLocally = readLocal("w_onboarding_done") === "true";
   if (profile?.onboarded_at && !onboardedLocally) writeLocal("w_onboarding_done", "true");
-  if (shouldGateOnboarding(profile, onboardedLocally) && path !== "/onboarding" && path !== "/choose-username") {
+  if (shouldGateOnboarding(profile, onboardedLocally) && path !== "/onboarding" && path !== "/choose-username" && !ACCESS_EXEMPT.has(path)) {
     return <Navigate to="/onboarding" replace />;
-  }
-
-  // Hard paywall: trial.hasAccess = paid membership OR inside the 14-day
-  // trial (credits/apex/legend ride the membership flag). Never gate while
-  // the trial clock is still loading — a flash-redirect to /paywall on every
-  // cold start taught users to distrust the app.
-  //
-  // ACCESS_EXEMPT keeps the paywall itself, onboarding, the username picker
-  // and the legal pages reachable — without it a gated user is bounced in a
-  // loop with no way to pay, redeem a pilot code, or read the terms.
-  const gated =
-    (PAYWALL_ENABLED && !trial.loading && !trial.hasAccess) || forcedPaywall(isAdmin);
-  if (gated && !ACCESS_EXEMPT.has(path)) {
-    return <Navigate to="/paywall" replace />;
   }
 
   return <>{children}</>;

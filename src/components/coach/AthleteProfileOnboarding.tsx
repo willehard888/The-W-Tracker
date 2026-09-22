@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { useAthleteProfile, type ToneId, type GoalId, type TrainingExperience } from "@/hooks/use-athlete-profile";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 
@@ -87,22 +88,72 @@ export const MENTAL_FOCUS: { id: string; label: string }[] = [
 export const STRESS_WORDS = ["Calm", "Settled", "Steady", "Tense", "Overwhelmed"];
 export const MOOD_WORDS   = ["Down", "Low", "Flat", "Good", "Energised"];
 
-const loadDraft = (): any | null => {
+/**
+ * The draft belongs to an athlete, not to a device.
+ *
+ * It used to live under one global key, so a half-finished draft left by
+ * whoever signed in last was loaded for the next person on that phone. On a
+ * shared or a test device those are somebody else's answers — and because a
+ * draft written by an older build carries none of the fields added since, the
+ * screen crashed on first open reading `.includes` of a key that was not there.
+ *
+ * `ProtectedRoute` renders a fallback until auth resolves and redirects when
+ * there is no user, so an id is always in hand by the time this mounts. The
+ * unscoped fallback exists only so the initialiser can never throw.
+ */
+const draftKey = (userId?: string) => (userId ? `${DRAFT_KEY}_${userId}` : DRAFT_KEY);
+const stepKey = (userId?: string) => (userId ? `${STEP_KEY}_${userId}` : STEP_KEY);
+
+/** The fields the chip rows index into without checking first. */
+const LIST_FIELDS = [
+  "training_days_pref", "injuries", "dietary", "equipment",
+  "sports", "hobbies", "mental_health_focus",
+] as const;
+
+const loadDraft = (userId?: string): any | null => {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const raw = localStorage.getItem(draftKey(userId));
+    const parsed = raw ? JSON.parse(raw) : null;
+    // A draft is only ever an object of answers. Anything else is corruption,
+    // and starting clean beats rendering from it.
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
   } catch { return null; }
 };
-const loadStep = (): number => {
-  try { return Number(localStorage.getItem(STEP_KEY) ?? 0) || 0; } catch { return 0; }
+const loadStep = (userId?: string): number => {
+  try { return Number(localStorage.getItem(stepKey(userId)) ?? 0) || 0; } catch { return 0; }
+};
+
+/**
+ * Defaults first, the saved draft on top — never the draft INSTEAD of them.
+ *
+ * The old initialiser was `saved ?? defaults`, so a draft written before a
+ * field existed produced an object missing that field entirely, and every chip
+ * row that reads `draft.hobbies.includes(…)` threw. Merging means a question
+ * added later always arrives with its default, whatever the athlete answered
+ * before it existed.
+ *
+ * The list fields are then re-checked for the same reason one layer down: a
+ * stored `null` survives the merge and still fails the render.
+ */
+export const mergeDraft = (defaults: Record<string, any>, saved: Record<string, any> | null) => {
+  const merged: Record<string, any> = { ...defaults, ...(saved ?? {}) };
+  for (const field of LIST_FIELDS) {
+    // Repair, never invent: a field neither side declared stays absent. The
+    // first version added all seven unconditionally, which is invisible here
+    // (the caller always declares them) and wrong anywhere else.
+    if (!(field in merged)) continue;
+    if (!Array.isArray(merged[field])) merged[field] = defaults[field] ?? [];
+  }
+  return merged;
 };
 
 const AthleteProfileOnboarding = ({ onDone }: Props) => {
   const { profile, upsert, isSaving } = useAthleteProfile();
-  const [step, setStep] = useState<number>(() => loadStep());
+  const { user } = useAuth();
+  const [step, setStep] = useState<number>(() => loadStep(user?.id));
   const [draft, setDraft] = useState<any>(() => {
-    const saved = loadDraft();
-    return saved ?? {
+    const saved = loadDraft(user?.id);
+    return mergeDraft({
       age: profile?.age ?? 30,
       sex: profile?.sex ?? "prefer_not_say",
       height_cm: profile?.height_cm ?? 180,
@@ -128,15 +179,29 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
       stress_baseline: profile?.stress_baseline ?? null,
       mood_baseline: profile?.mood_baseline ?? null,
       mental_health_focus: profile?.mental_health_focus ?? [],
-    };
+    }, saved);
   });
+
+  // The unscoped keys are dead now, and leaving them is leaving the trap.
+  //
+  // They are dropped rather than adopted into the scoped key on purpose: a
+  // migration cannot tell whose draft it is holding, which is the whole reason
+  // this screen crashed. The cost is that anyone mid-onboarding at the moment
+  // this ships starts the six steps again — a window of minutes, since
+  // onboarding is done once and in one sitting.
+  useEffect(() => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(STEP_KEY);
+    } catch { /* storage unavailable — nothing to clean */ }
+  }, []);
 
   // Persist draft + step on every change so user never loses progress.
   useEffect(() => {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch {}
+    try { localStorage.setItem(draftKey(user?.id), JSON.stringify(draft)); } catch {}
   }, [draft]);
   useEffect(() => {
-    try { localStorage.setItem(STEP_KEY, String(step)); } catch {}
+    try { localStorage.setItem(stepKey(user?.id), String(step)); } catch {}
   }, [step]);
 
   const set = (patch: any) => setDraft((d: any) => ({ ...d, ...patch }));
@@ -349,7 +414,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
     if (last) {
       try {
         await upsert({ ...draft, onboarded: true });
-        try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(STEP_KEY); } catch {}
+        try { localStorage.removeItem(draftKey(user?.id)); localStorage.removeItem(stepKey(user?.id)); } catch {}
         toast.success("Profile saved. Coach is now personal.");
         onDone();
       } catch (e: any) {

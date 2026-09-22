@@ -12,15 +12,15 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // (enumeration oracle). Postgres ilike uses backslash as the escape char.
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 
-const TIER_THEME: Record<string, { label: string; emoji: string; accent: string; percentile: string }> = {
-  recruit:        { label: "RECRUIT",         emoji: "⬛", accent: "#6b7280", percentile: "Bottom 50%" },
-  normal:         { label: "RECRUIT",         emoji: "⬛", accent: "#6b7280", percentile: "Bottom 50%" },
-  operator:       { label: "OPERATOR",        emoji: "🟢", accent: "#14b8a6", percentile: "Top 50%" },
-  performer:      { label: "PERFORMER",       emoji: "🔵", accent: "#3b82f6", percentile: "Top 25%" },
-  high_performer: { label: "HIGH PERFORMER",  emoji: "🟣", accent: "#a855f7", percentile: "Top 10%" },
-  elite:          { label: "ELITE",           emoji: "👑", accent: "#f5b942", percentile: "Top 5%" },
-  apex:           { label: "APEX",            emoji: "⚡", accent: "#fb6a3b", percentile: "Top 1%" },
-  legend:         { label: "LEGEND",          emoji: "🔱", accent: "#c084fc", percentile: "Top 0.1%" },
+const TIER_THEME: Record<string, { label: string; short: string; accent: string; percentile: string }> = {
+  recruit:        { label: "RECRUIT",         short: "REC", accent: "#6b7280", percentile: "Bottom 50%" },
+  normal:         { label: "RECRUIT",         short: "REC", accent: "#6b7280", percentile: "Bottom 50%" },
+  operator:       { label: "OPERATOR",        short: "OPR", accent: "#14b8a6", percentile: "Top 50%" },
+  performer:      { label: "PERFORMER",       short: "PRF", accent: "#3b82f6", percentile: "Top 25%" },
+  high_performer: { label: "HIGH PERFORMER",  short: "HPR", accent: "#a855f7", percentile: "Top 10%" },
+  elite:          { label: "ELITE",           short: "ELT", accent: "#f5b942", percentile: "Top 5%" },
+  apex:           { label: "APEX",            short: "APX", accent: "#fb6a3b", percentile: "Top 1%" },
+  legend:         { label: "LEGEND",          short: "LGD", accent: "#c084fc", percentile: "Top 0.1%" },
 };
 
 const escapeXml = (s: string) =>
@@ -43,7 +43,7 @@ function buildSvg(p: {
   const elitePill = p.isElite
     ? `<g transform="translate(440 360)">
          <rect rx="22" ry="22" width="120" height="44" fill="${accent}" fill-opacity="0.12" stroke="${accent}" stroke-opacity="0.55"/>
-         <text x="60" y="29" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="14" fill="${accent}" letter-spacing="2">👑 ELITE</text>
+         <text x="60" y="29" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="14" fill="${accent}" letter-spacing="2">ELITE</text>
        </g>` : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
@@ -79,7 +79,7 @@ function buildSvg(p: {
   <!-- Avatar glow + circle -->
   <circle cx="600" cy="245" r="110" fill="url(#glow)"/>
   <circle cx="600" cy="245" r="72" fill="#1a1620" stroke="${accent}" stroke-width="4"/>
-  <text x="600" y="270" text-anchor="middle" font-size="64">${t.emoji}</text>
+  <text x="600" y="258" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="34" fill="${accent}" letter-spacing="3">${t.short}</text>
 
   <!-- Username -->
   <text x="600" y="365" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="56" fill="#f5f0e6" letter-spacing="-1">${name}</text>
@@ -164,7 +164,8 @@ function buildTribeSvg(t: {
 
   <!-- Flame mark -->
   <circle cx="600" cy="250" r="105" fill="url(#fglow)"/>
-  <text x="600" y="285" text-anchor="middle" font-size="100">🔥</text>
+  <path d="M600 165 C642 210 660 250 648 292 C636 336 564 336 552 292 C544 262 560 244 570 222 C577 244 590 252 598 240 C588 214 590 190 600 165 Z" fill="#fb6a3b"/>
+  <path d="M600 232 C620 258 626 282 614 302 C605 316 587 314 580 298 C573 280 587 260 600 232 Z" fill="#f5b942"/>
 
   <!-- Tribe name -->
   <text x="600" y="405" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="58" fill="#f5f0e6" letter-spacing="-1">${name}</text>

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { hapticSelection } from "@/lib/haptics";
 import type { OnboardingOption } from "@/lib/onboarding";
+import Mark from "@/components/Mark";
 
 interface SingleProps {
   mode: "single";
@@ -90,7 +91,7 @@ const OnboardingQuestion = (props: Props) => {
                 : "border-border/40 bg-card/40",
             )}
           >
-            {o.emoji && <span aria-hidden className={dense ? "text-sm" : "text-xl leading-none mt-0.5"}>{o.emoji}</span>}
+            {o.mark && <Mark family={o.markFamily ?? "onboarding"} id={o.mark} size={dense ? 18 : 26} className={dense ? "" : "mt-0.5"} />}
             <span className="min-w-0">
               <span className={cn("block font-bold text-foreground", dense ? "text-dense" : "text-read")}>
                 {o.label}

@@ -39,6 +39,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { initialsOf } from "@/components/StatusAvatar";
 
 const SUPPORTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
@@ -747,7 +748,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
   const onReportComment = useCallback((commentId: string, authorId: string) => reportContent("comment", commentId, authorId), [reportContent]);
   const onOpenLightbox = useCallback((p: any) => { hapticSelection(); setLightboxPost(p); }, []);
   const onSubmitComment = useCallback(() => { hapticImpact("light"); addComment.mutate(); }, [addComment.mutate]);
-  const composerInitial = profile?.username?.charAt(0)?.toUpperCase() || "?";
+  const composerInitial = initialsOf(profile?.username);
   const giveKudosPending = giveKudos.isPending;
   const hasDraft = newPost.length > 0 || !!imageFile || !!videoFile;
   const composerExpanded = composerOpen || hasDraft;

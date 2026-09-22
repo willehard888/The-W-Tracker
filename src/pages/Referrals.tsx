@@ -19,6 +19,8 @@ import { fmtDate, fmtInt } from "@/lib/format";
 import { freeMonthsEarned, paidToNextMonth, BADGE_MILESTONES, CREDIT_EVERY } from "@/lib/referral-rewards";
 import { cn } from "@/lib/utils";
 import { shareText } from "@/lib/share-image";
+import Mark from "@/components/Mark";
+import { initialsOf } from "@/components/StatusAvatar";
 
 /**
  * Three paid friends, one free month. The opening line is the deal in the
@@ -174,7 +176,7 @@ const Referrals = () => {
                     {r.avatar_url ? (
                       <img src={avatarUrl(r.avatar_url, 72)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
-                      (r.referred_username?.charAt(0) || "?").toUpperCase()
+                      initialsOf(r.referred_username)
                     )}
                   </div>
                   <p className="flex-1 min-w-0 text-dense font-bold truncate">@{r.referred_username}</p>
@@ -216,6 +218,7 @@ const Referrals = () => {
               const unlocked = paidCount >= m.count;
               return (
                 <div key={m.count} className={cn("flex items-center gap-3 py-2.5", !unlocked && "text-muted-foreground")}>
+                  <Mark family="badge" id={m.badge} size={28} className={cn(!unlocked && "opacity-60")} />
                   <span className="w-7 shrink-0 font-display font-black text-sm tabular-nums">{m.count}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-dense font-bold tracking-tight">{m.title}</p>

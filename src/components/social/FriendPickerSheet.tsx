@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useFriends, type Friend } from "@/hooks/use-friends";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/img";
+import { initialsOf } from "@/components/StatusAvatar";
 
 interface Props {
   open: boolean;
@@ -80,7 +81,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                   {f.avatar_url ? (
                     <img src={avatarUrl(f.avatar_url, 40)} alt="" loading="lazy" className="h-full w-full object-cover" />
                   ) : (
-                    (f.username?.charAt(0) || "?").toUpperCase()
+                    initialsOf(f.username)
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

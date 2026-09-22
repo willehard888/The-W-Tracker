@@ -35,9 +35,9 @@ export const nextMonthProgress = (paidCount: number): number =>
 
 /** Badge-only milestones (XP/badges — never credits or status). */
 export const BADGE_MILESTONES = [
-  { count: 1, title: "First Recruit", detail: "+250 XP · First Recruit badge", emoji: "🎯" },
-  { count: 5, title: "Brand Ambassador", detail: "Brand Ambassador badge", emoji: "🌟" },
-  { count: 10, title: "Inner Circle", detail: "Inner Circle Founder badge", emoji: "⚡" },
-  { count: 25, title: "Kingmaker", detail: "Kingmaker badge", emoji: "🏆" },
-  { count: 50, title: "Founders Circle", detail: "Founders Circle badge", emoji: "🔱" },
+  { count: 1, title: "First Recruit", detail: "+250 XP · First Recruit badge", badge: "First Recruit" },
+  { count: 5, title: "Brand Ambassador", detail: "Brand Ambassador badge", badge: "Brand Ambassador" },
+  { count: 10, title: "Inner Circle", detail: "Inner Circle Founder badge", badge: "Inner Circle Founder" },
+  { count: 25, title: "Kingmaker", detail: "Kingmaker badge", badge: "Kingmaker" },
+  { count: 50, title: "Founders Circle", detail: "Founders Circle badge", badge: "Founders Circle" },
 ] as const;

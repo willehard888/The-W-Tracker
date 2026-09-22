@@ -28,6 +28,7 @@ const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 import { buildCommentTree, MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
 import { friendlyError } from "@/lib/error-copy";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { initialsOf } from "@/components/StatusAvatar";
 
 /**
  * Shared look for the Reply / Edit / Delete actions on a comment: uppercase
@@ -92,7 +93,7 @@ const CommentThread = ({
           <span aria-hidden="true" className="absolute -left-3 top-0 bottom-0 w-px bg-gradient-to-b from-[hsl(var(--ember))]/30 via-[hsl(var(--ember))]/15 to-transparent" />
         )}
         <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-label font-black text-background shrink-0 mt-0.5">
-          {username.charAt(0)?.toUpperCase() || "?"}
+          {initialsOf(username)}
         </div>
         <div className="flex-1 min-w-0">
           <div className={cn(
@@ -682,7 +683,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
 
                 <div className="flex items-end gap-2">
                   <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[hsl(var(--ember))] to-gold flex items-center justify-center text-label font-black text-background shrink-0">
-                    {profile?.username?.charAt(0)?.toUpperCase() || "?"}
+                    {initialsOf(profile?.username)}
                   </div>
                   <div className="flex-1 min-w-0 relative">
                     <input

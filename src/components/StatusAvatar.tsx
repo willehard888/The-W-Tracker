@@ -36,13 +36,22 @@ const tierIcons: Record<string, any> = {
   legend: Sparkles,
 };
 
+// `initials` is the fallback's type rung: "MO" sat at 12 px in every size,
+// a dot in the 96 px profile hero.
 const sizeMap = {
-  xs: { avatar: "h-7 w-7", ring: "p-[2px]", badge: "h-3 w-3", icon: 8 },
-  sm: { avatar: "h-9 w-9", ring: "p-[2px]", badge: "h-4 w-4", icon: 9 },
-  md: { avatar: "h-12 w-12", ring: "p-[2.5px]", badge: "h-5 w-5", icon: 11 },
-  lg: { avatar: "h-16 w-16", ring: "p-[3px]", badge: "h-6 w-6", icon: 13 },
-  xl: { avatar: "h-24 w-24", ring: "p-[3.5px]", badge: "h-8 w-8", icon: 16 },
+  xs: { avatar: "h-7 w-7", ring: "p-[2px]", badge: "h-3 w-3", icon: 8, initials: "text-label" },
+  sm: { avatar: "h-9 w-9", ring: "p-[2px]", badge: "h-4 w-4", icon: 9, initials: "text-meta" },
+  md: { avatar: "h-12 w-12", ring: "p-[2.5px]", badge: "h-5 w-5", icon: 11, initials: "text-read" },
+  lg: { avatar: "h-16 w-16", ring: "p-[3px]", badge: "h-6 w-6", icon: 13, initials: "text-head" },
+  xl: { avatar: "h-24 w-24", ring: "p-[3.5px]", badge: "h-8 w-8", icon: 16, initials: "text-beat" },
 };
+
+/**
+ * The two letters a member is when they have no photo. One rule for every
+ * surface — twelve places rolled their own (`slice(0, 2)` here, `charAt(0)`
+ * there) and the same person was "MO" in one list and "M" in the next.
+ */
+export const initialsOf = (name?: string | null): string => (name || "?").slice(0, 2).toUpperCase();
 
 const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
   src,
@@ -74,7 +83,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
     ? "bg-[hsl(var(--teal))]"
     : "bg-border";
 
-  const initials = (name || "?").slice(0, 2).toUpperCase();
+  const initials = initialsOf(name);
 
   return (
     <div ref={ref} className={cn("relative inline-flex items-center justify-center align-middle", className)}>
@@ -149,7 +158,7 @@ const StatusAvatar = forwardRef<HTMLDivElement, StatusAvatarProps>(({
       >
         <Avatar className={cn(sizes.avatar, "ring-2 ring-background block")}>
           {src && <AvatarImage src={avatarUrl(src, pxMap[size])} alt={name || ""} />}
-          <AvatarFallback className="text-xs font-bold bg-secondary">
+          <AvatarFallback className={cn("font-display font-black tracking-wide text-gold/85", sizes.initials)}>
             {initials}
           </AvatarFallback>
         </Avatar>

@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Mark from "@/components/Mark";
 
 export type BadgeRarity = "common" | "rare" | "epic" | "legendary";
 
@@ -82,7 +83,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
         >
           <div
             className={cn(
-              "relative flex h-12 w-12 items-center justify-center rounded-full text-xl border overflow-hidden",
+              "relative flex h-12 w-12 items-center justify-center rounded-full border overflow-hidden",
               style.iconRing,
               style.iconBg,
               earned && style.glow,
@@ -90,7 +91,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
               earned && "badge-holo-sweep",
             )}
           >
-            <span className="relative z-[2]">{icon}</span>
+            <Mark family="badge" id={name} size={34} className="relative z-[2]" fallback={<span className="relative z-[2] text-xl">{icon}</span>} />
           </div>
           <p className="text-label font-semibold text-foreground text-center leading-tight truncate w-full max-w-[64px]">
             {name}
@@ -128,14 +129,14 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
         <div
           className={cn(
             "relative flex items-center justify-center rounded-full border overflow-hidden",
-            compact ? "h-12 w-12 text-2xl" : "h-14 w-14 text-2xl",
+            compact ? "h-12 w-12" : "h-14 w-14",
             style.iconRing,
             style.iconBg,
             earned && "badge-holo-sweep",
             earned && isLegendary && "badge-shine animate-badge-float",
           )}
         >
-          <span className="relative z-[2]">{icon}</span>
+          <Mark family="badge" id={name} size={compact ? 34 : 40} className="relative z-[2]" fallback={<span className="relative z-[2] text-2xl">{icon}</span>} />
           {/* Outer halo ring for epic+ */}
           {earned && isEpicPlus && (
             <div

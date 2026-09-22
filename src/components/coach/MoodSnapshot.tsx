@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
+import Mark from "@/components/Mark";
 
 /**
  * Pre-chat mood capture — shown above the chat body when today has
@@ -17,8 +18,8 @@ import { useAthleteProfile } from "@/hooks/use-athlete-profile";
  * Skipped automatically by the caller when today's reflection exists.
  */
 
-const ENERGY_EMOJI = ["😴", "😪", "🙂", "😊", "⚡"] as const;
-const MOOD_EMOJI = ["😢", "😕", "😐", "🙂", "😄"] as const;
+const ENERGY_MARKS = ["energy-1", "energy-2", "energy-3", "energy-4", "energy-5"] as const;
+const MOOD_MARKS = ["mood-1", "mood-2", "mood-3", "mood-4", "mood-5"] as const;
 
 interface Props {
   onCaptured: (snapshot: { energy: number; mood: number }) => void;
@@ -67,10 +68,10 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
       </div>
 
       <p className="text-meta text-muted-foreground mb-1.5">How's your energy?</p>
-      <EmojiRow value={energy} onChange={setEnergy} emojis={ENERGY_EMOJI} />
+      <MarkRow value={energy} onChange={setEnergy} marks={ENERGY_MARKS} />
 
       <p className="text-meta text-muted-foreground mb-1.5 mt-3">And your mood?</p>
-      <EmojiRow value={mood} onChange={setMood} emojis={MOOD_EMOJI} />
+      <MarkRow value={mood} onChange={setMood} marks={MOOD_MARKS} />
 
       <Button
         variant="ember"
@@ -85,11 +86,11 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
   );
 };
 
-const EmojiRow = ({
-  value, onChange, emojis,
-}: { value: number; onChange: (v: number) => void; emojis: readonly string[] }) => (
+const MarkRow = ({
+  value, onChange, marks,
+}: { value: number; onChange: (v: number) => void; marks: readonly string[] }) => (
   <div className="flex gap-1.5">
-    {emojis.map((e, i) => {
+    {marks.map((e, i) => {
       const v = i + 1;
       const active = value === v;
       return (
@@ -97,13 +98,13 @@ const EmojiRow = ({
           key={v}
           type="button"
           onClick={() => { hapticImpact("light"); onChange(v); }}
-          className={`press flex-1 h-11 rounded-xl text-lg transition-colors border ${
+          className={`press flex-1 h-11 rounded-xl flex items-center justify-center transition-colors border ${
             active ? "bg-gold/15 border-gold/60" : "surface-inset border-border/40"
           }`}
           aria-pressed={active}
           aria-label={`Rate ${v} of 5`}
         >
-          {e}
+          <Mark family="mood" id={e} size={28} />
         </button>
       );
     })}

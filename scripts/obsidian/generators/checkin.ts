@@ -9,7 +9,7 @@ const SRC = "src/lib/checkin-habits.ts";
 
 export function generate(): GeneratedNote[] {
   const rows = CHECKIN_HABITS.map(
-    (h) => `| ${h.emoji} ${h.label} | ${PILLAR_LABEL[h.pillar]} | ${h.xp} | ${h.verify ?? "—"} | ${h.core ? "✓" : ""} | ${h.note ?? ""} |`,
+    (h) => `| ${h.label} | ${PILLAR_LABEL[h.pillar]} | ${h.xp} | ${h.verify ?? "—"} | ${h.core ? "✓" : ""} | ${h.note ?? ""} |`,
   );
   const body = [
     `# Daily Check-in`, "",

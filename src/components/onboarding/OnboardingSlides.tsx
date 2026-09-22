@@ -227,7 +227,7 @@ export const FinaleSlide = ({ goal, onNext }: { goal?: string; onNext: () => voi
       </h1>
       {goalOpt && (
         <p className="text-sm text-muted-foreground mb-2">
-          Goal: <span className="text-gold font-bold">{goalOpt.emoji} {goalOpt.label}</span> · locked in
+          Goal: <span className="text-gold font-bold">{goalOpt.label}</span> · locked in
         </p>
       )}
       <p className="text-sm text-muted-foreground mb-9 max-w-[280px]">

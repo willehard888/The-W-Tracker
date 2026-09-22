@@ -15,6 +15,7 @@ import { useModeration } from "@/hooks/use-moderation";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
+import { initialsOf } from "@/components/StatusAvatar";
 
 interface Member {
   user_id: string;
@@ -391,7 +392,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       <img loading="lazy" decoding="async" src={avatarUrl(m.avatar_url, 48)} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
-                        {m.username.slice(0, 2).toUpperCase()}
+                        {initialsOf(m.username)}
                       </div>
                     )}
                   </div>

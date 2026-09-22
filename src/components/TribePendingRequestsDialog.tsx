@@ -8,6 +8,7 @@ import { UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import TierUsername from "@/components/TierUsername";
 import { friendlyError } from "@/lib/error-copy";
+import { initialsOf } from "@/components/StatusAvatar";
 
 interface PendingMember {
   user_id: string;
@@ -108,7 +109,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
                     <img loading="lazy" decoding="async" src={avatarUrl(p.avatar_url, 48)} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-label font-black text-muted-foreground">
-                      {p.username.slice(0, 2).toUpperCase()}
+                      {initialsOf(p.username)}
                     </div>
                   )}
                 </div>

@@ -12,6 +12,7 @@ import ErrorState from "@/components/ui/error-state";
 import { DoorRow } from "@/components/coach/rows";
 import { backOr } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import Mark from "@/components/Mark";
 
 /** One cell of the comparison: a check that is gold for you, muted for them. */
 const Has = ({ yes, mine }: { yes: boolean; mine?: boolean }) => (
@@ -183,7 +184,7 @@ const BadgeCompare = () => {
                 <ul className="divide-y divide-border/35 border-t border-border/35">
                   {rows.map(({ b, me, them }) => (
                     <li key={b.id} className={cn("flex items-center gap-3 py-2.5", !me && !them && "text-muted-foreground")}>
-                      <span className="w-8 shrink-0 text-center text-lg leading-none" aria-hidden>{b.icon}</span>
+                      <Mark family="badge" id={b.name} size={26} className="mx-[3px]" fallback={<span className="w-8 shrink-0 text-center text-lg leading-none" aria-hidden>{b.icon}</span>} />
                       <span className="flex-1 min-w-0">
                         <span className="block text-dense font-bold leading-tight truncate">{b.name}</span>
                         <span className="block text-meta text-muted-foreground leading-snug capitalize">{b.rarity}</span>

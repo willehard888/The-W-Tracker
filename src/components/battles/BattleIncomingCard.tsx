@@ -1,5 +1,6 @@
 import { ActionRow } from "@/components/ActionRow";
 import type { BattleTypeInfo } from "@/components/battles/types";
+import { initialsOf } from "@/components/StatusAvatar";
 
 interface Props {
   battle: any;
@@ -15,7 +16,7 @@ const BattleIncomingCard = ({ battle, opp, typeInfo, onRespond, responding = fal
   <ActionRow
     leading={
       <span className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-black text-muted-foreground">
-        {opp.username?.charAt(0)?.toUpperCase()}
+        {initialsOf(opp.username)}
       </span>
     }
     title={`@${opp.username}`}

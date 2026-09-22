@@ -27,7 +27,7 @@ export const STREAK_COPY: Record<ToneId, { title: (streak: number) => string; bo
     body: "One 5-minute log keeps the slope positive. Missing it costs the most expensive data point.",
   },
   hype: {
-    title: (s) => `🔥 ${days(s)} — don't let it die`,
+    title: (s) => `${days(s)} — don't let it die`,
     body: "One quick check-in keeps the fire alive. Still time. Go.",
   },
 };

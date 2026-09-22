@@ -58,6 +58,7 @@ import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou } from "@/lib/sports"
 import { useRecentSports } from "@/hooks/use-recent-sports";
 import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
 import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
+import Mark from "@/components/Mark";
 
 // Sport catalog now lives in src/lib/sports.ts — shared with the athlete
 // profile, quests and (via the persisted sport column) the AI coach.
@@ -89,12 +90,11 @@ const HabitToggle = ({
       active ? LIT : "surface-card surface-card-quiet",
     )}
   >
-    {/* Emoji tile */}
     <span aria-hidden className={cn(
-      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-title transition-colors",
+      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors",
       active ? "bg-gold/15" : "bg-secondary",
     )}>
-      {habit.emoji}
+      <Mark family="habit" id={habit.key} size={30} />
     </span>
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -766,7 +766,7 @@ const DailyCheckin = () => {
           // Trial members cannot post (see the proof row's copy): do not try,
           // the insert only ever produced the apology toast below.
           if (proof_photo_url && isElite) {
-            const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
+            const sportLabel = selectedSport.id !== "none" ? selectedSport.label : null;
             const content = sportLabel
               ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
               : `Daily check-in ✅ — ${totalXp} XP earned 🔥`;
@@ -1043,7 +1043,7 @@ const DailyCheckin = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
-                  {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
+                  {workout ? selectedSport.label : "Workout"}
                   {detected.workout && <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -1100,7 +1100,7 @@ const DailyCheckin = () => {
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
-                      <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
+                      <Mark family="sport" id={sport.id} size={24} />
                       <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
                         {sport.label}
                         {detectedSportId === sport.id && (
@@ -1150,7 +1150,7 @@ const DailyCheckin = () => {
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
-                      <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
+                      <Mark family="sport" id={sport.id} size={24} />
                       <span className="text-sm font-medium flex-1">{sport.label}</span>
                       {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
                       <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
@@ -1185,7 +1185,7 @@ const DailyCheckin = () => {
                             sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                           )}
                         >
-                          <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
+                          <Mark family="sport" id={sport.id} size={24} />
                           <span className="text-sm font-medium flex-1">{sport.label}</span>
                           {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
                           <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>

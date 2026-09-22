@@ -13,6 +13,7 @@ const StoryShareModal = lazy(() => import("@/components/StoryShareModal"));
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { readLocal, writeLocal } from "@/lib/storage";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
+import Mark from "@/components/Mark";
 
 // Stores the highest ladder RUNG (tier×division) the user has seen, so each new
 // high-water rung celebrates exactly once — no spam if the division dips + rises.
@@ -115,7 +116,7 @@ const TierPromotionCelebration = () => {
                     : "drop-shadow(0 0 24px hsl(var(--gold) / 0.5))",
                 }}
               >
-                {config.emoji}
+                <Mark family="tier" id={tier} size={112} className="mx-auto" />
               </m.div>
 
               {previousTier && (

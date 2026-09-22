@@ -15,15 +15,15 @@ const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 const APP_ORIGIN = Deno.env.get("APP_ORIGIN") ?? "https://apps.apple.com/app/id6761115803";
 const FN_BASE = `${SUPABASE_URL}/functions/v1`;
 
-const TIER_LABEL: Record<string, { label: string; emoji: string; pct: string }> = {
-  recruit:        { label: "Recruit",        emoji: "⬛", pct: "Bottom 50%" },
-  normal:         { label: "Recruit",        emoji: "⬛", pct: "Bottom 50%" },
-  operator:       { label: "Operator",       emoji: "🟢", pct: "Top 50%" },
-  performer:      { label: "Performer",      emoji: "🔵", pct: "Top 25%" },
-  high_performer: { label: "High Performer", emoji: "🟣", pct: "Top 10%" },
-  elite:          { label: "Elite",          emoji: "👑", pct: "Top 5%" },
-  apex:           { label: "Apex",           emoji: "⚡", pct: "Top 1%" },
-  legend:         { label: "Legend",         emoji: "🔱", pct: "Top 0.1%" },
+const TIER_LABEL: Record<string, { label: string; pct: string }> = {
+  recruit:        { label: "Recruit",        pct: "Bottom 50%" },
+  normal:         { label: "Recruit",        pct: "Bottom 50%" },
+  operator:       { label: "Operator",       pct: "Top 50%" },
+  performer:      { label: "Performer",      pct: "Top 25%" },
+  high_performer: { label: "High Performer", pct: "Top 10%" },
+  elite:          { label: "Elite",          pct: "Top 5%" },
+  apex:           { label: "Apex",           pct: "Top 1%" },
+  legend:         { label: "Legend",         pct: "Top 0.1%" },
 };
 
 const esc = (s: string) =>
@@ -78,9 +78,8 @@ Deno.serve(async (req) => {
 
   const t = TIER_LABEL[data.status_tier ?? "recruit"] || TIER_LABEL.recruit;
   // EARNED elite crown, not the paid flag.
-  const elite = ["elite", "apex", "legend"].includes(data.status_tier ?? "") ? "👑 " : "";
   const title = `@${data.username} · ${t.label} · The W Tracker`;
-  const desc = `${elite}${t.emoji} ${t.label} · Level ${data.level} · ${data.streak}d streak · ${(data.xp ?? 0).toLocaleString()} XP · ${t.pct}`;
+  const desc = `${t.label} · Level ${data.level} · ${data.streak}d streak · ${(data.xp ?? 0).toLocaleString()} XP · ${t.pct}`;
   const image = `${FN_BASE}/og-image?u=${encodeURIComponent(data.username)}&v=${data.xp}`;
 
   return new Response(renderHtml({ title, desc, image, url: target }), {

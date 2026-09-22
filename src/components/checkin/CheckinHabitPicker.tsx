@@ -7,6 +7,7 @@ import { hapticSelection } from "@/lib/haptics";
 import {
   CHECKIN_HABITS, PILLAR_LABEL, OPTIONAL_XP_CAP, type CheckinPillar, type CheckinHabit,
 } from "@/lib/checkin-habits";
+import Mark from "@/components/Mark";
 
 interface Props {
   open: boolean;
@@ -113,7 +114,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                               on ? "border-gold/40 bg-gold/[0.07]" : "border-border bg-card hover:bg-secondary/50",
                             )}
                           >
-                            <span aria-hidden className="text-2xl w-9 text-center shrink-0">{h.emoji}</span>
+                            <Mark family="habit" id={h.key} size={30} className="mx-0.5" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <p className={cn("font-bold text-read truncate", on && "text-gold")}>{h.label}</p>

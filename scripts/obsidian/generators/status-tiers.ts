@@ -12,7 +12,7 @@ export function generate(): GeneratedNote[] {
     const req = r.orPath
       ? `top ${r.percentile}% TAI ${r.streak}pv streak + ${r.activeDays} akt.pv`
       : r.percentile ? `top ${r.percentile}%` : "—";
-    return `| ${c.emoji} ${c.label} | ${c.rank} | ${req} | ${c.unlocks.join(", ")} |`;
+    return `| ${c.label} | ${c.rank} | ${req} | ${c.unlocks.join(", ")} |`;
   });
   const body = [
     `# Status Tiers`, "",

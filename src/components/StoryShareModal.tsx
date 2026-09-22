@@ -12,6 +12,11 @@ import { shareImage, saveImage, shareText } from "@/lib/share-image";
 import { isNativePlatform } from "@/lib/platform";
 import { getTierConfig } from "@/lib/status-tiers";
 import { track, FUNNEL } from "@/lib/analytics";
+import Mark from "@/components/Mark";
+import { markUrl } from "@/lib/marks";
+
+/** The streak card's flame: the tall roaring one drawn for the 100-day badge. */
+const STREAK_FLAME = "Inferno Personal";
 
 interface StoryShareModalProps {
   open: boolean;
@@ -56,6 +61,16 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
       const logo = new Image();
       logo.src = LOGO_DATA_URI;
       try { await logo.decode(); } catch { /* text fallback below */ }
+      // The tier's and badge's marks come from the bundle (same origin); a
+      // missing file leaves the text label alone.
+      const loadMark = async (url: string) => {
+        const img = new Image();
+        img.src = url;
+        try { await img.decode(); return img; } catch { return null; }
+      };
+      const tierMark = await loadMark(markUrl("tier", tier));
+      const badgeMark = variant === "badge" && badgeData ? await loadMark(markUrl("badge", badgeData.name)) : null;
+      const flameMark = variant === "streak" ? await loadMark(markUrl("badge", STREAK_FLAME)) : null;
 
       // Background gradient based on tier
       const gradient = ctx.createLinearGradient(0, 0, card.offsetWidth, cardH);
@@ -112,7 +127,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                       tier === 'elite' ? "rgba(202, 158, 62, 0.9)" :
                       "rgba(255,255,255,0.4)";
       ctx.font = "900 9px 'Inter', system-ui, sans-serif";
-      ctx.fillText(`${tierConfig.emoji} ${tierConfig.label.toUpperCase()}`, card.offsetWidth / 2, 60);
+      if (tierMark) {
+        ctx.drawImage(tierMark, card.offsetWidth / 2 - 8, 50, 16, 16);
+        ctx.fillText(tierConfig.label.toUpperCase(), card.offsetWidth / 2, 76);
+      } else {
+        ctx.fillText(tierConfig.label.toUpperCase(), card.offsetWidth / 2, 60);
+      }
 
       if (variant === "stats") {
         const centerY = cardH / 2;
@@ -136,16 +156,16 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         // Stats row with separators
         const statsY = centerY + 66;
         const stats = [
-          { label: "STREAK", value: `${profile.streak}d`, emoji: "🔥" },
-          { label: "LEVEL", value: `${profile.level}`, emoji: "⚡" },
-          { label: "BEST", value: `${profile.longest_streak}d`, emoji: "🏆" },
+          { label: "STREAK", value: `${profile.streak}d` },
+          { label: "LEVEL", value: `${profile.level}` },
+          { label: "BEST", value: `${profile.longest_streak}d` },
         ];
         const colW = card.offsetWidth / 3;
         stats.forEach((s, i) => {
           const x = colW * i + colW / 2;
           ctx.fillStyle = "#f0ece4";
           ctx.font = "900 22px 'Space Grotesk', system-ui, sans-serif";
-          ctx.fillText(`${s.emoji} ${s.value}`, x, statsY);
+          ctx.fillText(s.value, x, statsY);
           ctx.fillStyle = "rgba(255,255,255,0.3)";
           ctx.font = "bold 8px 'Inter', system-ui, sans-serif";
           ctx.fillText(s.label, x, statsY + 16);
@@ -173,10 +193,14 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, centerY - 80);
 
         // Large fire with glow
-        ctx.font = "72px serif";
         ctx.shadowColor = "rgba(235, 87, 27, 0.5)";
         ctx.shadowBlur = 30;
-        ctx.fillText("🔥", card.offsetWidth / 2, centerY - 5);
+        if (flameMark) {
+          ctx.drawImage(flameMark, card.offsetWidth / 2 - 48, centerY - 88, 96, 96);
+        } else {
+          ctx.font = "72px serif";
+          ctx.fillText("🔥", card.offsetWidth / 2, centerY - 5);
+        }
         ctx.shadowBlur = 0;
 
         ctx.shadowColor = "rgba(202, 158, 62, 0.4)";
@@ -211,11 +235,15 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
         ctx.font = "800 22px 'Space Grotesk', system-ui, sans-serif";
         ctx.fillText(`@${profile.username}`, card.offsetWidth / 2, centerY - 65);
 
-        ctx.font = "64px serif";
         ctx.shadowColor = badgeData.rarity === 'legendary' ? "rgba(202, 158, 62, 0.6)" :
                           badgeData.rarity === 'epic' ? "rgba(138, 79, 255, 0.5)" : "rgba(0,0,0,0)";
         ctx.shadowBlur = badgeData.rarity === 'legendary' || badgeData.rarity === 'epic' ? 25 : 0;
-        ctx.fillText(badgeData.icon, card.offsetWidth / 2, centerY + 15);
+        if (badgeMark) {
+          ctx.drawImage(badgeMark, card.offsetWidth / 2 - 44, centerY - 52, 88, 88);
+        } else {
+          ctx.font = "64px serif";
+          ctx.fillText(badgeData.icon, card.offsetWidth / 2, centerY + 15);
+        }
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = "#f0ece4";
@@ -489,7 +517,8 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
               tier === 'apex' ? "text-[hsl(18_95%_58%)]" :
               tier === 'elite' ? "text-gold" : "text-muted-foreground/40"
             )}>
-              {tierConfig.emoji} {tierConfig.label}
+              <Mark family="tier" id={tier} size={18} className="inline-block align-[-4px] mr-1" />
+              {tierConfig.label}
             </p>
 
             {variant === "stats" && (
@@ -501,12 +530,12 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                 <p className="font-bold tracking-widest text-gold/50 mb-6 text-xs">TOTAL XP</p>
                 <div className="grid grid-cols-3 gap-2 w-full">
                   {[
-                    { label: "STREAK", value: `${profile.streak}d`, emoji: "🔥" },
-                    { label: "LEVEL", value: `${profile.level}`, emoji: "⚡" },
-                    { label: "BEST", value: `${profile.longest_streak}d`, emoji: "🏆" },
+                    { label: "STREAK", value: `${profile.streak}d` },
+                    { label: "LEVEL", value: `${profile.level}` },
+                    { label: "BEST", value: `${profile.longest_streak}d` },
                   ].map((s) => (
                     <div key={s.label} className="flex flex-col items-center">
-                      <p className="font-black text-foreground text-lg">{s.emoji} {s.value}</p>
+                      <p className="font-black text-foreground text-lg">{s.value}</p>
                       <p className="font-bold tracking-widest text-muted-foreground/30 text-label">{s.label}</p>
                     </div>
                   ))}
@@ -548,7 +577,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             {variant === "streak" && (
               <>
                 <p className="font-extrabold text-foreground mb-3 text-xl">@{profile.username}</p>
-                <p className="text-7xl drop-shadow-[0_0_25px_hsl(18_95%_58%/0.5)]">🔥</p>
+                <div className="flex justify-center drop-shadow-[0_0_25px_hsl(18_95%_58%/0.5)]"><Mark family="badge" id={STREAK_FLAME} size={96} /></div>
                 <p className="font-black text-gold mt-2 text-5xl drop-shadow-[0_0_15px_hsl(42_78%_54%/0.4)]">
                   {profile.streak}
                 </p>
@@ -563,13 +592,13 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             {variant === "badge" && badgeData && (
               <>
                 <p className="font-extrabold text-foreground mb-3 text-xl">@{profile.username}</p>
-                <p className={cn(
-                  "text-6xl",
+                <div className={cn(
+                  "flex justify-center",
                   badgeData.rarity === 'legendary' && "drop-shadow-[0_0_25px_hsl(42_78%_54%/0.6)]",
                   badgeData.rarity === 'epic' && "drop-shadow-[0_0_25px_hsl(280_70%_60%/0.5)]"
                 )}>
-                  {badgeData.icon}
-                </p>
+                  <Mark family="badge" id={badgeData.name} size={88} fallback={<span className="text-6xl">{badgeData.icon}</span>} />
+                </div>
                 <p className="font-extrabold text-foreground mt-3 text-lg">{badgeData.name}</p>
                 <p className={cn(
                   "font-bold tracking-widest mt-1 text-xs",

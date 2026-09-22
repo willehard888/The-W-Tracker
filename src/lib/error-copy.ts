@@ -64,3 +64,48 @@ export async function readEdgeError(err: unknown, fallback?: string): Promise<Ed
   const generic = fallback ?? (status !== undefined ? BY_STATUS[status] : undefined) ?? "Something went wrong. Try again.";
   return { status, code, message: code ? friendlyError(new Error(code), code) : generic };
 }
+
+/**
+ * What KIND of failure this was.
+ *
+ * "Connection hiccup — try again." is honest only for a transport failure, and
+ * an evening reflection that failed to save showed exactly that with no way to
+ * tell whether the phone was offline, the session had expired, or a constraint
+ * had rejected the row. The copy is the same sentence either way; the category
+ * is what decides whether a retry button makes sense, whether the member should
+ * be sent to sign in again, and whether an engineer should ever hear about it.
+ */
+export type ErrorCategory = "validation" | "auth" | "permission" | "network" | "conflict" | "server" | "unknown";
+
+const CATEGORY: Array<{ pattern: RegExp; category: ErrorCategory }> = [
+  // WKWebView says "Load failed" for any fetch that never completed; Chrome
+  // says "Failed to fetch". Both mean the request did not reach the server.
+  // iOS says "The request timed out", not "timeout" — the tense matters.
+  { pattern: /load failed|failed to fetch|network|time[d]? ?out|aborted|offline/i, category: "network" },
+  { pattern: /jwt|token|not authenticated|invalid.*session|refresh.*token/i, category: "auth" },
+  { pattern: /row-level security|permission denied|not authorized/i, category: "permission" },
+  { pattern: /duplicate key|already exists|_key\b|conflict/i, category: "conflict" },
+  { pattern: /violates|constraint|invalid input|out of range|null value/i, category: "validation" },
+  { pattern: /internal server|pgrst|function.*does not exist|schema cache/i, category: "server" },
+];
+
+/** Category for a caught error — decides retry, sign-in and whether to report. */
+export function errorCategory(err: unknown): ErrorCategory {
+  const raw = err instanceof Error ? err.message : typeof err === "string" ? err : (err as { message?: string })?.message ?? "";
+  for (const c of CATEGORY) if (c.pattern.test(raw)) return c.category;
+  return "unknown";
+}
+
+/**
+ * Categories worth waking someone up for.
+ *
+ * A member on a train in a tunnel is not a defect and must not become alert
+ * noise; a constraint violation or a missing function is our mistake and would
+ * otherwise be invisible, because the only trace today is a console line on a
+ * phone nobody is holding.
+ */
+export const isOurFault = (c: ErrorCategory): boolean =>
+  c === "server" || c === "validation" || c === "permission" || c === "unknown";
+
+/** True when trying the same thing again could plausibly work. */
+export const isRetryable = (c: ErrorCategory): boolean => c === "network" || c === "server" || c === "unknown";

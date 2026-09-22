@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { friendlyError } from "@/lib/error-copy";
+import { errorCategory, friendlyError, isOurFault } from "@/lib/error-copy";
+import { captureException } from "@/lib/observability";
 
 
 export const useTodayReflection = () => {
@@ -55,7 +56,19 @@ export const useTodayReflection = () => {
       qc.invalidateQueries({ queryKey: ["coach-daily-plan"] });
       toast.success("Reflection logged");
     },
-    onError: (e: any) => toast.error(friendlyError(e, "Couldn't save. Try again.")),
+    onError: (e: unknown) => {
+      // The toast used to be the only trace: "Connection hiccup — try again."
+      // on a phone, and a console line nobody was holding. A transport failure
+      // on a train is not a defect, but a constraint violation or a missing
+      // function is ours and was invisible.
+      const category = errorCategory(e);
+      if (isOurFault(category)) captureException(e, { where: "reflection.upsert", category });
+      toast.error(
+        category === "auth"
+          ? "Your session expired — sign in and try again."
+          : friendlyError(e, "Couldn't save that. Your answers are still here — try again."),
+      );
+    },
   });
 
   return { reflection: query.data, isLoading: query.isLoading, error: query.error, refetch: query.refetch, submit };

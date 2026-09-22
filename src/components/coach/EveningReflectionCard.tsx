@@ -83,16 +83,25 @@ const EveningReflectionCard = () => {
   const canSubmit = energy != null;
 
   const handleSubmit = () => {
-    if (!canSubmit) return;
-    submit.mutate({
-      energy_1to5: energy!,
-      sleep_quality_1to5: sleep,
-      mood_1to5: mood,
-      rpe_1to10: rpe,
-      win: win.trim() || null,
-      friction: friction.trim() || null,
-    });
-    setOpen(false);
+    // A second tap while the first is still in flight wrote the reflection
+    // twice. `loading` on the button hides most of it, but a fast double-tap
+    // lands before React has flushed the pending state.
+    if (!canSubmit || submit.isPending) return;
+    submit.mutate(
+      {
+        energy_1to5: energy!,
+        sleep_quality_1to5: sleep,
+        mood_1to5: mood,
+        rpe_1to10: rpe,
+        win: win.trim() || null,
+        friction: friction.trim() || null,
+      },
+      // Close only once it has actually saved. This used to run unconditionally
+      // on the line after `mutate`, so a failed save collapsed the form: the
+      // answers survived in state, but the panel was shut and the member was
+      // left looking at "Connection hiccup — try again" with nothing to try.
+      { onSuccess: () => setOpen(false) },
+    );
   };
 
   return (

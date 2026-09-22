@@ -14,6 +14,7 @@ import {
   CRISIS_DIRECTIVE,
   PRIOR_CRISIS_DIRECTIVE,
   VENT_DIRECTIVE,
+  goalLabel,
   type TodayMood,
 } from "../_shared/coach-persona.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
@@ -215,7 +216,7 @@ Today is ${dayName}, ${today.toISOString().slice(0, 10)}.
 
 Athlete file:
 - Handle: ${username} · first name: ${firstName}
-- Goal: ${athlete?.primary_goal ?? "general performance"}${athlete?.secondary_goal ? ` + ${athlete.secondary_goal}` : ""} (horizon ${athlete?.target_horizon_weeks ?? "?"} weeks)
+- Goal: ${goalLabel(athlete?.primary_goal)}${athlete?.secondary_goal ? ` + ${goalLabel(athlete.secondary_goal, String(athlete.secondary_goal))}` : ""} (horizon ${athlete?.target_horizon_weeks ?? "?"} weeks)
 - Age / sex: ${athlete?.age ?? "?"} / ${athlete?.sex ?? "?"} · ${athlete?.height_cm ?? "?"}cm · ${athlete?.weight_kg ?? "?"}kg
 - Sports they train: ${(athlete?.sports ?? []).map((id: string) => sportName(id) ?? id).join(", ") || "not set"}
 - Equipment: ${(athlete?.equipment ?? []).join(", ") || "unknown"}

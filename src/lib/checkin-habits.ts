@@ -103,6 +103,29 @@ export const DEFAULT_CHECKIN_KEYS = [
   "meditation_pm", "no_phone_am", "no_phone_pm", "reading",
 ];
 
+const HABIT_BY_KEY: Record<string, CheckinHabit> = Object.fromEntries(CHECKIN_HABITS.map((h) => [h.key, h]));
+
+/**
+ * Did this habit happen on a check-in row? Mirrors `habitDoneOnRow` in
+ * supabase/functions/_shared/checkin-habits.ts: sleep is the optimal window,
+ * hydration ≥ 3 L, column habits are booleans, the rest read the habits jsonb
+ * (completion-only writes — a miss is an absent key).
+ */
+export const habitDoneOnRow = (row: Record<string, unknown>, key: string): boolean => {
+  if (key === "sleep") {
+    const h = Number(row.sleep_hours);
+    return h >= 7.5 && h <= 9;
+  }
+  if (key === "hydration") return Number(row.hydration_liters) >= 3;
+  // The client catalog never maps workout to its column (the sport picker
+  // renders it); the row still has one. See checkin-habits-parity.test.ts.
+  if (key === "workout") return row.workout === true;
+  const habit = HABIT_BY_KEY[key];
+  if (habit?.column) return row[habit.column] === true;
+  const jsonb = (row.habits ?? {}) as Record<string, unknown>;
+  return jsonb[key] === true;
+};
+
 export const PILLAR_LABEL: Record<CheckinPillar, string> = {
   sleep: "Sleep", movement: "Movement", nutrition: "Nutrition",
   mind: "Mind", recovery: "Recovery", connection: "Connection",

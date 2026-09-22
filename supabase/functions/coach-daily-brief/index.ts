@@ -12,6 +12,7 @@ import { programWeekState } from "../_shared/program-week.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
 import { todaysFocusSession } from "../_shared/today-session.ts";
 import { AI_CONSENT_REQUIRED, consentOk, openrouterFetch } from "../_shared/openrouter.ts";
+import { goalLabel } from "../_shared/coach-persona.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -160,7 +161,7 @@ Reply language: ${lang}.
 
 Athlete:
 - Name: ${firstName}
-- Goal: ${athlete?.primary_goal ?? "general performance"} (horizon ${athlete?.target_horizon_weeks ?? "?"} wks)
+- Goal: ${goalLabel(athlete?.primary_goal)} (horizon ${athlete?.target_horizon_weeks ?? "?"} wks)
 - Streak: ${profile.streak ?? 0}d · Tier: ${profile.status_tier ?? "recruit"}
 - Equipment: ${(athlete?.equipment ?? []).join(", ") || "unknown"}
 - Injuries: ${(athlete?.injuries ?? []).join(", ") || "none reported"}
@@ -180,7 +181,7 @@ Reference ONE concrete recent stat and ONE adjustment to today's session if warr
 End with a single clear action for the next 24h.
 
 Also produce:
-- ribbon: ≤10 words ("Week N · Goal · status")
+- ribbon: "Week N · <the goal, exactly as written above> · <one-word status>" (≤10 words, no other text)
 - prescriptions: 3 short label/value pairs (sleep target, protein target, today's intent — fitted to the user); labels in sentence case ("Sleep target", not "Sleep Target")
 - suggested_questions: 3 sharp questions the user might ask, tailored to today.`;
 
@@ -241,7 +242,7 @@ Also produce:
     }
     if (!payload) {
       payload = {
-        ribbon: `Week ${weekIdx} · ${athlete?.primary_goal ?? "Performance"}`,
+        ribbon: `Week ${weekIdx} · ${goalLabel(athlete?.primary_goal, "Performance")}`,
         brief_md: aiData?.choices?.[0]?.message?.content ?? "Today: show up. Lock the basics.",
         prescriptions: [],
         suggested_questions: [],

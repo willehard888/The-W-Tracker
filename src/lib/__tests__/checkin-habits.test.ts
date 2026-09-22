@@ -6,6 +6,7 @@ import {
   OPTIONAL_XP_CAP,
   VERIFIED_BONUS_XP,
   CHECKIN_HABITS,
+  habitDoneOnRow,
 } from "@/lib/checkin-habits";
 
 describe("checkin-habits constants", () => {
@@ -81,5 +82,24 @@ describe("earned habits", () => {
     const mobility = habits.find((h) => h.key === "mobility");
     expect(mobility?.xp).toBe(15);
     expect(mobility?.core).toBeFalsy(); // optional, so the OPTIONAL_XP_CAP applies
+  });
+});
+
+describe("habitDoneOnRow (mirror of the edge copy)", () => {
+  it("reads sleep as the optimal window and water as 3 L", () => {
+    expect(habitDoneOnRow({ sleep_hours: 8 }, "sleep")).toBe(true);
+    expect(habitDoneOnRow({ sleep_hours: 6.5 }, "sleep")).toBe(false);
+    expect(habitDoneOnRow({ sleep_hours: 9.5 }, "sleep")).toBe(false);
+    expect(habitDoneOnRow({ hydration_liters: 3 }, "hydration")).toBe(true);
+    expect(habitDoneOnRow({ hydration_liters: 2.9 }, "hydration")).toBe(false);
+  });
+
+  it("reads column habits from their column and the rest from the jsonb", () => {
+    const row = { workout: true, meditation_morning: false, habits: { sunlight: true } };
+    expect(habitDoneOnRow(row, "workout")).toBe(true);
+    expect(habitDoneOnRow(row, "meditation")).toBe(false);
+    expect(habitDoneOnRow(row, "sunlight")).toBe(true);
+    expect(habitDoneOnRow(row, "zone2")).toBe(false); // a miss is an absent key
+    expect(habitDoneOnRow({}, "cold_shower")).toBe(false);
   });
 });

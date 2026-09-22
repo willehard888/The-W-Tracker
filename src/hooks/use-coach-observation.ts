@@ -129,7 +129,7 @@ const TEMPLATES: Record<ToneId, Record<CoachObservationContext, string[]>> = {
     home: [
       "Today's heat: {focus}. Light it up.",
       "{focus}. THIS is the day. Go.",
-      "One mission: {focus}. Crush it.",
+      "One reminder: {focus}. Own it.",
     ],
     "post-checkin": [
       "Logged. {focus} tomorrow — same fire.",

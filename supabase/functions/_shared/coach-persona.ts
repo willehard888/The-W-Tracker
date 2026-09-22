@@ -22,6 +22,24 @@ export interface AthleteForPersona {
   [k: string]: unknown;
 }
 
+/**
+ * The athlete profile's goal is stored as a key ("all", "fat_loss"). Five
+ * prompts handed the model the key itself, and the model echoed it: the
+ * brief's ribbon read "WEEK 1 · ALL · REBUILDING". Prompts get the label.
+ */
+const GOAL_LABEL: Record<string, string> = {
+  all: "All-round",
+  strength: "Strength",
+  hypertrophy: "Hypertrophy",
+  endurance: "Endurance",
+  fat_loss: "Fat loss",
+  longevity: "Longevity",
+  focus: "Focus",
+};
+
+export const goalLabel = (key: unknown, fallback = "General performance"): string =>
+  (typeof key === "string" && GOAL_LABEL[key]) || fallback;
+
 export interface TodayMood {
   /** 1..5 — energy from today's reflection (or pre-chat snapshot). */
   energy?: number | null;

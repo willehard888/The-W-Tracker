@@ -7,7 +7,7 @@
 import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportName } from "../_shared/sports.ts";
-import { buildPersonaBlock, buildHolisticContext } from "../_shared/coach-persona.ts";
+import { buildPersonaBlock, buildHolisticContext, goalLabel } from "../_shared/coach-persona.ts";
 import { gatherNightSignals, buildCausalBlock } from "../_shared/health-causal.ts";
 import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
@@ -233,7 +233,7 @@ const buildPrompt = (
     ? `ATHLETE PROFILE
 - ${athlete.i_am ? `Identity: "${athlete.i_am}"` : "Identity: not set"}
 - Body: ${athlete.age ?? "?"}y, ${athlete.sex ?? "?"}, ${athlete.height_cm ?? "?"}cm, ${athlete.weight_kg ?? "?"}kg
-- Goal: ${athlete.primary_goal ?? "?"} over ${athlete.target_horizon_weeks ?? "?"} weeks
+- Goal: ${goalLabel(athlete.primary_goal, "?")} over ${athlete.target_horizon_weeks ?? "?"} weeks
 - Scheduling rule: NEVER give missions exact clock times — anchor to morning / afternoon / evening at most.
 - SICK RULE: if the recent check-ins show the user marked sick_day (today or yesterday), plan a RECOVERY day — rest, fluids, extra sleep, gentle mobility at most. No training missions, no cold exposure.
 - OVERTRAINING RULE: if they have trained 6+ consecutive days, schedule a deliberate rest/recovery day and say why — adaptation happens in recovery.
@@ -304,14 +304,16 @@ ${habitsBlock}
 PROTOCOL CATALOG (you MUST pick protocol_id ONLY from this list — no-go items already filtered out):
 ${catalogLines}
 
-Build ${missionCount} high-impact missions for the next 24 hours.
+Build ${missionCount} reminders for the next 24 hours (the tool calls them "missions").
+
+WHAT A REMINDER IS: something the athlete reads, not a task they tick. Their evening check-in records what actually happened (sleep, water, workout, and the habits in HABIT GAPS); the app marks a reminder covered from that data. So: prefer protocols the athlete's own check-in can record (their chosen habit set), lean on what they have been skipping, and write each \`why\` as the reason it matters for THIS athlete TODAY — one sentence, their own numbers or context, sentence case, no exclamation marks. Titles in sentence case, no exclamation marks.
 
 HARD RULES:
 1. Every mission must reference a real \`protocol_id\` from the catalog above. Never invent ids.
 2. Every mission must include the protocol's \`evidence\` tier (strong | promising | speculative) verbatim from the catalog.
 3. At least 60% of total mission XP MUST come from "strong" evidence protocols.
 4. Respect injuries, diet, equipment — never prescribe something the athlete physically cannot or will not do.
-5. Tailor at least one mission to the athlete's primary_goal (${athlete?.primary_goal ?? "general"}).
+5. Tailor at least one reminder to the athlete's goal (${goalLabel(athlete?.primary_goal, "general")}).
 6. If a North Star goal is set, the primary mission MUST move the needle on it; reference it in the \`why\`.
 7. Exactly one mission with kind="primary" (movement unless adjustment="swap" → recovery).
 8. Always include one "recovery", one "focus", one "habit" mission — UNLESS a mental-health rule below overrides count.
@@ -326,12 +328,10 @@ HARD RULES:
       : ""
   }
 
-XP guidance: primary 50–60 · recovery 25–35 · focus 20–30 · habit 15–20 · edge 20–30.
-
 ${toneRule}
 
 Also produce:
-- "headline" (≤60 chars) summarising today's stance.
+- "headline" (≤60 chars) summarising today's stance — sentence case, no exclamation marks, no colons-and-slogans ("Your blueprint: precision, power and purpose" is not a stance).
 - "rationale" (≤220 chars) — one paragraph explaining the plan, citing the strongest data signal driving it AND naming one specific holistic field (life context, hobby, mood, or focus area) that shaped the call.
 
 Use the emit_daily_plan tool. Mission ids must be short kebab-case. Allowed protocol_ids: ${allowedIds.length} options.`;

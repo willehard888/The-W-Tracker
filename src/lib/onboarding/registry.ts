@@ -80,8 +80,8 @@ export const ONBOARDING_EVENTS: Record<OnboardingEventId, OnboardingEventDef> = 
   COACH_MISSION_INTRO: {
     id: "COACH_MISSION_INTRO",
     presentation: "spotlight",
-    title: "Today's missions",
-    body: "A few missions a day build the program.",
+    title: "Today's reminders",
+    body: "The coach reads your check-in — nothing to tick here.",
     cta: "Got it",
     fallback: "skip",
     backdropDismiss: true,

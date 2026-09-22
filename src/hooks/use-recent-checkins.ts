@@ -17,6 +17,16 @@ export interface RecentCheckin {
   workout: boolean;
   meditation_morning: boolean;
   meditation_evening: boolean;
+  // The rest of the habit columns and the jsonb, so today's row can settle the
+  // coach's reminders (src/lib/coach/plan-evidence.ts) without a second read.
+  extra_workout: boolean;
+  cold_shower: boolean;
+  healthy_food: boolean;
+  protein_intake: boolean;
+  reading: boolean;
+  no_phone_morning: boolean;
+  no_phone_evening: boolean;
+  habits: Record<string, unknown>;
 }
 
 export const useRecentCheckins = (days = 7) => {
@@ -32,7 +42,7 @@ export const useRecentCheckins = (days = 7) => {
       const { data, error } = await supabase
         .from("daily_checkins")
         .select(
-          "checked_in_at, sleep_hours, hydration_liters, workout, meditation_morning, meditation_evening",
+          "checked_in_at, sleep_hours, hydration_liters, workout, meditation_morning, meditation_evening, extra_workout, cold_shower, healthy_food, protein_intake, reading, no_phone_morning, no_phone_evening, habits",
         )
         .eq("user_id", user!.id)
         .gte("checked_in_at", since)
@@ -45,6 +55,14 @@ export const useRecentCheckins = (days = 7) => {
         workout: !!r.workout,
         meditation_morning: !!r.meditation_morning,
         meditation_evening: !!r.meditation_evening,
+        extra_workout: !!r.extra_workout,
+        cold_shower: !!r.cold_shower,
+        healthy_food: !!r.healthy_food,
+        protein_intake: !!r.protein_intake,
+        reading: !!r.reading,
+        no_phone_morning: !!r.no_phone_morning,
+        no_phone_evening: !!r.no_phone_evening,
+        habits: (r.habits && typeof r.habits === "object" ? r.habits : {}) as Record<string, unknown>,
       }));
     },
   });

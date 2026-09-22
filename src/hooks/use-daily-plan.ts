@@ -1,10 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { uniqueChannelName } from "@/lib/realtime";
 import { readEdgeError } from "@/lib/error-copy";
+import { useRecentCheckins } from "@/hooks/use-recent-checkins";
+import { useCoachProgram } from "@/hooks/use-coach-program";
+import { useTodayReflection } from "@/hooks/use-coach-reflection";
+import { habitsEarnedToday } from "@/lib/recovery/completion";
+import { settledMissions } from "@/lib/coach/plan-evidence";
 
 export type MissionKind = "primary" | "recovery" | "focus" | "habit" | "edge";
 export type MissionPriority = "high" | "medium" | "low";
@@ -16,6 +21,10 @@ export interface Mission {
   detail?: string;
   xp: number;
   priority: MissionPriority;
+  /** coach-daily-plan catalog id — says which check-in habit settles the reminder. */
+  protocol_id?: string;
+  /** The coach's reason it matters for this athlete today. */
+  why?: string;
 }
 
 export interface DailyPlan {
@@ -30,15 +39,15 @@ export interface DailyPlan {
   generated_at: string;
 }
 
-export interface MissionLog {
-  id: string;
-  daily_plan_id: string;
-  mission_id: string;
-  xp_awarded: number;
-  completed_at: string;
-}
-
-
+/**
+ * Today's reminders and which of them the day's data has already settled.
+ *
+ * Nothing here is ticked by hand any more. The card was a second check-in —
+ * the member tapped "Mindful evening wind-down" done, then recorded the same
+ * evening in the check-in — so `done` now reads the check-in row, the runner's
+ * session log, today's reflection and a finished recovery routine.
+ * (coach_mission_logs and complete_coach_mission are no longer written.)
+ */
 export const useDailyPlan = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -61,22 +70,7 @@ export const useDailyPlan = () => {
     },
   });
 
-  const logsQuery = useQuery({
-    queryKey: ["coach-mission-logs", user?.id, planQuery.data?.id],
-    enabled: !!user?.id && !!planQuery.data?.id,
-    staleTime: 2 * 60_000,  // mission logs update frequently; realtime also refreshes
-    gcTime:    10 * 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("coach_mission_logs")
-        .select("*")
-        .eq("daily_plan_id", planQuery.data!.id);
-      if (error) throw error;
-      return (data ?? []) as MissionLog[];
-    },
-  });
-
-  // Realtime subscription so mission completion / new plan updates instantly.
+  // Realtime subscription so a new plan lands instantly.
   // Channel name carries a per-mount UUID so React StrictMode's double-mount
   // (and HMR re-mounts) doesn't return a cached already-subscribed channel
   // on the second mount — which would make `.on()` throw "cannot add
@@ -89,11 +83,6 @@ export const useDailyPlan = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "coach_daily_plans", filter: `user_id=eq.${user.id}` },
         () => qc.invalidateQueries({ queryKey: ["coach-daily-plan", user.id] }),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "coach_mission_logs", filter: `user_id=eq.${user.id}` },
-        () => qc.invalidateQueries({ queryKey: ["coach-mission-logs", user.id] }),
       )
       .subscribe();
     return () => {
@@ -147,36 +136,44 @@ export const useDailyPlan = () => {
     return data;
   };
 
-  const completeMission = async (missionId: string) => {
-    if (!planQuery.data) throw new Error("No plan");
-    const { data, error } = await supabase.rpc("complete_coach_mission", {
-      _plan_id: planQuery.data.id,
-      _mission_id: missionId,
-    });
-    if (error) throw error;
-    const result = data as any;
-    if (result?.error) throw new Error(result.error);
-    qc.invalidateQueries({ queryKey: ["coach-mission-logs", user?.id] });
-    // Missions no longer touch profiles.xp — nothing to refresh on the profile.
-    return result as { ok: true };
-  };
-
-  const completedIds = new Set((logsQuery.data ?? []).map((l) => l.mission_id));
-  const total = planQuery.data?.missions.length ?? 0;
-  const done = (planQuery.data?.missions ?? []).filter((m) => completedIds.has(m.id)).length;
+  // The day's evidence. All three queries are already warm on the Coach page
+  // (StateCard, TrainingZone, the reflection card); react-query dedupes them.
+  const { data: recent } = useRecentCheckins(7);
+  const { logs } = useCoachProgram();
+  const { reflection } = useTodayReflection();
+  const todayCheckin = useMemo(
+    () => (recent ?? []).find((r) => localDateKey(new Date(r.checked_in_at)) === date) ?? null,
+    [recent, date],
+  );
+  const trainedToday = useMemo(
+    () => logs.some((l) => l.completed && localDateKey(new Date(l.logged_at)) === date),
+    [logs, date],
+  );
+  const missions = planQuery.data?.missions ?? [];
+  const completedIds = useMemo(
+    () =>
+      settledMissions(missions, {
+        checkin: todayCheckin as Record<string, unknown> | null,
+        trainedToday,
+        reflectionToday: !!reflection,
+        recoveryHabits: new Set(habitsEarnedToday()),
+      }),
+    [missions, todayCheckin, trainedToday, reflection],
+  );
+  const total = missions.length;
+  const done = missions.filter((m) => completedIds.has(m.id)).length;
 
   return {
     isLoading: planQuery.isLoading,
     plan: planQuery.data ?? null,
-    logs: logsQuery.data ?? [],
+    /** Today's check-in has been made (the reminders are settled, not pending). */
+    checkedIn: !!todayCheckin,
     completedIds,
     done,
     total,
     refetch: () => {
       planQuery.refetch();
-      logsQuery.refetch();
     },
     generate,
-    completeMission,
   };
 };

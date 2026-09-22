@@ -5,19 +5,21 @@ import {
 } from "lucide-react";
 import type { useDailyPlan, Mission, MissionKind } from "@/hooks/use-daily-plan";
 import { Button } from "@/components/ui/button";
-import ConfettiBurst from "@/components/ConfettiBurst";
-import { Portal } from "@/components/ui/Portal";
-import { hapticNotification, hapticImpact } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
-import { useCommitPop } from "@/hooks/use-commit-pop";
 
 /**
- * TodaysPlanCard: the adaptive daily plan (push/hold/deload/swap + missions).
- * A quiet card under the hero: the readiness number itself lives up there.
- * Missions are hairline rows the user ticks; the tick is the commit-pop.
+ * TodaysPlanCard: the coach's read of the day (push/hold/deload/swap) and its
+ * reminders. A quiet card under the hero: the readiness number itself lives up
+ * there.
+ *
+ * The rows are reminders, not tasks. They used to be buttons the member ticked
+ * — a second check-in, with a "Done" toast, for things the evening check-in
+ * records anyway. Now each row says why it matters today, and the check-in
+ * (or a finished session, reflection or recovery routine) settles it.
  * `daily` is the page's single useDailyPlan() (one realtime channel).
  */
 
@@ -36,47 +38,39 @@ const KIND_ICON: Record<MissionKind, React.ElementType> = {
   edge: Flame,
 };
 
-/** One mission row: owns a hook, so it lives outside the .map(). */
-const MissionRow = ({
-  mission, isDone, isBusy, onComplete, spotlightRef,
+/** One reminder row. Covered = the day's data already shows it happened. */
+const ReminderRow = ({
+  mission, covered, spotlightRef,
 }: {
   mission: Mission;
-  isDone: boolean;
-  isBusy: boolean;
-  onComplete: (m: Mission) => void;
-  spotlightRef?: React.Ref<HTMLButtonElement>;
+  covered: boolean;
+  spotlightRef?: React.Ref<HTMLDivElement>;
 }) => {
   const Icon = KIND_ICON[mission.kind] ?? Repeat;
-  const popping = useCommitPop(isDone);
+  const why = mission.why || mission.detail;
 
   return (
-    <button
-      type="button"
-      ref={spotlightRef}
-      onClick={() => onComplete(mission)}
-      disabled={isDone || isBusy}
-      className="press w-full min-h-11 flex items-start gap-3 py-2.5 text-left"
-    >
+    <div ref={spotlightRef} className="flex items-start gap-3 py-2.5">
       <Icon size={14} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
       <span className="min-w-0 flex-1">
-        <span className={cn("block text-dense font-bold leading-tight", isDone && "text-muted-foreground line-through")}>
+        <span className={cn("block text-dense font-bold leading-tight", covered && "text-muted-foreground")}>
           {mission.title}
         </span>
-        {mission.detail && (
-          <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{mission.detail}</span>
+        {why && (
+          <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{why}</span>
         )}
       </span>
       <span
         className={cn(
-          "mt-0.5 shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors",
-          isDone ? "border-xp-green bg-xp-green text-primary-foreground" : "border-muted-foreground/35",
-          popping && "commit-pop",
+          "mt-0.5 shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center",
+          covered ? "border-gold bg-gold text-primary-foreground" : "border-muted-foreground/35",
         )}
-        aria-hidden
+        role="img"
+        aria-label={covered ? "Covered by today's check-in" : "Not yet recorded"}
       >
-        {isDone && <Check aria-hidden size={12} strokeWidth={3} />}
+        {covered && <Check aria-hidden size={12} strokeWidth={3} />}
       </span>
-    </button>
+    </div>
   );
 };
 
@@ -92,15 +86,13 @@ const whyLine = (plan: { readiness_breakdown: Record<string, number | string> })
 };
 
 const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) => {
-  const { plan, isLoading, completedIds, done, total, generate, completeMission } = daily;
+  const { plan, isLoading, completedIds, done, total, checkedIn, generate } = daily;
   const navigate = useNavigate();
-  // Contextual onboarding: the first time a mission row exists, spotlight it.
+  // Contextual onboarding: the first time a reminder row exists, spotlight it.
   const missionTargetRef = useSpotlightTarget("COACH_MISSION_INTRO");
   useOnboardingTrigger("COACH_MISSION_INTRO", (plan?.missions?.length ?? 0) > 0);
   const [generating, setGenerating] = useState(false);
   const [needsMembership, setNeedsMembership] = useState(false);
-  const [busy, setBusy] = useState<Set<string>>(new Set());
-  const [confetti, setConfetti] = useState(false);
   const autoTried = useRef(false);
 
   // Auto-generate today's plan once if none exists yet (cached per-day in
@@ -132,32 +124,10 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
         // Never show the raw "Edge Function returned a non-2xx…" string — nor
         // the server's machine codes, which is what a declined AI consent
         // arrives as.
-        toast.error(friendlyError(e, "Couldn't refresh the plan — try again in a moment."));
+        toast.error(friendlyError(e, "Couldn't refresh the reminders — try again in a moment."));
       }
     } finally {
       setGenerating(false);
-    }
-  };
-
-  const onComplete = async (m: Mission) => {
-    if (completedIds.has(m.id) || busy.has(m.id)) return;
-    setBusy((s) => new Set(s).add(m.id));
-    try {
-      await completeMission(m.id);
-      void hapticNotification("success");
-      // Celebrate finishing the whole plan. completedIds.size (not `done` from
-      // the render closure) so two quick taps can't both read a stale count
-      // and skip the celebration.
-      if (total > 0 && completedIds.size + 1 >= total) {
-        setConfetti(true);
-        setTimeout(() => setConfetti(false), 1600);
-      }
-      // No XP toast — missions are accountability, not an XP source.
-      toast.success("Done");
-    } catch (e: any) {
-      toast.error(friendlyError(e, "Couldn't log that"));
-    } finally {
-      setBusy((s) => { const n = new Set(s); n.delete(m.id); return n; });
     }
   };
 
@@ -168,8 +138,8 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
       // against a ~400 pt plan, so everything below jumped down mid-tap the
       // moment the missions arrived.
       <div className="surface-card surface-card-quiet p-4">
-        <p className="text-dense font-bold">Building today's plan…</p>
-        <p className="text-meta text-muted-foreground mt-0.5">Reading your recent recovery, training and streak.</p>
+        <p className="text-dense font-bold">Reading your day…</p>
+        <p className="text-meta text-muted-foreground mt-0.5">Your recent check-ins, recovery and training.</p>
         <div className="mt-3 divide-y divide-border/35" aria-hidden>
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="py-3.5">
@@ -187,10 +157,10 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
   if (!plan && needsMembership) {
     return (
       <button type="button" onClick={() => navigate("/paywall")} className="press w-full min-h-11 text-left surface-card surface-card-quiet p-4">
-        <p className="text-dense font-bold">Your daily plan is a member feature</p>
+        <p className="text-dense font-bold">The coach's daily read is a member feature</p>
         <p className="text-meta text-muted-foreground leading-snug mt-0.5">
-          A readiness score + 3–5 missions fitted to how you're actually recovering —
-          rebuilt for you every morning. Unlock full access.
+          A readiness score and 3–5 reminders fitted to how you're actually recovering,
+          rebuilt every morning. Unlock full access.
         </p>
       </button>
     );
@@ -200,9 +170,9 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
   if (!plan) {
     return (
       <button type="button" onClick={regenerate} className="press w-full min-h-11 text-left surface-card surface-card-quiet p-4">
-        <p className="text-dense font-bold">Build today's plan</p>
+        <p className="text-dense font-bold">Get today's read</p>
         <p className="text-meta text-muted-foreground leading-snug mt-0.5">
-          Get a readiness read and 3–5 missions fitted to how you're actually recovering.
+          A readiness read and 3–5 reminders fitted to how you're actually recovering.
         </p>
       </button>
     );
@@ -210,6 +180,13 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
 
   const adjust = ADJUST[plan.adjustment] ?? ADJUST.hold;
   const complete = total > 0 && done >= total;
+  // Before the day's check-in the rows are pending, not failed; a covered row
+  // then is one the app saw itself (a session, a routine, the reflection).
+  const footer = complete
+    ? "All covered. You showed up."
+    : !checkedIn
+      ? done > 0 ? `${done} of ${total} covered · your check-in tonight settles the rest.` : "Your check-in tonight settles these."
+      : `${done} of ${total} covered · from today's check-in`;
 
   return (
     <div className="surface-card surface-card-quiet p-4">
@@ -227,7 +204,7 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
           className="-mr-2 -mt-2 shrink-0 text-muted-foreground"
           onClick={regenerate}
           disabled={generating}
-          aria-label="Regenerate plan"
+          aria-label="Regenerate reminders"
         >
           <RotateCw size={14} className={cn(generating && "animate-spin")} aria-hidden />
         </Button>
@@ -235,29 +212,19 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
 
       <div className="mt-2 divide-y divide-border/35 border-t border-border/35">
         {plan.missions.map((m, mi) => (
-          <MissionRow
+          <ReminderRow
             key={m.id}
             mission={m}
-            isDone={completedIds.has(m.id)}
-            isBusy={busy.has(m.id)}
-            onComplete={onComplete}
+            covered={completedIds.has(m.id)}
             spotlightRef={mi === 0 ? missionTargetRef : undefined}
           />
         ))}
       </div>
 
       {total > 0 && (
-        <p className={cn("mt-2 text-meta tabular-nums", complete ? "font-bold text-xp-green" : "text-muted-foreground")}>
-          {complete ? "Plan complete. You showed up." : `${done} of ${total} done`}
+        <p className={cn("mt-2 text-meta tabular-nums", complete ? "font-bold text-gold" : "text-muted-foreground")}>
+          {footer}
         </p>
-      )}
-
-      {confetti && (
-        <Portal>
-          <div className="fixed inset-0 pointer-events-none z-[var(--z-toast)]">
-            <ConfettiBurst active={confetti} />
-          </div>
-        </Portal>
       )}
     </div>
   );

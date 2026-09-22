@@ -2,6 +2,7 @@
 // Pulls last 7 days of check-ins, reflections, mission logs and program logs,
 // then asks the AI to identify the driver of the week, wins, frictions, and next-week focus.
 import { hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
+import { goalLabel } from "../_shared/coach-persona.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown } from "../_shared/sports.ts";
 
@@ -74,16 +75,13 @@ Deno.serve(async (req) => {
     const since = new Date(Date.now() - 7 * 86400_000).toISOString();
     const sinceDate = since.slice(0, 10);
 
-    const [checkinsRes, reflectionsRes, missionsRes, athleteRes, goalRes] = await Promise.all([
+    const [checkinsRes, reflectionsRes, athleteRes, goalRes] = await Promise.all([
       supabase.from("daily_checkins")
         .select("checked_in_at, sleep_hours, workout, sport, cold_shower, healthy_food, hydration_liters, xp_earned")
         .eq("user_id", userId).gte("checked_in_at", since).order("checked_in_at", { ascending: true }),
       supabase.from("coach_reflections")
         .select("reflection_date, energy_1to5, sleep_quality_1to5, mood_1to5, rpe_1to10, win, friction")
         .eq("user_id", userId).gte("reflection_date", sinceDate).order("reflection_date", { ascending: true }),
-      supabase.from("coach_mission_logs")
-        .select("mission_id, completed_at, xp_awarded")
-        .eq("user_id", userId).gte("completed_at", since),
       supabase.from("coach_athlete_profile").select("primary_goal, tone_pref, i_am").eq("user_id", userId).maybeSingle(),
       supabase.from("coach_goals").select("title, target_value, current_value, unit, deadline")
         .eq("user_id", userId).eq("status", "active").limit(1).maybeSingle(),
@@ -91,7 +89,6 @@ Deno.serve(async (req) => {
 
     const checkins = checkinsRes.data ?? [];
     const reflections = reflectionsRes.data ?? [];
-    const missions = missionsRes.data ?? [];
     const athlete = (athleteRes as any)?.data;
     const goal = (goalRes as any)?.data;
 
@@ -122,12 +119,11 @@ Deno.serve(async (req) => {
     const aiOk = await hasAiConsent(supabase, userId);
     if (OPENROUTER_API_KEY && modelAllowed !== false && aiOk) {
       try {
-        const prompt = `Last 7 days for athlete (${athlete?.i_am ?? "no identity"}, goal: ${athlete?.primary_goal ?? "general"}, tone: ${athlete?.tone_pref ?? "calm_mentor"}).
+        const prompt = `Last 7 days for athlete (${athlete?.i_am ?? "no identity"}, goal: ${goalLabel(athlete?.primary_goal, "general")}, tone: ${athlete?.tone_pref ?? "calm_mentor"}).
 
 CHECK-INS (${days}/7): avg sleep ${avgSleep.toFixed(1)}h, ${workouts} workouts, avg energy ${avgEnergy.toFixed(1)}/5
 REFLECTIONS:
 ${reflections.map((r) => `- ${r.reflection_date}: energy ${r.energy_1to5}/5, sleep ${r.sleep_quality_1to5 ?? "?"}/5, RPE ${r.rpe_1to10 ?? "?"}/10. Win: "${r.win ?? "—"}". Friction: "${r.friction ?? "—"}"`).join("\n") || "(none)"}
-MISSIONS COMPLETED: ${missions.length}
 NORTH STAR: ${goal ? `${goal.title} → ${goal.current_value ?? "?"}/${goal.target_value}${goal.unit}` : "none"}
 COMPUTED PERFORMANCE SCORE: ${performance_score}/100
 

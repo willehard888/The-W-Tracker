@@ -1,5 +1,6 @@
 // Daily AI Trainer Brief — generates a short, signed, context-aware brief
 // from the AI Coach. Cached per user per day in coach_daily_briefs.
+import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown } from "../_shared/sports.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
@@ -109,7 +110,7 @@ Deno.serve(async (req) => {
     const last = checkins[0];
     const lastSleep = last?.sleep_hours ?? null;
     const avgSleep = checkins.length
-      ? (checkins.reduce((s: number, c: any) => s + Number(c.sleep_hours ?? 0), 0) / checkins.length).toFixed(1)
+      ? meanOfPresent(checkins.map((c: any) => Number(c.sleep_hours)))?.toFixed(1) ?? null
       : null;
     const workouts7 = checkins.filter((c: any) => c.workout).length;
     const sports7 = sportBreakdown(checkins.filter((c: any) => c.workout).map((c: any) => c.sport));

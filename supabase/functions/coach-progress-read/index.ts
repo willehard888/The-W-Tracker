@@ -1,4 +1,5 @@
 // coach-progress-read — Premium-only. Generates a short coach read of last 7d progress vs program targets.
+import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 import { clampTzOffset, localDayKey } from "../_shared/local-day.ts";
@@ -100,7 +101,10 @@ Deno.serve(async (req) => {
       ...(checks ?? []).filter((c: any) => c.workout).map((c: any) => day(c.checked_in_at)),
       ...(logs ?? []).filter((l: any) => l.completed).map((l: any) => day(l.logged_at)),
     ]).size;
-    const avgSleep = n ? (checks!.reduce((s: number, c: any) => s + Number(c.sleep_hours ?? 0), 0) / n) : 0;
+    // A night nobody measured is not a night of no sleep. Averaging absent
+    // nights as zero turned a week with three logged 8h nights into "3.4h".
+    const avgSleepVal = meanOfPresent((checks ?? []).map((c: any) => Number(c.sleep_hours)));
+    const avgSleep = avgSleepVal ?? 0;
     const avgHydr = n ? (checks!.reduce((s: number, c: any) => s + Number(c.hydration_liters ?? 0), 0) / n) : 0;
     const sessionsLogged = logs?.filter((l: any) => l.completed).length ?? 0;
     // plan_json is member-written now (hand edits): targets reach the prompt as numbers only.

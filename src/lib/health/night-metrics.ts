@@ -2,6 +2,7 @@
 // plugin. This module owns the proxy and the NIGHT sync (upsert to
 // health_night_metrics); `healthkit.ts` builds the DAY snapshot on the same
 // proxy. iOS-native only; fully fail-open (never throws to callers).
+import { vitalOrNull } from "./measurement";
 import { registerPlugin, Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -135,11 +136,16 @@ export async function syncNightMetrics(): Promise<boolean> {
       p_hrv_sdnn: round1(r.hrv_sdnn), // overnight SDNN avg (ms) — plugin queries it as of Whealth OS
       p_respiratory_rate: round1(r.respiratory_rate),
       p_spo2: round1(r.spo2),
-      p_sleep_total_min: r.sleep_total_min ?? undefined,
-      p_sleep_deep_min: r.sleep_deep_min ?? undefined,
-      p_sleep_rem_min: r.sleep_rem_min ?? undefined,
-      p_sleep_core_min: r.sleep_core_min ?? undefined,
-      p_awake_min: r.awake_min ?? undefined,
+      // `?? undefined` was not enough on its own: an app build from before the
+      // native fix reports an unrecorded night as 0, and 0 is not null, so it
+      // sailed through here and was stored as a real measurement. Nobody sleeps
+      // zero minutes — a zero in these columns is an absent sensor, and a phone
+      // that has not been updated must not be able to create one.
+      p_sleep_total_min: vitalOrNull(r.sleep_total_min) ?? undefined,
+      p_sleep_deep_min: vitalOrNull(r.sleep_deep_min) ?? undefined,
+      p_sleep_rem_min: vitalOrNull(r.sleep_rem_min) ?? undefined,
+      p_sleep_core_min: vitalOrNull(r.sleep_core_min) ?? undefined,
+      p_awake_min: vitalOrNull(r.awake_min) ?? undefined,
       p_sleep_start: r.sleep_start ?? undefined,
       p_sleep_end: r.sleep_end ?? undefined,
     };

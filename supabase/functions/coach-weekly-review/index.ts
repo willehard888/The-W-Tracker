@@ -3,6 +3,7 @@
 // then asks the AI to identify the driver of the week, wins, frictions, and next-week focus.
 import { hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 import { goalLabel } from "../_shared/coach-persona.ts";
+import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown } from "../_shared/sports.ts";
 
@@ -94,7 +95,11 @@ Deno.serve(async (req) => {
 
     // Compute a rough performance score for the week (0..100)
     const days = checkins.length;
-    const avgSleep = days ? checkins.reduce((s, c) => s + Number(c.sleep_hours ?? 0), 0) / days : 0;
+    // Missing nights are excluded, not counted as zero. Scoring still needs a
+    // number, so it falls back to a neutral 7 h the way coach-daily-plan does;
+    // the TEXT says unknown, so the model never reads the fallback as a fact.
+    const avgSleepVal = meanOfPresent(checkins.map((c) => Number(c.sleep_hours)));
+    const avgSleep = avgSleepVal ?? 7;
     const workouts = checkins.filter((c) => c.workout).length;
     const sportsLine = sportBreakdown(checkins.filter((c) => c.workout).map((c: any) => c.sport));
     const avgEnergy = reflections.length
@@ -106,7 +111,7 @@ Deno.serve(async (req) => {
     const energyPts = Math.min(15, (avgEnergy / 5) * 15);
     const performance_score = Math.round(sleepPts + trainPts + consistencyPts + energyPts);
 
-    let headline = `${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""} · ${days}/7 days · avg sleep ${avgSleep.toFixed(1)}h`;
+    let headline = `${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""} · ${days}/7 days · avg sleep ${describeVital(avgSleepVal, "h")}`;
     let driver_of_week = workouts >= 4 ? "Training volume" : avgSleep >= 7.5 ? "Sleep" : "Consistency";
     let wins: string[] = [];
     let frictions: string[] = [];
@@ -121,7 +126,7 @@ Deno.serve(async (req) => {
       try {
         const prompt = `Last 7 days for athlete (${athlete?.i_am ?? "no identity"}, goal: ${goalLabel(athlete?.primary_goal, "general")}, tone: ${athlete?.tone_pref ?? "calm_mentor"}).
 
-CHECK-INS (${days}/7): avg sleep ${avgSleep.toFixed(1)}h, ${workouts} workouts, avg energy ${avgEnergy.toFixed(1)}/5
+CHECK-INS (${days}/7): avg sleep ${describeVital(avgSleepVal, "h")}, ${workouts} workouts, avg energy ${avgEnergy.toFixed(1)}/5
 REFLECTIONS:
 ${reflections.map((r) => `- ${r.reflection_date}: energy ${r.energy_1to5}/5, sleep ${r.sleep_quality_1to5 ?? "?"}/5, RPE ${r.rpe_1to10 ?? "?"}/10. Win: "${r.win ?? "—"}". Friction: "${r.friction ?? "—"}"`).join("\n") || "(none)"}
 NORTH STAR: ${goal ? `${goal.title} → ${goal.current_value ?? "?"}/${goal.target_value}${goal.unit}` : "none"}
@@ -182,7 +187,7 @@ Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that move
         consistency_pts: Math.round(consistencyPts),
         energy_pts: Math.round(energyPts),
         workouts,
-        avg_sleep_h: Math.round(avgSleep * 10) / 10,
+        avg_sleep_h: avgSleepVal == null ? null : Math.round(avgSleepVal * 10) / 10,
       },
     });
 

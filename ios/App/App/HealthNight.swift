@@ -117,11 +117,30 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
                     if sStart == nil || s.startDate < sStart! { sStart = s.startDate }
                     if sEnd == nil || s.endDate > sEnd! { sEnd = s.endDate }
                 }
-                put("sleep_deep_min", Int(deep.rounded()))
-                put("sleep_rem_min", Int(rem.rounded()))
-                put("sleep_core_min", Int(core.rounded()))
-                put("awake_min", Int(awake.rounded()))
-                put("sleep_total_min", Int((deep + rem + core).rounded()))
+                // Only report sleep when sleep was actually recorded.
+                //
+                // An empty sample array — no watch worn, watch not charged,
+                // sleep tracking off — sums to 0, and emitting that 0 makes a
+                // missing night indistinguishable from a sleepless one. That is
+                // not a small difference downstream: the proactive coach read
+                // one such zero as a real measurement and pushed "your zero
+                // hours of recorded sleep make high-intensity training
+                // dangerous today — cancel your workout" to somebody who had
+                // slept fine and logged it by hand.
+                //
+                // sleep_start and sleep_end were already guarded this way; the
+                // totals were not. Omitting the keys is what the JS side
+                // expects — every one of these fields is optional in DayResult.
+                let totalMin = deep + rem + core
+                if totalMin > 0 {
+                    put("sleep_deep_min", Int(deep.rounded()))
+                    put("sleep_rem_min", Int(rem.rounded()))
+                    put("sleep_core_min", Int(core.rounded()))
+                    put("sleep_total_min", Int(totalMin.rounded()))
+                }
+                // Awake minutes mean nothing without sleep beside them, and on
+                // their own they are the same phantom zero.
+                if awake > 0 { put("awake_min", Int(awake.rounded())) }
                 if let st = sStart { put("sleep_start", iso.string(from: st)) }
                 if let en = sEnd { put("sleep_end", iso.string(from: en)) }
                 group.leave()

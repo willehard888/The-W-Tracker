@@ -235,7 +235,13 @@ async function pickTrigger(
     if (last && lastFresh && (last.resting_hr != null || last.sleep_total_min != null)) {
       const baseRhr = median(rows.slice(1).map((n) => Number(n.resting_hr)).filter((v) => v > 0));
       const rhrUp = last.resting_hr != null && baseRhr != null && last.resting_hr - baseRhr >= 6;
-      const shortSleep = last.sleep_total_min != null && last.sleep_total_min < 360; // < 6h
+      // `!= null` was the whole guard, and a stored 0 is not null. A night with
+      // no watch worn arrived as 0 minutes, satisfied "< 6h", and this rule
+      // pushed "your zero hours of recorded sleep make high-intensity training
+      // dangerous today — cancel your workout" at somebody who had slept
+      // normally and logged it by hand. Missing data must never become a safety
+      // instruction, so a real short night has to be greater than zero.
+      const shortSleep = last.sleep_total_min != null && last.sleep_total_min > 0 && last.sleep_total_min < 360; // < 6h
       if (rhrUp || shortSleep) {
         const why = rhrUp
           ? `resting HR ${Math.round(last.resting_hr)} bpm vs ~${Math.round(baseRhr!)} baseline`

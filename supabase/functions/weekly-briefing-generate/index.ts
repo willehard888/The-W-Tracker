@@ -1,6 +1,7 @@
 // Weekly Briefing Generator — runs Sundays via pg_cron
 // Generates AI-powered weekly summary for each Elite user with ≥3 checkins this week
 import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
+import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendApnsBatch } from "../_shared/apns.ts";
 import { prefAllows } from "../_shared/push-targets.ts";
@@ -106,7 +107,7 @@ function computeStats(checkins: Checkin[], meals: MealRow[] = [], proteinTargetG
   const totalXp = checkins.reduce((s, c) => s + (c.xp_earned ?? 0), 0);
   const days = checkins.length;
   const avgSleep =
-    days > 0 ? checkins.reduce((s, c) => s + Number(c.sleep_hours ?? 0), 0) / days : 0;
+    meanOfPresent(checkins.map((c) => Number(c.sleep_hours))) ?? 0;
   const avgHydration =
     days > 0 ? checkins.reduce((s, c) => s + Number(c.hydration_liters ?? 0), 0) / days : 0;
   const workouts = checkins.filter((c) => c.workout).length;

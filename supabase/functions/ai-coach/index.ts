@@ -3,6 +3,7 @@
 // friend. The user's holistic profile (hobbies, life context, stress / mood,
 // mental-health focus) is injected into every prompt so replies speak to
 // *this person*, not a generic athlete.
+import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
   buildPersonaBlock,
@@ -59,7 +60,9 @@ interface Checkin {
 const summarize7d = (checkins: Checkin[]) => {
   if (!checkins || checkins.length === 0) return "No check-ins in the last 7 days.";
   const days = checkins.length;
-  const avgSleep = checkins.reduce((s, c) => s + Number(c.sleep_hours ?? 0), 0) / days;
+  // A night with no sleep logged is not a night of no sleep. Averaging the
+  // missing ones in as 0 halved the figure the coach reasons about.
+  const avgSleepVal = meanOfPresent(checkins.map((c) => Number(c.sleep_hours)));
   const avgHydr = checkins.reduce((s, c) => s + Number(c.hydration_liters ?? 0), 0) / days;
   const totalXp = checkins.reduce((s, c) => s + (c.xp_earned ?? 0), 0);
   const workouts = checkins.filter((c) => c.workout).length;
@@ -73,7 +76,7 @@ const summarize7d = (checkins: Checkin[]) => {
   // "Yesterday" made the coach misplace the freshest facts in time.
   const lastIsToday =
     String(last.checked_in_at ?? "").slice(0, 10) === new Date().toISOString().slice(0, 10);
-  return `Last 7d: ${days}/7 check-ins, ${totalXp} XP total, avg sleep ${avgSleep.toFixed(1)}h, avg hydration ${avgHydr.toFixed(1)}L, ${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""}, ${cold} cold showers.
+  return `Last 7d: ${days}/7 check-ins, ${totalXp} XP total, avg sleep ${describeVital(avgSleepVal, "h")}, avg hydration ${avgHydr.toFixed(1)}L, ${workouts} workouts${sportsLine ? ` (${sportsLine})` : ""}, ${cold} cold showers.
 ${lastIsToday ? "Today (already checked in)" : "Yesterday"}: sleep ${last.sleep_hours}h, ${last.workout ? `workout✓${sportName(last.sport) ? ` (${sportName(last.sport)})` : ""}` : "no workout"}, ${last.cold_shower ? "cold✓" : "no cold"}, hydration ${last.hydration_liters}L.`;
 };
 

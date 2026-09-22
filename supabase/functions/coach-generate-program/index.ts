@@ -1,5 +1,6 @@
 // coach-generate-program — Premium-only. Designs a fully personalized 4-week program
 // using the user's athlete profile, last 30d check-ins, last 14d reflections and active goals.
+import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { validateProgram, normalizeInjuries } from "./movements.ts";
 import { EXERCISE_CATALOG, filterCatalog } from "../_shared/exercise-catalog.ts";
@@ -314,7 +315,7 @@ Deno.serve(async (req) => {
     const checks = checksRes.data ?? [];
     const n = checks.length;
     const avgSleep = n
-      ? (checks.reduce((s: number, c: any) => s + Number(c.sleep_hours ?? 0), 0) / n).toFixed(1)
+      ? meanOfPresent(checks.map((c: any) => Number(c.sleep_hours)))?.toFixed(1) ?? null
       : "n/a";
     const avgHydr = n
       ? (checks.reduce((s: number, c: any) => s + Number(c.hydration_liters ?? 0), 0) / n).toFixed(1)

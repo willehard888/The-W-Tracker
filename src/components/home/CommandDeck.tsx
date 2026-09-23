@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from "react";
-import { Flame, ChevronRight, Check } from "lucide-react";
+import { Flame, ChevronRight } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -85,9 +85,11 @@ const CommandDeck = ({
           className,
         )}
       >
-        <span className="h-8 w-8 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
-          <Check aria-hidden size={15} className="text-gold" strokeWidth={3} />
-        </span>
+        {/* The gold tick disc is gone. It said what the words beside it said,
+            and it was a 32px indent on a screen with one left edge: the date
+            above it started at 16, this row at 60, and Fuel's photo put the
+            next one at 92. Three edges in three rows. The flame chip on the
+            right still carries the reward. */}
         <div className="min-w-0 flex-1">
           <p className="text-dense font-black leading-tight">Day banked</p>
           <p className="text-meta text-muted-foreground leading-tight mt-0.5">

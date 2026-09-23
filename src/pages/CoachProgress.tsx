@@ -11,6 +11,8 @@ import ProgressDashboard from "@/components/coach/ProgressDashboard";
 import { DoorRow } from "@/components/coach/rows";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
+import { sessionsBySport, useHealthWorkouts } from "@/hooks/use-health-workouts";
+import { sportById } from "@/lib/sports";
 import { useWhealthHeadline } from "@/hooks/use-whealth-headline";
 import { localDateKey } from "@/lib/date";
 
@@ -42,13 +44,20 @@ const CoachProgress = () => {
   // was finished in the runner: counting only the tick read "Workouts 0/7"
   // right above "1 of 1 planned sessions logged".
   const weekAgo = Date.now() - 7 * 86_400_000;
+  const health = useHealthWorkouts(7);
   const workoutDays = new Set<string>([
     ...(recent ?? []).filter((r) => r.workout).map((r) => localDateKey(new Date(r.checked_in_at))),
     ...logs
       .filter((l) => l.completed && new Date(l.logged_at).getTime() >= weekAgo)
       .map((l) => localDateKey(new Date(l.logged_at))),
+    ...health.workoutDays,
   ]);
   const workoutsThisWeek = workoutDays.size;
+  // The week as the watch saw it, by sport — "Tennis 62 min · 142 bpm".
+  const healthLine = sessionsBySport(health.sessions, (id) => sportById(id).label)
+    .slice(0, 4)
+    .map((s) => `${s.label} ${s.minutes} min${s.avgHr ? ` · ${s.avgHr} bpm` : ""}`)
+    .join("  ·  ");
 
   // Program compliance for the current week (was its own gold card further
   // down the page, a third place to read "how much did I train").
@@ -111,6 +120,11 @@ const CoachProgress = () => {
             </div>
             {program && plannedSessions > 0 && (
               <Progress className="mt-2" value={Math.min(100, Math.round((loggedSessions / plannedSessions) * 100))} />
+            )}
+            {healthLine && (
+              <p className="mt-1.5 text-meta text-muted-foreground tabular-nums leading-snug">
+                From Health · {healthLine}
+              </p>
             )}
           </div>
 

@@ -3,6 +3,8 @@ import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 import { clampTzOffset, localDayKey } from "../_shared/local-day.ts";
+import { gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
+import { sportName } from "../_shared/sports.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -97,10 +99,14 @@ Deno.serve(async (req) => {
     // Counting ticks alone, this read "0 workouts" under "1 of 1 sessions".
     const tz = clampTzOffset((await req.json().catch(() => ({})))?.tz_offset_minutes);
     const day = (iso: string) => localDayKey(tz, new Date(iso).getTime());
+    // …or a session the watch recorded (a Polar match on a day without a check-in).
+    const healthDays = await gatherHealthWorkouts(supabase, 7);
     const workouts = new Set([
       ...(checks ?? []).filter((c: any) => c.workout).map((c: any) => day(c.checked_in_at)),
       ...(logs ?? []).filter((l: any) => l.completed).map((l: any) => day(l.logged_at)),
+      ...healthDays.map((d) => d.date),
     ]).size;
+    const workoutsBlock = buildWorkoutsBlock(healthDays, (id) => sportName(id) ?? id);
     // A night nobody measured is not a night of no sleep. Averaging absent
     // nights as zero turned a week with three logged 8h nights into "3.4h".
     const avgSleepVal = meanOfPresent((checks ?? []).map((c: any) => Number(c.sleep_hours)));
@@ -119,7 +125,7 @@ Deno.serve(async (req) => {
 - Program sessions completed: ${sessionsLogged}
 - Avg sleep: ${avgSleep.toFixed(1)} h${targets ? ` (target ${targets.sleep_avg_h})` : ""}
 - Avg hydration: ${avgHydr.toFixed(1)} L${targets ? ` (target ${targets.hydration_l})` : ""}
-- Goal: ${program?.goal ?? "n/a"}`;
+- Goal: ${program?.goal ?? "n/a"}${workoutsBlock ? `\n\n${workoutsBlock}` : ""}`;
 
     // Per-member daily cap before the model call (same counter as the chat coach).
     const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: 12, p_kind: "progress" });

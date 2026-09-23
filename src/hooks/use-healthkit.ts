@@ -5,7 +5,7 @@ import {
   requestHealthKitPermissions,
   type DaySnapshot,
 } from "@/lib/health/healthkit";
-import { syncDaySnapshot } from "@/lib/health/background-sync";
+import { onDaySnapshot, syncDaySnapshot } from "@/lib/health/background-sync";
 import { markHealthConnected } from "@/lib/health/health-consent";
 
 /**
@@ -27,6 +27,9 @@ export const useHealthKit = () => {
   const [syncing, setSyncing] = useState(false);
   const [lastSnapshot, setLastSnapshot] = useState<DaySnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // A sync that ran elsewhere (the resume listener, another screen) lands here too.
+  useEffect(() => onDaySnapshot(setLastSnapshot), []);
 
   useEffect(() => {
     let alive = true;

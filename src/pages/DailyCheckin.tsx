@@ -58,7 +58,7 @@ import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou, sportLabel } from "@
 import { useRecentSports } from "@/hooks/use-recent-sports";
 import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
 import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
-import type { DayWorkout } from "@/lib/health/healthkit";
+import type { DaySnapshot, DayWorkout } from "@/lib/health/healthkit";
 
 /** "Tennis 62 min · Gym 45 min · Polar Flow" — what Health recorded today, by sport. */
 const healthSessionsLine = (sessions: DayWorkout[]): string => {
@@ -306,46 +306,59 @@ const DailyCheckin = () => {
 
   // ── Apple Health auto-detect (billion-dollar verification) ──────────────
   // On open, pull today's HealthKit snapshot to confirm what actually happened
-  // and prefill / flag verifiable habits. Fully fail-open, iOS-only.
+  // and prefill / flag verifiable habits. Fully fail-open, iOS-only. The same
+  // read is applied again whenever a later sync lands (the app's resume
+  // listener, the Sync button): a Polar session that reaches Health after this
+  // screen opened used to stay invisible until the next visit.
+  const applySnapshot = (snap: DaySnapshot) => {
+    const workoutDone = (snap.workout_count ?? 0) >= 1 || (snap.workout_minutes ?? 0) >= 15;
+    // Every session Health recorded, longest first — the "For you" row shows
+    // each with its Detected badge; the longest one pre-selects.
+    const sessions = [...snap.workouts].sort((a, b) => b.duration_min - a.duration_min);
+    setHealthSessions(sessions);
+    setDetectedSports(Array.from(new Set(sessions.map((w) => w.sport))));
+    // Apple told us WHICH sport — pre-select it once (user can still change).
+    // Never override a choice the user already made (Rest day sets "none"
+    // on purpose — the async HK snapshot must not turn it back into a workout).
+    if (workoutDone && snap.primary_sport && !sportPrefilled.current && !sportTouched.current) {
+      sportPrefilled.current = true;
+      setDetectedSportId(snap.primary_sport);
+      setSportCategory((cur) => (cur === "none" ? snap.primary_sport! : cur));
+    }
+    const stepsDone = (snap.steps ?? 0) >= 8000;
+    const mindDone = (snap.mindful_minutes ?? 0) > 0;
+    const sleepKnown = snap.sleep_hours != null && snap.sleep_hours > 0;
+    setDetected((d) => ({ ...d, workout: workoutDone, steps: stepsDone, mindfulness: mindDone, sleep: sleepKnown }));
+    if (workoutDone) setHealthWorkout(true);
+    if (snap.workout_minutes) setDetectedWorkoutMin(snap.workout_minutes);
+    // Prefill sleep slider from HealthKit once (user can still adjust).
+    if (sleepKnown && !sleepPrefilled.current) {
+      sleepPrefilled.current = true;
+      setSleep(Math.min(12, Math.max(4, Math.round((snap.sleep_hours as number) * 2) / 2)));
+    }
+    // Auto-mark the 8k-steps habit if it's confirmed (only surfaces if chosen).
+    if (stepsDone && !stepsPrefilled.current) {
+      stepsPrefilled.current = true;
+      setCompleted((c) => ({ ...c, steps_8k: true }));
+    }
+  };
+  const applyRef = useRef(applySnapshot);
+  applyRef.current = applySnapshot;
+
   useEffect(() => {
     if (!healthKit.available) return;
     let alive = true;
     healthKit.syncToday().then((snap) => {
-      if (!alive || !snap) return;
-      const workoutDone = (snap.workout_count ?? 0) >= 1 || (snap.workout_minutes ?? 0) >= 15;
-      // Every session Health recorded, longest first — the "For you" row shows
-      // each with its Detected badge; the longest one pre-selects.
-      const sessions = [...snap.workouts].sort((a, b) => b.duration_min - a.duration_min);
-      setHealthSessions(sessions);
-      setDetectedSports(Array.from(new Set(sessions.map((w) => w.sport))));
-      // Apple told us WHICH sport — pre-select it once (user can still change).
-      // Never override a choice the user already made (Rest day sets "none"
-      // on purpose — the async HK snapshot must not turn it back into a workout).
-      if (workoutDone && snap.primary_sport && !sportPrefilled.current && !sportTouched.current) {
-        sportPrefilled.current = true;
-        setDetectedSportId(snap.primary_sport);
-        setSportCategory((cur) => (cur === "none" ? snap.primary_sport! : cur));
-      }
-      const stepsDone = (snap.steps ?? 0) >= 8000;
-      const mindDone = (snap.mindful_minutes ?? 0) > 0;
-      const sleepKnown = snap.sleep_hours != null && snap.sleep_hours > 0;
-      setDetected((d) => ({ ...d, workout: workoutDone, steps: stepsDone, mindfulness: mindDone, sleep: sleepKnown }));
-      if (workoutDone) setHealthWorkout(true);
-      if (snap.workout_minutes) setDetectedWorkoutMin(snap.workout_minutes);
-      // Prefill sleep slider from HealthKit once (user can still adjust).
-      if (sleepKnown && !sleepPrefilled.current) {
-        sleepPrefilled.current = true;
-        setSleep(Math.min(12, Math.max(4, Math.round((snap.sleep_hours as number) * 2) / 2)));
-      }
-      // Auto-mark the 8k-steps habit if it's confirmed (only surfaces if chosen).
-      if (stepsDone && !stepsPrefilled.current) {
-        stepsPrefilled.current = true;
-        setCompleted((c) => ({ ...c, steps_8k: true }));
-      }
+      if (alive && snap) applyRef.current(snap);
     }).catch(() => {});
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [healthKit.available]);
+
+  // A sync that lands while the screen is open (resume, Sync) re-applies.
+  useEffect(() => {
+    if (healthKit.lastSnapshot) applyRef.current(healthKit.lastSnapshot);
+  }, [healthKit.lastSnapshot]);
 
   // ── Food-diary auto-detect (plan 7d) ────────────────────────────────────
   // Today's logged protein at ≥ 90 % of the target confirms the protein habit

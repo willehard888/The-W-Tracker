@@ -9,6 +9,7 @@ import { useRecentCheckins } from "@/hooks/use-recent-checkins";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { habitsEarnedToday } from "@/lib/recovery/completion";
+import { useHealthWorkouts } from "@/hooks/use-health-workouts";
 import { settledMissions } from "@/lib/coach/plan-evidence";
 
 export type MissionKind = "primary" | "recovery" | "focus" | "habit" | "edge";
@@ -141,13 +142,15 @@ export const useDailyPlan = () => {
   const { data: recent } = useRecentCheckins(7);
   const { logs } = useCoachProgram();
   const { reflection } = useTodayReflection();
+  const health = useHealthWorkouts(1);
   const todayCheckin = useMemo(
     () => (recent ?? []).find((r) => localDateKey(new Date(r.checked_in_at)) === date) ?? null,
     [recent, date],
   );
+  // The runner's log or a session the watch recorded (a Polar match counts).
   const trainedToday = useMemo(
-    () => logs.some((l) => l.completed && localDateKey(new Date(l.logged_at)) === date),
-    [logs, date],
+    () => health.trainedToday || logs.some((l) => l.completed && localDateKey(new Date(l.logged_at)) === date),
+    [logs, date, health.trainedToday],
   );
   const missions = planQuery.data?.missions ?? [];
   const completedIds = useMemo(

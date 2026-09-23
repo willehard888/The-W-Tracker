@@ -112,8 +112,20 @@ Deno.serve(async (req) => {
     const avgSleep = checkins.length
       ? meanOfPresent(checkins.map((c: any) => Number(c.sleep_hours)))?.toFixed(1) ?? null
       : null;
-    const workouts7 = checkins.filter((c: any) => c.workout).length;
-    const sports7 = sportBreakdown(checkins.filter((c: any) => c.workout).map((c: any) => c.sport));
+    // Sessions the watch recorded count too (by day; the longest session names
+    // the day's sport when the check-in did not), so a Polar tennis week is not
+    // "0/7 workouts" to the brief. Gathered here, before the prompt; the same
+    // rows feed the WORKOUTS block below.
+    const healthDays = await gatherHealthWorkouts(sb, 7);
+    const dayKeyOf = (iso: string) => localDayKey(clampTzOffset(body?.tz_offset_minutes), new Date(iso).getTime());
+    const sportByDay = new Map<string, string | null>();
+    for (const c of checkins as any[]) if (c.workout) sportByDay.set(dayKeyOf(c.checked_in_at), c.sport ?? null);
+    for (const d of healthDays) {
+      const longest = [...d.workouts].sort((a, b) => b.duration_min - a.duration_min)[0];
+      if (!sportByDay.has(d.date) || sportByDay.get(d.date) == null) sportByDay.set(d.date, longest?.sport ?? sportByDay.get(d.date) ?? null);
+    }
+    const workouts7 = sportByDay.size;
+    const sports7 = sportBreakdown([...sportByDay.values()]);
 
     const firstName = (athlete?.i_am || profile.username || "").split(" ")[0] || "there";
     const tone = TONE_LINE[athlete?.tone_pref ?? "calm_mentor"] ?? TONE_LINE.calm_mentor;
@@ -136,7 +148,6 @@ Deno.serve(async (req) => {
     const causalBlock = buildCausalBlock(nightSignals as any);
     // Sessions the watch recorded, by sport — a Polar tennis match the member
     // never checked in for is still a tennis match to the coach.
-    const healthDays = await gatherHealthWorkouts(sb, 7);
     const workoutsBlock = buildWorkoutsBlock(healthDays, (id) => sportName(id) ?? id);
 
     // Whealth Index snapshot — the morning brief cites the real computed

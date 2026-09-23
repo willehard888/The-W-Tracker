@@ -4,6 +4,8 @@
 import { hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 import { goalLabel } from "../_shared/coach-persona.ts";
 import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
+import { gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
+import { sportName } from "../_shared/sports.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown } from "../_shared/sports.ts";
 
@@ -100,8 +102,17 @@ Deno.serve(async (req) => {
     // the TEXT says unknown, so the model never reads the fallback as a fact.
     const avgSleepVal = meanOfPresent(checkins.map((c) => Number(c.sleep_hours)));
     const avgSleep = avgSleepVal ?? 7;
-    const workouts = checkins.filter((c) => c.workout).length;
-    const sportsLine = sportBreakdown(checkins.filter((c) => c.workout).map((c: any) => c.sport));
+    // Training days = check-in ticks ∪ days the watch recorded a session (by
+    // the check-in's own date, UTC — the review is a weekly aggregate).
+    const healthDays = await gatherHealthWorkouts(supabase, 7);
+    const trainedDays = new Set<string>([
+      ...checkins.filter((c) => c.workout).map((c: any) => String(c.checked_in_at).slice(0, 10)),
+      ...healthDays.map((d) => d.date),
+    ]);
+    const workouts = trainedDays.size;
+    const healthSports = healthDays.map((d) => [...d.workouts].sort((a, b) => b.duration_min - a.duration_min)[0]?.sport ?? null);
+    const sportsLine = sportBreakdown([...checkins.filter((c) => c.workout).map((c: any) => c.sport), ...healthSports]);
+    const workoutsBlock = buildWorkoutsBlock(healthDays, (id) => sportName(id) ?? id);
     const avgEnergy = reflections.length
       ? reflections.reduce((s, r) => s + (r.energy_1to5 ?? 0), 0) / reflections.length
       : 3;
@@ -131,7 +142,7 @@ REFLECTIONS:
 ${reflections.map((r) => `- ${r.reflection_date}: energy ${r.energy_1to5}/5, sleep ${r.sleep_quality_1to5 ?? "?"}/5, RPE ${r.rpe_1to10 ?? "?"}/10. Win: "${r.win ?? "—"}". Friction: "${r.friction ?? "—"}"`).join("\n") || "(none)"}
 NORTH STAR: ${goal ? `${goal.title} → ${goal.current_value ?? "?"}/${goal.target_value}${goal.unit}` : "none"}
 COMPUTED PERFORMANCE SCORE: ${performance_score}/100
-
+${workoutsBlock ? `\n${workoutsBlock}\n` : ""}
 Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that moved the score this week (positive or negative). next_week_focus = ≤3 sentences of crisp prescription. program_tweak = ONE concrete adjustment if data warrants it (e.g. "Drop Friday VO₂ — RPE creeping above 9").`;
 
         const r = await openrouterFetch(OPENROUTER_API_KEY, {

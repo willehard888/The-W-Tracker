@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
+import { useHealthWorkouts } from "@/hooks/use-health-workouts";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { localDateKey } from "@/lib/date";
 import { PILLARS } from "@/lib/wellness-framework";
@@ -20,16 +21,19 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
   const { profile } = useAuth();
   const { reflection } = useTodayReflection();
   const { data: recent } = useRecentCheckins(7);
-  // Training days = the check-in's tick OR a session finished in the runner;
-  // the tick alone said "no training" minutes after a logged session.
+  // Training days = the check-in's tick, a session finished in the runner,
+  // OR a session the watch recorded (a Polar tennis match on a day without a
+  // check-in); the tick alone said "no training" minutes after a logged session.
   const { logs } = useCoachProgram();
+  const health = useHealthWorkouts(7);
   const trainedDays = useMemo(() => {
     const weekAgo = Date.now() - 7 * 86_400_000;
     return new Set<string>([
       ...(recent ?? []).filter((r) => r.workout).map((r) => localDateKey(new Date(r.checked_in_at))),
       ...logs.filter((l) => l.completed && new Date(l.logged_at).getTime() >= weekAgo).map((l) => localDateKey(new Date(l.logged_at))),
+      ...health.workoutDays,
     ]).size;
-  }, [recent, logs]);
+  }, [recent, logs, health.workoutDays]);
 
   const signal = useMemo(() => {
     if (!recent || recent.length === 0) {

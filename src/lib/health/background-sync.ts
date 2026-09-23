@@ -15,6 +15,20 @@ import { hasHealthConsent, markHealthConnected } from "@/lib/health/health-conse
 import { isHealthKitAvailable, readTodaySnapshot, type DaySnapshot } from "@/lib/health/healthkit";
 import { syncNightMetrics } from "@/lib/health/night-metrics";
 import { captureException } from "@/lib/observability";
+import { queryClient } from "@/lib/query-client";
+
+/**
+ * Whoever wants the day's snapshot the moment a sync lands: the check-in
+ * screen and the connect card (through useHealthKit). The resume sync runs in
+ * this lib, out of any component's reach, and a Polar session that reached
+ * Health while the check-in was open used to wait for the next visit.
+ */
+type SnapshotListener = (snap: DaySnapshot) => void;
+const listeners = new Set<SnapshotListener>();
+export const onDaySnapshot = (cb: SnapshotListener): (() => void) => {
+  listeners.add(cb);
+  return () => { listeners.delete(cb); };
+};
 
 /** Read today + upsert. The one place the snapshot RPC is called. */
 export async function syncDaySnapshot(): Promise<DaySnapshot | null> {
@@ -44,6 +58,9 @@ export async function syncDaySnapshot(): Promise<DaySnapshot | null> {
     _workouts: snap.workouts.length ? (snap.workouts as unknown as Json) : undefined,
   });
   if (error) throw new Error(error.message);
+  // The week's sessions are read from the table this just wrote.
+  queryClient.invalidateQueries({ queryKey: ["health-workouts"] });
+  for (const cb of listeners) { try { cb(snap); } catch { /* a listener's problem */ } }
   return snap;
 }
 

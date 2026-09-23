@@ -8,7 +8,6 @@ import { beatFor, kcalLeft, kcalProgress, subFor } from "@/lib/nutrition/day-cop
 import { fmtInt } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
-import ImageBand from "@/components/home/ImageBand";
 import { recipeImageIds, recipeSquare } from "@/lib/recipe-images";
 import { localDayIndex } from "@/lib/daily-rotation";
 import type { MacroSummary } from "@/components/nutrition/MacroRow";
@@ -127,15 +126,28 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
         className="absolute inset-0 rounded-xl active:opacity-70 transition-opacity"
       />
 
-      {/* A picture only on a day with nothing in it. Beside "1 840 kcal left" a
-          plate of salmon would be a claim about what you ate; over "Nothing
-          logged yet" it is plainly what it is — an idea, from the app's own
-          recipe photography rather than a stock library. */}
-      {suggestion && (
-        <ImageBand src={suggestion} alt="" aspect="aspect-[2/1]" className="mb-3 pointer-events-none" />
-      )}
+      <div className="relative pointer-events-none flex items-start gap-3">
+        {/* A picture only on a day with nothing in it. Beside "1 840 kcal left"
+            a plate of salmon would be a claim about what you ate; next to
+            "Nothing logged yet" it is plainly an idea, from the app's own
+            recipe photography rather than a stock library.
 
-      <div className="relative pointer-events-none">
+            Beside the type, not across the column. It began as a full-bleed
+            band and measuring it settled the argument: at 2:1 it was 187 px for
+            a block whose content is one number, and it was the single thing
+            pushing today's training below the fold. Square, at the height of
+            the type it sits beside, it costs the screen nothing. */}
+        {suggestion && (
+          <img
+            src={suggestion}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-16 w-16 shrink-0 rounded-lg object-cover bg-black"
+          />
+        )}
+
+      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-label font-bold text-muted-foreground/75">Fuel</p>
           {mealCount > 0 && (
@@ -204,6 +216,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
             subFor(state, kcal, targetKcal, mealCount)
           )}
         </p>
+      </div>
       </div>
 
       <NutritionSheet open={tipOpen} onClose={() => setTipOpen(false)} title="Before you shoot" label="Photo tip">

@@ -41,7 +41,7 @@ const FocusSessionSheet = lazy(() => import("@/components/coach/FocusSessionShee
 // feed already use — the eight stacked rounded rectangles were the reason
 // nothing on this screen led.
 const ROW = "flex items-center";
-const BODY = "flex-1 min-w-0 min-h-14 text-left active:opacity-70 transition-opacity";
+const BODY = "flex-1 min-w-0 min-h-14 pr-3 text-left active:opacity-70 transition-opacity";
 const LABEL = "text-label font-bold text-muted-foreground/75 mb-0.5";
 
 /**
@@ -81,7 +81,7 @@ const FocusDoor = ({ label = "Pick a different focus", aside }: { label?: string
         <button
           type="button"
           onClick={() => { hapticSelection(); setOpen(true); }}
-          className="press flex-1 min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
+          className="press flex-1 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
         >
           {label} <ChevronRight aria-hidden size={13} />
         </button>
@@ -104,7 +104,7 @@ const RecoveryDoor = ({ to = "/recovery?src=manual" }: { to?: string }) => {
     <button
       type="button"
       onClick={() => { hapticImpact("light"); navigate(to); }}
-      className="press w-full min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
+      className="press w-full min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
     >
       Recovery session <ChevronRight aria-hidden size={13} />
     </button>
@@ -148,7 +148,7 @@ const TrainingZone = () => {
             </p>
           </button>
           {!done && (
-            <div className="pr-2 shrink-0">
+            <div className="shrink-0">
               <Button variant="outline" size="sm" className="min-h-11" onClick={go}>
                 {inProgress ? "Continue" : "Start"}
               </Button>
@@ -163,7 +163,7 @@ const TrainingZone = () => {
             <button
               type="button"
               onClick={() => { hapticImpact("light"); navigate("/coach/program"); }}
-              className="press shrink-0 min-h-11 flex items-center gap-1 px-4 text-meta font-bold text-muted-foreground"
+              className="press shrink-0 min-h-11 flex items-center gap-1 pl-4 text-meta font-bold text-muted-foreground"
             >
               Your program <ChevronRight aria-hidden size={13} />
             </button>
@@ -211,7 +211,7 @@ const TrainingZone = () => {
               Train today by focus, have your week built, or build your own.
             </p>
           </button>
-          <div className="pr-2 shrink-0">
+          <div className="shrink-0">
             <Button variant="outline" size="sm" className="min-h-11" onClick={() => go("/coach/program")}>
               Build
             </Button>
@@ -319,7 +319,7 @@ const TrainingZone = () => {
       {/* One action, and only when there is something to actually do. A rest
           day with a Start button would be asking for the wrong thing. */}
       {isTrainingDay(day) && !done && (
-        <div className="pr-2 shrink-0">
+        <div className="shrink-0">
           <Button variant="outline" size="sm" className="min-h-11" onClick={startSession}>
             {inProgress ? "Continue" : "Start"}
           </Button>
@@ -332,7 +332,7 @@ const TrainingZone = () => {
           and a session already logged. Still one action on the row — this
           branch and the Start above cannot both be true. */}
       {(isRestDay(day) || (isTrainingDay(day) && done)) && (
-        <div className="pr-2 shrink-0">
+        <div className="shrink-0">
           <Button variant="outline" size="sm" className="min-h-11" onClick={startRecovery}>
             Recover
           </Button>

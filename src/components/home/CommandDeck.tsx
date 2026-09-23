@@ -78,7 +78,10 @@ const CommandDeck = ({
     return (
       <div
         className={cn(
-          "surface-card surface-card-quiet flex items-center gap-3 px-4 py-3",
+          // No card. On a Home that is type and photographs on bare ground, a
+          // status line is a status line — the gold tick and the streak chip
+          // carry it without a box drawn around them.
+          "flex items-center gap-3 py-1",
           className,
         )}
       >

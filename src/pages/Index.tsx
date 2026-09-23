@@ -1,37 +1,27 @@
+import { ArrowUp, Sparkles } from "lucide-react";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { fmtDate } from "@/lib/format";
 import { fmtInt } from "@/lib/format";
-import { ChevronRight, Award, ArrowUp, Sparkles } from "lucide-react";
 import AnimatedNumber from "@/components/AnimatedNumber";
-import BadgeCard from "@/components/BadgeCard";
 import TierRiskBanner from "@/components/TierRiskBanner";
-import InviteCTA from "@/components/InviteCTA";
 import CommandDeck from "@/components/home/CommandDeck";
 import TrainingZone from "@/components/coach/TrainingZone";
 import DailyInsightCard from "@/components/home/DailyInsightCard";
 import LibraryHub from "@/components/home/LibraryHub";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import EmptyState from "@/components/ui/empty-state";
 import ErrorState from "@/components/ui/error-state";
-import MoreSection from "@/components/ui/more-section";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import { Portal } from "@/components/ui/Portal";
-import { supabase } from "@/integrations/supabase/client";
-import { getTierConfig } from "@/lib/status-tiers";
 import { useTierRisk } from "@/hooks/use-tier-risk";
 import { useCheckinDay } from "@/hooks/use-checkin-day";
 import { useMyRank } from "@/hooks/use-my-rank";
 import { useDailyPulse } from "@/hooks/use-daily-pulse";
 import { useBackgroundHealthSync } from "@/hooks/use-background-health-sync";
-import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
-import { hasHealthConsent } from "@/lib/health/health-consent";
-import { isNativePlatform } from "@/lib/platform";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 import FuelZone from "@/components/nutrition/FuelZone";
 import { localDateKey } from "@/components/nutrition/DateBar";
@@ -66,19 +56,6 @@ const Index = () => {
   // the check-in/Profile screens happen to open (data holes starved trends).
   useBackgroundHealthSync();
 
-  // The Apple Health card shows until Health is connected. Re-read on focus so
-  // it disappears the moment the user returns from the iOS permission sheet,
-  // instead of lingering until they navigate away and back.
-  const [healthConnected, setHealthConnected] = useState(() => hasHealthConsent());
-  useEffect(() => {
-    const sync = () => setHealthConnected(hasHealthConsent());
-    window.addEventListener("focus", sync);
-    document.addEventListener("visibilitychange", sync);
-    return () => {
-      window.removeEventListener("focus", sync);
-      document.removeEventListener("visibilitychange", sync);
-    };
-  }, []);
 
   // The `coach_nudges` and `weekly_briefings` queries that used to live here
   // were removed: they ran on every Home mount for an Elite user and fed the
@@ -86,22 +63,6 @@ const Index = () => {
   // briefings live inside /coach now; the card itself left Home when the
   // coach door moved into the standing strip). Two round trips for nothing.
 
-  const { data: userBadges } = useQuery({
-    queryKey: ["user-badges", profile?.user_id],
-    staleTime: 10 * 60_000,  // badges change only after check-in
-    gcTime:    30 * 60_000,
-    queryFn: async () => {
-      if (!profile) return [];
-      const { data } = await supabase
-        .from("user_badges")
-        .select("*, badges(*)")
-        .eq("user_id", profile.user_id)
-        .order("earned_at", { ascending: false })
-        .limit(3);
-      return data || [];
-    },
-    enabled: !!profile,
-  });
 
   const { data: lastCheckin } = useLastCheckin(profile?.user_id);
 
@@ -203,9 +164,6 @@ const Index = () => {
 
   const xpToNext = profile.level * 500;
   const tier = profile.status_tier || "recruit";
-  const tierConfig = getTierConfig(tier);
-  const isLegend = tier === "legend";
-  const isApex = tier === "apex";
 
   // Opening beat — the day, stated once. Ritual thesis: Home leads with the
   // act, framed by today. The line reacts to the day's state so the greeting
@@ -233,17 +191,8 @@ const Index = () => {
     (rankData.totalUsers ?? 0) > 0 &&
     (rankData.rank ?? 0) <= (rankData.totalUsers ?? 0);
 
-  // Tier-reactive page-level aura — softer, wider falloff
-  const pageAura = isLegend
-    ? "radial-gradient(ellipse 90% 70% at center top, hsl(280 70% 60% / 0.11) 0%, hsl(var(--gold) / 0.05) 45%, transparent 80%)"
-    : isApex
-    ? "radial-gradient(ellipse 90% 70% at center top, hsl(var(--ember) / 0.10) 0%, hsl(var(--gold) / 0.04) 45%, transparent 80%)"
-    : tier === "elite"
-    ? "radial-gradient(ellipse 90% 70% at center top, hsl(var(--gold) / 0.10) 0%, hsl(180 70% 50% / 0.04) 45%, transparent 80%)"
-    : "radial-gradient(ellipse 90% 70% at center top, hsl(var(--gold) / 0.075) 0%, hsl(var(--gold) / 0.025) 45%, transparent 80%)";
-
   return (
-    <div className="min-h-full pb-6 px-4 pt-3 relative">
+    <div className="min-h-full pb-6 px-4 pt-3">
       {milestoneConfetti && (
         <Portal>
           <div className="fixed inset-0 pointer-events-none z-[var(--z-toast)]">
@@ -251,51 +200,23 @@ const Index = () => {
           </div>
         </Portal>
       )}
-      {/* Tier-reactive top aura — slowly breathing so the dark ground reads
-          alive and expensive, never a flat backdrop. */}
-      <div
-        aria-hidden
-        className="page-aura-live absolute top-0 left-1/2 -translate-x-1/2 w-[760px] h-[460px] pointer-events-none z-0"
-        style={{ background: pageAura }}
-      />
 
-      {/* Ember band — soft fire-in-the-distance warmth tied to user's streak */}
-      {profile.streak >= 3 && (
-        <div
-          aria-hidden
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[520px] h-[180px] pointer-events-none z-0 opacity-70"
-          style={{
-            background:
-              isApex
-                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(var(--ember) / 0.22) 0%, hsl(var(--gold) / 0.10) 40%, transparent 75%)"
-                : isLegend
-                ? "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(280 70% 60% / 0.20) 0%, hsl(var(--gold) / 0.10) 40%, transparent 75%)"
-                : "radial-gradient(ellipse 70% 100% at 50% 0%, hsl(var(--ember) / 0.18) 0%, hsl(var(--gold) / 0.08) 45%, transparent 80%)",
-          }}
-        />
-      )}
-
-      <div
-        className="absolute top-0 left-0 right-0 h-[1px] pointer-events-none z-10 opacity-25"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 10%, hsl(var(--gold) / 0.6) 50%, transparent 90%)",
-        }}
-      />
-
-      {/* ── OPENING BEAT — the day, stated once. Type on the page, not a card:
-             the first thing the eye meets is a voice, and the hero below gets
-             air instead of a stat strip crowding it. ── */}
-      <header className="home-rise relative z-10 pt-0.5">
+      {/* ── OPENING BEAT — the day, stated once. Type on the page, not a card.
+             Three decorative layers used to sit behind it: a breathing aura, an
+             ember band and a gold hairline. On a screen that is now type and
+             photographs on black ground, they were atmosphere competing with
+             content — the empty space does that work. ── */}
+      <header className="home-rise pt-0.5">
         <p className="eyebrow text-muted-foreground/75">{weekday} · {monthDay}</p>
         <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight mt-1.5">
           {ritualLine}
         </h1>
       </header>
 
-      {/* ── HERO — the one daily act, framed as the hero with real room above
-             and below. The lava CTA is the screen's single spectacle. ── */}
-      <div className="home-rise home-rise-1 mt-4 mb-6 relative z-10">
+      {/* ── THE ACT — the one daily thing. The screen's single spectacle, and
+             the only block that keeps a frame of its own, because the frame IS
+             the button. ── */}
+      <div className="home-rise home-rise-1 mt-5">
         <CommandDeck
           streak={profile.streak}
           longestStreak={profile.longest_streak}
@@ -305,82 +226,17 @@ const Index = () => {
         />
       </div>
 
-      {/* TIER RISK — urgent, sits directly under the act it protects. */}
+      {/* TIER RISK — urgent, directly under the act it protects. */}
       {tierRisk.level !== "safe" && (
-        <div className="home-rise home-rise-2 mb-6 relative z-10">
+        <div className="home-rise home-rise-2 mt-5">
           <TierRiskBanner risk={tierRisk} />
         </div>
       )}
 
-      {/* ── STANDING + THE COACH — where you stand today on the left, the
-             coach's door on the right. One quiet row, values inline, the coach
-             the single gold note (the W-Index keeps its seat on Profile and
-             Journey). Demoted below the act: ritual leads, standing follows.
-             Carries PROGRESSION_INTRO. ── */}
-        <div
-          ref={progressionTargetRef}
-          className="home-rise home-rise-3 relative z-10 mb-6 surface-card surface-card-quiet flex items-center"
-        >
-          <button
-            type="button"
-            onClick={() => navigate("/leaderboard")}
-            aria-label="Open Ranks"
-            className="flex-1 flex items-baseline gap-x-3 gap-y-0.5 flex-wrap px-4 py-3 text-left active:opacity-70 transition-opacity"
-          >
-            {rankSane && (
-              <span className="inline-flex items-baseline gap-1">
-                <span className="font-display font-black text-lead tabular-nums leading-none">
-                  #<AnimatedNumber value={rankData!.rank} duration={700} />
-                </span>
-                {/* "by score" because the app has two boards: this is
-                    `get_user_rank` (rank score, the ladder that decides your
-                    tier) and the Ranks tab opens on this month's XP. The same
-                    account read "#3 of 6" here and "#5 of 5" one tap away. */}
-                <span className="text-label text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)} by score</span>
-              </span>
-            )}
-            <span className="inline-flex items-baseline gap-1">
-              <span className="font-display font-black text-lead tabular-nums leading-none">Lv {profile.level}</span>
-              <span className="text-label text-muted-foreground">
-                <AnimatedNumber value={Math.max(0, xpToNext - profile.xp)} duration={900} /> XP to go
-              </span>
-            </span>
-          </button>
-          {pulse.hasSnapshot && pulse.rankDelta > 0 && (
-            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 mr-2 text-label font-black text-teal">
-              <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta}
-            </span>
-          )}
-          <button
-            type="button"
-            aria-label="Ask your AI Coach"
-            onClick={() => navigate("/coach?chat=1")}
-            className="shrink-0 flex flex-col items-end pr-4 pl-3 py-3 border-l border-border/40 active:opacity-70 transition-opacity"
-          >
-            <span className="text-label font-bold text-gold/85 leading-none">AI Coach</span>
-            <span className="font-display font-black text-lead leading-none text-gold glow-gold-text mt-1 inline-flex items-center gap-1">
-              <Sparkles size={13} strokeWidth={2.8} aria-hidden /> Ask
-            </span>
-          </button>
-        </div>
-
-      {/* ── THE LIBRARY — one zone: the day's thought to read (a pull-quote
-             from the Vault) leading a clean shelf of what the membership
-             unlocks. Two shapes, one grammar. Directly under the standing row
-             (founder: "siirrä library ja daily insight ylemmäs"), the same
-             cards as before — the day's doors follow it. ── */}
-      <div className="home-rise home-rise-4 mb-6 relative z-10">
-        <DailyInsightCard />
-        <div className="mt-3">
-          <LibraryHub />
-        </div>
-      </div>
-
-      {/* ── FUEL — what is left of today, the shape of the day as a rail, and
-             the camera. Home's one nutrition door: the Library's duplicate
-             "Fuel diary" row is gone. No gold of its own — the hero and the
-             W-Index keep Home's whole gold budget. ── */}
-      <div className="home-rise home-rise-5 mb-6 relative z-10">
+      {/* ── FUEL — what is left of today. No card: the number leads, and on a
+             day with nothing in it the app's own recipe photography leads
+             instead. No gold — the act keeps Home's whole gold budget. ── */}
+      <div className="home-rise home-rise-3 mt-8">
         <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
           <FuelZone
             loading={fuelLoading || fuelTargetsLoading}
@@ -400,96 +256,75 @@ const Index = () => {
         </ErrorBoundary>
       </div>
 
-      {/* APPLE HEALTH — the ask that makes check-ins verifiable. Native only,
-          until connected; renders nothing on web/Android. */}
-      {isNativePlatform() && !healthConnected && (
-        <div className="home-rise home-rise-5 mb-6 relative z-10">
-          <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
-            <HealthKitConnectCard onConnected={() => setHealthConnected(true)} />
-          </ErrorBoundary>
-        </div>
-      )}
-
-      {/* ── TRAINING — today's prescribed session, stated plainly. Same quiet
-             grammar as Fuel, and no gold of its own: the hero and the W-Index
-             keep Home's whole gold budget. Before this the day's exercises
-             lived on exactly one screen two taps away, and nothing on Home
-             ever mentioned them. ── */}
-      {/* Boot cost: two small reads (active program, newest 60 logs) in
-             parallel, cached 10 / 5 min and shared with /coach — only for
-             members, who are the only people who can hold a program. */}
+      {/* ── TRAINING — today's session, with the first movement drawn edge to
+             edge. Same grammar as Fuel, no gold of its own. ── */}
       {hasAccess && (
-        <div className="home-rise home-rise-5 mb-6 relative z-10">
+        <div className="home-rise home-rise-4 mt-8">
           <ErrorBoundary fallback={<div className="h-0" aria-hidden />}>
             <TrainingZone />
           </ErrorBoundary>
         </div>
       )}
 
-      {/* SECONDARY — Today stays focused. Invite + badges one tap under "More". */}
-      <MoreSection label="More" className="relative z-10 mt-1 mb-2">
-      {/* EARN FREE MEMBERSHIP — referral CTA */}
-      {/* Inside a disclosure and below the fold: no entrance of their own.
-          The scroll-reveal wrapper these sat in was dead on every iPhone
-          (disabled under pointer: coarse), so they never animated anyway. */}
-      <div className="mb-4 relative z-10">
-        <InviteCTA referralCount={profile.referral_count || 0} />
-      </div>
-      {/* Recent Badges */}
-      <div className="mb-2">
-        {/* The unsized button takes the 44 pt floor and centres its label,
-            so the row centres too — bottom-aligned, the label sat 14 px above
-            the heading. */}
-        <div className="flex items-center justify-between mb-2 px-0.5">
-          <h2 className="font-display font-bold text-copy tracking-tight leading-none">
-            Recent badges
-          </h2>
-          <button
-            onClick={() => navigate("/profile")}
-            className="flex items-center gap-0.5 text-xs text-gold font-semibold active:opacity-70 transition-opacity"
-          >
-            View all <ChevronRight aria-hidden size={13} />
-          </button>
-        </div>
-        {userBadges && userBadges.length > 0 ? (
-          <div className="grid grid-cols-3 gap-3">
-            {userBadges.map((ub) => ub.badges && (
-              <BadgeCard
-                key={ub.id}
-                name={ub.badges.name}
-                icon={ub.badges.icon}
-                rarity={ub.badges.rarity}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={Award}
-            title="No badges yet"
-            description="Lock your day to start earning — first badge unlocks at a 3-day streak."
-            action={
-              canCheckin ? (
-                <button
-                  onClick={() => navigate("/checkin")}
-                  className="min-h-11 text-xs font-bold text-gold active:opacity-70 transition-opacity inline-flex items-center gap-1"
-                >
-                  Lock today <ChevronRight aria-hidden size={12} />
-                </button>
-              ) : null
-            }
-          />
+      {/* ── STANDING + THE COACH — one hairline row: where you stand on the
+             left, the coach's door on the right. The coach is the one gold
+             note below the act. Carries PROGRESSION_INTRO. ── */}
+      <div
+        ref={progressionTargetRef}
+        className="home-rise home-rise-5 mt-8 flex items-center border-t border-border/35"
+      >
+        <button
+          type="button"
+          onClick={() => navigate("/leaderboard")}
+          aria-label="Open Ranks"
+          className="flex-1 min-h-14 flex items-baseline gap-x-3 gap-y-0.5 flex-wrap py-3 text-left active:opacity-70 transition-opacity"
+        >
+          {rankSane && (
+            <span className="inline-flex items-baseline gap-1">
+              <span className="font-display font-black text-lead tabular-nums leading-none">
+                #<AnimatedNumber value={rankData!.rank} duration={700} />
+              </span>
+              {/* "by score" because the app has two boards: this is
+                  `get_user_rank` (rank score, the ladder that decides your
+                  tier) and the Ranks tab opens on this month's XP. The same
+                  account read "#3 of 6" here and "#5 of 5" one tap away. */}
+              <span className="text-label text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)} by score</span>
+            </span>
+          )}
+          <span className="inline-flex items-baseline gap-1">
+            <span className="font-display font-black text-lead tabular-nums leading-none">Lv {profile.level}</span>
+            <span className="text-label text-muted-foreground">
+              <AnimatedNumber value={Math.max(0, xpToNext - profile.xp)} duration={900} /> XP to go
+            </span>
+          </span>
+        </button>
+        {pulse.hasSnapshot && pulse.rankDelta > 0 && (
+          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 mr-2 text-label font-black text-teal">
+            <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta}
+          </span>
         )}
+        <button
+          type="button"
+          aria-label="Ask your AI Coach"
+          onClick={() => navigate("/coach?chat=1")}
+          className="shrink-0 min-h-14 flex items-center gap-1.5 pl-4 py-3 font-display font-black text-lead text-gold glow-gold-text active:opacity-70 transition-opacity"
+        >
+          <Sparkles size={14} strokeWidth={2.8} aria-hidden /> Ask
+        </button>
       </div>
-      </MoreSection>
 
-      {/* Tier message footer — boosted contrast (was muted-foreground/40 → barely visible) */}
-      <div className="mt-6 mb-2 text-center">
-        <p className="text-label font-bold text-muted-foreground">
-          {tierConfig.message}
-        </p>
+      {/* ── THE LIBRARY — below the day's work, where a menu belongs: the day's
+             thought to read, then what the membership unlocks as three rows.
+             The invite card and the badge grid that used to sit under "More"
+             are gone from here — both already live on Profile, the badge vault
+             in full and the invite with its own count, so Home was carrying a
+             second copy of each. ── */}
+      <div className="home-rise home-rise-5 mt-10">
+        <DailyInsightCard />
+        <div className="mt-5">
+          <LibraryHub />
+        </div>
       </div>
-
-      {/* Trial-end conversion moment — one-shot value recap + upgrade CTA. */}
     </div>
   );
 };

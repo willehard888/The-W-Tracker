@@ -37,6 +37,16 @@ const byId = (mods: Record<string, string>): Record<string, string> =>
 const THUMBS = byId(thumbMods);
 const SQUARES = byId(squareMods);
 
+/**
+ * Every id that actually has a photograph, sorted so the order is stable.
+ *
+ * Home reads THIS rather than the recipe data for its empty-day picture:
+ * `src/data/recipes` is not something Home may pull into its boot graph, and
+ * the only question being asked is "which pictures exist", which is a question
+ * about this file.
+ */
+export const recipeImageIds = (): string[] => Object.keys(SQUARES).sort();
+
 /** Small list/home thumbnail (560px). Undefined if no image for this id. */
 export const recipeThumb = (id: string): string | undefined => THUMBS[id];
 

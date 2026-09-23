@@ -101,47 +101,34 @@ const LibraryHub = () => {
   const navigate = useNavigate();
 
   return (
-    // surface-card-quiet must follow surface-card in the class list — its own
-    // CSS comment notes it only wins the shadow in that order.
-    <div className="surface-card surface-card-quiet overflow-hidden">
-      <div className="relative">
-        {/* Header — text only (the gold tile is gone; gold is the hero's now),
-            a quiet value statement above the shelf, not a button. */}
-        <div className="px-4 pt-3.5 pb-3">
-          <p className="text-label font-bold text-muted-foreground">The Library</p>
-          <p className="text-meta text-muted-foreground leading-tight mt-0.5">
-            Everything your membership unlocks
-          </p>
-        </div>
-
-        {ROWS.map((row) => (
-          <button
-            key={row.key}
-            type="button"
-            onClick={() => { hapticImpact("light"); navigate(row.path); }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 border-t border-border/40 text-left active:bg-gold/[0.05] transition-colors"
+    // No card. Three hairline rows on the page — the grammar Messages and the
+    // feed already use. The sub-lines went with the box: "High-protein bowls &
+    // plates" under "Meal-prep recipes" was the title again in smaller type,
+    // and the header restated the tab the rows already name. A menu row owes
+    // you its name and its count.
+    <div className="divide-y divide-border/35 border-y border-border/35">
+      {ROWS.map((row) => (
+        <button
+          key={row.key}
+          type="button"
+          onClick={() => { hapticImpact("light"); navigate(row.path); }}
+          className="w-full min-h-14 flex items-center gap-3 py-2.5 text-left active:opacity-70 transition-opacity"
+        >
+          <RowThumb id={row.key} />
+          <p className="flex-1 min-w-0 text-note font-bold leading-tight truncate">{row.title}</p>
+          <span
+            className={cn(
+              "text-label font-black rounded-full px-1.5 py-0.5 tabular-nums shrink-0 border",
+              row.chipGold
+                ? "text-gold bg-gold/10 border-gold/30"
+                : "text-muted-foreground bg-secondary/60 border-border",
+            )}
           >
-            <RowThumb id={row.key} />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-dense font-bold leading-tight truncate">{row.title}</p>
-                <span
-                  className={cn(
-                    "text-label font-black rounded-full px-1.5 py-0.5 tabular-nums shrink-0 border",
-                    row.chipGold
-                      ? "text-gold bg-gold/10 border-gold/30"
-                      : "text-muted-foreground bg-secondary/60 border-border",
-                  )}
-                >
-                  {row.chip}
-                </span>
-              </div>
-              <p className="text-meta text-muted-foreground leading-snug truncate mt-0.5">{row.sub}</p>
-            </div>
-            <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
-          </button>
-        ))}
-      </div>
+            {row.chip}
+          </span>
+          <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
+        </button>
+      ))}
     </div>
   );
 };

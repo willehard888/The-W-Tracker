@@ -8,8 +8,18 @@ import { beatFor, kcalLeft, kcalProgress, subFor } from "@/lib/nutrition/day-cop
 import { fmtInt } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import ImageBand from "@/components/home/ImageBand";
+import { recipeImageIds, recipeSquare } from "@/lib/recipe-images";
+import { localDayIndex } from "@/lib/daily-rotation";
 import type { MacroSummary } from "@/components/nutrition/MacroRow";
 import type { DayState } from "@/lib/nutrition/totals";
+
+/** Today's picture, chosen by the day so it holds still from morning to night. */
+const recipeOfTheDay = (): string | undefined => {
+  const ids = recipeImageIds();
+  if (ids.length === 0) return undefined;
+  return recipeSquare(ids[localDayIndex() % ids.length]);
+};
 
 export interface FuelZoneProps {
   loading: boolean;
@@ -80,6 +90,10 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
     : state === "empty" ? { run: onLog, label: "Log your first meal today" }
     : { run: onOpenDiary, label: "Open your food diary" };
 
+  // One picture per day, the same one all day — a photograph that reshuffled
+  // on every render would read as a carousel nobody asked for.
+  const suggestion = state === "empty" && !loading ? recipeOfTheDay() : undefined;
+
   const headline = (() => {
     if (loading) return <span className="text-muted-foreground/75">—</span>;
     if (state === "no_targets" || left === null) {
@@ -102,18 +116,26 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
   })();
 
   return (
-    <div className="surface-card surface-card-quiet relative">
-      {/* Overlay button: one press target for the whole card, with the content
+    <div className="relative">
+      {/* Overlay button: one press target for the whole block, with the content
           above it and inert, so the camera can still be its own control
           without ever nesting a button inside a button. */}
       <button
         type="button"
         onClick={() => { hapticImpact("light"); act.run(); }}
         aria-label={act.label}
-        className="absolute inset-0 rounded-2xl active:opacity-70 transition-opacity"
+        className="absolute inset-0 rounded-xl active:opacity-70 transition-opacity"
       />
 
-      <div className="relative pointer-events-none px-4 py-3.5">
+      {/* A picture only on a day with nothing in it. Beside "1 840 kcal left" a
+          plate of salmon would be a claim about what you ate; over "Nothing
+          logged yet" it is plainly what it is — an idea, from the app's own
+          recipe photography rather than a stock library. */}
+      {suggestion && (
+        <ImageBand src={suggestion} alt="" aspect="aspect-[2/1]" className="mb-3 pointer-events-none" />
+      )}
+
+      <div className="relative pointer-events-none">
         <div className="flex items-center gap-2">
           <p className="text-label font-bold text-muted-foreground/75">Fuel</p>
           {mealCount > 0 && (

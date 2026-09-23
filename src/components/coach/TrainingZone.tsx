@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
 import { deferredRecovery } from "@/lib/recovery/deferred";
+import ImageBand from "@/components/home/ImageBand";
+import { goldThumb } from "@/components/coach/gold-lines";
 
 // Lazy: the sheet pulls in the 268-movement illustration catalog (164 kB raw,
 // 31 kB gz) through its thumbnails. Imported statically from a Home component
@@ -35,9 +37,37 @@ const FocusSessionSheet = lazy(() => import("@/components/coach/FocusSessionShee
  * stated plainly.
  */
 
-const ROW = "surface-card surface-card-quiet flex items-center";
-const BODY = "flex-1 min-w-0 min-h-14 px-4 py-3 text-left active:opacity-70 transition-opacity";
+// No card. Home is type on the page now, the grammar Diary, Messages and the
+// feed already use — the eight stacked rounded rectangles were the reason
+// nothing on this screen led.
+const ROW = "flex items-center";
+const BODY = "flex-1 min-w-0 min-h-14 text-left active:opacity-70 transition-opacity";
 const LABEL = "text-label font-bold text-muted-foreground/75 mb-0.5";
+
+/**
+ * The drawing of the first movement in today's session, resolved AFTER paint.
+ *
+ * Slug → drawing needs `exercise-match`, which reaches the 170 kB illustrated
+ * catalogue — and `boot-graph.test.ts` forbids that from Home's static graph,
+ * for the good reason that every cold start would pay for it. A dynamic import
+ * is not in that graph: the chunk arrives once the screen is already up, inside
+ * the entrance animation, so the band fades in rather than shifting anything a
+ * user could see.
+ */
+const useSessionArt = (slug?: string | null, name?: string | null): string | null => {
+  const [art, setArt] = useState<string | null>(null);
+  useEffect(() => {
+    if (!slug && !name) { setArt(null); return; }
+    let alive = true;
+    void import("@/lib/exercise-match")
+      .then(({ resolveIllustration }) => {
+        if (alive) setArt(resolveIllustration(slug ?? null, name ?? null)?.idNum ?? null);
+      })
+      .catch(() => { /* no drawing is a fine outcome; the row still reads */ });
+    return () => { alive = false; };
+  }, [slug, name]);
+  return art;
+};
 
 /**
  * "Train today by focus" — the door under the row and the sheet it opens.
@@ -88,6 +118,14 @@ const TrainingZone = () => {
   // Read once per mount: it is a local value, it only changes on a screen this
   // row is not on, and re-reading it on every render would be work for nothing.
   const deferred = useMemo(() => deferredRecovery(), []);
+  // Above every early return: hooks may not sit behind a branch, and this
+  // component returns early for a focus session, for loading and for no
+  // program. Derived from the program itself so it is safe before those.
+  const todayBlock = program?.plan_json?.weeks
+    ?.find((w) => w.week === currentWeek)?.days?.[todayDayIndex]?.blocks?.[0] as
+    | { slug?: string; name?: string }
+    | undefined;
+  const art = useSessionArt(todayBlock?.slug, todayBlock?.name);
 
   // Today's focus session, when one exists, is the day's training and leads;
   // the programmed day waits underneath the same door.
@@ -217,6 +255,12 @@ const TrainingZone = () => {
 
   return (
     <div className={ROW.replace("flex items-center", "flex flex-col")}>
+    {/* The day's first movement, drawn, edge to edge. It appears only on a day
+        there is something to do — a rest day's picture would be a picture of
+        nothing, and a finished day has already had its. */}
+    {art && isTrainingDay(day) && !done && (
+      <ImageBand src={goldThumb(art)} alt="" fit="contain" aspect="aspect-[2/1]" className="mb-2" />
+    )}
     <div className="flex items-center">
       <button
         type="button"

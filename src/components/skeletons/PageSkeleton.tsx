@@ -33,24 +33,31 @@ export const Block = ({
   </div>
 );
 
-// Mirrors the redesigned Home: opening beat (eyebrow + display line), the
-// hero deck, a standing row, the coach whisper, then the library zone.
+// Mirrors Home: opening beat (eyebrow + display line), the act, then the day's
+// two facts, the standing line and the library.
+//
+// It had drifted badly — it still reserved 82px for a "coach whisper" removed
+// long ago and put Fuel above the library where Home put it below, so the
+// skeleton and the screen it stood in for had not matched for months. Blocks
+// are square-cornered now because the screen is: only the check-in keeps a
+// frame, and a rounded grey rectangle promises a card that never arrives.
 export const HomeSkeleton = () => (
   <div className="px-4 pt-3 pb-8 animate-fade-in">
     {/* Opening beat */}
     <Block height={12} className="w-24 !rounded-md" />
     <Block height={28} delay={40} className="w-3/4 mt-2 !rounded-lg" />
-    {/* Hero deck */}
-    <Block height={168} delay={80} className="mt-4 !rounded-3xl" />
-    {/* Standing row */}
-    <Block height={56} delay={140} className="mt-6" />
-    {/* Fuel card: label row + the remaining number + rail + macro line */}
-    <Block height={128} delay={170} className="mt-6" />
-    {/* Coach whisper */}
-    <Block height={82} delay={210} className="mt-6" />
-    {/* Library zone: pull-quote + shelf */}
-    <Block height={64} delay={250} className="mt-6 w-11/12" />
-    <Block height={168} delay={290} className="mt-3" />
+    {/* The act — the one block that is still a card, because it is the button */}
+    <Block height={168} delay={80} className="mt-5 !rounded-3xl" />
+    {/* Fuel: the remaining number, the rail, the macro line */}
+    <Block height={96} delay={140} className="mt-8 !rounded-md" />
+    {/* Training: the drawing band, then the session line */}
+    <Block height={104} delay={180} className="mt-8 !rounded-none -mx-4 w-auto" />
+    <Block height={44} delay={210} className="mt-2 !rounded-md" />
+    {/* Standing line */}
+    <Block height={44} delay={240} className="mt-8 !rounded-md" />
+    {/* Library: the day's thought, then three rows */}
+    <Block height={64} delay={280} className="mt-10 w-11/12 !rounded-md" />
+    <Block height={148} delay={320} className="mt-5 !rounded-md" />
   </div>
 );
 

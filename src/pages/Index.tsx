@@ -165,23 +165,18 @@ const Index = () => {
   const xpToNext = profile.level * 500;
   const tier = profile.status_tier || "recruit";
 
-  // Opening beat — the day, stated once. Ritual thesis: Home leads with the
-  // act, framed by today. The line reacts to the day's state so the greeting
-  // is never generic filler.
+  // Opening beat — the day, and only the day.
+  //
+  // A four-state ritual line used to sit under this date: "Keep the chain
+  // alive.", "Today is locked in.", and two more. It is gone, and the date
+  // takes the beat rather than the screen opening on an 11px line above a
+  // 174px card. What the line said, the card under it now says better and
+  // once — the streak is on its own face ("Defend your 3-day streak."), a
+  // locked day collapses the card to "Day banked", and the risk banner has
+  // the deadline. The greeting was the third place saying the same thing.
   const now = new Date();
   const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
   const monthDay = fmtDate(now);
-  // Three states, not two. `streak > 0` alone told a user with three check-ins
-  // and a lapsed streak that their FIRST W was one tap away — the screen they
-  // open every day, calling them a beginner. `longest_streak` is what answers
-  // "have you ever", and it only ever climbs (GREATEST on every check-in).
-  const ritualLine = !canCheckin
-    ? "Today is locked in."
-    : profile.streak > 0
-    ? "Keep the chain alive."
-    : (profile.longest_streak ?? 0) > 0
-    ? "The chain broke. Start it again."
-    : "Your first W is one tap away.";
 
   // Standing readout — rank is shown only when EARNED and sane (an unranked
   // recruit once read "#3 of 2"). Same guard as StatusNameplate.
@@ -207,9 +202,9 @@ const Index = () => {
              photographs on black ground, they were atmosphere competing with
              content — the empty space does that work. ── */}
       <header className="home-rise pt-0.5">
-        <p className="eyebrow text-muted-foreground/75">{weekday} · {monthDay}</p>
-        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight mt-1.5">
-          {ritualLine}
+        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          {weekday}
+          <span className="text-muted-foreground"> · {monthDay}</span>
         </h1>
       </header>
 

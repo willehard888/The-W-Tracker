@@ -176,12 +176,16 @@ const CommandDeck = ({
               <Flame aria-hidden size={24} strokeWidth={2.6} className="relative status-flame-flicker" />
             </div>
 
+            {/* Two lines, not three. The gold "Lock your day" eyebrow above
+                "Daily check-in" was the button's own word said early — the CTA
+                under it reads LOCK IN at 27px, so the card opened by saying it
+                twice. It also took a second gold note off a card that is
+                already the screen's one gold spectacle. */}
             <div className="min-w-0 flex-1">
-              <p className="text-label font-bold text-gold/85 mb-0.5">Lock your day</p>
               <p className="font-display font-black text-head leading-none tracking-tight">
                 Daily check-in
               </p>
-              <p className="text-meta text-muted-foreground mt-1 leading-snug">
+              <p className="text-meta text-muted-foreground mt-1.5 leading-snug">
                 {streak > 0 ? `Defend your ${streak}-day streak.` : "Start your streak. Earn XP. Climb."}
               </p>
             </div>

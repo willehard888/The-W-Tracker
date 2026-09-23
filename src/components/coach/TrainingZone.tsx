@@ -285,7 +285,11 @@ const TrainingZone = () => {
         ) : isRestDay(day) ? (
           <>
             <p className="text-note font-bold leading-tight">Rest day</p>
-            <p className="text-meta text-muted-foreground leading-snug mt-0.5">
+            {/* text-balance: with the Recover button holding the right of the
+                row, this line broke after "gap in" and left "it." alone on the
+                second. Balanced, it splits at the comma, where the sentence
+                already pauses. */}
+            <p className="text-meta text-muted-foreground leading-snug mt-0.5 text-balance">
               Recovery is part of the program, not a gap in it.
             </p>
           </>

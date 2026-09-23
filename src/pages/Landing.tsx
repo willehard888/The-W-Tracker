@@ -5,7 +5,6 @@ import { trackAnon } from "@/lib/analytics";
 import { ArrowRight, Trophy, Sparkles, Dumbbell, Utensils, Moon, ShieldCheck } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { COMPANY, COMPANY_ADDRESS } from "@/lib/company";
-import { recipeThumb } from "@/lib/recipe-images";
 
 // What the app ACTUALLY delivers — names the substance (coach, training,
 // nutrition, recovery, the verified-discipline moat), not just the game layer.
@@ -13,6 +12,10 @@ const WHAT_YOU_GET = [
   { icon: Sparkles, title: "AI coach", text: "Reads your Apple Health, training & recovery — and holds you to it." },
   { icon: Dumbbell, title: "Train", text: "260+ illustrated exercises + programs with exact sets & progression." },
   { icon: Utensils, title: "Fuel", text: "High-protein recipes, macros & meal-prep templates." },
+  // Was "Sleep, HRV & recovery protocols to bounce back faster." Two problems:
+  // "HRV protocols" is not a thing the app has, and "bounce back faster" is a
+  // claim about the body — the exact vocabulary style-guard rule 21 fails the
+  // build on inside the app. This is what actually shipped.
   { icon: Moon, title: "Recover", text: "Guided mobility and breathing, built from what you trained." },
   // "Unfakeable" was an overclaim: verification is iOS-only, covers workouts,
   // sleep, mindfulness and steps — not the self-reported half of a check-in —
@@ -21,15 +24,6 @@ const WHAT_YOU_GET = [
   { icon: ShieldCheck, title: "Verified", text: "Workouts and sleep checked against your real Apple Health data." },
   { icon: Trophy, title: "Compete", text: "Streaks, ranks, 1v1 battles & the leaderboard." },
 ] as const;
-
-/**
- * The proof strip: three squares of the app's own recipe photography.
- *
- * Fixed ids, not a random pick — a landing page that reshuffles its pictures on
- * every load has no composition, and these three sit well together. They are
- * filenames in the bundled photography.
- */
-const PROOF_RECIPES = ["greek-chicken-bowl", "sirloin-steak-chimichurri", "banana-protein-pancakes"] as const;
 
 /**
  * Thesis: the proof. One beat, one spectacle (the lava CTA, framed with air),
@@ -113,54 +107,28 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
           </button>
         </div>
 
-      </main>
-
-      {/* ── PROOF, AS PICTURES — the page was type all the way down, which sells
-             a promise rather than a product. This is the app's OWN recipe
-             photography: not stock, not a mock-up, not somebody who has never
-             used it. Edge to edge, under the CTA, where BetterMe puts a photo.
-
-             Three, not four. A fourth square held one of the gold technique
-             drawings and it did not survive the width: at 94 px a line drawing
-             beside three lit photographs reads as a dark smudge, and the row
-             lost its rhythm. The drawings are strong at 2:1 across the whole
-             column, which is where Today puts them. ── */}
-      <div className="relative home-rise home-rise-3 mt-14">
-        <div className="grid grid-cols-3">
-          {PROOF_RECIPES.map((id) => {
-            const src = recipeThumb(id);
-            return src ? (
-              <div key={id} className="aspect-square overflow-hidden bg-black">
-                <img src={src} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
-              </div>
-            ) : null;
-          })}
+        {/* What you actually get — one app replaces the whole stack */}
+        <div className="home-rise home-rise-3 mt-14 max-w-md">
+          <p className="font-display font-black text-lead tracking-tight leading-tight">One app · replaces five</p>
+          <ul className="mt-2 divide-y divide-border/35 border-t border-border/35">
+            {WHAT_YOU_GET.map(({ icon: Icon, title, text }) => (
+              <li key={title} className="flex items-start gap-3 py-3">
+                <Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
+                <div className="min-w-0">
+                  <p className="text-note font-bold leading-tight">{title}</p>
+                  <p className="text-meta text-muted-foreground leading-snug mt-0.5">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
-        {/* The strip ends in the page's own ground rather than a hard edge. */}
-        <div aria-hidden className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-background to-transparent" />
-      </div>
-
-      {/* What you actually get — one app replaces the whole stack */}
-      <div className="relative home-rise home-rise-4 mt-10 px-6 max-w-md">
-        <p className="font-display font-black text-lead tracking-tight leading-tight">One app · replaces five</p>
-        <ul className="mt-2 divide-y divide-border/35 border-t border-border/35">
-          {WHAT_YOU_GET.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="flex items-start gap-3 py-3">
-              <Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
-              <div className="min-w-0">
-                <p className="text-note font-bold leading-tight">{title}</p>
-                <p className="text-meta text-muted-foreground leading-snug mt-0.5">{text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+      </main>
 
       {/* Bottom tagline, then who is behind it. This page is the root of
           whealthfactory.com, and Apple verifies that an organization's website
           identifies the organization — the footer used to hold the tagline and
           nothing else, so the site named no company at all. */}
-      <footer className="relative px-6 pb-8 pt-10 home-rise home-rise-5">
+      <footer className="relative px-6 pb-8 pt-10 home-rise home-rise-4">
         <p className="text-label text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
           Built for those who refuse to be average
         </p>

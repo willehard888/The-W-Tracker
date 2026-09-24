@@ -213,11 +213,13 @@
     streakDay.textContent = "Streak day 1 · Locked in";
     burst(rect(), 160, 1.2);
     if (navigator.vibrate) navigator.vibrate(18);
-    // the lava holds a moment, then cools back into gold
+    // the lava holds a moment, then cools back into gold — and once it has
+    // parked again its loops stop, or they would run under the face forever
     cooling = setTimeout(() => {
       button.classList.add("is-cooling");
       button.classList.remove("is-holding");
       heat = 0;
+      cooling = setTimeout(() => button.classList.remove("is-cooling"), 1700);
     }, 1400);
   };
   button.addEventListener("pointerdown", (e) => { if (e.button === 0) { button.setPointerCapture(e.pointerId); beginHold(); } });
@@ -228,7 +230,7 @@
   // VoiceOver and switch access activate with a click (detail 0), not a hold.
   button.addEventListener("click", (e) => { if (e.detail === 0 && !locked) { button.classList.add("is-holding"); commit(); } });
 
-  if (reduce || !window.gsap) { html.classList.remove("motion"); return; }
+  if (reduce || !window.gsap) return;
   const { gsap } = window;
   if (window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
 
@@ -252,24 +254,21 @@
     hero.addEventListener("pointerleave", () => { rx(0); ry(0); });
   }
 
-  // ── Entrance: the words slam in, the control rises and ignites, the day
-  // counts itself up.
+  // ── Entrance: the words, the control and the cards are CSS animations that
+  // started at the first paint (site.css "Entrance"). Only the two things a
+  // script can do ride on top — the spark burst as the control lands, the day
+  // counting itself up — timed from that same paint, so a late script lands
+  // them late rather than replaying the whole opening.
   const countUp = (el, to, dur, delay = 0) => {
     const o = { v: 0 };
     gsap.to(o, { v: to, duration: dur, delay, ease: "power3.out", onUpdate: () => { el.textContent = Math.round(o.v); } });
   };
   if (html.classList.contains("motion")) {
-    window.__wfIntro = true;
-    const cards = gsap.utils.toArray(".card");
-    gsap.set(cards, { y: 40 });
-    gsap.timeline({ onComplete: () => html.classList.remove("motion") })
-      .to(".word > span", { y: 0, duration: 1.1, ease: "expo.out", stagger: 0.09 }, 0.1)
-      .fromTo(".lockin-stage", { opacity: 0, y: 80, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 1.3, ease: "back.out(1.5)", clearProps: "transform" }, 0.35)
-      .fromTo(".lockin-glow", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power2.out" }, 0.9)
-      .add(() => burst(rect(), 90, 0.9), 0.95)
-      .to(".hero-sub, .hero-xp", { opacity: 1, duration: 1, ease: "power2.out", stagger: 0.1 }, 1.1)
-      .to(cards, { opacity: 1, y: 0, duration: 1.1, ease: "expo.out", stagger: 0.1 }, 1.25)
-      .add(() => document.querySelectorAll(".card b[data-count]").forEach((b, i) => countUp(b, Number(b.dataset.count), 1.6, i * 0.05)), 1.35);
+    const paint = performance.getEntriesByType("paint").find((e) => e.name === "first-contentful-paint");
+    const since = (performance.now() - (paint ? paint.startTime : 0)) / 1000;
+    const at = (t) => Math.max(0, t - since);
+    gsap.delayedCall(at(0.95), () => burst(rect(), 90, 0.9));
+    gsap.delayedCall(at(1.35), () => document.querySelectorAll(".card b[data-count]").forEach((b, i) => countUp(b, Number(b.dataset.count), 1.6, i * 0.05)));
   }
 
   if (!window.ScrollTrigger) return;

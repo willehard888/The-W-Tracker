@@ -171,7 +171,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
 
       {live && (
         <p className={cn("mt-3 text-meta font-bold", leading ? "text-gold" : "text-[hsl(var(--ember))]")}>
-          {gap === 0 ? "Dead even." : leading ? `Ahead by ${fmtUnit(gap, "XP")}.` : `Behind by ${fmtUnit(gap, "XP")}.`}
+          {gap === 0 ? "Dead even." : leading ? `Ahead by ${fmtUnit(gap, "XP")} per member per day.` : `Behind by ${fmtUnit(gap, "XP")} per member per day.`}
         </p>
       )}
 

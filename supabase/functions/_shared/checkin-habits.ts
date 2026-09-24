@@ -29,9 +29,7 @@ export const SHARED_CHECKIN_HABITS: SharedCheckinHabit[] = [
   { key: "workout", label: "Workout", pillar: "movement", column: "workout" },
   { key: "hydration", label: "3L+ water", pillar: "nutrition" },
   { key: "meditation", label: "Meditation", pillar: "mind", column: "meditation_morning" },
-  { key: "steps_8k", label: "8 000+ steps", pillar: "movement" },
   { key: "extra_workout", label: "Second session", pillar: "movement", column: "extra_workout", cadence: "bonus" },
-  { key: "zone2", label: "Zone-2 cardio", pillar: "movement" },
   { key: "mobility", label: "Mobility / stretch", pillar: "movement" },
   { key: "sunlight", label: "Morning sunlight", pillar: "movement" },
   { key: "healthy_food", label: "Whole-food meals", pillar: "nutrition", column: "healthy_food" },
@@ -73,14 +71,14 @@ export const resolveChosen = (keys: string[] | null | undefined): SharedCheckinH
 
 /**
  * Did the user complete this habit on a given check-in row?
- * sleep = optimal window 7.5–9h (mirrors assessSleep), hydration = >=3L;
+ * sleep = the 7–9 h window the day score pays in full, hydration = >=3L;
  * other column habits are booleans; the rest read the habits jsonb
  * (completion-only writes).
  */
 export const habitDoneOnRow = (row: Record<string, unknown>, key: string): boolean => {
   if (key === "sleep") {
     const h = Number(row.sleep_hours);
-    return h >= 7.5 && h <= 9;
+    return h >= 7 && h <= 9;
   }
   if (key === "hydration") return Number(row.hydration_liters) >= 3;
   const habit = SHARED_HABIT_BY_KEY[key];

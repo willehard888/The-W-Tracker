@@ -20,13 +20,18 @@ export interface LeaderRow {
 }
 
 export const fetchAllTimeLeaders = async (): Promise<LeaderRow[]> => {
+  // Someone you blocked is not on your board (season_board hides both
+  // directions server-side; here the table only shows a member their own
+  // blocks, so the other direction stays a server matter).
+  const { data: blockedRows } = await supabase.from("blocked_users").select("blocked_id");
+  const blocked = new Set((blockedRows ?? []).map((b) => b.blocked_id));
   const { data } = await supabase
     .from("profiles")
     .select("username, xp, level, streak, user_id, avatar_url, status_tier")
     .gt("xp", 0)
     .order("xp", { ascending: false })
-    .limit(BOARD_LIMIT);
-  return (data || []) as LeaderRow[];
+    .limit(BOARD_LIMIT + blocked.size);
+  return ((data || []) as LeaderRow[]).filter((r) => !blocked.has(r.user_id)).slice(0, BOARD_LIMIT);
 };
 
 export const fetchActiveSeason = async () => {

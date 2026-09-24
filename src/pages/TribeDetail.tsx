@@ -805,7 +805,7 @@ const TribeDetail = () => {
                     {challenge.progress}/{challenge.target} check-ins together
                   </span>
                   <span className="text-meta tabular-nums text-muted-foreground">
-                    {done ? "Crushed · +25 XP each" : failed ? "Last week missed" : `${daysLeft}d left · ${pct}%`}
+                    {done ? "Crushed" : failed ? "Last week missed" : `${daysLeft}d left · ${pct}%`}
                   </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">

@@ -9,7 +9,7 @@ interface InviteCTAProps {
 const MESSAGES = [
   {
     title: "Invite a friend → you both win",
-    sub: "They get a 14-day trial, you get +50 XP the moment they join",
+    sub: "They get a 14-day trial; every three who go paid give you a month free",
   },
   {
     title: "3 paid friends = 1 month free",

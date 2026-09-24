@@ -22,12 +22,11 @@ import { captureException } from "@/lib/observability";
 import { downscaleImage } from "@/lib/downscale-image";
 import MediaPreview from "@/components/media/MediaPreview";
 import { track, FUNNEL } from "@/lib/analytics";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import AnimatedNumber from "@/components/AnimatedNumber";
-import DailyQuests from "@/components/DailyQuests";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { syncStreakWarningNotification } from "@/lib/streak-notifications";
 import { usePushControls } from "@/hooks/use-push-notifications";
@@ -53,7 +52,8 @@ import {
   type VerifySignal,
 } from "@/lib/checkin-habits";
 import { habitsEarnedToday } from "@/lib/recovery/completion";
-import { assessSleep, isHabitDone, computeCheckinXp } from "@/lib/checkin-xp";
+import { scoreDay, dayScoreFromRow, LINE_LABEL, type DayScore } from "@/lib/checkin-xp";
+import { SLEEP_FULL_MIN_H, SLEEP_FULL_MAX_H } from "@/lib/checkin-habits";
 import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou, sportLabel } from "@/lib/sports";
 import { useRecentSports } from "@/hooks/use-recent-sports";
 import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
@@ -116,9 +116,13 @@ const HabitToggle = ({
       {/* Two lines: the notes are full sentences ("Anchors your circadian
           rhythm within 30 minutes of waking") and a one-line clamp cut four of
           them mid-word. Only rows whose note needs it grow. */}
-      <p className="text-meta text-muted-foreground leading-snug line-clamp-2 mt-0.5">
-        {active ? `+${fmtUnit(habit.xp, "XP")}` : (habit.note || `+${fmtUnit(habit.xp, "XP")}`)}
-      </p>
+      {/* No XP per habit: the chosen habits share 25 points a day, so a tick
+          is a tick. The note explains why it is here; a logged one just says so. */}
+      {(active || habit.note) && (
+        <p className="text-meta text-muted-foreground leading-snug line-clamp-2 mt-0.5">
+          {active ? "Logged" : habit.note}
+        </p>
+      )}
     </div>
     {/* Check pill — the moment the tick lands is the one that matters, so it
         springs. Ticking used to only cross-fade a colour over 200ms. */}
@@ -158,22 +162,6 @@ const DailyCheckin = () => {
   const why = athlete?.i_am?.trim();
   const queryClient = useQueryClient();
 
-  // Active tribe membership — powers the Tribe Player quest.
-  const { data: inTribe } = useQuery({
-    queryKey: ["in-tribe", user?.id],
-    enabled: !!user?.id,
-    staleTime: 10 * 60_000,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("tribe_members")
-        .select("tribe_id")
-        .eq("user_id", user!.id)
-        .eq("status", "active")
-        .limit(1);
-      return (data?.length ?? 0) > 0;
-    },
-  });
-
   // The user's personalized habit selection (or the classic default set).
   const { keys: habitKeys, isCustomized, save: saveHabits, saving: savingHabits } = useCheckinConfig();
   // A recovery session finished today puts "Mobility / stretch" on the card
@@ -203,23 +191,6 @@ const DailyCheckin = () => {
   };
 
   const { data: lastCheckin, isLoading: lastCheckinLoading } = useLastCheckin(user?.id);
-
-  const { data: recentSleep } = useQuery({
-    queryKey: ["recent-sleep-7d", user?.id],
-    staleTime: 10 * 60_000,
-    gcTime:    30 * 60_000,
-    queryFn: async () => {
-      if (!user) return [] as number[];
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("sleep_hours")
-        .eq("user_id", user.id)
-        .gte("checked_in_at", sevenDaysAgo);
-      return (data || []).map((d) => Number(d.sleep_hours));
-    },
-    enabled: !!user,
-  });
 
   // Local-day window + midnight rollover, shared with the home screen so the
   // two can't disagree about when the check-in reopens.
@@ -253,13 +224,9 @@ const DailyCheckin = () => {
   const healthKit = useHealthKit();
   // Apple Health auto-detected signals for today (workout / steps / sleep / mindful).
   const [detected, setDetected] = useState<Partial<Record<VerifySignal, boolean>>>({});
-  const [detectedWorkoutMin, setDetectedWorkoutMin] = useState<number | null>(null);
-  // Where the workout signal came from: Health saw one, or the app's own
-  // runner finished a session. The banner names the right source.
-  const [healthWorkout, setHealthWorkout] = useState(false);
+  // The app's own runner finished a session today — the banner names it.
   const [sessionLogged, setSessionLogged] = useState(false);
   const sleepPrefilled = useRef(false);
-  const stepsPrefilled = useRef(false);
   const proteinPrefilled = useRef(false);
   const sportPrefilled = useRef(false);
   // Separate from sportPrefilled so the HealthKit and program-session prefills
@@ -285,7 +252,6 @@ const DailyCheckin = () => {
   const lockPop = useCommitPop(submitting);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
-  const [questBonusXp, setQuestBonusXp] = useState(0);
   // True once the user has explicitly chosen Trained/Rest/a sport — gates HK prefill.
   const sportTouched = useRef(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -296,6 +262,7 @@ const DailyCheckin = () => {
     xpEarned: number; newTotalXp: number; oldLevel: number; newLevel: number;
     xpToNextLevel: number; levelProgressPct: number; newStreak: number;
     streakBroken: boolean; completedCount: number; maxCount: number;
+    score: DayScore | null;
   } | null>(null);
   const moderation = useModeration();
 
@@ -329,17 +296,10 @@ const DailyCheckin = () => {
     const mindDone = (snap.mindful_minutes ?? 0) > 0;
     const sleepKnown = snap.sleep_hours != null && snap.sleep_hours > 0;
     setDetected((d) => ({ ...d, workout: workoutDone, steps: stepsDone, mindfulness: mindDone, sleep: sleepKnown }));
-    if (workoutDone) setHealthWorkout(true);
-    if (snap.workout_minutes) setDetectedWorkoutMin(snap.workout_minutes);
     // Prefill sleep slider from HealthKit once (user can still adjust).
     if (sleepKnown && !sleepPrefilled.current) {
       sleepPrefilled.current = true;
       setSleep(Math.min(12, Math.max(4, Math.round((snap.sleep_hours as number) * 2) / 2)));
-    }
-    // Auto-mark the 8k-steps habit if it's confirmed (only surfaces if chosen).
-    if (stepsDone && !stepsPrefilled.current) {
-      stepsPrefilled.current = true;
-      setCompleted((c) => ({ ...c, steps_8k: true }));
     }
   };
   const applyRef = useRef(applySnapshot);
@@ -422,29 +382,48 @@ const DailyCheckin = () => {
     return false;
   };
 
-  // Scoring model lives in src/lib/checkin-xp.ts (unit-tested; the server's
-  // record_checkin RPC mirrors the same caps and multiplier).
-  const { isOptimalSleep, isChronicOversleep, oversleepCount, sleepMultiplier, sleepPenaltyLabel } = useMemo(
-    () => assessSleep(sleep, recentSleep || []),
-    [sleep, recentSleep],
-  );
-
   const done = (key: string) => !!completed[key];
   const toggle = (key: string) => setCompleted((c) => ({ ...c, [key]: !c[key] }));
 
-  const checkinState = { sleepOptimal: isOptimalSleep, workout, hydration, completed };
-  const habitDone = (h: CheckinHabit): boolean => isHabitDone(h, checkinState);
+  // Today's Apple Health snapshot, as the score reads it. The server scores
+  // the same snapshot row (score_checkin); this is the preview.
+  const todaySnap = healthKit.lastSnapshot && healthKit.lastSnapshot.date === todayStr ? healthKit.lastSnapshot : null;
+  const healthNight = todaySnap?.sleep_hours != null && todaySnap.sleep_hours >= 3 ? todaySnap.sleep_hours : null;
+  const scoredSleep = healthNight ?? sleep;
+  const sleepFull = scoredSleep >= SLEEP_FULL_MIN_H && scoredSleep <= SLEEP_FULL_MAX_H;
 
-  const xpArgs = {
-    habits: chosenHabits,
-    state: checkinState,
-    sportXp: selectedSport.xp,
-    hasProof: !!proofFile,
-    sleepMultiplier,
-    questBonusXp,
-  };
-  const { baseXp, totalXp, completedCount } = computeCheckinXp(xpArgs);
+  const habitDone = (h: CheckinHabit): boolean =>
+    h.key === "sleep" ? sleepFull
+    : h.key === "workout" ? workout
+    : h.key === "hydration" ? hydration >= 3
+    : done(h.key);
+  const completedCount = chosenHabits.filter(habitDone).length;
   const maxCount = chosenHabits.length;
+
+  // The day score — src/lib/checkin-xp.ts mirrors score_checkin in SQL. The
+  // Lock button shows this; the summary shows the server's answer.
+  const score = useMemo(() => scoreDay({
+    sleepHours: sleep,
+    workout,
+    hydrationLiters: hydration,
+    meditationMorning: done("meditation"),
+    meditationEvening: done("meditation_pm"),
+    chosenKeys: habitKeys ?? [],
+    doneKeys: chosenHabits.filter((h) => !h.core && done(h.key)).map((h) => h.key),
+    appSessionToday: !!sessionDoneToday,
+    age: athlete?.age ?? null,
+    health: todaySnap ? {
+      workouts: todaySnap.workouts.map((w) => ({ duration_min: w.duration_min, avg_hr: w.avg_hr, manual: w.manual })),
+      workout_minutes: todaySnap.workout_minutes,
+      sleep_hours: todaySnap.sleep_hours,
+      steps: todaySnap.steps,
+      mindful_minutes: todaySnap.mindful_minutes,
+    } : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [sleep, workout, hydration, completed, habitKeys, chosenHabits, sessionDoneToday, athlete?.age, todaySnap]);
+  const totalXp = score.total;
+  const trainingLine = score.lines[0];
+  const healthLines = score.lines.filter((l) => l.src === "health");
 
   // Habits grouped by pillar, excluding the ones with custom widgets
   // (sleep / workout / hydration render as sliders + sport picker).
@@ -531,10 +510,8 @@ const DailyCheckin = () => {
           toast("Photo didn't upload. Your day is still locked in.", { duration: 5000 });
         }
       }
-      // No photo on the server means no +30: claim only what was earned.
-      const xpToSend = proofFile && !proof_photo_url
-        ? computeCheckinXp({ ...xpArgs, hasProof: false }).totalXp
-        : totalXp;
+      // The preview; the server scores the row itself and ignores this.
+      const xpToSend = totalXp;
 
       // Build the jsonb of completions for personalized habits that don't map
       // to a legacy column (new evidence-based habits). Column-backed habits
@@ -600,7 +577,7 @@ const DailyCheckin = () => {
       const showFromDb = async () => {
         try {
           const [{ data: lastCk }, { data: prof }] = await Promise.all([
-            supabase.from("daily_checkins").select("xp_earned").eq("user_id", user.id)
+            supabase.from("daily_checkins").select("xp_earned, score_breakdown").eq("user_id", user.id)
               .order("checked_in_at", { ascending: false }).limit(1).maybeSingle(),
             supabase.from("profiles").select("xp, level, streak").eq("user_id", user.id).maybeSingle(),
           ]);
@@ -610,6 +587,7 @@ const DailyCheckin = () => {
             xpEarned: lastCk?.xp_earned ?? 0, newTotalXp: xp, oldLevel: lvl, newLevel: lvl,
             xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
             newStreak: prof?.streak ?? 0, streakBroken: false, completedCount, maxCount,
+            score: dayScoreFromRow(lastCk?.score_breakdown),
           });
         } catch { /* summary is best-effort */ }
         setSubmitted(true);
@@ -655,7 +633,7 @@ const DailyCheckin = () => {
             xpEarned: xpToSend, newTotalXp: newXp, oldLevel: lvl, newLevel: newLvl,
             xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
             newStreak: getEffectiveStreak(profile?.streak ?? 0, lastCheckin?.checked_in_at, profile?.streak_shields ?? 0) + 1,
-            streakBroken: false, completedCount, maxCount,
+            streakBroken: false, completedCount, maxCount, score,
           });
           setSubmitted(true);
           setSubmitting(false);
@@ -676,6 +654,7 @@ const DailyCheckin = () => {
         checkin_id: string; xp_earned: number; new_xp: number; old_level: number;
         new_level: number; old_streak: number; new_streak: number; streak_broken: boolean;
         shield_used?: number; shield_earned?: boolean; shields_remaining?: number;
+        day_score?: unknown;
       };
       const newCheckinId = r.checkin_id;
 
@@ -700,6 +679,8 @@ const DailyCheckin = () => {
         xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
         newStreak: r.new_streak, streakBroken: r.streak_broken && r.old_streak > 0,
         completedCount, maxCount,
+        // The server's number, not the preview.
+        score: dayScoreFromRow(r.day_score) ?? score,
       });
 
       setSubmitted(true);
@@ -720,11 +701,19 @@ const DailyCheckin = () => {
           try {
             // Pass the LOCAL snapshot date so verify matches the row we just stored.
             const vr = await healthKit.verifyCheckin(newCheckinId, snap?.date);
+            // A sync that landed after the lock re-scores the day: the summary
+            // follows the server's new total.
+            const rescored = dayScoreFromRow(vr.day_score);
+            if (rescored) {
+              setSummary((prev) => prev && rescored.total !== prev.xpEarned
+                ? { ...prev, xpEarned: rescored.total, newTotalXp: prev.newTotalXp + (rescored.total - prev.xpEarned), score: rescored }
+                : prev);
+            }
             if (vr.verified) {
               void track(FUNNEL.checkinVerified);
               const n = Object.keys(vr.signals ?? {}).filter((k) => vr.signals?.[k]?.matched).length;
-              toast.success("Verified", {
-                description: `Apple Health confirmed ${n} habit${n === 1 ? "" : "s"} — bonus XP added.`,
+              toast.success("Verified by Apple Health", {
+                description: `${n} signal${n === 1 ? "" : "s"} recorded${rescored ? ` — today scores ${rescored.total} XP` : ""}.`,
                 duration: 4500,
               });
             }
@@ -797,8 +786,8 @@ const DailyCheckin = () => {
           if (proof_photo_url && isElite) {
             const sportLabel = selectedSport.id !== "none" ? `${selectedSport.emoji} ${selectedSport.label}` : null;
             const content = sportLabel
-              ? `Daily check-in ✅ ${sportLabel} — ${totalXp} XP earned 🔥`
-              : `Daily check-in ✅ — ${totalXp} XP earned 🔥`;
+              ? `Daily check-in ✅ ${sportLabel} — ${r.xp_earned} XP earned 🔥`
+              : `Daily check-in ✅ — ${r.xp_earned} XP earned 🔥`;
             const { error: postErr } = await supabase.from("feed_posts").insert({ user_id: user.id, content, image_url: proof_photo_url });
             if (postErr) throw postErr;
           }
@@ -825,7 +814,6 @@ const DailyCheckin = () => {
         queryClient.invalidateQueries({ queryKey: ["user-badges"] });
         queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
         queryClient.invalidateQueries({ queryKey: ["recent-checkins"] });
-        queryClient.invalidateQueries({ queryKey: ["recent-sleep-7d"] });
       })();
 
       return;
@@ -901,12 +889,12 @@ const DailyCheckin = () => {
   const streak = profile?.streak ?? 0;
   const now = new Date();
   const dateLine = `${now.toLocaleDateString("en-US", { weekday: "long" })} · ${fmtDate(now)}`;
-  const sleepWord = isOptimalSleep ? "Optimal"
-    : sleep <= 5 ? "Too little"
-    : sleep < 7 ? "Short"
-    : sleep < 7.5 ? "Close"
-    : isChronicOversleep ? "Oversleeping"
+  const sleepWord = sleepFull ? "Full score"
+    : scoredSleep <= 5 ? "Too little"
+    : scoredSleep < 7 ? "Short"
     : "Long night";
+  const sleepLine = score.lines[1];
+  const fmtHours = (h: number) => `${Math.floor(h)} h ${String(Math.round((h - Math.floor(h)) * 60)).padStart(2, "0")} min`;
 
   return (
     <div className="min-h-full">
@@ -1007,54 +995,64 @@ const DailyCheckin = () => {
           </div>
         )}
 
-        {(detected.workout || detected.steps || detected.mindfulness || detected.sleep || detected.nutrition) && (
+        {/* Today from Apple Health — scored before a single tick. A session
+            typed into Health by hand is a claim, and says so. */}
+        {(healthLines.length > 0 || trainingLine.manual || sessionLogged || detected.nutrition) && (
           <div className="home-rise home-rise-2 mt-3 rounded-xl border border-teal/30 bg-teal/5 p-3 flex items-start gap-2.5">
             <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
-            <p className="text-xs text-foreground/90 leading-snug">
-              <span className="font-semibold text-teal">
-                {healthWorkout || detected.steps || detected.mindfulness || detected.sleep
-                  ? "Apple Health synced."
-                  : sessionLogged ? "Your session is logged." : "Verified."}
-              </span>{" "}
-              {[
-                detected.workout && (healthWorkout
-                  ? `a ${detectedWorkoutMin ?? ""}${detectedWorkoutMin ? "-min " : ""}workout`
-                  : "today's session"),
-                detected.steps && "8k+ steps",
-                detected.mindfulness && "meditation",
-                detected.sleep && "your sleep",
-                detected.nutrition && "your protein (diary)",
-              ].filter(Boolean).join(", ")} detected — verified habits earn bonus XP.
-            </p>
+            <div className="text-xs text-foreground/90 leading-snug min-w-0">
+              <p className="font-semibold text-teal">
+                {healthLines.length > 0 ? "Today from Apple Health" : sessionLogged ? "Your session is logged." : "Detected."}
+              </p>
+              {healthLines.map((l) => (
+                <p key={l.k} className="tabular-nums mt-0.5">
+                  {l.k === "training" && `${healthSessions.length ? healthSessionsLine(healthSessions) : `${l.minutes ?? 0} min training`} · +${l.pts}`}
+                  {l.k === "sleep" && `Sleep ${fmtHours(l.hours ?? 0)} · +${l.pts}`}
+                  {l.k === "steps" && `${fmtInt(l.count ?? 0)} steps · +${l.pts}`}
+                  {l.k === "mind" && `Mindful ${l.minutes ?? 0} min · +${l.pts}`}
+                </p>
+              ))}
+              {trainingLine.manual && trainingLine.src !== "health" && (
+                <p className="mt-0.5 text-muted-foreground">A workout entered by hand in Health counts as a tick (+25). A recorded session scores up to 50.</p>
+              )}
+              {sessionLogged && trainingLine.src === "app" && (
+                <p className="mt-0.5 text-muted-foreground">Program session done · +35</p>
+              )}
+              {detected.nutrition && <p className="mt-0.5 text-muted-foreground">Protein target hit in your diary.</p>}
+            </div>
           </div>
         )}
 
         {/* ── Sleep (core) ── */}
         <div className="home-rise home-rise-2 mt-5">
-          <div className={cn("rounded-2xl border p-4 transition-[background-color,border-color,box-shadow] duration-200", isOptimalSleep ? LIT : "surface-card surface-card-quiet")}>
-            <div className="flex items-center gap-3 mb-3">
+          <div className={cn("rounded-2xl border p-4 transition-[background-color,border-color,box-shadow] duration-200", sleepFull ? LIT : "surface-card surface-card-quiet")}>
+            <div className={cn("flex items-center gap-3", healthNight == null && "mb-3")}>
               <div className={cn(
                 "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
-                isOptimalSleep ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
+                sleepFull ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
               )}><Moon aria-hidden size={20} /></div>
               <div>
                 <p className="font-semibold text-sm flex items-center gap-1.5">
-                  Sleep {detected.sleep && <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
+                  Sleep {healthNight != null && <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
                 </p>
-                <p className="text-xs text-muted-foreground">Optimal: 7.5–9 hours</p>
+                <p className="text-xs text-muted-foreground">
+                  {healthNight != null
+                    ? `Apple Health recorded ${fmtHours(healthNight)} — scored from Health`
+                    : "7–9 hours scores in full · a recorded night up to 25, a claim up to 15"}
+                </p>
               </div>
               <span className="ml-auto text-right">
                 <span className={cn(
                   "block text-2xl font-bold font-display tabular-nums leading-none",
-                  isOptimalSleep ? "text-gold" : sleep <= 5 ? "text-destructive" : "text-muted-foreground",
-                )}>{sleep}h</span>
+                  sleepFull ? "text-gold" : scoredSleep <= 5 ? "text-destructive" : "text-muted-foreground",
+                )}>{healthNight != null ? `+${sleepLine.pts}` : `${sleep}h`}</span>
                 <span className="block text-label font-semibold text-muted-foreground mt-1">{sleepWord}</span>
               </span>
             </div>
-            <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="range-gold w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x", ["--range-fill" as string]: `${rangeFill(sleep, 4, 12)}%` }} />
-            {sleepPenaltyLabel && <p className="text-label text-destructive mt-1 font-semibold">{sleepPenaltyLabel}</p>}
-            {isChronicOversleep && sleep >= 10 && (
-              <p className="text-label text-muted-foreground mt-1">You've slept 10h+ {oversleepCount} of the last 7 nights — occasional long nights help, chronic oversleep hurts.</p>
+            {/* The slider only when Health does not know the night: a recorded
+                night is the score, and a hand-edited number would not change it. */}
+            {healthNight == null && (
+              <input type="range" aria-label="Hours of sleep" aria-valuetext={`${sleep} hours`} min={4} max={12} step={0.5} value={sleep} onChange={(e) => setSleep(Number(e.target.value))} className="range-gold w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x", ["--range-fill" as string]: `${rangeFill(sleep, 4, 12)}%` }} />
             )}
           </div>
         </div>
@@ -1081,11 +1079,11 @@ const DailyCheckin = () => {
                     : healthSessions.length > 0
                     ? healthSessionsLine(healthSessions)
                     : workout
-                    ? "Tap Trained to change sport"
-                    : detected.workout ? "Health saw a workout — pick your sport" : "Did you train today?"}
+                    ? (trainingLine.src === "health" ? "Tap Trained to change sport" : "Tap Trained to change sport · a recorded session scores up to 50")
+                    : detected.workout ? "Health saw a workout — pick your sport" : "Did you train today? A tick is 25 · a recorded session up to 50"}
                 </p>
               </div>
-              {workout && <span className="text-label font-bold tabular-nums text-muted-foreground">+{fmtUnit(selectedSport.xp, "XP")}</span>}
+              {trainingLine.pts > 0 && <span className="text-label font-bold tabular-nums text-muted-foreground">+{fmtUnit(trainingLine.pts, "XP")}</span>}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <button
@@ -1139,7 +1137,6 @@ const DailyCheckin = () => {
                         )}
                       </span>
                       {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
-                      <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
                     </button>
                   ))}
                 </div>
@@ -1184,7 +1181,6 @@ const DailyCheckin = () => {
                       <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
                       <span className="text-sm font-medium flex-1">{sport.label}</span>
                       {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
-                      <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
                     </button>
                   )) : (
                     <p className="px-4 py-4 text-xs text-muted-foreground">No sports match "{sportQuery.trim()}"</p>
@@ -1219,7 +1215,6 @@ const DailyCheckin = () => {
                           <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
                           <span className="text-sm font-medium flex-1">{sport.label}</span>
                           {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
-                          <span className="text-xs font-bold tabular-nums text-muted-foreground">+{fmtUnit(sport.xp, "XP")}</span>
                         </button>
                       ))}
                     </div>
@@ -1248,7 +1243,7 @@ const DailyCheckin = () => {
                   "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
                   hydration >= 3 ? "bg-gold/15 text-gold" : "bg-teal/10 text-teal",
                 )}><Droplets aria-hidden size={20} /></div>
-                <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">Target: 3L+</p></div>
+                <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">3 L scores 15 · 2 L scores 8</p></div>
                 <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
               </div>
               <input type="range" aria-label="Litres of water" aria-valuetext={`${hydration} litres`} min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="range-gold w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x", ["--range-fill" as string]: `${rangeFill(hydration, 0, 5)}%` }} />
@@ -1256,7 +1251,7 @@ const DailyCheckin = () => {
           </div>
         )}
 
-        {/* ── Personalized habit groups ── */}
+        {/* ── Personalized habit groups — they share 25 points a day ── */}
         {PILLAR_ORDER.map((pillar) => {
           const habits = groupedHabits.get(pillar);
           if (!habits?.length) return null;
@@ -1271,9 +1266,13 @@ const DailyCheckin = () => {
             </div>
           );
         })}
+        <p className="home-rise home-rise-4 mt-2 text-meta text-muted-foreground tabular-nums">
+          Habits {score.lines[5].done}/{score.lines[5].of} · +{score.lines[5].pts} of 25
+          {(score.lines[5].of ?? 0) < 4 && " · pick at least 4 — fewer share less"}
+        </p>
 
-        {/* Extras — a quiet disclosure so the daily flow stays short. Quests
-            stay MOUNTED (hidden when closed) so their bonus XP keeps counting. */}
+        {/* Proof photo — a quiet disclosure so the daily flow stays short. The
+            photo is the feed's proof of the day; it carries no points. */}
         <div className="home-rise home-rise-5 mt-5">
           <button
             onClick={() => { hapticSelection(); setMoreOpen((o) => !o); }}
@@ -1282,45 +1281,21 @@ const DailyCheckin = () => {
           >
             <span className="text-sm font-semibold flex items-center gap-2">
               <Plus aria-hidden size={16} className="text-muted-foreground" />
-              Bonus quests &amp; proof photo
-              {questBonusXp > 0 && <span className="text-label font-bold tabular-nums text-muted-foreground">+{fmtUnit(questBonusXp, "XP")}</span>}
+              Proof photo
+              {proofFile && <span className="text-label font-bold text-muted-foreground">added</span>}
             </span>
             <ChevronDown aria-hidden size={16} className={cn("text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
           </button>
 
           <div className={cn("mt-3 space-y-4", !moreOpen && "hidden")}>
-            <DailyQuests
-              checkinData={{
-                sleep,
-                sportCategory,
-                mySports: athlete?.sports ?? [],
-                inTribe: !!inTribe,
-                extraWorkout: done("extra_workout"),
-                coldShower: done("cold_shower"),
-                healthyFood: done("healthy_food"),
-                protein: done("protein"),
-                meditationAm: done("meditation"),
-                meditationPm: done("meditation_pm"),
-                hydration,
-                noPhoneAm: done("no_phone_am"),
-                noPhonePm: done("no_phone_pm"),
-                reading: done("reading"),
-                completedCount,
-              }}
-              onBonusXpChange={setQuestBonusXp}
-            />
-
-            {/* Proof photo — available to everyone (all app users are paid) */}
             <div>
               <label className="press flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 hover:bg-secondary/40 transition-colors cursor-pointer">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera aria-hidden size={20} /></div>
                 <div className="text-left flex-1">
                   <p className="font-semibold text-sm">Add proof photo</p>
-                  {/* Posting needs a paid membership (the feed INSERT policy). Trial
-                      members were promised a post here, then got an apology toast. */}
-                  <p className="text-xs text-muted-foreground">{isElite ? "Posted to the Feed. Earns " : "Earns "}<span className="font-bold text-foreground/80">+30 bonus XP</span></p>
+                  {/* Posting needs a paid membership (the feed INSERT policy). */}
+                  <p className="text-xs text-muted-foreground">{isElite ? "Posted to the Feed as today's proof." : "Your proof of the day."}</p>
                 </div>
-                {proofFile && <span className="text-label font-bold tabular-nums text-muted-foreground">+30 XP</span>}
                 {/* No `capture` attr: iOS then offers Take Photo AND Photo Library
                     in the native sheet (founder decision — gallery proofs allowed,
                     so the old 5-minute freshness gate is gone too). */}
@@ -1378,6 +1353,17 @@ const DailyCheckin = () => {
           {honest === false && (
             <p role="alert" className="text-xs text-destructive mt-2.5 font-medium">Be honest with yourself. Go back and fix your answers.</p>
           )}
+
+          {/* How today scores, line by line — the same lines the server writes. */}
+          <p className="mt-3 text-meta text-muted-foreground tabular-nums leading-relaxed">
+            {score.lines.map((l, i) => (
+              <span key={l.k}>
+                {i > 0 && " · "}
+                <span className={cn(l.pts > 0 && "text-foreground/80 font-semibold")}>{LINE_LABEL[l.k]} {l.pts}</span>
+              </span>
+            ))}
+            <span className="text-muted-foreground/75"> · of {score.max}</span>
+          </p>
 
           {/* The label carries the in-flight state ("Locking…") rather than a
               spinner, and the flame pops the instant the save starts. */}

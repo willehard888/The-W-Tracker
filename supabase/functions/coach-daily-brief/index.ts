@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
       sb.from("profiles").select("username, status_tier, streak, longest_streak, level, xp, ai_consent_version").eq("user_id", uid).maybeSingle(),
       sb.from("coach_athlete_profile" as any).select("*").eq("user_id", uid).maybeSingle(),
       sb.from("coach_programs").select("*").eq("user_id", uid).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      sb.from("daily_checkins").select("checked_in_at, sleep_hours, hydration_liters, workout, sport, protein_intake, healthy_food, xp_earned").eq("user_id", uid).gte("checked_in_at", sevenAgo).order("checked_in_at", { ascending: false }).limit(7),
+      sb.from("daily_checkins").select("checked_in_at, sleep_hours, hydration_liters, workout, sport, protein_intake, healthy_food, xp_earned, score_breakdown").eq("user_id", uid).gte("checked_in_at", sevenAgo).order("checked_in_at", { ascending: false }).limit(7),
     ]);
 
     // AI consent (App Review 5.1.2(i)): a brief already written today is served
@@ -126,6 +126,16 @@ Deno.serve(async (req) => {
     }
     const workouts7 = sportByDay.size;
     const sports7 = sportBreakdown([...sportByDay.values()]);
+    // XP v3: the last check-in's score, line by line, and which lines Apple
+    // Health scored — so the brief can say "yesterday 94: training 50 from
+    // Health, water 8" instead of guessing why a day was low.
+    const lastScoreLine = (() => {
+      const b = last?.score_breakdown as { v?: number; total?: number; max?: number; lines?: Array<{ k: string; pts: number; max: number; src?: string }> } | null;
+      if (!b || b.v !== 3 || !Array.isArray(b.lines)) return "";
+      const parts = b.lines.filter((l) => l.k !== "perfect" || l.pts > 0)
+        .map((l) => `${l.k} ${l.pts}/${l.max}${l.src === "health" ? " (Health)" : ""}`);
+      return `\nLast check-in scored ${b.total}/${b.max}: ${parts.join(", ")}.`;
+    })();
 
     const firstName = (athlete?.i_am || profile.username || "").split(" ")[0] || "there";
     const tone = TONE_LINE[athlete?.tone_pref ?? "calm_mentor"] ?? TONE_LINE.calm_mentor;
@@ -184,7 +194,7 @@ Athlete:
 - No-go: ${(athlete?.no_go_protocols ?? []).join(", ") || "none"}
 
 Today's prescribed session: ${sessionLine}
-Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts${sports7 ? ` (${sports7})` : ""}.
+Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts${sports7 ? ` (${sports7})` : ""}.${lastScoreLine}
 ${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${whealthBlock}
 ${INNER_WORK_BLOCK}
 ${LONGEVITY_BLOCK}

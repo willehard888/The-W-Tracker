@@ -1,13 +1,16 @@
 /**
  * Referral engine v2 — one source of truth for the reward math.
  *
- * The deal (founder decision 2026-08-24):
- *   · Friend joins with your code       → you get +50 XP (claim_referral)
- *   · Friend logs their 3rd check-in    → you get +250 XP ("activated")
+ * The deal (founder decision 2026-08-24, XP removed 2026-09-25):
+ *   · Friend joins with your code       → the link (claim_referral)
+ *   · Friend logs their 3rd check-in    → "activated" (a notification)
+ *   · First paid friend                 → the First Recruit badge
  *   · Every 3 PAID friends              → you get +30 days of free membership,
  *                                          forever, no cap. 3 → 1 mo, 6 → 2 mo …
- * Status is never a reward — Apex/Legend grants were removed from the engine
- * (already-granted ones stay; see referral_engine_v2 migration).
+ * Neither status nor XP is a reward: the boards rank days, not networks
+ * (XP v3 — a referral used to be worth five perfect days on the season board).
+ * Apex/Legend grants were removed from the engine earlier (already-granted
+ * ones stay; see referral_engine_v2 migration).
  *
  * Mirrored in SQL (reward_referral_conversion v3) and in the edge functions
  * (notify-referral, revenuecat-webhook, stripe-webhook) — Deno can't import
@@ -33,9 +36,9 @@ export const nextMonthAt = (paidCount: number): number =>
 export const nextMonthProgress = (paidCount: number): number =>
   (Math.max(0, paidCount) % CREDIT_EVERY) / CREDIT_EVERY;
 
-/** Badge-only milestones (XP/badges — never credits or status). */
+/** Badge-only milestones (badges — never XP, credits or status). */
 export const BADGE_MILESTONES = [
-  { count: 1, title: "First Recruit", detail: "+250 XP · First Recruit badge", emoji: "🎯" },
+  { count: 1, title: "First Recruit", detail: "First Recruit badge", emoji: "🎯" },
   { count: 5, title: "Brand Ambassador", detail: "Brand Ambassador badge", emoji: "🌟" },
   { count: 10, title: "Inner Circle", detail: "Inner Circle Founder badge", emoji: "⚡" },
   { count: 25, title: "Kingmaker", detail: "Kingmaker badge", emoji: "🏆" },

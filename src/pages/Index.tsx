@@ -279,11 +279,11 @@ const Index = () => {
               <span className="font-display font-black text-lead tabular-nums leading-none">
                 #<AnimatedNumber value={rankData!.rank} duration={700} />
               </span>
-              {/* "by score" because the app has two boards: this is
-                  `get_user_rank` (rank score, the ladder that decides your
-                  tier) and the Ranks tab opens on this month's XP. The same
+              {/* "by rating" because the app has two boards: this is
+                  `get_user_rank` (the 28-day rating that decides your tier)
+                  and the Ranks tab opens on this month's XP. The same
                   account read "#3 of 6" here and "#5 of 5" one tap away. */}
-              <span className="text-label text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)} by score</span>
+              <span className="text-label text-muted-foreground">of {fmtInt(rankData?.totalUsers ?? 0)} by rating</span>
             </span>
           )}
           <span className="inline-flex items-baseline gap-1">

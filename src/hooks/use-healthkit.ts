@@ -96,6 +96,8 @@ export const useHealthKit = () => {
       matches?: number;
       claims?: number;
       signals?: Record<string, any>;
+      /** The re-scored day (daily_checkins.score_breakdown) — XP v3. */
+      day_score?: unknown;
     };
   }, []);
 

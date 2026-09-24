@@ -10,7 +10,9 @@ import {
   getTierHeroSurface,
   tierBandLabel,
   nextTierRequirements,
-  CONSISTENCY_WEIGHTS,
+  RATING_WINDOW_DAYS,
+  RATING_MAX,
+  RATING_HINT,
   ladderRankValue,
   getNextTier,
   canonicalTier,
@@ -138,9 +140,10 @@ describe("nextTierRequirements", () => {
   });
 });
 
-describe("CONSISTENCY_WEIGHTS", () => {
-  it("sums to 1 and mirrors calculate_rank_score", () => {
-    expect(CONSISTENCY_WEIGHTS.reduce((s, w) => s + w.weight, 0)).toBeCloseTo(1);
-    expect(CONSISTENCY_WEIGHTS.find((w) => w.key === "activeDays")?.weight).toBe(0.55);
+describe("rating", () => {
+  it("is the 28-day average of day XP, capped by the verified day", () => {
+    expect(RATING_WINDOW_DAYS).toBe(28);
+    expect(RATING_MAX).toBe(150);
+    expect(RATING_HINT).toMatch(/28 days/);
   });
 });

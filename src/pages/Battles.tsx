@@ -359,7 +359,7 @@ const Battles = () => {
             <h2 className="home-rise font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h2>
             {!hero && pendingBattles.length === 0 && (
               <p className="home-rise text-meta text-muted-foreground leading-relaxed mt-2">
-                Pick a friend and a discipline. Both sides are scored from their own check-ins or Apple Health, and the winner takes 50 XP.
+                Pick a friend and a discipline. Both sides are scored from their own check-ins or Apple Health, and the winner takes the W — on the record.
               </p>
             )}
 

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import {
-  CHECKIN_HABITS, PILLAR_LABEL, OPTIONAL_XP_CAP, type CheckinPillar, type CheckinHabit,
+  CHECKIN_HABITS, PILLAR_LABEL, type CheckinPillar, type CheckinHabit,
 } from "@/lib/checkin-habits";
 
 interface Props {
@@ -83,7 +83,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
       onClose={() => onOpenChange(false)}
       label="Build your check-in"
       title="Build your check-in"
-      subtitle={<>{coreCount} core · {optionalCount} added · bonus max +{OPTIONAL_XP_CAP} XP/day</>}
+      subtitle={<>{coreCount} core · {optionalCount} chosen · they share 25 XP a day{optionalCount < 4 && " · pick at least 4"}</>}
       footer={
         <Button variant="ember" size="lg" className="w-full" onClick={handleSave}>
           Save my habits

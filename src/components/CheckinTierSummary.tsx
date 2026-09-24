@@ -14,6 +14,8 @@ import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboardin
 import { checkinReactionKey, fetchCheckinReaction } from "@/lib/checkin-reaction";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import AnimatedNumber from "@/components/AnimatedNumber";
+import { LINE_LABEL, type DayScore } from "@/lib/checkin-xp";
+import { ShieldCheck } from "lucide-react";
 
 interface CheckinTierSummaryProps {
   tier: string;
@@ -28,6 +30,8 @@ interface CheckinTierSummaryProps {
     streakBroken: boolean;
     completedCount: number;
     maxCount: number;
+    /** How the day scored, line by line — the server's breakdown when it answered. */
+    score?: DayScore | null;
   };
   onProfile: () => void;
   onDashboard: () => void;
@@ -210,6 +214,25 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           <p className="relative text-meta text-muted-foreground mt-2">
             <span className="font-bold text-foreground/80 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/75")}>{perfPct}%</span> output
           </p>
+          {/* The lines the server scored — the same seven the check-in previewed.
+              Health-scored lines carry the shield, so "why 94 and not 150" is
+              answered here, not in a support message. */}
+          {summary.score && (
+            <div className="relative mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-left text-meta tabular-nums">
+              {summary.score.lines.filter((l) => l.k !== "perfect" || l.pts > 0).map((l) => (
+                <div key={l.k} className="flex items-center justify-between gap-2">
+                  <span className={cn("inline-flex items-center gap-1 truncate", l.pts > 0 ? "text-foreground/85" : "text-muted-foreground")}>
+                    {LINE_LABEL[l.k]}
+                    {l.src === "health" && <ShieldCheck aria-label="Apple Health" size={11} className="text-teal shrink-0" />}
+                  </span>
+                  <span className={cn("shrink-0 font-bold", l.pts > 0 ? "text-foreground/85" : "text-muted-foreground/75")}>{l.pts}<span className="font-normal text-muted-foreground/75">/{l.max}</span></span>
+                </div>
+              ))}
+              <div className="col-span-2 mt-0.5 text-muted-foreground/75">
+                {summary.score.verified ? "Verified by Apple Health" : summary.score.max === 150 ? "Two Health-recorded signals make a verified day" : "Connect Apple Health — a recorded day scores up to 150"}
+              </div>
+            </div>
+          )}
         </m.div>
 
         {/* Level + Streak grid */}

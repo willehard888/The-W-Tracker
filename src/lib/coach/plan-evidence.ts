@@ -18,17 +18,17 @@ export const PROTOCOL_HABIT: Record<string, string | null> = {
   "caffeine-cutoff-8h": "caffeine_cutoff",
   "alcohol-zero-on-training": "no_alcohol",
   // movement
-  "zone-2-cardio": "zone2",
+  "zone-2-cardio": "workout",
   "strength-2-3x": "workout",
   "vo2-intervals-1x": "workout",
   "strength-progressive-overload": "workout",
-  "walk-after-meals-10min": "steps_8k",
+  "walk-after-meals-10min": null,
   // nutrition
   "protein-1-6g-per-kg": "protein",
   "log-meals-3x": null,
   "fiber-30g": "healthy_food",
   "hydration-30ml-kg": "hydration",
-  "fasted-cardio": "zone2",
+  "fasted-cardio": "workout",
   // stress / mind
   "breath-box-5min": "breathwork",
   "breath-physiological-sigh": "breathwork",

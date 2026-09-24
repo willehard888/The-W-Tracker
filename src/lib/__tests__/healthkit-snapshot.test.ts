@@ -41,9 +41,17 @@ describe("assembleDaySnapshot", () => {
     }, null, null);
     expect(s.primary_sport).toBe("tennis");
     expect(s.workouts).toEqual([
-      { sport: "gym", hk_type: "traditionalStrengthTraining", duration_min: 45, kcal: 310, distance_m: null, avg_hr: null, source: "Whealth Factory", start: "2026-09-23T07:00:00Z" },
-      { sport: "tennis", hk_type: "tennis", duration_min: 62, kcal: 480, distance_m: null, avg_hr: 143, source: "Polar Flow", start: "2026-09-23T17:00:00Z" },
+      { sport: "gym", hk_type: "traditionalStrengthTraining", duration_min: 45, kcal: 310, distance_m: null, avg_hr: null, source: "Whealth Factory", start: "2026-09-23T07:00:00Z", manual: false },
+      { sport: "tennis", hk_type: "tennis", duration_min: 62, kcal: 480, distance_m: null, avg_hr: 143, source: "Polar Flow", start: "2026-09-23T17:00:00Z", manual: false },
     ]);
+  });
+
+  it("keeps the hand-entered flag so the score can treat the session as a claim", () => {
+    const s = assembleDaySnapshot("2026-09-23", {
+      available: true,
+      workouts: [{ type: "tennis", duration_s: 3600, source: "Health", manual: true }],
+    }, null, null);
+    expect(s.workouts[0].manual).toBe(true);
   });
 
   it("caps the list at 20 and survives an old plugin without start dates", () => {

@@ -123,7 +123,7 @@ const TribeLeaderboard = () => {
           {myBest ? <>Your tribe is <span className="text-gold glow-gold-text tabular-nums">#{myBest.rank}</span> {span}.</> : "Every tribe, ranked."}
         </h1>
         <p className="mt-1.5 text-dense text-muted-foreground">
-          {period === "weekly" ? "By XP earned this week" : "By all-time XP"}
+          {period === "weekly" ? "Average XP per member per day, this week" : "Average lifetime XP per member"}
         </p>
       </header>
 
@@ -141,7 +141,7 @@ const TribeLeaderboard = () => {
               period === p ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
-            {p === "weekly" ? "Weekly XP" : "All-time XP"}
+            {p === "weekly" ? "This week" : "All time"}
           </button>
         ))}
       </div>

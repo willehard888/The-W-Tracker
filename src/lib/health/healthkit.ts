@@ -67,6 +67,9 @@ export interface DayWorkout {
   source: string | null;
   /** ISO-8601; null on a build that predates it. */
   start: string | null;
+  /** Typed into the Health app by hand (or flagged so by its app): scores as a
+   *  claim, never as verified effort. */
+  manual: boolean;
 }
 
 /** The day's sessions as the app names them; warm-ups and transitions drop. */
@@ -85,6 +88,7 @@ const assembleWorkouts = (day: DayResult | null): DayWorkout[] =>
       avg_hr: whole(w.avg_hr) || null,
       source: typeof w.source === "string" && w.source ? w.source : null,
       start: typeof w.start === "string" && w.start ? w.start : null,
+      manual: w.manual === true,
     }))
     .sort((a, b) => (a.start ?? "").localeCompare(b.start ?? ""))
     .slice(0, MAX_WORKOUTS);

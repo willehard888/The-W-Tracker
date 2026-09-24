@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 import { MidnightCountdown } from "@/components/MidnightCountdown";
 import { hapticImpact } from "@/lib/haptics";
 import { useCheckinConfig } from "@/hooks/use-checkin-config";
-import { resolveCheckinHabits } from "@/lib/checkin-habits";
-import { maxDailyXp } from "@/lib/checkin-xp";
+import { maxDayScore } from "@/lib/checkin-xp";
+import { hasHealthConsent } from "@/lib/health/health-consent";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 interface CommandDeckProps {
@@ -56,11 +56,11 @@ const CommandDeck = ({
   const isLegend = tier === "legend";
   const isApex = tier === "apex";
 
-  // Honest XP promise: computed from the user's OWN habit set via the same
-  // scoring model as the check-in screen (was a hardcoded "+50 XP" that
-  // contradicted the number DailyCheckin showed for the same action).
+  // Honest XP promise: the member's own ceiling from the same model as the
+  // check-in screen — 100, or 150 once Apple Health scores the day (was a
+  // hardcoded "+50 XP" that contradicted the number DailyCheckin showed).
   const { keys: habitKeys } = useCheckinConfig();
-  const maxXp = useMemo(() => maxDailyXp(resolveCheckinHabits(habitKeys)), [habitKeys]);
+  const maxXp = useMemo(() => maxDayScore(habitKeys ?? [], hasHealthConsent()), [habitKeys]);
 
   // ── Day already banked ───────────────────────────────────────────────
   // Once the day is logged there is nothing to do here until midnight, so the

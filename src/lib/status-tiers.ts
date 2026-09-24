@@ -255,15 +255,14 @@ export const getPreviousTier = (current: string): TierConfig | null => {
   return TIER_CONFIG[TIER_ORDER[idx - 1]];
 };
 
-// ── Consistency (the user-facing name for rank_score) ────────────────────────
-// rank_score decides #N, Top% and tier, yet it was never named in the UI — a
-// bare "Score: 4.7" in 9px. Shown as "Consistency" everywhere, with its
-// three inputs (mirrors calculate_rank_score in SQL: 0.55 / 0.25 / 0.20).
-export const CONSISTENCY_WEIGHTS = [
-  { key: "activeDays", weight: 0.55, label: "Days active (last 30)", hint: "Logged days out of 30" },
-  { key: "dailyXp", weight: 0.25, label: "Daily XP vs the field (last 7 days)", hint: "Your 7-day average against the top average" },
-  { key: "streak", weight: 0.20, label: "Streak", hint: "Consecutive days, diminishing returns" },
-] as const;
+// ── Rating (the user-facing name for rank_score) ────────────────────────────
+// rank_score decides #N, Top% and tier. Since XP v3 it is one number: the
+// 28-day average of day XP, a missed day counting as 0 (mirrors
+// calculate_rank_score in SQL). 0–150; a member who logs every day at 100
+// holds a 100.
+export const RATING_WINDOW_DAYS = 28;
+export const RATING_MAX = 150;
+export const RATING_HINT = "Your average day XP over the last 28 days — a missed day counts as 0.";
 
 /** The tier's band as a plain label, derived from its percentile requirement
  *  (one source — the static strings drifted: operator said Top 50% but

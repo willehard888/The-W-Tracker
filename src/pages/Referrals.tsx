@@ -190,7 +190,7 @@ const Referrals = () => {
               ))}
             </div>
             <p className="text-label text-muted-foreground mt-2">
-              Active = 3 check-ins (+250 XP to you). Free months land when they go Premium.
+              Active = 3 check-ins. Free months land when they go Premium.
             </p>
           </section>
         )}
@@ -200,7 +200,7 @@ const Referrals = () => {
           <h3 className="font-display font-bold text-sm tracking-tight">How it works</h3>
           <ul className="mt-2 space-y-1.5 text-dense text-muted-foreground leading-snug">
             <li>Share your code. Friends get a 14-day free trial.</li>
-            <li>They show up. 50 XP to you when they join, 250 XP at their third check-in.</li>
+            <li>They show up. You hear when they join and when they log their third day.</li>
             <li>Every three who go paid give you a month free. No cap.</li>
           </ul>
         </section>

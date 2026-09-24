@@ -73,6 +73,24 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
         call.resolve(["available": HKHealthStore.isHealthDataAvailable()])
     }
 
+    /// `predicate` minus the samples somebody typed into the Health app
+    /// (`HKMetadataKeyWasUserEntered`). Steps, sleep and mindful minutes score
+    /// as Apple Health evidence only when a device recorded them; a hand-entered
+    /// night or 10 000 hand-entered steps would otherwise verify themselves.
+    /// Samples without the key (every device-recorded one) pass.
+    private static func recorded(_ predicate: NSPredicate) -> NSPredicate {
+        let manual = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeyWasUserEntered, operatorType: .equalTo, value: true)
+        return NSCompoundPredicate(andPredicateWithSubpredicates: [predicate, NSCompoundPredicate(notPredicateWithSubpredicate: manual)])
+    }
+
+    /// A workout entered by hand in the Health app: the app itself never records
+    /// one, so its bundle on a workout means typed in; the metadata key covers
+    /// third-party apps that flag manual entries the same way.
+    private static func isManual(_ w: HKWorkout) -> Bool {
+        if w.sourceRevision.source.bundleIdentifier == "com.apple.Health" { return true }
+        return (w.metadata?[HKMetadataKeyWasUserEntered] as? Bool) == true
+    }
+
     @objc func requestAuthorization(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.resolve(["granted": false])
@@ -99,9 +117,11 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
         func put(_ key: String, _ value: Any) { lock.lock(); result[key] = value; lock.unlock() }
 
         // --- Sleep stages (HKCategoryValueSleepAnalysis raw values, no iOS-16 enum refs) ---
+        // A night typed into the Health app by hand is a claim, not a recording:
+        // the check-in scores it as one (see Self.recorded).
         if let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) {
             group.enter()
-            let q = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
+            let q = HKSampleQuery(sampleType: sleepType, predicate: Self.recorded(predicate), limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, _ in
                 var deep = 0.0, rem = 0.0, core = 0.0, awake = 0.0
                 var sStart: Date?
                 var sEnd: Date?
@@ -194,7 +214,11 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
         }
         let end = Self.parseDate(call.getString("end")) ?? Date()
         let start = Self.parseDate(call.getString("start")) ?? Calendar.current.startOfDay(for: end)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let span = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        // Sums and mindful minutes: device-recorded only (see Self.recorded).
+        // Workouts keep every row and flag the hand-entered ones instead, so the
+        // check-in can show "entered by hand" beside a session rather than lose it.
+        let predicate = Self.recorded(span)
         let group = DispatchGroup()
         var result: [String: Any] = ["available": true]
         var sources = Set<String>()
@@ -230,7 +254,7 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
         let sort = [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)]
         let iso = ISO8601DateFormatter()
         let bpm = HKUnit.count().unitDivided(by: .minute())
-        let wq = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: sort) { _, samples, _ in
+        let wq = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: span, limit: HKObjectQueryNoLimit, sortDescriptors: sort) { _, samples, _ in
             var list: [[String: Any]] = []
             var longest: HKWorkout?
             for case let w as HKWorkout in (samples ?? []) {
@@ -242,7 +266,8 @@ public class HealthNight: CAPPlugin, CAPBridgedPlugin {
                     "kcal": kcal ?? 0,
                     "source": w.sourceRevision.source.name,
                     "start": iso.string(from: w.startDate),
-                    "end": iso.string(from: w.endDate)
+                    "end": iso.string(from: w.endDate),
+                    "manual": Self.isManual(w)
                 ]
                 if let m = w.totalDistance?.doubleValue(for: .meter()), m.isFinite, m > 0 { row["distance_m"] = m }
                 if #available(iOS 16.0, *), let hr = HKObjectType.quantityType(forIdentifier: .heartRate),

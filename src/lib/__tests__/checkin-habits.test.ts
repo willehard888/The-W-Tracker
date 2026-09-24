@@ -3,16 +3,20 @@ import {
   resolveCheckinHabits,
   CORE_KEYS,
   DEFAULT_CHECKIN_KEYS,
-  OPTIONAL_XP_CAP,
-  VERIFIED_BONUS_XP,
+  CHOSEN_HABIT_KEYS,
   CHECKIN_HABITS,
   habitDoneOnRow,
 } from "@/lib/checkin-habits";
 
 describe("checkin-habits constants", () => {
-  it("anti-cheat / bonus values are the agreed contract", () => {
-    expect(OPTIONAL_XP_CAP).toBe(40);
-    expect(VERIFIED_BONUS_XP).toBe(10);
+  it("no habit carries points of its own — the chosen set shares 25 a day", () => {
+    for (const h of CHECKIN_HABITS) expect("xp" in h, `${h.key} has xp`).toBe(false);
+  });
+  it("steps and zone-2 are scored from Apple Health, not chosen", () => {
+    expect(CHOSEN_HABIT_KEYS).not.toContain("steps_8k");
+    expect(CHOSEN_HABIT_KEYS).not.toContain("zone2");
+    expect(CHOSEN_HABIT_KEYS).toHaveLength(20);
+    for (const key of CORE_KEYS) expect(CHOSEN_HABIT_KEYS).not.toContain(key);
   });
   it("every core key maps to a habit flagged core in the library", () => {
     for (const key of CORE_KEYS) {
@@ -77,17 +81,18 @@ describe("earned habits", () => {
     expect(resolveCheckinHabits(["reading"], [])).toEqual(resolveCheckinHabits(["reading"]));
   });
 
-  it("is the same list the XP model scores, so an earned habit pays", () => {
+  it("is the same list the day score reads, so an earned habit counts", () => {
     const habits = resolveCheckinHabits([], ["mobility"]);
     const mobility = habits.find((h) => h.key === "mobility");
-    expect(mobility?.xp).toBe(15);
-    expect(mobility?.core).toBeFalsy(); // optional, so the OPTIONAL_XP_CAP applies
+    expect(mobility?.core).toBeFalsy();
+    expect(CHOSEN_HABIT_KEYS).toContain("mobility");
   });
 });
 
 describe("habitDoneOnRow (mirror of the edge copy)", () => {
-  it("reads sleep as the optimal window and water as 3 L", () => {
+  it("reads sleep as the 7–9 h full-score window and water as 3 L", () => {
     expect(habitDoneOnRow({ sleep_hours: 8 }, "sleep")).toBe(true);
+    expect(habitDoneOnRow({ sleep_hours: 7 }, "sleep")).toBe(true);
     expect(habitDoneOnRow({ sleep_hours: 6.5 }, "sleep")).toBe(false);
     expect(habitDoneOnRow({ sleep_hours: 9.5 }, "sleep")).toBe(false);
     expect(habitDoneOnRow({ hydration_liters: 3 }, "hydration")).toBe(true);
@@ -99,7 +104,7 @@ describe("habitDoneOnRow (mirror of the edge copy)", () => {
     expect(habitDoneOnRow(row, "workout")).toBe(true);
     expect(habitDoneOnRow(row, "meditation")).toBe(false);
     expect(habitDoneOnRow(row, "sunlight")).toBe(true);
-    expect(habitDoneOnRow(row, "zone2")).toBe(false); // a miss is an absent key
+    expect(habitDoneOnRow(row, "journaling")).toBe(false); // a miss is an absent key
     expect(habitDoneOnRow({}, "cold_shower")).toBe(false);
   });
 });

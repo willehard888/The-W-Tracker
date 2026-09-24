@@ -23,12 +23,25 @@ const chain = (result: unknown) => {
 beforeEach(() => vi.clearAllMocks());
 
 describe("fetchAllTimeLeaders", () => {
+  const tables = (blocked: { blocked_id: string }[], rows: unknown[]) => {
+    const profiles = chain({ data: rows });
+    (supabase.from as ReturnType<typeof vi.fn>).mockImplementation((t: string) =>
+      t === "blocked_users" ? chain({ data: blocked }) : profiles);
+    return profiles;
+  };
+
   it("returns the profile rows capped at BOARD_LIMIT", async () => {
     const rows = [{ user_id: "u1", xp: 100 }];
-    const c = chain({ data: rows });
-    (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue(c);
+    const c = tables([], rows);
     expect(await fetchAllTimeLeaders()).toEqual(rows);
     expect(c.limit).toHaveBeenCalledWith(BOARD_LIMIT);
+  });
+
+  it("drops the members you blocked and asks for that many more rows", async () => {
+    const rows = [{ user_id: "u1", xp: 100 }, { user_id: "u2", xp: 90 }, { user_id: "u3", xp: 80 }];
+    const c = tables([{ blocked_id: "u2" }], rows);
+    expect((await fetchAllTimeLeaders()).map((r) => r.user_id)).toEqual(["u1", "u3"]);
+    expect(c.limit).toHaveBeenCalledWith(BOARD_LIMIT + 1);
   });
 });
 

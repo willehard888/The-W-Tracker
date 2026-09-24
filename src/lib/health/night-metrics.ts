@@ -67,6 +67,8 @@ export interface DayResult {
     distance_m?: number;
     /** Average heart rate over the session (workout statistics), bpm. */
     avg_hr?: number;
+    /** Entered by hand in the Health app (HealthNight ≥ the 2026-09-25 build). */
+    manual?: boolean;
   }>;
   /** camelCase HKWorkoutActivityType of the day's longest workout. */
   primary_type?: string;

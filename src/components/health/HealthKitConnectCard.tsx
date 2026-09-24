@@ -131,7 +131,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
         <p className="text-meta text-muted-foreground leading-snug mt-1">
           {reconnect
             ? "This update reads workouts, steps, distance and body metrics on top of sleep — allow the new types once and every watch that syncs to Health (Garmin, Polar, Oura, Apple Watch) feeds your check-ins."
-            : "Connect Apple Health and every workout, night of sleep and step count your watch records — Garmin, Polar, Oura, Apple Watch — confirms your check-in for you. Verified check-ins earn the \"Verified Performer\" badge."}
+            : "Connect Apple Health and every workout, night of sleep and step count your watch records — Garmin, Polar, Oura, Apple Watch — scores your day for you. A recorded day scores up to 150 XP; a claimed one up to 100."}
         </p>
         <Button variant="secondary" loading={syncing} onClick={handleConnect} className="w-full mt-3">
           <Heart aria-hidden size={14} /> {reconnect ? "Allow the new types" : "Connect Apple Health"}

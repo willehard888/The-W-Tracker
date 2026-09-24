@@ -12,12 +12,9 @@ import {
 } from "@/lib/sports";
 
 describe("sport catalog invariants", () => {
-  it("every sport stays within the server XP ceiling (≤ 35)", () => {
-    // record_checkin budgets +35 for the workout habit (+10 margin). A sport
-    // above that gets silently clamped server-side — the UI would lie.
+  it("a sport carries no points — training scores by effort from Health", () => {
     for (const s of SPORTS) {
-      expect(s.xp, `${s.id} xp`).toBeGreaterThan(0);
-      expect(s.xp, `${s.id} xp exceeds server ceiling`).toBeLessThanOrEqual(35);
+      expect("xp" in s, `${s.id} has xp`).toBe(false);
     }
   });
 

@@ -1,184 +1,118 @@
-// The check-in XP model IS the game economy — the server's record_checkin
-// RPC mirrors these exact branches. These tests lock every multiplier band,
-// the anti-cheat optional cap, and the "XP never depends on membership"
-// invariant (there is no membership input to the function at all).
 import { describe, it, expect } from "vitest";
 import {
-  assessSleep,
-  isHabitDone,
-  habitXpValue,
-  computeCheckinXp,
-  maxDailyXp,
-  PROOF_BONUS_XP,
-  HYDRATION_DONE_LITERS,
+  scoreDay,
+  maxDayScore,
+  sleepCurve,
+  sleepClaim,
+  effortPerMinute,
+  dayScoreFromRow,
+  DAY_MAX,
+  DAY_MAX_HEALTH,
+  TRAINING_CAP,
+  type DayScoreInput,
+  type DayScoreLine,
 } from "@/lib/checkin-xp";
-import { OPTIONAL_XP_CAP, type CheckinHabit } from "@/lib/checkin-habits";
+import cases from "@/lib/__fixtures__/day-score-cases.json";
 
-const habit = (over: Partial<CheckinHabit>): CheckinHabit => ({
-  key: "reading",
-  label: "Read",
-  pillar: "stress",
-  xp: 10,
-  core: false,
-  ...over,
-} as CheckinHabit);
+interface Case {
+  name: string;
+  input: DayScoreInput;
+  expected: {
+    total: number;
+    max: number;
+    verified: boolean;
+    pts: Record<DayScoreLine["k"], number>;
+    src: Partial<Record<"training" | "sleep" | "mind", string>>;
+  };
+}
 
-const state = (over: Partial<Parameters<typeof isHabitDone>[1]> = {}) => ({
-  sleepOptimal: false,
-  workout: false,
-  hydration: 0,
-  completed: {},
-  ...over,
-});
+const CASES = cases as Case[];
+const LINE_ORDER: DayScoreLine["k"][] = ["training", "sleep", "steps", "mind", "hydration", "habits", "perfect"];
 
-describe("assessSleep — multiplier bands", () => {
-  it("7.5–9h is optimal, full XP", () => {
-    for (const h of [7.5, 8, 9]) {
-      const s = assessSleep(h);
-      expect(s.sleepMultiplier).toBe(1.0);
-      expect(s.isOptimalSleep).toBe(true);
-      expect(s.sleepPenaltyLabel).toBeNull();
+// The same file drives scripts/xp-parity.mjs against score_checkin in SQL:
+// a case that passes here and fails there is a client/server split.
+describe("scoreDay — the fixture contract (mirrors score_checkin)", () => {
+  for (const c of CASES) {
+    it(c.name, () => {
+      const out = scoreDay(c.input);
+      const pts = Object.fromEntries(out.lines.map((l) => [l.k, l.pts]));
+      expect(pts).toEqual(c.expected.pts);
+      expect(out.total).toBe(c.expected.total);
+      expect(out.max).toBe(c.expected.max);
+      expect(out.verified).toBe(c.expected.verified);
+      for (const k of ["training", "sleep", "mind"] as const) {
+        const line = out.lines.find((l) => l.k === k)!;
+        expect(line.src, `${k} src`).toBe(c.expected.src[k]);
+      }
+      expect(out.lines.map((l) => l.k)).toEqual(LINE_ORDER);
+      expect(out.lines.reduce((s, l) => s + l.pts, 0)).toBe(out.total);
+    });
+  }
+
+  it("has at least one case per line and both ceilings", () => {
+    const totals = CASES.map((c) => c.expected.total);
+    expect(totals).toContain(DAY_MAX);
+    expect(totals).toContain(DAY_MAX_HEALTH);
+    for (const k of LINE_ORDER) {
+      expect(CASES.some((c) => c.expected.pts[k] > 0), `a case scores ${k}`).toBe(true);
     }
   });
-
-  it("9–12h costs 5% unless chronic", () => {
-    const s = assessSleep(10, [8, 8, 8]);
-    expect(s.sleepMultiplier).toBe(0.95);
-    expect(s.isOptimalSleep).toBe(true); // long sleep still counts as done when not chronic
-  });
-
-  it("chronic oversleep (3+ days of ≥10h) drops 9–12h to ×0.6", () => {
-    const s = assessSleep(10, [10, 11, 10.5]);
-    expect(s.isChronicOversleep).toBe(true);
-    expect(s.sleepMultiplier).toBe(0.6);
-    expect(s.isOptimalSleep).toBe(false);
-    expect(s.sleepPenaltyLabel).toMatch(/Chronic oversleep/);
-  });
-
-  it("two oversleep days is NOT chronic yet (boundary is 3)", () => {
-    expect(assessSleep(10, [10, 10, 8]).isChronicOversleep).toBe(false);
-  });
-
-  it("short-sleep ladder: 7→0.8, 6→0.65, 5→0.5, under 5→0.4", () => {
-    expect(assessSleep(7).sleepMultiplier).toBe(0.8);
-    expect(assessSleep(6.5).sleepMultiplier).toBe(0.65);
-    expect(assessSleep(5.5).sleepMultiplier).toBe(0.5);
-    expect(assessSleep(4).sleepMultiplier).toBe(0.4);
-    expect(assessSleep(7).sleepPenaltyLabel).toMatch(/Sub-optimal/);
-    expect(assessSleep(4).sleepPenaltyLabel).toMatch(/Poor sleep/);
-  });
-
-  it("over 12h falls to the worst band", () => {
-    expect(assessSleep(13).sleepMultiplier).toBe(0.4);
-  });
 });
 
-describe("isHabitDone — widget habits read live state", () => {
-  it("sleep follows the optimal flag, workout the toggle", () => {
-    expect(isHabitDone(habit({ key: "sleep" }), state({ sleepOptimal: true }))).toBe(true);
-    expect(isHabitDone(habit({ key: "workout" }), state({ workout: true }))).toBe(true);
-    expect(isHabitDone(habit({ key: "workout" }), state())).toBe(false);
+describe("the curves", () => {
+  it("sleep: 7–9 h full, linear below, long nights taper", () => {
+    expect(sleepCurve(3.9)).toBe(0);
+    expect(sleepCurve(4)).toBe(0);
+    expect(sleepCurve(5.5)).toBeCloseTo(12.5);
+    expect(sleepCurve(7)).toBe(25);
+    expect(sleepCurve(9)).toBe(25);
+    expect(sleepCurve(9.5)).toBe(20);
+    expect(sleepCurve(10.5)).toBe(15);
+    expect(sleepCurve(null)).toBe(0);
   });
-
-  it(`hydration needs ≥${HYDRATION_DONE_LITERS}L`, () => {
-    expect(isHabitDone(habit({ key: "hydration" }), state({ hydration: 2.5 }))).toBe(false);
-    expect(isHabitDone(habit({ key: "hydration" }), state({ hydration: 3 }))).toBe(true);
+  it("a claimed night is the curve at 60 %", () => {
+    for (const h of [4, 5, 6, 6.5, 7, 8, 9, 9.5, 11]) {
+      expect(sleepClaim(h)).toBeCloseTo(0.6 * sleepCurve(h), 9);
+    }
   });
-
-  it("plain habits read the completed map", () => {
-    expect(isHabitDone(habit({ key: "reading" }), state({ completed: { reading: true } }))).toBe(true);
-    expect(isHabitDone(habit({ key: "reading" }), state())).toBe(false);
+  it("effort per minute follows the heart-rate zone; no HR is one", () => {
+    const hrMax = 185;
+    expect(effortPerMinute(null, hrMax)).toBe(1);
+    expect(effortPerMinute(100, hrMax)).toBe(0.5);   // 54 %
+    expect(effortPerMinute(120, hrMax)).toBe(1);     // 65 %
+    expect(effortPerMinute(140, hrMax)).toBe(1.5);   // 76 %
+    expect(effortPerMinute(160, hrMax)).toBe(2);     // 86 %
   });
-});
-
-describe("habitXpValue", () => {
-  it("workout pays the selected sport's XP, not the habit's", () => {
-    expect(habitXpValue(habit({ key: "workout", xp: 25 }), state({ workout: true }), 40)).toBe(40);
-    expect(habitXpValue(habit({ key: "workout", xp: 25 }), state(), 40)).toBe(0);
-  });
-});
-
-describe("computeCheckinXp — the full day score", () => {
-  it("core habits pay full value; optional habits clamp at OPTIONAL_XP_CAP", () => {
-    // Enough optional XP to blow well past the cap
-    const habits = [
-      habit({ key: "a", core: true, xp: 30 }),
-      habit({ key: "b", xp: 40 }),
-      habit({ key: "c", xp: 40 }),
-      habit({ key: "d", xp: 40 }),
-    ];
-    const st = state({ completed: { a: true, b: true, c: true, d: true } });
-    const r = computeCheckinXp({ habits, state: st, sportXp: 0, hasProof: false, sleepMultiplier: 1 });
-    expect(r.coreXp).toBe(30);
-    expect(r.optionalXp).toBe(OPTIONAL_XP_CAP); // 120 raw → clamped
-    expect(r.rawXp).toBe(30 + OPTIONAL_XP_CAP);
-  });
-
-  it("proof photo adds a flat bonus for everyone", () => {
-    const r = computeCheckinXp({ habits: [], state: state(), sportXp: 0, hasProof: true, sleepMultiplier: 1 });
-    expect(r.rawXp).toBe(PROOF_BONUS_XP);
-  });
-
-  it("sleep multiplier gates everything EXCEPT the quest bonus", () => {
-    const habits = [habit({ key: "a", core: true, xp: 100 })];
-    const r = computeCheckinXp({
-      habits,
-      state: state({ completed: { a: true } }),
-      sportXp: 0,
-      hasProof: false,
-      sleepMultiplier: 0.5,
-      questBonusXp: 20,
+  it("two hours of zone 4 still stops at the cap", () => {
+    const out = scoreDay({
+      sleepHours: null, workout: false, hydrationLiters: 0, meditationMorning: false, meditationEvening: false,
+      chosenKeys: [], doneKeys: [], appSessionToday: false, age: 30,
+      health: { workouts: [{ duration_min: 120, avg_hr: 170, manual: false }], workout_minutes: 120, sleep_hours: null, steps: null, mindful_minutes: null },
     });
-    expect(r.baseXp).toBe(50); // 100 × 0.5
-    expect(r.totalXp).toBe(70); // quest bonus rides on top unmultiplied
-  });
-
-  it("baseXp rounds to nearest int", () => {
-    const habits = [habit({ key: "a", core: true, xp: 25 })];
-    const r = computeCheckinXp({
-      habits,
-      state: state({ completed: { a: true } }),
-      sportXp: 0,
-      hasProof: false,
-      sleepMultiplier: 0.65,
-    });
-    expect(r.baseXp).toBe(16); // 16.25 → 16
-  });
-
-  it("completedCount counts done habits only", () => {
-    const habits = [habit({ key: "a", xp: 5 }), habit({ key: "b", xp: 5 })];
-    const r = computeCheckinXp({
-      habits,
-      state: state({ completed: { a: true } }),
-      sportXp: 0,
-      hasProof: false,
-      sleepMultiplier: 1,
-    });
-    expect(r.completedCount).toBe(1);
+    expect(out.lines[0].pts).toBe(TRAINING_CAP);
   });
 });
 
-describe("maxDailyXp — the honest ceiling promo surfaces may quote", () => {
-  it("equals the full-day score: every habit done, proof, optimal sleep, workout at base XP", () => {
-    const habits = [
-      habit({ key: "sleep", core: true, xp: 20 }),
-      habit({ key: "workout", core: true, xp: 25 }),
-      habit({ key: "hydration", core: true, xp: 15 }),
-      habit({ key: "reading", xp: 10 }),
-    ];
-    const expected = computeCheckinXp({
-      habits,
-      state: { sleepOptimal: true, workout: true, hydration: HYDRATION_DONE_LITERS, completed: { sleep: true, workout: true, hydration: true, reading: true } },
-      sportXp: 25,
-      hasProof: true,
-      sleepMultiplier: 1,
-    }).totalXp;
-    expect(maxDailyXp(habits)).toBe(expected);
-    expect(maxDailyXp(habits)).toBeGreaterThan(PROOF_BONUS_XP);
+describe("maxDayScore — the honest promise on Home", () => {
+  it("is 100, or 150 once Health scores the day", () => {
+    expect(maxDayScore([], false)).toBe(DAY_MAX);
+    expect(maxDayScore([], true)).toBe(DAY_MAX_HEALTH);
   });
+  it("fewer than four habits share less", () => {
+    expect(maxDayScore(["cold_shower", "reading"], false)).toBe(100 - 25 + 13);
+    expect(maxDayScore(["cold_shower", "reading", "sauna", "creatine"], false)).toBe(100);
+  });
+  it("is what a perfect day actually scores", () => {
+    const perfect = CASES.find((c) => c.expected.total === DAY_MAX)!;
+    expect(maxDayScore(perfect.input.chosenKeys, false)).toBe(perfect.expected.total);
+  });
+});
 
-  it("without a workout habit the sport contributes nothing", () => {
-    const habits = [habit({ key: "reading", xp: 10 })];
-    expect(maxDailyXp(habits)).toBe(10 + PROOF_BONUS_XP);
+describe("dayScoreFromRow", () => {
+  it("reads a v3 breakdown and rejects older rows", () => {
+    expect(dayScoreFromRow(null)).toBeNull();
+    expect(dayScoreFromRow({ v: 2, total: 80 })).toBeNull();
+    const row = { v: 3, total: 73, max: 150, verified: false, lines: [{ k: "training", pts: 50, max: 50, src: "health" }] };
+    expect(dayScoreFromRow(row)).toEqual({ total: 73, max: 150, verified: false, lines: row.lines });
   });
 });

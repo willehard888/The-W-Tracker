@@ -85,6 +85,38 @@ under test. Three things it exists to get right, each of which was wrong before:
 To debug an entitlement: read that member's last ledger rows, replay them
 through `decideEntitlement` in a test, and only then touch anything.
 
+## XP — the day score (v3, 2026-09-25)
+
+One SQL function scores a day: `score_checkin(checkin_id)`, the only writer of
+`daily_checkins.xp_earned`. It runs inside `record_checkin`, inside
+`verify_checkin`, and inside `upsert_health_snapshot` (a Polar session that
+syncs after the check-in re-scores the day by itself). The client's
+`p_xp_earned` is ignored; `src/lib/checkin-xp.ts` is the preview mirror.
+
+| line      | Apple Health                                   | claim         |
+|-----------|------------------------------------------------|---------------|
+| training  | 0–50 · min × zone (Z1 0.5 · Z2 1 · Z3 1.5 · Z4–5 2), zone = avg HR / (220 − age); no HR = 1; cap 50; a recorded session never under 25 | tick 25 · app-logged session 35 |
+| sleep     | 0–25 · 7–9 h = 25, linear to 4 h = 0, 9–10 h 20, >10 h 15 | the same × 0.6 (max 15) |
+| steps     | 0–10 · 1 per 1 000                             | 0             |
+| mind      | 15 · mindful ≥ 10 min                          | tick 10       |
+| hydration | —                                              | ≥ 3 L 15 · ≥ 2 L 8 |
+| habits    | 25 × done / max(chosen, 4)                     | same          |
+| perfect   | +10 · trained + 7–9 h + 3 L + mind + every chosen habit | same |
+| ceiling   | **150**                                        | **100**       |
+
+A workout typed into the Health app by hand (`manual`, from HealthNight) is a
+tick; hand-entered steps/sleep/mindful samples are dropped natively. A day is
+"verified" (the shield) with two Health-recorded signals.
+
+- `profiles.xp` = Σ `xp_earned` + 15 per Vault practice day. Nothing else
+  writes it — `scripts/audit/xp-invariant.sql` lists any drift.
+- Rating (`rank_score`) = 28-day average of day XP, missed days as 0. Tiers
+  take its percentile; the thresholds did not change.
+- Tribes rank per member (`tribe_member_avg`, ≥ 3 members to rank).
+- Before deploying any change to the scoring: `node scripts/xp-parity.mjs`
+  against the :5499 dry-run cluster — every case in
+  `src/lib/__fixtures__/day-score-cases.json` must agree SQL ↔ TS.
+
 ## Push
 
 `_shared/apns.ts` is the only sender, and it records every send. If a member says

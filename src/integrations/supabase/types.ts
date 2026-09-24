@@ -862,6 +862,7 @@ export type Database = {
           no_phone_morning: boolean
           proof_photo_url: string | null
           protein_intake: boolean
+          score_breakdown: Json | null
           reading: boolean
           sleep_hours: number
           sport: string | null
@@ -889,6 +890,7 @@ export type Database = {
           no_phone_morning?: boolean
           proof_photo_url?: string | null
           protein_intake?: boolean
+          score_breakdown?: Json | null
           reading?: boolean
           sleep_hours?: number
           sport?: string | null
@@ -916,6 +918,7 @@ export type Database = {
           no_phone_morning?: boolean
           proof_photo_url?: string | null
           protein_intake?: boolean
+          score_breakdown?: Json | null
           reading?: boolean
           sleep_hours?: number
           sport?: string | null
@@ -3156,6 +3159,7 @@ export type Database = {
           slug: string
           updated_at: string
           visibility: string
+          weekly_score: number
           weekly_xp: number
         }
         Insert: {
@@ -3177,6 +3181,7 @@ export type Database = {
           slug: string
           updated_at?: string
           visibility?: string
+          weekly_score?: number
           weekly_xp?: number
         }
         Update: {
@@ -3198,6 +3203,7 @@ export type Database = {
           slug?: string
           updated_at?: string
           visibility?: string
+          weekly_score?: number
           weekly_xp?: number
         }
         Relationships: []
@@ -3895,12 +3901,10 @@ export type Database = {
       get_rank_score_breakdown: {
         Args: { p_user_id: string }
         Returns: {
-          active_days: number
-          active_days_score: number
-          streak_score: number
+          avg_xp: number
+          best_day: number
+          days_logged: number
           total: number
-          trust: number
-          xp_score: number
         }[]
       }
       get_standings: {

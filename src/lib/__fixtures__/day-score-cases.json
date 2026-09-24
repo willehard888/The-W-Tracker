@@ -1,0 +1,1103 @@
+[
+  {
+    "name": "empty day",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 0,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {}
+    }
+  },
+  {
+    "name": "perfect day, every line a claim",
+    "input": {
+      "sleepHours": 8,
+      "workout": true,
+      "hydrationLiters": 3,
+      "meditationMorning": true,
+      "meditationEvening": true,
+      "chosenKeys": [],
+      "doneKeys": [
+        "extra_workout",
+        "cold_shower",
+        "healthy_food",
+        "protein",
+        "meditation_pm",
+        "no_phone_am",
+        "no_phone_pm",
+        "reading"
+      ],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 100,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 25,
+        "sleep": 15,
+        "steps": 0,
+        "mind": 10,
+        "hydration": 15,
+        "habits": 25,
+        "perfect": 10
+      },
+      "src": {
+        "training": "claim",
+        "sleep": "claim",
+        "mind": "claim"
+      }
+    }
+  },
+  {
+    "name": "perfect day, Health recorded it",
+    "input": {
+      "sleepHours": 8,
+      "workout": true,
+      "hydrationLiters": 3.5,
+      "meditationMorning": true,
+      "meditationEvening": true,
+      "chosenKeys": [],
+      "doneKeys": [
+        "extra_workout",
+        "cold_shower",
+        "healthy_food",
+        "protein",
+        "meditation_pm",
+        "no_phone_am",
+        "no_phone_pm",
+        "reading"
+      ],
+      "appSessionToday": false,
+      "age": 35,
+      "health": {
+        "workouts": [
+          {
+            "duration_min": 62,
+            "avg_hr": 148,
+            "manual": false
+          }
+        ],
+        "workout_minutes": 62,
+        "sleep_hours": 7.8,
+        "steps": 12000,
+        "mindful_minutes": 12
+      }
+    },
+    "expected": {
+      "total": 150,
+      "max": 150,
+      "verified": true,
+      "pts": {
+        "training": 50,
+        "sleep": 25,
+        "steps": 10,
+        "mind": 15,
+        "hydration": 15,
+        "habits": 25,
+        "perfect": 10
+      },
+      "src": {
+        "training": "health",
+        "sleep": "health",
+        "mind": "health"
+      }
+    }
+  },
+  {
+    "name": "tennis 62 min at 148 bpm, age 35 (zone 4) caps at 50",
+    "input": {
+      "sleepHours": 8,
+      "workout": true,
+      "hydrationLiters": 2,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": 35,
+      "health": {
+        "workouts": [
+          {
+            "duration_min": 62,
+            "avg_hr": 148,
+            "manual": false
+          }
+        ],
+        "workout_minutes": 62,
+        "sleep_hours": null,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 73,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 50,
+        "sleep": 15,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 8,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "training": "health",
+        "sleep": "claim"
+      }
+    }
+  },
+  {
+    "name": "walk 40 min at 95 bpm (zone 1) floors at the tick, still Health",
+    "input": {
+      "sleepHours": 7,
+      "workout": false,
+      "hydrationLiters": 3,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": 35,
+      "health": {
+        "workouts": [
+          {
+            "duration_min": 40,
+            "avg_hr": 95,
+            "manual": false
+          }
+        ],
+        "workout_minutes": 40,
+        "sleep_hours": null,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 55,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 25,
+        "sleep": 15,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 15,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "training": "health",
+        "sleep": "claim"
+      }
+    }
+  },
+  {
+    "name": "run 30 min at 135 bpm (zone 3) = 45",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": 35,
+      "health": {
+        "workouts": [
+          {
+            "duration_min": 30,
+            "avg_hr": 135,
+            "manual": false
+          }
+        ],
+        "workout_minutes": 30,
+        "sleep_hours": null,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 45,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 45,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "training": "health"
+      }
+    }
+  },
+  {
+    "name": "a workout typed into Health by hand is a tick",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": 35,
+      "health": {
+        "workouts": [
+          {
+            "duration_min": 60,
+            "avg_hr": 140,
+            "manual": true
+          }
+        ],
+        "workout_minutes": 60,
+        "sleep_hours": null,
+        "steps": 3000,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 28,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 25,
+        "sleep": 0,
+        "steps": 3,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "training": "claim"
+      }
+    }
+  },
+  {
+    "name": "the app's own logged session; an evening meditation tick joins the habits",
+    "input": {
+      "sleepHours": 8,
+      "workout": false,
+      "hydrationLiters": 3,
+      "meditationMorning": false,
+      "meditationEvening": true,
+      "chosenKeys": [
+        "cold_shower",
+        "reading",
+        "journaling"
+      ],
+      "doneKeys": [
+        "cold_shower",
+        "reading"
+      ],
+      "appSessionToday": true,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 94,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 35,
+        "sleep": 15,
+        "steps": 0,
+        "mind": 10,
+        "hydration": 15,
+        "habits": 19,
+        "perfect": 0
+      },
+      "src": {
+        "training": "app",
+        "sleep": "claim",
+        "mind": "claim"
+      }
+    }
+  },
+  {
+    "name": "app session beats a small recorded one",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": true,
+      "age": 35,
+      "health": {
+        "workouts": [
+          {
+            "duration_min": 20,
+            "avg_hr": 100,
+            "manual": false
+          }
+        ],
+        "workout_minutes": 20,
+        "sleep_hours": null,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 35,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 35,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "training": "app"
+      }
+    }
+  },
+  {
+    "name": "strength 30 min without heart rate = 1 per minute",
+    "input": {
+      "sleepHours": null,
+      "workout": true,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": 40,
+      "health": {
+        "workouts": [
+          {
+            "duration_min": 30,
+            "avg_hr": null,
+            "manual": false
+          }
+        ],
+        "workout_minutes": 30,
+        "sleep_hours": null,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 30,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 30,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "training": "health"
+      }
+    }
+  },
+  {
+    "name": "a snapshot from before the workouts list: minutes without heart rate",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": 45,
+        "sleep_hours": null,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 45,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 45,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "training": "health"
+      }
+    }
+  },
+  {
+    "name": "Health night of 6 h = 17",
+    "input": {
+      "sleepHours": 8,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": 6,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 17,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 17,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "health"
+      }
+    }
+  },
+  {
+    "name": "a claimed 6 h = 10",
+    "input": {
+      "sleepHours": 6,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 10,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 10,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "claim"
+      }
+    }
+  },
+  {
+    "name": "a claimed 6.1 h rounds half up to 11 (the float edge)",
+    "input": {
+      "sleepHours": 6.1,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 11,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 11,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "claim"
+      }
+    }
+  },
+  {
+    "name": "a Health night of 4 h scores nothing but is still the night",
+    "input": {
+      "sleepHours": 8,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": 4,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 0,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "health"
+      }
+    }
+  },
+  {
+    "name": "a Health night under 3 h is not a night: the claim scores",
+    "input": {
+      "sleepHours": 8,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": 1.5,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 15,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 15,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "claim"
+      }
+    }
+  },
+  {
+    "name": "9.5 h = 20, 11 h = 15",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": 9.5,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 20,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 20,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "health"
+      }
+    }
+  },
+  {
+    "name": "over ten hours = 15",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": 11,
+        "steps": null,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 15,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 15,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "health"
+      }
+    }
+  },
+  {
+    "name": "14 000 steps cap at 10; one signal is not a verified day",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": null,
+        "steps": 14000,
+        "mindful_minutes": null
+      }
+    },
+    "expected": {
+      "total": 10,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 10,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {}
+    }
+  },
+  {
+    "name": "mindful 12 min from Health = 15; a tick = 10",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": true,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": null,
+        "steps": null,
+        "mindful_minutes": 12
+      }
+    },
+    "expected": {
+      "total": 15,
+      "max": 150,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 15,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "mind": "health"
+      }
+    }
+  },
+  {
+    "name": "a meditation tick without Health = 10",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": true,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 10,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 10,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "mind": "claim"
+      }
+    }
+  },
+  {
+    "name": "six of the eight default habits = 19; meditation_pm also lights the mind line",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [
+        "extra_workout",
+        "cold_shower",
+        "healthy_food",
+        "protein",
+        "meditation_pm",
+        "no_phone_am"
+      ],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 29,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 10,
+        "hydration": 0,
+        "habits": 19,
+        "perfect": 0
+      },
+      "src": {
+        "mind": "claim"
+      }
+    }
+  },
+  {
+    "name": "three chosen, all done: the floor of four shares the 25",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [
+        "cold_shower",
+        "reading",
+        "sauna"
+      ],
+      "doneKeys": [
+        "cold_shower",
+        "reading",
+        "sauna"
+      ],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 19,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 19,
+        "perfect": 0
+      },
+      "src": {}
+    }
+  },
+  {
+    "name": "a habit done but not chosen joins the set for the day",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [
+        "cold_shower"
+      ],
+      "doneKeys": [
+        "cold_shower",
+        "gratitude"
+      ],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 13,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 13,
+        "perfect": 0
+      },
+      "src": {}
+    }
+  },
+  {
+    "name": "a retired key (steps_8k) in the chosen set is ignored",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [
+        "steps_8k",
+        "zone2",
+        "cold_shower",
+        "reading",
+        "sauna",
+        "creatine"
+      ],
+      "doneKeys": [
+        "cold_shower",
+        "reading",
+        "sauna",
+        "creatine"
+      ],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 25,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 0,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 0,
+        "habits": 25,
+        "perfect": 0
+      },
+      "src": {}
+    }
+  },
+  {
+    "name": "a sick day scores what it scores",
+    "input": {
+      "sleepHours": 8,
+      "workout": false,
+      "hydrationLiters": 2.5,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 23,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 0,
+        "sleep": 15,
+        "steps": 0,
+        "mind": 0,
+        "hydration": 8,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "claim"
+      }
+    }
+  },
+  {
+    "name": "verified by night + mindful; 4 000 steps is not a signal",
+    "input": {
+      "sleepHours": null,
+      "workout": false,
+      "hydrationLiters": 0,
+      "meditationMorning": false,
+      "meditationEvening": false,
+      "chosenKeys": [],
+      "doneKeys": [],
+      "appSessionToday": false,
+      "age": null,
+      "health": {
+        "workouts": [],
+        "workout_minutes": null,
+        "sleep_hours": 7.5,
+        "steps": 4000,
+        "mindful_minutes": 12
+      }
+    },
+    "expected": {
+      "total": 44,
+      "max": 150,
+      "verified": true,
+      "pts": {
+        "training": 0,
+        "sleep": 25,
+        "steps": 4,
+        "mind": 15,
+        "hydration": 0,
+        "habits": 0,
+        "perfect": 0
+      },
+      "src": {
+        "sleep": "health",
+        "mind": "health"
+      }
+    }
+  },
+  {
+    "name": "perfect day needs the night in the window: 6.5 h is not",
+    "input": {
+      "sleepHours": 6.5,
+      "workout": true,
+      "hydrationLiters": 3,
+      "meditationMorning": true,
+      "meditationEvening": true,
+      "chosenKeys": [],
+      "doneKeys": [
+        "extra_workout",
+        "cold_shower",
+        "healthy_food",
+        "protein",
+        "meditation_pm",
+        "no_phone_am",
+        "no_phone_pm",
+        "reading"
+      ],
+      "appSessionToday": false,
+      "age": null,
+      "health": null
+    },
+    "expected": {
+      "total": 88,
+      "max": 100,
+      "verified": false,
+      "pts": {
+        "training": 25,
+        "sleep": 13,
+        "steps": 0,
+        "mind": 10,
+        "hydration": 15,
+        "habits": 25,
+        "perfect": 0
+      },
+      "src": {
+        "training": "claim",
+        "sleep": "claim",
+        "mind": "claim"
+      }
+    }
+  }
+]

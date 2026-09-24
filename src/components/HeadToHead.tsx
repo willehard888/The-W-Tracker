@@ -21,7 +21,7 @@ const ROWS: { key: "xp" | "level" | "streak" | "rank_score"; label: string; form
   { key: "xp", label: "XP", format: fmtInt },
   { key: "level", label: "Level", format: fmtInt },
   { key: "streak", label: "Streak", format: (v) => `${fmtInt(v)}d` },
-  { key: "rank_score", label: "Consistency", format: (v) => v.toFixed(1) },
+  { key: "rank_score", label: "Rating", format: (v) => v.toFixed(1) },
 ];
 
 /**

@@ -271,7 +271,7 @@ const TribeBattles = () => {
             <DoorRow
               icon={Swords}
               label="Challenge another tribe"
-              sub="Combined member XP decides. Winners take +50 XP each."
+              sub="Average XP per member decides — a small tribe can beat a big one. The winner's fire is the prize."
               onClick={() => setChallengeOpen(true)}
             />
           </div>

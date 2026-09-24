@@ -258,10 +258,10 @@ describe("the bridge to the check-in", () => {
   it("names a habit that exists in the check-in library", () => {
     const habit = CHECKIN_HABITS.find((h) => h.key === RECOVERY_HABIT_KEY);
     expect(habit).toBeDefined();
-    // Smaller than a workout, which is the whole point: recovery is part of
-    // training, not a substitute for it.
-    const workout = CHECKIN_HABITS.find((h) => h.key === "workout");
-    expect(habit!.xp).toBeLessThan(workout!.xp);
+    // A chosen habit, not a core one: recovery is part of training, not a
+    // substitute for it — it shares the habits' 25 points, never the
+    // training line.
+    expect(habit!.core).toBeFalsy();
   });
 
   it("survives storage being unavailable instead of throwing", () => {

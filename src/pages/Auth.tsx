@@ -246,7 +246,7 @@ const Auth = () => {
               <p className="text-meta text-muted-foreground mt-3 leading-snug">
                 {refCode && (invitedBy ? `@${invitedBy} invited you. ` : "You were invited. ")}
                 Start with <span className="text-gold font-bold">14 days</span> free · cancel anytime in Settings.
-                {refCode && " Your referrer earns +50 XP when you verify."}
+                {refCode && " Your referrer hears the moment you join."}
               </p>
             </div>
           )}

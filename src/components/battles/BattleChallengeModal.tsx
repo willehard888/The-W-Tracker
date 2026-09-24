@@ -130,7 +130,7 @@ const BattleChallengeModal = ({
         ))}
       </div>
       <p className="mt-3 text-label text-muted-foreground leading-snug">
-        Starts the day after they accept. Scored from each side's own check-ins or Apple Health, decided on the last night. The winner takes 50 XP.
+        Starts the day after they accept. Scored from each side's own check-ins or Apple Health, decided on the last night. The winner takes the W — on the record.
       </p>
     </BottomSheet>
   );

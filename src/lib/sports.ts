@@ -3,14 +3,13 @@
  *
  * Was a private const inside DailyCheckin.tsx (10 entries, tennis & most
  * real sports funnelled into "Other"). Now shared by the check-in picker,
- * the athlete profile ("What do you train?"), DailyQuests, and — via the
- * persisted `daily_checkins.sport` column — the AI coach's sport-specific
- * coaching.
+ * the athlete profile ("What do you train?") and — via the persisted
+ * `daily_checkins.sport` column — the AI coach's sport-specific coaching.
+ *
+ * The sport carries no points: training scores by minutes × heart-rate zone
+ * from Apple Health (src/lib/checkin-xp.ts), the same for a walk and a fight.
  *
  * RULES:
- * - `xp` MUST stay ≤ 35. The server-side ceiling in record_checkin budgets
- *   +35 for the workout habit (+10 safety margin); anything above 45 gets
- *   silently clamped and the UI would lie about earned XP.
  * - `id` strings are persisted in daily_checkins.sport — never rename one,
  *   only add.
  * - `tribeActivity` links a sport to the tribe taxonomy name in
@@ -22,7 +21,6 @@ export interface Sport {
   label: string;
   emoji: string;
   /** XP for the workout habit when this sport is picked (≤ 35 — see above). */
-  xp: number;
   group: SportGroup;
   /** Matching tribe activity name (src/lib/tribe-activities.ts), if any. */
   tribeActivity?: string;
@@ -46,40 +44,40 @@ export const SPORT_GROUPS: SportGroup[] = [
 ];
 
 /** The "no workout" sentinel — kept separate from the real catalog. */
-export const NO_WORKOUT: Sport = { id: "none", label: "No workout", emoji: "—", xp: 0, group: "Strength & Gym" };
+export const NO_WORKOUT: Sport = { id: "none", label: "No workout", emoji: "—", group: "Strength & Gym" };
 
 export const SPORTS: Sport[] = [
   // ── Strength & Gym ─────────────────────────────────────────────────────
-  { id: "gym",      label: "Gym / Weights",          emoji: "🏋️", xp: 30, group: "Strength & Gym", tribeActivity: "Gym" },
-  { id: "hiit",     label: "HIIT / CrossFit",        emoji: "⚡", xp: 30, group: "Strength & Gym" },
+  { id: "gym",      label: "Gym / Weights",          emoji: "🏋️", group: "Strength & Gym", tribeActivity: "Gym" },
+  { id: "hiit",     label: "HIIT / CrossFit",        emoji: "⚡", group: "Strength & Gym" },
   // ── Cardio & Endurance ────────────────────────────────────────────────
-  { id: "run",      label: "Running / Jogging",      emoji: "🏃", xp: 20, group: "Cardio & Endurance", tribeActivity: "Run" },
-  { id: "cycling",  label: "Cycling",                emoji: "🚴", xp: 20, group: "Cardio & Endurance", tribeActivity: "Ride" },
-  { id: "swim",     label: "Swimming",               emoji: "🏊", xp: 25, group: "Cardio & Endurance", tribeActivity: "Swim" },
-  { id: "rowing",   label: "Rowing",                 emoji: "🚣", xp: 25, group: "Cardio & Endurance" },
-  { id: "walk",     label: "Walking / Light Cardio", emoji: "🚶", xp: 10, group: "Cardio & Endurance", tribeActivity: "Walk" },
+  { id: "run",      label: "Running / Jogging",      emoji: "🏃", group: "Cardio & Endurance", tribeActivity: "Run" },
+  { id: "cycling",  label: "Cycling",                emoji: "🚴", group: "Cardio & Endurance", tribeActivity: "Ride" },
+  { id: "swim",     label: "Swimming",               emoji: "🏊", group: "Cardio & Endurance", tribeActivity: "Swim" },
+  { id: "rowing",   label: "Rowing",                 emoji: "🚣", group: "Cardio & Endurance" },
+  { id: "walk",     label: "Walking / Light Cardio", emoji: "🚶", group: "Cardio & Endurance", tribeActivity: "Walk" },
   // ── Sports & Games ────────────────────────────────────────────────────
-  { id: "tennis",     label: "Tennis",         emoji: "🎾", xp: 25, group: "Sports & Games", tribeActivity: "Tennis" },
-  { id: "padel",      label: "Padel",          emoji: "🎾", xp: 25, group: "Sports & Games", tribeActivity: "Padel" },
-  { id: "football",   label: "Football",       emoji: "⚽", xp: 25, group: "Sports & Games" },
-  { id: "basketball", label: "Basketball",     emoji: "🏀", xp: 25, group: "Sports & Games" },
-  { id: "icehockey",  label: "Ice Hockey",     emoji: "🏒", xp: 30, group: "Sports & Games" },
-  { id: "floorball",  label: "Floorball",      emoji: "🏑", xp: 25, group: "Sports & Games" },
-  { id: "golf",       label: "Golf",           emoji: "⛳", xp: 15, group: "Sports & Games", tribeActivity: "Golf" },
-  { id: "team",       label: "Team Sports",    emoji: "🥅", xp: 25, group: "Sports & Games" },
+  { id: "tennis",     label: "Tennis",         emoji: "🎾", group: "Sports & Games", tribeActivity: "Tennis" },
+  { id: "padel",      label: "Padel",          emoji: "🎾", group: "Sports & Games", tribeActivity: "Padel" },
+  { id: "football",   label: "Football",       emoji: "⚽", group: "Sports & Games" },
+  { id: "basketball", label: "Basketball",     emoji: "🏀", group: "Sports & Games" },
+  { id: "icehockey",  label: "Ice Hockey",     emoji: "🏒", group: "Sports & Games" },
+  { id: "floorball",  label: "Floorball",      emoji: "🏑", group: "Sports & Games" },
+  { id: "golf",       label: "Golf",           emoji: "⛳", group: "Sports & Games", tribeActivity: "Golf" },
+  { id: "team",       label: "Team Sports",    emoji: "🥅", group: "Sports & Games" },
   // ── Combat ────────────────────────────────────────────────────────────
-  { id: "combat",   label: "Thai Boxing / MMA",      emoji: "🥊", xp: 35, group: "Combat", tribeActivity: "Combat" },
+  { id: "combat",   label: "Thai Boxing / MMA",      emoji: "🥊", group: "Combat", tribeActivity: "Combat" },
   // ── Mind & Body ───────────────────────────────────────────────────────
-  { id: "yoga",     label: "Yoga / Stretching",      emoji: "🧘", xp: 15, group: "Mind & Body", tribeActivity: "Yoga" },
-  { id: "dance",    label: "Dance",                  emoji: "💃", xp: 20, group: "Mind & Body" },
-  { id: "skate",    label: "Skating",                emoji: "⛸️", xp: 20, group: "Mind & Body" },
+  { id: "yoga",     label: "Yoga / Stretching",      emoji: "🧘", group: "Mind & Body", tribeActivity: "Yoga" },
+  { id: "dance",    label: "Dance",                  emoji: "💃", group: "Mind & Body" },
+  { id: "skate",    label: "Skating",                emoji: "⛸️", group: "Mind & Body" },
   // ── Winter & Outdoor ──────────────────────────────────────────────────
-  { id: "climbing", label: "Climbing",               emoji: "🧗", xp: 30, group: "Winter & Outdoor", tribeActivity: "Climbing" },
-  { id: "hike",     label: "Hiking",                 emoji: "🥾", xp: 15, group: "Winter & Outdoor", tribeActivity: "Hike" },
-  { id: "ski",      label: "Downhill Skiing",        emoji: "⛷️", xp: 30, group: "Winter & Outdoor", tribeActivity: "Ski" },
-  { id: "xcski",    label: "Cross-Country Skiing",   emoji: "🎿", xp: 30, group: "Winter & Outdoor", tribeActivity: "Ski" },
+  { id: "climbing", label: "Climbing",               emoji: "🧗", group: "Winter & Outdoor", tribeActivity: "Climbing" },
+  { id: "hike",     label: "Hiking",                 emoji: "🥾", group: "Winter & Outdoor", tribeActivity: "Hike" },
+  { id: "ski",      label: "Downhill Skiing",        emoji: "⛷️", group: "Winter & Outdoor", tribeActivity: "Ski" },
+  { id: "xcski",    label: "Cross-Country Skiing",   emoji: "🎿", group: "Winter & Outdoor", tribeActivity: "Ski" },
   // ── Catch-all ─────────────────────────────────────────────────────────
-  { id: "other",    label: "Other Sport",            emoji: "🏅", xp: 20, group: "Sports & Games" },
+  { id: "other",    label: "Other Sport",            emoji: "🏅", group: "Sports & Games" },
 ];
 
 /** Catalog including the "none" sentinel first — the check-in picker's list. */

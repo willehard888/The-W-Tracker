@@ -139,7 +139,14 @@ const Onboarding = () => {
     void track(skipped ? FUNNEL.onboardingSkipped : FUNNEL.onboardingDone, {
       step: stepIdx,
       key: step,
-      answers: answers as Record<string, unknown>,
+      // Named, not a spread of the whole answers object. Every value here is
+      // an id from a fixed option list, but `answers as Record<string, unknown>`
+      // would have shipped a free-text question the day somebody added one,
+      // with no change at this call site and nobody looking.
+      goal: answers.primary_goal ?? null,
+      sports: answers.sports ?? [],
+      freq: answers.training_freq ?? null,
+      struggle: answers.struggle ?? null,
       native: Capacitor.isNativePlatform(),
     });
     navigate(skipped ? "/" : "/checkin", { replace: true });

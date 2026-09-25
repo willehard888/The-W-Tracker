@@ -12,6 +12,8 @@
 // signed-in user captured before that are buffered and replayed after init.
 
 // deno-lint-ignore-file no-explicit-any
+import { scrubUrl, scrubText } from "@/lib/observability-scrub";
+
 type SentryLike = Pick<typeof import("@/lib/sentry-lite"), "captureException" | "setUser"> | null;
 type PosthogLike = { capture: (e: string, p?: any) => void; identify: (id: string, p?: any) => void; reset: () => void } | null;
 
@@ -59,6 +61,27 @@ export async function initObservability(): Promise<void> {
         tracesSampleRate: 0,
         // Don't capture benign aborts / network noise.
         ignoreErrors: ["AbortError", "Non-Error promise rejection captured"],
+        // Nothing scrubbed outbound reports before this: a thrown Error's
+        // message, the URL at the time (/reset-password carries its token in
+        // the query string) and whatever the SDK attached to `user` all went
+        // out verbatim. Rules live in observability-scrub.ts so they can be
+        // unit-tested; this is only where they are applied.
+        beforeSend(event) {
+          if (event.request?.url) event.request.url = scrubUrl(event.request.url);
+          if (typeof event.message === "string") event.message = scrubText(event.message);
+          for (const ex of event.exception?.values ?? []) {
+            if (typeof ex.value === "string") ex.value = scrubText(ex.value);
+          }
+          for (const crumb of event.breadcrumbs ?? []) {
+            if (typeof crumb.message === "string") crumb.message = scrubText(crumb.message);
+            const url: unknown = crumb.data?.url;
+            if (typeof url === "string" && crumb.data) crumb.data.url = scrubUrl(url);
+          }
+          // We set { id } ourselves. Anything else on `user` — ip, email,
+          // username — is the SDK's doing and fixes no crash.
+          if (event.user) event.user = { id: event.user.id };
+          return event;
+        },
       });
       sentry = { captureException, setUser };
       if (currentUserId) setUser({ id: currentUserId });

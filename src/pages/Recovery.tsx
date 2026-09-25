@@ -292,12 +292,11 @@ export default function Recovery() {
       source,
       routine: routine?.id,
       length,
-      soreness,
       areas: session.areas,
       movements: session.movements.length,
       seconds: Math.round((Date.now() - startedAt.current) / 1000),
     });
-  }, [length, soreness, source, session, routine]);
+  }, [length, source, session, routine]);
 
   const advance = useCallback(() => {
     const current = session.movements[index];
@@ -357,7 +356,6 @@ export default function Recovery() {
       source,
       routine: routine?.id,
       length,
-      soreness,
       areas: session.areas,
       movements: session.movements.length,
       general: session.general,

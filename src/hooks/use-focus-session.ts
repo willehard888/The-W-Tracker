@@ -145,7 +145,7 @@ export const useBuildFocusSession = () => {
   return useMutation({
     mutationFn: async (args: BuildArgs): Promise<BuildResult> => {
       const res = await call<BuildResult>(args);
-      void track(FUNNEL.sessionBuilt, { focus: args.focus, minutes: args.minutes, feel: args.feel ?? "normal", commit: args.commit });
+      void track(FUNNEL.sessionBuilt, { focus: args.focus, minutes: args.minutes, commit: args.commit });
       return res;
     },
     onSuccess: (res) => {

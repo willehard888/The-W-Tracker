@@ -22,6 +22,7 @@ import { captureException } from "@/lib/observability";
 import { downscaleImage } from "@/lib/downscale-image";
 import MediaPreview from "@/components/media/MediaPreview";
 import { track, FUNNEL } from "@/lib/analytics";
+import { classifyError } from "@/lib/analytics-error";
 import { useQueryClient } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import { checkAndAwardBadges } from "@/lib/badge-awards";
@@ -571,7 +572,7 @@ const DailyCheckin = () => {
       // The one failure in the app that costs a streak day had no signal
       // beyond the user's own toast. Now it has a count.
       if (rpcError && !rpcError.message?.includes("ALREADY_CHECKED_IN_TODAY")) {
-        void track(FUNNEL.checkinFailed, { network: hadNetworkError, message: rpcError.message?.slice(0, 120) });
+        void track(FUNNEL.checkinFailed, { network: hadNetworkError, ...classifyError(rpcError) });
       }
 
       // Reconstruct the success screen from the DB when the RPC's own response

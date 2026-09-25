@@ -54,10 +54,14 @@ describe("Onboarding resume", () => {
     // Skip ends the run: it reports what the flow knew, and the draft goes.
     fireEvent.click(screen.getByRole("button", { name: "Skip" }));
 
+    // Named fields, not a spread of the answers object: the shape is the
+    // guard, so a free-text question added later cannot ship itself.
     expect(mocks.track).toHaveBeenCalledWith(
       "onboarding_skipped",
-      expect.objectContaining({ answers: { primary_goal: "strength", sports: ["running"] } }),
+      expect.objectContaining({ goal: "strength", sports: ["running"], freq: null, struggle: null }),
     );
+    const [, props] = mocks.track.mock.calls.at(-1)!;
+    expect(props).not.toHaveProperty("answers");
     expect(localStorage.getItem("w_onboarding_draft_v1")).toBeNull();
     expect(localStorage.getItem("w_onboarding_step_v1")).toBeNull();
   });

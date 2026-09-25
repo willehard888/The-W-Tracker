@@ -50,7 +50,10 @@ export const FUNNEL = {
   healthkitConnected: "healthkit_connected",
   checkinCompleted: "checkin_completed",
   checkinVerified: "checkin_verified",
-  /** record_checkin failed after its retries — the user saw a toast, nobody else did. */
+  /** record_checkin failed after its retries — the user saw a toast, nobody else did.
+   *  `{ network, reason, code }`, all from closed sets (lib/analytics-error.ts).
+   *  It used to carry a 120-char slice of the raw Postgres message, which is a
+   *  length cap and not a filter. */
   checkinFailed: "checkin_failed",
   /** An offline check-in came back after midnight and could not be logged for its day. */
   checkinSyncStale: "checkin_sync_stale",
@@ -104,6 +107,13 @@ export const FUNNEL = {
   // skipped as the two ways out. `source` is post_workout | rest_day | manual
   // on every one of them. No health data rides along: `areas` are muscle
   // names, never sleep, heart rate or soreness.
+  //
+  // That last word was not true until 2026-09-25: `soreness` rode along in
+  // started/completed and the same value rode in session_built as `feel`, so
+  // a self-reported body state reached a third party on every session. Both
+  // are gone. Soreness still shapes the session on the device
+  // (lib/recovery/build-session.ts) — it just never leaves it, and
+  // pilot-leakage.test.ts fails the build if it comes back.
   recoveryOffered: "recovery_offered",
   recoveryDismissed: "recovery_dismissed",
   recoveryOpened: "recovery_opened",

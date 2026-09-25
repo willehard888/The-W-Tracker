@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { writeWorkoutToHealth } from "@/lib/health/workout-write";
+import { track, FUNNEL } from "@/lib/analytics";
 
 /**
  * The lifecycle of one workout: started, finished, how long it took.
@@ -26,6 +27,14 @@ export interface SessionRow {
   started_at: string | null;
   duration_sec: number | null;
   perceived_rpe: number | null;
+}
+
+/** What the runner knows that the row does not — all optional, all counts. */
+export interface FinishMeta {
+  /** "auto" = the last set was logged and the session ended itself. */
+  via?: "auto" | "button";
+  exercises?: number;
+  setsLogged?: number;
 }
 
 const CONFLICT = "program_id,week,day_index";
@@ -74,6 +83,10 @@ export const useWorkoutSession = (programId?: string | null, week?: number, day?
       if (!enabled) return;
       const existing = query.data;
       if (existing?.completed) return; // Already finished — nothing to start.
+      // The runner calls start() on every open, and the upsert below is
+      // deliberately idempotent about started_at. The event has to be too, or
+      // one workout reads as five because the phone locked four times.
+      const isFirstStart = !existing?.started_at;
       const { error } = await supabase.from("coach_program_logs").upsert(
         {
           user_id: user!.id,
@@ -89,15 +102,19 @@ export const useWorkoutSession = (programId?: string | null, week?: number, day?
         { onConflict: CONFLICT },
       );
       if (error) throw error;
+      if (isFirstStart) void track(FUNNEL.workoutStarted, { week, day });
     },
     onSuccess: invalidate,
   });
 
   /** Finish the session, recording how long it actually took. */
   const finish = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (meta?: FinishMeta) => {
       if (!enabled) return;
       const startedAt = query.data?.started_at;
+      // A finished session can be reopened and re-finished to rewrite a longer
+      // duration. That is one workout, so it is one workout_completed.
+      const wasCompleted = query.data?.completed === true;
       // Measured, never estimated. An unknown duration stays null rather than
       // borrowing the plan's advertised number, which is what we are trying to
       // make honest in the first place.
@@ -126,6 +143,16 @@ export const useWorkoutSession = (programId?: string | null, week?: number, day?
       // Apple Health, after our own row is safe. Opt-in and fail-open inside;
       // a measured session is the only kind worth writing.
       if (startedAt) void writeWorkoutToHealth({ id: `${programId}-${week}-${day}`, startIso: startedAt, endIso: now });
+      if (!wasCompleted) {
+        void track(FUNNEL.workoutCompleted, {
+          week,
+          day,
+          minutes: durationSec == null ? null : Math.round(durationSec / 60),
+          via: meta?.via ?? "button",
+          exercises: meta?.exercises ?? null,
+          sets_logged: meta?.setsLogged ?? null,
+        });
+      }
       return durationSec;
     },
     onSuccess: invalidate,

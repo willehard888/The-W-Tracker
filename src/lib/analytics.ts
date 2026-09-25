@@ -101,6 +101,37 @@ export const FUNNEL = {
   programEdited: "program_edited",
   // A neglected muscle group was taken up: { focus, surface: sheet|picker }.
   balanceSuggestionUsed: "balance_suggestion_used",
+
+  // The workout itself. This app is a training app and, until the pilot, a
+  // finished workout fired NOTHING: Workouts.tsx did not import analytics at
+  // all, and the only proxy was program_edited. Both events are fired from
+  // use-workout-session.ts rather than the page, so the auto-finish path (every
+  // set logged, no button) counts the same as the button — and both are fired
+  // once, not on every reopen of the same row.
+  //
+  // There is deliberately no workout_abandoned. A session is abandoned when the
+  // app is killed, which is exactly when a client event does not arrive; it is
+  // read instead from coach_program_logs (status in_progress, stale started_at),
+  // where the evidence actually is.
+  workoutStarted: "workout_started",
+  workoutCompleted: "workout_completed",
+
+  // The coach, which was equally dark. `turn` is the message number in the
+  // thread; the message text never leaves the device and is not stored server
+  // side at all. coach_answer_rated is the pilot's only direct read on whether
+  // an AI answer was any good — the same shape meal_scan_reviews already uses
+  // for the scanner.
+  coachMessageSent: "coach_message_sent",
+  coachAnswerRated: "coach_answer_rated",
+
+  // Evening reflection: a whole feature that looked unused because nothing
+  // counted it. Never the reflection text.
+  reflectionSubmitted: "reflection_submitted",
+
+  // The athlete-profile wizard — the multi-step run a new member meets right
+  // after signup, and the one place we could not see where they dropped.
+  athleteProfileStep: "athlete_profile_step",
+  athleteProfileDone: "athlete_profile_done",
   // Recovery, as one funnel. The pilot's question is how many finished
   // workouts turn into a recovery session that is actually finished, so the
   // spine is offered → opened → started → completed, with dismissed and

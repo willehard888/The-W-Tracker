@@ -17,6 +17,7 @@ import { useAthleteProfile, type ToneId, type GoalId, type TrainingExperience } 
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
+import { track, FUNNEL } from "@/lib/analytics";
 
 const DRAFT_KEY = "w_coach_onboarding_draft_v2";
 const STEP_KEY = "w_coach_onboarding_step_v2";
@@ -399,6 +400,15 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
   const last = step === STEPS.length - 1;
   const cur = STEPS[step];
+
+  // One row per step actually seen. The wizard shipped with no instrumentation
+  // at all, so a member who quit on step 2 was indistinguishable from one who
+  // never opened it — and this is the first screen a new member meets.
+  // STEPS is rebuilt every render (it holds JSX), so it cannot be a dependency.
+  useEffect(() => {
+    void track(FUNNEL.athleteProfileStep, { step, total: STEPS.length, title: STEPS[step]?.title });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
   // Steps: 0=goal, 1=experience, 2=body, 3=mind&life, 4=constraints, 5=tone.
   // The "Your week" step (exact training days / session length / wake & sleep)
   // was removed on founder request — too precise to plan honestly, and it made
@@ -414,6 +424,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
     if (last) {
       try {
         await upsert({ ...draft, onboarded: true });
+        void track(FUNNEL.athleteProfileDone, { steps: STEPS.length });
         try { localStorage.removeItem(draftKey(user?.id)); localStorage.removeItem(stepKey(user?.id)); } catch {}
         toast.success("Profile saved. Coach is now personal.");
         onDone();

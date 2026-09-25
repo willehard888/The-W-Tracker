@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { track, FUNNEL } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,7 +52,15 @@ export const useTodayReflection = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, input) => {
+      // Whether the optional boxes were used, never a word of what was written
+      // in them. The feature looked unused for months because nothing counted it.
+      void track(FUNNEL.reflectionSubmitted, {
+        date,
+        has_win: !!input.win,
+        has_friction: !!input.friction,
+        has_rpe: input.rpe_1to10 != null,
+      });
       qc.invalidateQueries({ queryKey: ["coach-reflection", user?.id] });
       qc.invalidateQueries({ queryKey: ["coach-daily-plan"] });
       toast.success("Reflection logged");

@@ -35,6 +35,8 @@ import CoachBriefHero from "@/components/coach/v2/CoachBriefHero";
 import CoachFooterLinks from "@/components/coach/v2/CoachFooterLinks";
 import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import { useOnboardingTrigger } from "@/components/onboarding/onboarding-context";
+import { track, FUNNEL } from "@/lib/analytics";
+import AnswerRating from "@/components/coach/AnswerRating";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -305,7 +307,7 @@ const CoachShell = ({
 // ── Chat sheet ────────────────────────────────────────────────────────────────
 // The app-wide BottomSheet, mounted for the page's whole life and driven by
 // `open`, so the thread survives close/reopen and the sheet's exit plays.
-type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean };
+type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean; rated?: "up" | "down" };
 
 // 7 days: the coach should remember the week's thread — extracted memory
 // facts carry everything older. (Was 24h, which made every morning start
@@ -626,6 +628,9 @@ const ChatSheet = ({
     if (faq) {
       setInput("");
       sendFaq(faq);
+      // Tagged, because "the playbook answered it" and "the model answered it"
+      // are different outcomes and only one of them costs a token.
+      void track(FUNNEL.coachMessageSent, { turn: messages.length, answered_by: "faq" });
       return;
     }
 
@@ -636,7 +641,18 @@ const ChatSheet = ({
     const next = [...messages.filter((m) => !m.failed), userMsg];
     setMessages(next);
     setPopIdx(next.length - 1);
+    void track(FUNNEL.coachMessageSent, { turn: next.length - 1, answered_by: "ai" });
     await callAi(next);
+  };
+
+  // The pilot's one direct read on whether an answer was any good. One tap,
+  // no sheet, no follow-up: a rating that costs a sentence is a rating nobody
+  // gives. The verdict rides on the message, so it saves with the thread and
+  // the same answer is never asked about twice.
+  const rateAnswer = (index: number, useful: boolean) => {
+    setMessages((prev) => prev.map((m, j): ChatMsg => (j === index ? { ...m, rated: useful ? "up" : "down" } : m)));
+    hapticImpact("light");
+    void track(FUNNEL.coachAnswerRated, { useful, turn: index });
   };
 
   const retryLast = async () => {
@@ -787,14 +803,19 @@ const ChatSheet = ({
                 From Coach Playbook · Ask a follow-up for more
               </p>
             )}
-            {m.role === "assistant" && !m.failed && !m.isFaq && !streaming && i === messages.length - 1 && m.content.length > 60 && (
-              <button
-                type="button"
-                onClick={goDeeper}
-                className="press mt-0.5 ml-1 min-h-11 inline-flex items-center gap-1 text-meta font-semibold text-muted-foreground"
-              >
-                <Sparkles size={12} aria-hidden /> Go deeper
-              </button>
+            {m.role === "assistant" && !m.failed && !m.isFaq && !streaming && i === messages.length - 1 && (
+              <div className="mt-0.5 ml-1 flex items-center gap-3">
+                {m.content.length > 60 && (
+                  <button
+                    type="button"
+                    onClick={goDeeper}
+                    className="press min-h-11 inline-flex items-center gap-1 text-meta font-semibold text-muted-foreground"
+                  >
+                    <Sparkles size={12} aria-hidden /> Go deeper
+                  </button>
+                )}
+                <AnswerRating rated={m.rated} onRate={(useful) => rateAnswer(i, useful)} />
+              </div>
             )}
           </fm.div>
         ))}

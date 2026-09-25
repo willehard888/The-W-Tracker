@@ -332,6 +332,15 @@ const CoachSession = () => {
   const plan = useMemo(() => buildSessionPlan(planDay?.blocks), [planDay]);
   const logged = daySets ?? {};
 
+  // Counts the finished row does not carry: how big the session was, and how
+  // much of it was actually logged. Never exercise names — this feeds a funnel,
+  // and a funnel does not need to know what anybody pressed.
+  const finishMeta = (via: "auto" | "button") => ({
+    via,
+    exercises: plan.length,
+    setsLogged: Object.values(logged).reduce((n, sets) => n + sets.length, 0),
+  });
+
   // Exercises moved past on purpose (the machine is taken, two sets were
   // enough). Kept on the device per session slot so a reopen lands where the
   // athlete was, cleared when they choose to keep training after a summary.
@@ -397,11 +406,15 @@ const CoachSession = () => {
   // and the check-in bridge and the program's tick key on the finished row.
   const finishRef = useRef(finish);
   finishRef.current = finish;
+  // Same reason as finishRef: the effect below must not re-run when the counts
+  // change, but it must read the counts as they are when it fires.
+  const metaRef = useRef(finishMeta);
+  metaRef.current = finishMeta;
   const autoFinished = useRef(false);
   useEffect(() => {
     if (!progress.isComplete || !session || (session.completed && !resumed) || autoFinished.current) return;
     autoFinished.current = true;
-    finishRef.current().catch(() => { autoFinished.current = false; });
+    finishRef.current(metaRef.current("auto")).catch(() => { autoFinished.current = false; });
   }, [progress.isComplete, session, resumed]);
   const illustrated = useMemo(() => (current ? resolveIllustration(current.slug, current.name) : null), [current]);
   // The next open exercise, by name, is the step the "Next" door offers — and
@@ -598,7 +611,7 @@ const CoachSession = () => {
               disabled={isFinishing}
               onClick={async () => {
                 try {
-                  if (!session?.completed || resumed) await finish();
+                  if (!session?.completed || resumed) await finish(finishMeta("button"));
                   hapticNotification("success");
                 } catch {
                   toast.error("Couldn't save the session — your sets are still logged.");
@@ -613,7 +626,7 @@ const CoachSession = () => {
               size="lg"
               className="w-full mt-2"
               onClick={async () => {
-                try { if (!session?.completed || resumed) await finish(); } catch { /* sets are safe */ }
+                try { if (!session?.completed || resumed) await finish(finishMeta("button")); } catch { /* sets are safe */ }
                 navigate(isFocusSession ? "/coach" : "/coach/program");
               }}
             >

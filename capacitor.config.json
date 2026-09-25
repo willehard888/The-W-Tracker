@@ -26,16 +26,5 @@
   },
   "server": {
     "androidScheme": "https"
-  },
-  "packageClassList": [
-    "AppLauncherPlugin",
-    "AppPlugin",
-    "FilesystemPlugin",
-    "HapticsPlugin",
-    "LocalNotificationsPlugin",
-    "PurchasesPlugin",
-    "PushNotificationsPlugin",
-    "SharePlugin",
-    "StatusBarPlugin"
-  ]
+  }
 }

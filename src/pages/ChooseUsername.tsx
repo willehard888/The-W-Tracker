@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { isUsernameAllowed } from "@/lib/username-rules";
 import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -85,6 +86,9 @@ const ChooseUsername = () => {
     if (!USERNAME_REGEX.test(username)) {
       return "Use 3–20 characters: a-z, 0-9 and _";
     }
+    // The server checks the shape; the deny-list (staff names, slurs, look-alike
+    // digits) lives here — it was written and tested, then never wired in.
+    if (!isUsernameAllowed(username)) return "That name isn't available — try another.";
     if (availability === "taken") return "That name is taken — try another.";
     return "";
   }, [username, availability]);

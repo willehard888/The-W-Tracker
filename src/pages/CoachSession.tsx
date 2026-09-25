@@ -1,4 +1,5 @@
 import { backOr } from "@/lib/nav";
+import { localDateKey } from "@/lib/date";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
@@ -476,7 +477,7 @@ const CoachSession = () => {
   if (summaryShown) {
     const volume = sessionVolume(logged, new Set(plan.map((e) => e.slug)));
     const mins = session?.duration_sec ? Math.max(1, Math.round(session.duration_sec / 60)) : null;
-    const prs = sessionPRs(recent, logged, new Date().toLocaleDateString("en-CA"));
+    const prs = sessionPRs(recent, logged, localDateKey());
     const acceptHealth = async () => {
       setHealthBusy(true);
       const ok = await enableWorkoutWrite();

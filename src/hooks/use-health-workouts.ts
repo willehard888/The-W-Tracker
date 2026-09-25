@@ -45,7 +45,7 @@ export const useHealthWorkouts = (days = 7) => {
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
-      const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+      const since = localDateKey(new Date(Date.now() - days * 86_400_000));
       const { data, error } = await supabase
         .from("health_sync_snapshots")
         .select("snapshot_date, workout_count, workouts")

@@ -52,7 +52,7 @@ import {
   type VerifySignal,
 } from "@/lib/checkin-habits";
 import { habitsEarnedToday } from "@/lib/recovery/completion";
-import { scoreDay, dayScoreFromRow, LINE_LABEL, type DayScore } from "@/lib/checkin-xp";
+import { scoreDay, dayScoreFromRow, levelForXp, levelProgress, LINE_LABEL, type DayScore } from "@/lib/checkin-xp";
 import { SLEEP_FULL_MIN_H, SLEEP_FULL_MAX_H } from "@/lib/checkin-habits";
 import { SPORT_CATALOG, SPORTS, sportsByGroup, buildForYou, sportLabel } from "@/lib/sports";
 import { useRecentSports } from "@/hooks/use-recent-sports";
@@ -584,10 +584,10 @@ const DailyCheckin = () => {
             supabase.from("profiles").select("xp, level, streak").eq("user_id", user.id).maybeSingle(),
           ]);
           const xp = prof?.xp ?? 0; const lvl = prof?.level ?? 1;
-          const xpIntoLevel = xp - (lvl - 1) * 500;
+          const lp = levelProgress(xp, lvl);
           setSummary({
             xpEarned: lastCk?.xp_earned ?? 0, newTotalXp: xp, oldLevel: lvl, newLevel: lvl,
-            xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
+            xpToNextLevel: lp.toNext, levelProgressPct: lp.pct,
             newStreak: prof?.streak ?? 0, streakBroken: false, completedCount, maxCount,
             score: dayScoreFromRow(lastCk?.score_breakdown),
           });
@@ -629,11 +629,11 @@ const DailyCheckin = () => {
           // was missed without a shield) plus this one.
           const lvl = profile?.level ?? 1;
           const newXp = (profile?.xp ?? 0) + xpToSend;
-          const newLvl = Math.max(lvl, Math.floor(newXp / 500) + 1);
-          const xpIntoLevel = newXp - (newLvl - 1) * 500;
+          const newLvl = Math.max(lvl, levelForXp(newXp));
+          const lp = levelProgress(newXp, newLvl);
           setSummary({
             xpEarned: xpToSend, newTotalXp: newXp, oldLevel: lvl, newLevel: newLvl,
-            xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
+            xpToNextLevel: lp.toNext, levelProgressPct: lp.pct,
             newStreak: getEffectiveStreak(profile?.streak ?? 0, lastCheckin?.checked_in_at, profile?.streak_shields ?? 0) + 1,
             streakBroken: false, completedCount, maxCount, score,
           });
@@ -675,10 +675,10 @@ const DailyCheckin = () => {
         setShieldSheet(r.shields_remaining ?? 1);
       }
 
-      const xpIntoLevel = r.new_xp - (r.new_level - 1) * 500;
+      const lp = levelProgress(r.new_xp, r.new_level);
       setSummary({
         xpEarned: r.xp_earned, newTotalXp: r.new_xp, oldLevel: r.old_level, newLevel: r.new_level,
-        xpToNextLevel: 500 - xpIntoLevel, levelProgressPct: Math.round((xpIntoLevel / 500) * 100),
+        xpToNextLevel: lp.toNext, levelProgressPct: lp.pct,
         newStreak: r.new_streak, streakBroken: r.streak_broken && r.old_streak > 0,
         completedCount, maxCount,
         // The server's number, not the preview.

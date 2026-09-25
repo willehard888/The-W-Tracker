@@ -71,7 +71,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
       .from("health_sync_snapshots")
       .select("snapshot_date, steps, workout_count, sleep_hours, active_kcal, sources, workouts")
       .eq("user_id", user.id)
-      .gte("snapshot_date", since.toISOString().slice(0, 10))
+      .gte("snapshot_date", localDateKey(since))
       .order("snapshot_date", { ascending: false })
       .limit(3)
       .then(({ data }) => {

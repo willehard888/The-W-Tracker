@@ -2273,88 +2273,6 @@ export type Database = {
         }
         Relationships: []
       }
-      pod_invites: {
-        Row: {
-          created_at: string
-          id: string
-          invitee_id: string
-          inviter_id: string
-          pod_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          invitee_id: string
-          inviter_id: string
-          pod_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          invitee_id?: string
-          inviter_id?: string
-          pod_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pod_invites_pod_id_fkey"
-            columns: ["pod_id"]
-            isOneToOne: false
-            referencedRelation: "pods"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pod_members: {
-        Row: {
-          joined_at: string
-          pod_id: string
-          user_id: string
-        }
-        Insert: {
-          joined_at?: string
-          pod_id: string
-          user_id: string
-        }
-        Update: {
-          joined_at?: string
-          pod_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pod_members_pod_id_fkey"
-            columns: ["pod_id"]
-            isOneToOne: false
-            referencedRelation: "pods"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pods: {
-        Row: {
-          created_at: string
-          id: string
-          invite_code: string | null
-          name: string
-          owner_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          invite_code?: string | null
-          name: string
-          owner_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          invite_code?: string | null
-          name?: string
-          owner_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           ai_consent_at: string | null
@@ -3237,83 +3155,6 @@ export type Database = {
           },
         ]
       }
-      user_habit_logs: {
-        Row: {
-          created_at: string
-          habit_id: string
-          id: string
-          logged_on: string
-          user_id: string
-          xp_awarded: number
-        }
-        Insert: {
-          created_at?: string
-          habit_id: string
-          id?: string
-          logged_on: string
-          user_id: string
-          xp_awarded?: number
-        }
-        Update: {
-          created_at?: string
-          habit_id?: string
-          id?: string
-          logged_on?: string
-          user_id?: string
-          xp_awarded?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_habit_logs_habit_id_fkey"
-            columns: ["habit_id"]
-            isOneToOne: false
-            referencedRelation: "user_habits"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_habits: {
-        Row: {
-          added_at: string
-          archived_at: string | null
-          best_streak: number
-          created_at: string
-          current_streak: number
-          id: string
-          last_logged_on: string | null
-          level: number
-          protocol_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          added_at?: string
-          archived_at?: string | null
-          best_streak?: number
-          created_at?: string
-          current_streak?: number
-          id?: string
-          last_logged_on?: string | null
-          level?: number
-          protocol_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          added_at?: string
-          archived_at?: string | null
-          best_streak?: number
-          created_at?: string
-          current_streak?: number
-          id?: string
-          last_logged_on?: string | null
-          level?: number
-          protocol_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           id: string
@@ -3740,10 +3581,6 @@ export type Database = {
       can_create_tribe: { Args: { _user_id: string }; Returns: boolean }
       claim_referral: { Args: { p_referrer_code: string }; Returns: Json }
       close_tribe_challenges: { Args: never; Returns: undefined }
-      complete_coach_mission: {
-        Args: { _mission_id: string; _plan_id: string }
-        Returns: Json
-      }
       create_battle: {
         Args: {
           p_battle_type: string
@@ -3898,28 +3735,6 @@ export type Database = {
         }
       }
       get_public_profile: { Args: { p_username: string }; Returns: Json }
-      get_rank_score_breakdown: {
-        Args: { p_user_id: string }
-        Returns: {
-          avg_xp: number
-          best_day: number
-          days_logged: number
-          total: number
-        }[]
-      }
-      get_standings: {
-        Args: { p_limit?: number }
-        Returns: {
-          avatar_url: string
-          rank: number
-          rank_score: number
-          status_tier: string
-          streak: number
-          user_id: string
-          username: string
-          xp: number
-        }[]
-      }
       get_top_inviters: {
         Args: { p_limit?: number }
         Returns: {
@@ -3992,10 +3807,6 @@ export type Database = {
       }
       join_pod: { Args: { p_code: string }; Returns: Json }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
-      join_waitlist: {
-        Args: { _answers?: Json; _email: string; _source?: string }
-        Returns: boolean
-      }
       leave_pod: { Args: never; Returns: undefined }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       list_friend_requests: { Args: never; Returns: Json }
@@ -4028,15 +3839,6 @@ export type Database = {
           p_tz_offset_minutes: number
         }
         Returns: Json
-      }
-      log_preference_signal: {
-        Args: {
-          _metadata?: Json
-          _protocol_id?: string
-          _signal_type: string
-          _value?: string
-        }
-        Returns: string
       }
       log_workout_set: {
         Args: {
@@ -4581,12 +4383,6 @@ export type Database = {
       user_verified_performer_stats: {
         Args: { _user_id: string }
         Returns: Json
-      }
-      users_due_for_streak_reminder: {
-        Args: { p_target_hour: number }
-        Returns: {
-          user_id: string
-        }[]
       }
       users_lapsed: {
         Args: { p_days_ago: number }

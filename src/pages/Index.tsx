@@ -1,4 +1,5 @@
 import { ArrowUp, Sparkles } from "lucide-react";
+import { XP_PER_LEVEL } from "@/lib/checkin-xp";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { fmtDate } from "@/lib/format";
@@ -162,7 +163,7 @@ const Index = () => {
     );
   }
 
-  const xpToNext = profile.level * 500;
+  const xpToNext = profile.level * XP_PER_LEVEL;
   const tier = profile.status_tier || "recruit";
 
   // Opening beat — the day, and only the day.

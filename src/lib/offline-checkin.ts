@@ -3,6 +3,7 @@
 // submission to localStorage and replay it (record_checkin is idempotent per
 // local calendar day, so replay can never double-log) when connectivity returns.
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { localDateKey } from "@/lib/date";
 import type { Database } from "@/integrations/supabase/types";
 
 type RecordCheckinArgs = Database["public"]["Functions"]["record_checkin"]["Args"];
@@ -17,7 +18,7 @@ export interface PendingCheckin {
 }
 
 /** Local calendar date (YYYY-MM-DD) — matches the record_checkin window model. */
-export const localDateStr = (): string => new Date().toLocaleDateString("en-CA");
+export const localDateStr = (): string => localDateKey();
 
 export const getPendingCheckin = (): PendingCheckin | null => {
   try {

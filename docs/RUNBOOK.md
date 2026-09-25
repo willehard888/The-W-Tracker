@@ -59,12 +59,17 @@ select jobname, schedule from cron.job order by jobname;
 | `archives-retention` | 04:50 | deletes deleted_account_archives older than 30 d |
 | `winback-lapsed` | 16:00 | 3/7/14-day win-back pushes |
 | `weekly-briefing-generate` | Mon 06:00 | Sunday Briefing |
-| `founder-digest-weekly` | Mon 06:00 | the founder's digest |
+| `founder-digest-daily` | 06:00 | the founder's digest (daily since 20260921100000) |
 | `tribe-challenges-close` | Mon 00:10 | closes weekly tribe challenges |
 
-`scripts/recreate-cron-jobs.sql` recreates them. A job that vanished silently is
-the failure mode to watch for: nothing pages when a cron stops, so the digest is
-the early-warning system.
+`scripts/recreate-cron-jobs.sql` recreates them — and it is the only place six
+of them exist (`coach-proactive-hourly`, `sync-streaks`, `weekly-briefing-generate`,
+`winback-lapsed`, `tribe-nudges-hourly`, `moderation-sweeper` were scheduled by
+hand, never by a migration). A project restored from migrations alone has no
+streak decay, no proactive coach, no Sunday Briefing and no win-backs until that
+script runs: it is a mandatory step after any restore. A job that vanished
+silently is the failure mode to watch for: nothing pages when a cron stops, so
+the digest is the early-warning system.
 
 ## The money path
 

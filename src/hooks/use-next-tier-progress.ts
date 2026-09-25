@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { localDateKey } from "@/lib/date";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { nextTierRequirements, type NextTierInfo, type TierRequirements } from "@/lib/status-tiers";
@@ -122,7 +123,7 @@ export const useNextTierProgress = (): NextTierProgressData => {
       // folded two Helsinki evenings into one day.
       const dayKeys = new Set(
         (checkins ?? []).map((c) =>
-          new Date(c.checked_in_at).toLocaleDateString("en-CA"),
+          localDateKey(new Date(c.checked_in_at)),
         ),
       );
       return dayKeys.size;

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { localDateKey } from "@/lib/date";
 import { supabase } from "@/integrations/supabase/client";
 import { captureException } from "@/lib/observability";
 
@@ -59,8 +60,8 @@ export const useDailyPulse = (
 
       const snap = (snapshotRef.current ?? null) as SnapshotShape | null;
       const now = new Date();
-      const todayKey = now.toLocaleDateString("en-CA");
-      const snapKey = snap?.timestamp ? new Date(snap.timestamp).toLocaleDateString("en-CA") : null;
+      const todayKey = localDateKey(now);
+      const snapKey = snap?.timestamp ? localDateKey(new Date(snap.timestamp)) : null;
 
       let rankDelta = 0;
       let scoreDelta = 0;

@@ -22,6 +22,15 @@
 
 import { CHOSEN_HABIT_KEYS, DEFAULT_CHECKIN_KEYS } from "@/lib/checkin-habits";
 
+/** XP per level. `level_for_xp()` in SQL (20260926100100) is the same rule. */
+export const XP_PER_LEVEL = 500;
+export const levelForXp = (xp: number): number => Math.floor(Math.max(0, xp) / XP_PER_LEVEL) + 1;
+/** Progress inside the current level: XP into it, XP to the next, percent. */
+export const levelProgress = (xp: number, level = levelForXp(xp)) => {
+  const into = Math.max(0, xp - (level - 1) * XP_PER_LEVEL);
+  return { into, toNext: XP_PER_LEVEL - into, pct: Math.round((into / XP_PER_LEVEL) * 100) };
+};
+
 export const DAY_MAX = 100;
 export const DAY_MAX_HEALTH = 150;
 export const TRAINING_CAP = 50;

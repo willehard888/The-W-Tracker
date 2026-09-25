@@ -3,6 +3,7 @@
 // health_night_metrics); `healthkit.ts` builds the DAY snapshot on the same
 // proxy. iOS-native only; fully fail-open (never throws to callers).
 import { vitalOrNull } from "./measurement";
+import { localDateKey } from "@/lib/date";
 import { registerPlugin, Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -113,7 +114,7 @@ const isIos = () => Capacitor.getPlatform() === "ios";
 // undefined (not null) for missing values: the RPC arg is omitted and the
 // SQL default (NULL) applies — same stored row, strict-clean payload type.
 const round1 = (v: number | null | undefined) => (v == null ? undefined : Math.round(v * 10) / 10);
-const localDate = (d = new Date()) => d.toLocaleDateString("en-CA"); // YYYY-MM-DD
+const localDate = (d = new Date()) => localDateKey(d);
 
 /**
  * Last night's total sleep in hours, folded into the day snapshot so

@@ -15,6 +15,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
 import NotFound from "@/pages/NotFound";
 import PublicProfile from "@/pages/PublicProfile";
+import OAuthCallback from "@/pages/OAuthCallback";
 
 // Entry flows. Some of these only render for a member in a particular
 // state (a member who already pays is sent home from the paywall, a member
@@ -52,6 +53,10 @@ const ROWS: Row[] = [
     path: "/u/someone", pattern: "/u/:username", page: PublicProfile, expect: /not found|couldn't load/i,
     as: () => { supabase.rpc.mockReturnValueOnce(chain({ data: null, error: null })); },
   },
+  // Sign in with Apple lands here (seven aliases in App.tsx). With no token in
+  // the URL it can only say it is signing in, then send a member home.
+  { path: "/~oauth/callback", pattern: "/~oauth/callback", page: OAuthCallback, expect: /signing you in|redirected/i },
+  { path: "/auth/callback?error=access_denied", pattern: "/auth/callback", page: OAuthCallback, expect: /signing you in|redirected/i },
   { path: "/privacy", pattern: "/privacy", page: PrivacyPolicy, expect: /privacy policy/i },
   { path: "/terms", pattern: "/terms", page: TermsOfUse, expect: /terms of use/i },
   { path: "/no/such/route", pattern: "*", page: NotFound, expect: /nothing here/i },

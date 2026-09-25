@@ -9,6 +9,7 @@
 // badly" to someone whose watch was on the charger, and a recovery plan that
 // treats a missing night as a bad one is worse than one that never mentions it.
 import type { WorkoutSetLog } from "@/hooks/use-workout-log";
+import { localDateKey } from "@/lib/date";
 import { areaLoad, topAreas, type AreaLoad } from "./exposure";
 import type { RecoveryArea } from "@/data/recovery";
 
@@ -26,7 +27,7 @@ export const recentDateKeys = (days: number, from = new Date()): string[] => {
   const keys: string[] = [];
   for (let i = 0; i <= days; i++) {
     const d = new Date(from.getFullYear(), from.getMonth(), from.getDate() - i);
-    keys.push(d.toLocaleDateString("en-CA"));
+    keys.push(localDateKey(d));
   }
   return keys;
 };

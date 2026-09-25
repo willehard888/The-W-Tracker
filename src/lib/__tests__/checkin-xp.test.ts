@@ -6,6 +6,8 @@ import {
   sleepClaim,
   effortPerMinute,
   dayScoreFromRow,
+  levelForXp,
+  levelProgress,
   DAY_MAX,
   DAY_MAX_HEALTH,
   TRAINING_CAP,
@@ -114,5 +116,19 @@ describe("dayScoreFromRow", () => {
     expect(dayScoreFromRow({ v: 2, total: 80 })).toBeNull();
     const row = { v: 3, total: 73, max: 150, verified: false, lines: [{ k: "training", pts: 50, max: 50, src: "health" }] };
     expect(dayScoreFromRow(row)).toEqual({ total: 73, max: 150, verified: false, lines: row.lines });
+  });
+});
+
+describe("levelForXp — one rule, same as level_for_xp() in SQL", () => {
+  it("is floor(xp / 500) + 1, never below level 1", () => {
+    expect(levelForXp(0)).toBe(1);
+    expect(levelForXp(499)).toBe(1);
+    expect(levelForXp(500)).toBe(2);
+    expect(levelForXp(4604)).toBe(10);
+    expect(levelForXp(-5)).toBe(1);
+  });
+  it("reports progress inside the level", () => {
+    expect(levelProgress(302)).toEqual({ into: 302, toNext: 198, pct: 60 });
+    expect(levelProgress(1000, 3)).toEqual({ into: 0, toNext: 500, pct: 0 });
   });
 });

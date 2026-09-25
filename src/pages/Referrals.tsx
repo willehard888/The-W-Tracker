@@ -199,7 +199,7 @@ const Referrals = () => {
         <section className="home-rise home-rise-4 mt-7">
           <h3 className="font-display font-bold text-sm tracking-tight">How it works</h3>
           <ul className="mt-2 space-y-1.5 text-dense text-muted-foreground leading-snug">
-            <li>Share your code. Friends get a 14-day free trial.</li>
+            <li>Share your code. It links you two; the 14-day free trial is Apple's, and everyone gets it.</li>
             <li>They show up. You hear when they join and when they log their third day.</li>
             <li>Every three who go paid give you a month free. No cap.</li>
           </ul>

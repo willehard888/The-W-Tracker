@@ -18,6 +18,7 @@ import { isNativePlatform } from "@/lib/platform";
 import { backOr } from "@/lib/nav";
 import PremiumHero from "@/components/paywall/PremiumHero";
 import PilotCodeRedeem from "@/components/paywall/PilotCodeRedeem";
+import DeleteAccountDialog from "@/components/DeleteAccountDialog";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
 
@@ -35,6 +36,7 @@ const quiet = "press min-h-11 px-3 text-meta text-muted-foreground";
 
 const Paywall = () => {
   const { user, isElite, isPremium, checkSubscription, profile, subscriptionLoading, signOut } = useAuth();
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const isAdmin = useIsAdmin(user?.id);
   const {
     purchasePremiumPlan, restorePurchases,
@@ -369,13 +371,26 @@ const Paywall = () => {
               redirects here until the trial has started. Without this door a
               member who signed in to the wrong account could only delete the app. */}
           {!isPremium && !forced && (
-            <button
-              type="button"
-              onClick={() => { void signOut(); }}
-              className="press mx-auto mt-2 block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
-            >
-              Not now — sign out
-            </button>
+            <div className="mt-2 flex flex-wrap items-center justify-center">
+              <button
+                type="button"
+                onClick={() => { void signOut(); }}
+                className="press block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
+              >
+                Not now — sign out
+              </button>
+              {/* Every route redirects here until the trial starts, so this is
+                  the only place a signed-up non-subscriber can delete the
+                  account (App Review 5.1.1(v)). Same dialog as Profile → Settings. */}
+              <button
+                type="button"
+                onClick={() => setDeleteOpen(true)}
+                className="press block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
+              >
+                Delete account
+              </button>
+              <DeleteAccountDialog open={deleteOpen} onOpenChange={setDeleteOpen} username={profile?.username} />
+            </div>
           )}
         </div>
       </div>

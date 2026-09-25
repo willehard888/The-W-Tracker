@@ -13,7 +13,7 @@ interface PushPrimingSheetProps {
 
 const ROWS = [
   { icon: Flame, text: "A nudge in the evening if you haven't checked in yet" },
-  { icon: Trophy, text: "Milestones, rank-ups & when a friend passes you" },
+  { icon: Trophy, text: "Battle results, tribe milestones and friend requests" },
   { icon: Bell, text: "Your coach's one-line morning cue" },
 ];
 

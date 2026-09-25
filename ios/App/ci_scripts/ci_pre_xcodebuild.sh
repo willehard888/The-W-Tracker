@@ -11,32 +11,14 @@ echo "ℹ️  ROOT_DIR=$ROOT_DIR"
 echo "ℹ️  IOS_APP_DIR=$IOS_APP_DIR"
 
 # ───────────────────────────────────────────────────────────────────────────
-# Xcode Cloud support (re-enabled 2026-08-27 at the founder's request).
-# ci_post_clone.sh handles Node/npm/pods on the XC VM; here we align the
-# build number with Codemagic's minutes-since-2026-01-01-UTC scheme so an
-# XC upload can never collide with the historical low counter (~780) that
-# used to make every XC upload die with "bundle version must be higher".
-# XC can't query ASC for the latest build number, so it uses the time floor
-# alone; Codemagic uses max(ASC latest+1, floor). If both pipelines archive
-# the same push in the same minute, the second upload is rejected as a
-# duplicate — harmless, the other pipeline's build is identical.
+# Build numbers (settled 2026-09-25): Xcode Cloud's own counter is the
+# CFBundleVersion the archive carries — App Store Connect shows 1208…1213
+# for the 2026-09-19 uploads. A "minutes since 2026-01-01" floor used to be
+# written here for the Codemagic era; on Xcode Cloud it never reached the
+# archive, and had it done so it would have jumped the app to a six-digit
+# version that can never come back down (CFBundleVersion only rises in ASC).
+# Nothing to do here; docs/RELEASE.md §3.5 is the reference.
 # ───────────────────────────────────────────────────────────────────────────
-# 2026-09-14: the agvtool line alone never reached the archive. Info.plist
-# reads CFBundleVersion from $(CURRENT_PROJECT_VERSION), and Xcode Cloud
-# overrides that build setting with its own workflow counter at archive time
-# (builds 1159–1162 shipped with the counter, not the floor). The morning that
-# counter fell behind App Store Connect's newest build, every archive died
-# with "The bundle version must be higher than the previously uploaded
-# version". A literal in Info.plist is what the archive actually carries, so
-# the floor is written there too — monotonic per minute, independent of any
-# counter in ASC, and printed so the XC log shows the number that shipped.
-if [[ "${CI_XCODE_CLOUD:-}" == "TRUE" ]]; then
-  XC_BUILD_NUMBER=$(( ( $(date +%s) - 1767225600 ) / 60 ))
-  echo "☁️  Xcode Cloud build — setting CFBundleVersion to time floor ${XC_BUILD_NUMBER}"
-  ( cd "$IOS_APP_DIR" && agvtool new-version -all "${XC_BUILD_NUMBER}" >/dev/null )
-  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${XC_BUILD_NUMBER}" "$IOS_APP_DIR/App/Info.plist"
-  echo "☁️  Info.plist CFBundleVersion now: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$IOS_APP_DIR/App/Info.plist")"
-fi
 
 
 # ---------------------------------------------------------------------------

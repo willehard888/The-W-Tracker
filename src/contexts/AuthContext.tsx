@@ -409,12 +409,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // CRITICAL: gate on `profile !== null` (not just `user !== null`) —
   // consumers that read `isElite` pair it with profile data reads, and
   // isElite=true with a null profile crashes premium renders.
-  const creditsActive =
-    !!profile?.membership_credits_until &&
-    new Date(profile.membership_credits_until).getTime() > Date.now();
+  // Mirrors has_active_access() (migration 20260923110000) exactly: membership,
+  // apex, membership credits, apex credits. legend_pinned is a status-tier pin,
+  // not access — counting it here let a hand-pinned Legend past the paywall
+  // and into permission-denied on every gated RPC.
+  const until = (v: string | null | undefined) => !!v && new Date(v).getTime() > Date.now();
+  const creditsActive = until(profile?.membership_credits_until) || until(profile?.apex_credits_until);
   const effectiveMembership =
     profile !== null &&
-    (isElite || creditsActive || profile.is_apex_subscriber === true || profile.legend_pinned === true);
+    (isElite || creditsActive || profile.is_apex_subscriber === true);
 
   const value = useMemo<AuthContextType>(
     () => ({

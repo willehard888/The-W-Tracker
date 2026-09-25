@@ -90,9 +90,12 @@ answering 42501.
    two same-named TestFlight groups; the external one needs explicit assignment,
    which is what that Action does.
 5. Build numbers are a plain incrementing counter under Xcode Cloud (1196 →
-   1197), not the minutes-since-epoch they were in the Codemagic era — that
-   old formula now returns a six-digit number and is wrong. Read the real one
-   from `node scratchpad/xc/newest.mjs` and hand that number over.
+   1197; App Store Connect shows 1208–1213 for the 2026-09-19 uploads), not
+   the minutes-since-epoch they were in the Codemagic era. The time-floor
+   block that wrote that six-digit number from `ci_pre_xcodebuild.sh` was
+   removed on 2026-09-25: it never reached the archive, and had it done so
+   CFBundleVersion could never have come back down. Read the real one from
+   `node scratchpad/xc/newest.mjs` and hand that number over.
 
 ## 4. The store page
 

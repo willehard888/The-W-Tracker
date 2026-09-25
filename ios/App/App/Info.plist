@@ -25,7 +25,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Whealth Factory reads your workouts, sleep, and steps from Apple Health to verify your daily check-ins. Verified check-ins earn the Verified Performer badge.</string>
+	<string>Whealth Factory reads from Apple Health to score your day and inform your coach: sleep and overnight vitals (heart rate, heart rate variability, respiratory rate, blood oxygen), daily activity (steps, distance, flights climbed, active energy), workouts with their heart rate, mindful minutes, and body metrics (weight, body fat, VO₂ max). Everything is optional; choose what to share.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Whealth Factory can save the meals you log (calories, protein, carbs, fat, water, caffeine) and the workouts you finish to Apple Health, if you turn this on in the app.</string>
 	<key>NSCameraUsageDescription</key>

@@ -73,7 +73,7 @@ const PrivacyPolicy = () => {
 
         <section>
           <h2 className="font-display font-black text-lead tracking-tight leading-tight text-foreground mb-2">9. Your rights</h2>
-          <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us. You can delete your account from your profile settings.</p>
+          <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us. You can delete your account from your profile settings (or from the membership screen). When you do, the app removes your data at once and keeps one recovery copy of the account (your email, username, profile and check-ins) for 30 days, so an accidental or fraudulent deletion can be undone on request; after 30 days it is erased for good.</p>
           <p className="mt-2">You also have the right to lodge a complaint with a data protection authority. In Finland that is the Data Protection Ombudsman (tietosuoja.fi); you may also contact the authority where you live.</p>
         </section>
 

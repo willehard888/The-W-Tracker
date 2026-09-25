@@ -329,7 +329,9 @@ const Auth = () => {
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
                   redirectTo: `${authRedirectOrigin()}/reset-password`,
                 });
-                if (error) toast.error(error.message);
+                // Supabase's rate-limit text ("you can only request this after 47
+                // seconds") is the one raw message that reached a member.
+                if (error) toast.error(friendlyError(error, "Couldn't send the reset link. Try again in a minute."));
                 else toast.success("Reset link sent. Check your email.");
               }}
               className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"

@@ -145,7 +145,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
     </div>
 
     <Button variant="ember" size="xl" className="w-full max-w-xs" onClick={onNext}>
-      What do I get?
+      Build my day
     </Button>
   </div>
 );

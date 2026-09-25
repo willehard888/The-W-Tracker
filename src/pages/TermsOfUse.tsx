@@ -33,6 +33,7 @@ const TermsOfUse = () => {
           <p>Whealth Factory Premium is an auto-renewing subscription, monthly or yearly, bought through Apple. New subscriptions start with a 14-day free trial through the App Store: the subscription renews automatically at the end of the trial, at the price shown, unless you cancel it at least 24 hours before the trial ends. The trial is available once per Apple Account.</p>
           <p className="mt-2">The price is shown in the app before you buy and varies by region. Payment is charged to your Apple Account when the free trial ends (or when you confirm a purchase without one), and the subscription renews automatically unless you cancel it at least 24 hours before the end of the current period. Manage or cancel it in Settings on your iPhone: tap your name, then Subscriptions. Refunds are handled by Apple at reportaproblem.apple.com.</p>
           <p className="mt-2">Apple's Licensed Application End User License Agreement also applies to the iOS app.</p>
+          <p className="mt-2">Apple Health is optional. If you connect it, the app reads the categories you allow (sleep, workouts, steps, active energy, mindful minutes and related vitals) to score your day and inform your coach, as described in the Privacy Policy. You can disconnect it at any time in Settings on your iPhone.</p>
         </section>
 
         <section>

@@ -19,7 +19,7 @@ import { hapticSelection, hapticImpact } from "@/lib/haptics";
 import BadgeVault from "@/components/BadgeVault";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import DeleteAccountDialog from "@/components/DeleteAccountDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,25 +81,7 @@ const Profile = () => {
   // Type-to-confirm guard: the final delete button stays disabled until the
   // user types their exact username. A single accidental tap can no longer
   // wipe an account — this is what let a test account get destroyed before.
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
-
-  // Real account-deletion action — gated behind the AlertDialog flow so
-  // a single accidental tap can never wipe the user's data.
-  const performAccountDeletion = async () => {
-    setDeleteDialogOpen(false);
-    setDeletingAccount(true);
-    try {
-      const { error } = await supabase.functions.invoke("delete-account");
-      if (error) throw error;
-      await signOut();
-      toast.success("Account deleted");
-      navigate("/landing", { replace: true });
-    } catch {
-      toast.error("Couldn't delete account");
-    } finally {
-      setDeletingAccount(false);
-    }
-  };
+  // The deletion itself lives in DeleteAccountDialog (shared with the paywall).
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const syncedBadgesForUserRef = useRef<string | null>(null);
   const [shareModal, setShareModal] = useState<{ open: boolean; variant: "stats" | "streak" | "badge"; badgeData?: any }>({
@@ -738,60 +720,18 @@ const Profile = () => {
               variant="outline"
               size="sm"
               className="flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => { setDeleteConfirmText(""); setDeleteDialogOpen(true); }}
+              onClick={() => setDeleteDialogOpen(true)}
             >
               <Trash2 aria-hidden size={14} />
               Delete account
             </Button>
 
-            {/* Controlled delete-confirm — both entry points (Settings button
-                + kebab item) converge here on performAccountDeletion(). */}
-            <AlertDialog
+            <DeleteAccountDialog
               open={deleteDialogOpen}
-              onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteConfirmText(""); }}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This permanently removes your account, profile, posts,
-                    check-ins, and habit data. If you have an active
-                    subscription, cancel it first from subscription management
-                    so billing stops correctly.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="space-y-2 py-1">
-                  <p className="text-xs text-muted-foreground">
-                    Type your username{" "}
-                    <span className="font-bold text-foreground">{profile?.username}</span>{" "}
-                    to confirm.
-                  </p>
-                  <Input
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder={profile?.username ?? "username"}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                  />
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Keep account</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="[background:hsl(var(--destructive))] text-destructive-foreground [text-shadow:none] before:hidden after:hidden shadow-[var(--shadow-2)] hover:shadow-[var(--shadow-2)] hover:brightness-110"
-                    onClick={performAccountDeletion}
-                    disabled={
-                      deletingAccount ||
-                      !profile?.username ||
-                      deleteConfirmText.trim() !== profile.username
-                    }
-                  >
-                    {deletingAccount ? "Deleting…" : "Delete permanently"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              onOpenChange={setDeleteDialogOpen}
+              username={profile?.username}
+              onBusy={setDeletingAccount}
+            />
           </div>
 
         </div>

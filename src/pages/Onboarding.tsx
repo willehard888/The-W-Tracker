@@ -33,8 +33,9 @@ import { captureException } from "@/lib/observability";
 
 /**
  * "Initiation" — the new-user onboarding.
- * Arc: invest → personalize (4 questions) → teach (loop + ladder) → commit
- * (14 days) → push → activate (straight into the first check-in).
+ * Arc: invest → personalize (4 questions) → teach (loop + ladder) → push →
+ * activate (straight into the first check-in). The trial started on the
+ * paywall before this screen (App Store introductory offer).
  *
  * Answers land where the Coach wizard reads them (draft + partial athlete
  * patch WITHOUT onboarded:true) so nothing is ever asked twice; completion is

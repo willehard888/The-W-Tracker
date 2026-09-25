@@ -268,7 +268,7 @@ const Leaderboard = () => {
   const seasonOver = mode === "season" && !!activeSeason?.ends_at && new Date(activeSeason.ends_at).getTime() <= Date.now();
   const winner = seasonOver ? currentLeaders[0] : undefined;
 
-  // Access is gated globally by AccessGate (8,99 €/mo membership or 14-day trial).
+  // Access is gated globally by ProtectedRoute (membership; the free trial is Apple's).
   return (
     <div
       ref={scrollRef}

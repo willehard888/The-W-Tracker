@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/error-copy";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +78,7 @@ const ResetPassword = () => {
     setLoading(true);
     const { error: err } = await supabase.auth.updateUser({ password });
     if (err) {
-      setError(err.message);
+      setError(friendlyError(err, "Couldn't set the new password. Try again."));
     } else {
       setSuccess(true);
     }

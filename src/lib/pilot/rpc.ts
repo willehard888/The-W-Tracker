@@ -66,8 +66,34 @@ export interface FeedbackInput {
   comment?: string | null;
   /** WHICH SCREEN. Never health data — pilot-leakage.test.ts enforces the keys. */
   context?: { route?: string; surface?: string } | null;
-  appVersion?: string | null;
 }
+
+/**
+ * Which build this came from.
+ *
+ * Resolved here and not asked of the caller. The column, the parameter and the
+ * admin column that displays it all existed for a day with nothing on earth
+ * setting them — a pipe laid end to end and never connected. A caller that CAN
+ * forget eventually does, so callers are not offered the chance.
+ *
+ * Native only: App.getInfo() is the same source Sentry's release tag uses
+ * (observability.ts). On web there is no build number to report and null is the
+ * honest answer. Resolved once and cached — this cannot change mid-session.
+ */
+let appVersion: string | null | undefined;
+const resolveAppVersion = async (): Promise<string | null> => {
+  if (appVersion !== undefined) return appVersion;
+  appVersion = null;
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (Capacitor.isNativePlatform()) {
+      const { App } = await import("@capacitor/app");
+      const info = await App.getInfo();
+      appVersion = `${info.version}+${info.build}`;
+    }
+  } catch { /* web, or the plugin is missing — null is correct either way */ }
+  return appVersion;
+};
 
 /**
  * The single cast. `supabase` really does accept these calls at runtime once
@@ -194,7 +220,7 @@ export const submitFeedback = async (input: FeedbackInput): Promise<SubmitResult
       _choice: input.choice ?? null,
       _comment: input.comment ?? null,
       _context: sanitizeContext(input.context),
-      _app_version: input.appVersion ?? null,
+      _app_version: await resolveAppVersion(),
     });
     if (error) {
       captureException(error, { where: "pilot.submitFeedback", promptId: input.promptId });

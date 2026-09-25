@@ -11,13 +11,18 @@
 // answer; the rest of the app is untouched. All copy lives here, so what a
 // tester is asked can be read in one file without opening a component.
 
-/** What the app has watched this person actually do. Never why, never how well. */
+/**
+ * What the app has watched this person actually do. Never why, never how well.
+ *
+ * One signal per question that needs one, and no more. `loggedFood` was here
+ * for a day with no question behind it and nothing deriving it — a field that is
+ * always false is not a signal, it is a promise the reader has to check.
+ */
 export interface PilotSignals {
   checkedIn: boolean;
   trained: boolean;
   askedCoach: boolean;
   recovered: boolean;
-  loggedFood: boolean;
 }
 
 export const NO_SIGNALS: PilotSignals = {
@@ -25,7 +30,6 @@ export const NO_SIGNALS: PilotSignals = {
   trained: false,
   askedCoach: false,
   recovered: false,
-  loggedFood: false,
 };
 
 export type PilotPromptKind = "checkpoint" | "contextual";

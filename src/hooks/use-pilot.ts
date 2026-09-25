@@ -114,7 +114,6 @@ export const usePilotSignals = (enabled: boolean): PilotSignals => {
         trained: (trained.data?.length ?? 0) > 0,
         askedCoach: hasCoachHistory(),
         recovered: hasRecoveryHistory(),
-        loggedFood: false,
       };
     },
   });

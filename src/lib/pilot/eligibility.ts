@@ -106,20 +106,3 @@ export const nextPrompt = (input: EligibilityInput): PilotPrompt | null => {
     ) ?? null
   );
 };
-
-/**
- * Why a feature went unused, as far as the events can tell.
- *
- * The brief asks us to tell "tried it and did not like it" apart from "never
- * found it", and the difference decides whether we ask anything at all: the
- * first is a product question worth a tester's time, the second is a
- * discoverability problem already visible in the funnel, and asking somebody
- * about a screen they never reached teaches us nothing except that we were not
- * watching.
- */
-export type UnusedReason = "never_found" | "tried_and_stopped" | "in_use";
-
-export const classifyUse = (args: { everUsed: boolean; usedRecently: boolean }): UnusedReason => {
-  if (!args.everUsed) return "never_found";
-  return args.usedRecently ? "in_use" : "tried_and_stopped";
-};

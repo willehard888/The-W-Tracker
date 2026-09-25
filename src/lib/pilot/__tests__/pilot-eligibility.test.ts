@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nextPrompt, classifyUse, COOLDOWN_MS, type EligibilityInput, type PromptLog } from "../eligibility";
+import { nextPrompt, COOLDOWN_MS, type EligibilityInput, type PromptLog } from "../eligibility";
 import { PILOT_PROMPTS, NO_SIGNALS, type PilotSignals } from "../prompts";
 
 const NOW = Date.parse("2026-09-25T12:00:00Z");
@@ -20,7 +20,7 @@ const shown = (ids: string[], at = NOW - COOLDOWN_MS * 2): PromptLog =>
   Object.fromEntries(ids.map((id) => [id, { shownAt: at, answeredAt: null, dismissedAt: null }]));
 
 const everything: PilotSignals = {
-  checkedIn: true, trained: true, askedCoach: true, recovered: true, loggedFood: true,
+  checkedIn: true, trained: true, askedCoach: true, recovered: true,
 };
 
 describe("who we may ask", () => {
@@ -117,19 +117,6 @@ describe("never about something they have not used", () => {
   it("is deterministic — the same state always asks the same thing", () => {
     const input = base({ day: 3, signals: everything });
     expect(nextPrompt(input)?.id).toBe(nextPrompt(input)?.id);
-  });
-});
-
-describe("telling 'never found it' from 'tried it and stopped'", () => {
-  it("names the three states", () => {
-    expect(classifyUse({ everUsed: false, usedRecently: false })).toBe("never_found");
-    expect(classifyUse({ everUsed: true, usedRecently: false })).toBe("tried_and_stopped");
-    expect(classifyUse({ everUsed: true, usedRecently: true })).toBe("in_use");
-  });
-
-  it("cannot be recently used without ever being used", () => {
-    // Nonsense input still gets a defensible answer rather than a third state.
-    expect(classifyUse({ everUsed: false, usedRecently: true })).toBe("never_found");
   });
 });
 

@@ -72,8 +72,8 @@ describe("getNextTier / getPreviousTier", () => {
 describe("tierRequirementSentence", () => {
   it("joins an AND rung's two clauses so they do not run together", () => {
     // Operator: percentile AND active days. Rendered with a bare space this
-    // read "Top 75% in rank score 5 active days in the last 30."
-    expect(tierRequirementSentence("operator")).toBe("Top 75% in rank score, and 5 active days in the last 30");
+    // read "Top 75% by rating 5 active days in the last 30."
+    expect(tierRequirementSentence("operator")).toBe("Top 75% by rating, and 5 active days in the last 30");
   });
 
   it("keeps an OR rung's own connector", () => {

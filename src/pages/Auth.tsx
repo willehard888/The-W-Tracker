@@ -60,6 +60,22 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
+  // The invite code, typed. The link form (/auth?ref=) only reaches this
+  // screen when the app itself is opened with the URL — on iOS that never
+  // happens for someone who has yet to install it, and the web is a static
+  // page — so the code the friend was sent has to be enterable here. Written
+  // to the same key the link path uses; AuthContext claims it after sign-up
+  // (Apple or email alike), inside claim_referral's 7-day window.
+  const [inviteCode, setInviteCode] = useState(refCode ?? "");
+  const [inviteOpen, setInviteOpen] = useState(!!refCode);
+  const onInviteCode = (raw: string) => {
+    const code = raw.trim().toLowerCase();
+    setInviteCode(code);
+    try {
+      if (code) localStorage.setItem("pending_referral_code", code);
+      else localStorage.removeItem("pending_referral_code");
+    } catch { /* private mode: the claim simply does not happen */ }
+  };
   const appleSignInRequested = searchParams.get("apple_sign_in") === "1";
   const modeParam = searchParams.get("mode");
 
@@ -244,9 +260,9 @@ const Auth = () => {
               {/* The trial, one line. The only gold on the screen is the number.
                   It is an App Store free trial, started right after this screen. */}
               <p className="text-meta text-muted-foreground mt-3 leading-snug">
-                {refCode && (invitedBy ? `@${invitedBy} invited you. ` : "You were invited. ")}
+                {inviteCode && (invitedBy ? `@${invitedBy} invited you. ` : "You were invited. ")}
                 Start with <span className="text-gold font-bold">14 days</span> free · cancel anytime in Settings.
-                {refCode && " Your referrer hears the moment you join."}
+                {inviteCode && " Your referrer hears the moment you join."}
               </p>
             </div>
           )}
@@ -317,6 +333,34 @@ const Auth = () => {
               <div className="flex-1 h-px bg-border" />
             </div>
             <AppleSignInButton externalLoading={appleLoading} />
+          </div>
+        )}
+
+        {/* The invite code, for either sign-up path — see onInviteCode. */}
+        {mode === "signup" && (
+          <div className="home-rise home-rise-2 mt-4">
+            {inviteOpen ? (
+              <div>
+                <Label htmlFor="auth-invite" className="mb-1.5 block text-muted-foreground">Invite code</Label>
+                <Input
+                  id="auth-invite"
+                  type="text"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={inviteCode}
+                  onChange={(e) => onInviteCode(e.target.value)}
+                  placeholder="friend_a1b2c3"
+                  maxLength={20}
+                  className="h-12 rounded-xl text-copy"
+                />
+                <p className="text-label text-muted-foreground mt-1.5">Links you to the friend who sent it. They hear when you join.</p>
+              </div>
+            ) : (
+              <button type="button" className="text-sm text-muted-foreground underline-offset-4 hover:underline" onClick={() => setInviteOpen(true)}>
+                Have an invite code?
+              </button>
+            )}
           </div>
         )}
 

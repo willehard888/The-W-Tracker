@@ -312,6 +312,18 @@ img { display: block; max-width: 100%; height: auto; }
   font-variant-numeric: tabular-nums;
 }
 .hero-xp .dot { color: var(--gold-dark); }
+.hero-invite {
+  margin-top: 1.2em;
+  font-size: clamp(15px, 1.2vw, 18px);
+  color: hsl(40 8% 78%);
+  text-align: center; text-wrap: balance;
+}
+.hero-invite .invite-code {
+  font: 700 1em/1 var(--display);
+  letter-spacing: 0.02em;
+  color: var(--gold);
+  user-select: all; -webkit-user-select: all;
+}
 
 /* Entrance: the words slam in, the control rises, the day follows. Plain CSS
    from the first paint — it used to wait for GSAP, so a slow connection saw an

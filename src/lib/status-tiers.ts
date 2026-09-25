@@ -287,7 +287,7 @@ export const tierRequirementLines = (tier: string): string[] => {
   const cfg = getTierConfig(tier);
   const r = cfg.requirements;
   if (r.percentile === 0) return ["Where everyone starts."];
-  const lines = [`${cfg.percentile} in rank score`];
+  const lines = [`${cfg.percentile} by rating`];
   const grind = [
     r.activeDays > 0 && `${r.activeDays} active days in the last 30`,
     r.streak > 0 && `${r.streak}-day current streak`,
@@ -299,7 +299,7 @@ export const tierRequirementLines = (tier: string): string[] => {
 /**
  * The same lines as one sentence. The two clauses are joined by the word that
  * makes them true: an OR rung already carries its "or", an AND rung needs the
- * comma-and, and without it the card read "Top 75% in rank score 5 active days
+ * comma-and, and without it the card read "Top 75% by rating 5 active days
  * in the last 30." — two requirements run together as if they were one.
  */
 export const tierRequirementSentence = (tier: string): string => {

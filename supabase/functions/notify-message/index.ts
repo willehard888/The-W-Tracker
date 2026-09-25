@@ -91,7 +91,8 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .single();
 
-    const senderUsername = senderProfile?.username || "Someone";
+    // "@name", as every other social row in the inbox names its actor.
+    const senderUsername = senderProfile?.username ? `@${senderProfile.username}` : "Someone";
 
     // Don't trust message_preview from the body — an attacker who sent one DM
     // could then loop this endpoint with arbitrary text under the sender's

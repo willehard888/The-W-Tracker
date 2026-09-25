@@ -672,7 +672,7 @@ const Profile = () => {
           </SettingsGroup>
 
           <SettingsGroup title="Sharing & friends">
-            <SettingsRow icon={Users} label="Invite friends" sub="Both get rewarded" badge={Number(profile.referral_count) || undefined} onClick={() => navigate("/referrals")} />
+            <SettingsRow icon={Users} label="Invite friends" sub="Three paid friends, one month free" badge={Number(profile.referral_count) || undefined} onClick={() => navigate("/referrals")} />
             <SettingsRow icon={Image} label="Share stats" onClick={() => setShareModal({ open: true, variant: "stats" })} />
             <SettingsRow icon={Flame} label="Share streak" onClick={() => setShareModal({ open: true, variant: "streak" })} />
             <SettingsRow icon={GitCompare} label="Compare badges" onClick={() => navigate("/badges/compare")} />

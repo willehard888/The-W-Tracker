@@ -35,6 +35,9 @@ const ROWS: Row[] = [
   { path: "/landing", pattern: "/landing", page: Landing, expect: /legal/i },
   { path: "/auth", pattern: "/auth", page: Auth, expect: /password/i },
   { path: "/auth?mode=signup", pattern: "/auth", page: Auth, expect: /password/i },
+  // An invite link opens the code field, prefilled; typed codes land in the
+  // same localStorage key AuthContext claims from.
+  { path: "/auth?ref=friend_a1b2c3", pattern: "/auth", page: Auth, expect: /invite code/i },
   { path: "/onboarding", pattern: "/onboarding", page: Onboarding, expect: /welcome to whealth factory/i },
   {
     path: "/choose-username", pattern: "/choose-username", page: ChooseUsername, expect: /claim your name/i,

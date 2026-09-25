@@ -27,7 +27,9 @@ export function useBlockActions() {
      "friends", "pending-friend-requests", "tribe-posts",
      // The open chat thread: without this the composer stayed live on the
      // screen the block was made from, and every send failed silently.
-     "chat-blocked", "chat-messages"].forEach((k) =>
+     "chat-blocked", "chat-messages",
+     // The bell: rows from a blocked actor are hidden server-side too.
+     "notifications"].forEach((k) =>
       qc.invalidateQueries({ queryKey: [k] }),
     );
   }, [qc]);

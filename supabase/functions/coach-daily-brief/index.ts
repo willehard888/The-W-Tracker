@@ -193,6 +193,7 @@ Athlete:
 - Injuries: ${(athlete?.injuries ?? []).join(", ") || "none reported"}
 - No-go: ${(athlete?.no_go_protocols ?? []).join(", ") || "none"}
 
+Program week: ${weekIdx}
 Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts${sports7 ? ` (${sports7})` : ""}.${lastScoreLine}
 ${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${whealthBlock}
@@ -279,6 +280,9 @@ Also produce:
     payload.tier = (profile as { status_tier?: string }).status_tier ?? null;
     payload.week = weekIdx;
     payload.day_index = dayIdx;
+    // The week number on the ribbon is computed, never the model's guess —
+    // the program card below it shows the same weekIdx.
+    if (typeof payload.ribbon === "string") payload.ribbon = payload.ribbon.replace(/^Week \d+/i, `Week ${weekIdx}`);
 
     // Stored under the day it was asked for: the read above keys on the
     // device's local day, and CURRENT_DATE on the server is UTC.

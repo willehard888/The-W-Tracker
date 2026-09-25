@@ -13,6 +13,15 @@
   const labelText = button.querySelector(".label-text");
   const streakDay = document.querySelector(".hero-xp .streak-day");
 
+  // An invite link brought them here. There is no web app, so the code is
+  // shown to be typed at sign-up (the app's Auth screen has the field).
+  const ref = new URLSearchParams(location.search).get("ref");
+  if (ref && /^[a-z0-9_]{1,20}$/i.test(ref)) {
+    const line = document.querySelector(".hero-invite");
+    line.querySelector(".invite-code").textContent = ref.toLowerCase();
+    line.hidden = false;
+  }
+
   // ── The forge: embers, drips and sparks on one canvas around the control.
   const canvas = document.querySelector(".forge");
   const ctx = canvas.getContext("2d");

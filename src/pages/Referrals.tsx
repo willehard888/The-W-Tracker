@@ -42,7 +42,8 @@ const Referrals = () => {
 
   // Hardcoded canonical origin — window.location.origin is capacitor://localhost
   // inside the native shell, which made every shared link dead on arrival.
-  const referralLink = `${WEB_ORIGIN}/auth?ref=${profile.referral_code || profile.username}`;
+  const referralCode = profile.referral_code || profile.username;
+  const referralLink = `${WEB_ORIGIN}/auth?ref=${referralCode}`;
 
   const handleCopy = async () => {
     try {
@@ -59,14 +60,14 @@ const Referrals = () => {
   const handleNativeShare = async () => {
     const ok = await shareText({
       title: "Join Whealth Factory",
-      text: `Train with me on Whealth Factory — daily check-ins, AI coach, the full system. Join here: ${referralLink}`,
+      // The code is in the text on purpose: the link lands on the site, the
+      // app is installed from the store, and the code is typed at sign-up.
+      text: `Train with me on Whealth Factory — daily check-ins, AI coach, the full system. My invite code: ${referralCode}. ${referralLink}`,
       url: referralLink,
     });
     if (ok) void track(FUNNEL.inviteShared, { method: "native" });
     else handleCopy();
   };
-
-  const referralCode = profile.referral_code || profile.username;
 
   // The deal: every 3 paid friends = 1 free month, no cap.
   const paidCount = stats?.convertedCount ?? profile.referral_count ?? 0;
@@ -199,7 +200,7 @@ const Referrals = () => {
         <section className="home-rise home-rise-4 mt-7">
           <h3 className="font-display font-bold text-sm tracking-tight">How it works</h3>
           <ul className="mt-2 space-y-1.5 text-dense text-muted-foreground leading-snug">
-            <li>Share your code. It links you two; the 14-day free trial is Apple's, and everyone gets it.</li>
+            <li>Share your code. They enter it at sign-up and it links you two; the 14-day free trial is Apple's, and everyone gets it.</li>
             <li>They show up. You hear when they join and when they log their third day.</li>
             <li>Every three who go paid give you a month free. No cap.</li>
           </ul>

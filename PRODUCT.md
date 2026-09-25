@@ -67,9 +67,12 @@ Confirmed, and the only claims the site may make:
   same-day practice; the ideas of 21 thinkers.
 - Squad: tribes, a proof feed, direct messages, 1v1 battles; report and block
   everywhere.
-- Apple Health: optional; sleep, steps, active energy.
-- Membership: 14 days of full access free with no payment details, then
-  Whealth Factory Premium, monthly or yearly, auto-renewing through Apple.
+- Apple Health: optional; sleep, workouts, steps, active energy, mindful
+  minutes. A day scores 0–150: Health scores what it can measure, a claim
+  earns the floor (XP v3, 2026-09-24).
+- Membership: a 14-day free trial through the App Store (an introductory
+  offer on both plans), then Whealth Factory Premium at 8,99 € a month or
+  89,99 € a year, auto-renewing through Apple; cancel in Settings.
 - Not a medical device; gives no medical advice.
 
 Constraints:

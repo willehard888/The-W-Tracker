@@ -23,7 +23,11 @@
   <script>
     // The entrance is CSS (site.css "Entrance"): it plays from the first paint
     // and never waits for a script. Reduced motion shows the page as is.
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("motion");
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.add("motion");
+      // If site.js never arrives, the reveals must not wait on it forever.
+      setTimeout(function () { document.querySelectorAll("[data-reveal-group]").forEach(function (el) { el.classList.add("in"); }); }, 4000);
+    }
   </script>
   <script type="application/ld+json">
   {
@@ -37,6 +41,20 @@
     "address": { "@type": "PostalAddress", "streetAddress": "Soukansalmentie 30 A", "postalCode": "02360", "addressLocality": "Espoo", "addressCountry": "FI" }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Do I need a watch?", "acceptedAnswer": { "@type": "Answer", "text": "No. Every member can score 100 a day by hand. A watch that writes to Apple Health — Polar, Garmin, Oura, Apple Watch — scores training, sleep, steps and mindful minutes for you, up to 150." } },
+      { "@type": "Question", "name": "What does it read from Apple Health?", "acceptedAnswer": { "@type": "Answer", "text": "Sleep, workouts, steps, active energy and mindful minutes. Optional; nothing is read until you allow it, and you can turn it off." } },
+      { "@type": "Question", "name": "Is the trial free?", "acceptedAnswer": { "@type": "Answer", "text": "14 days, everything unlocked, through the App Store. It renews at 8,99 € a month or 89,99 € a year unless you cancel in Settings before it ends." } },
+      { "@type": "Question", "name": "What does the coach know?", "acceptedAnswer": { "@type": "Answer", "text": "Your check-ins, your training logs and your Apple Health sleep — and only once you switch AI on." } },
+      { "@type": "Question", "name": "Android or iPad?", "acceptedAnswer": { "@type": "Answer", "text": "iPhone only." } },
+      { "@type": "Question", "name": "Is this medical advice?", "acceptedAnswer": { "@type": "Answer", "text": "No. Whealth Factory is not a medical device and gives no medical advice." } }
+    ]
+  }
+  </script>
 </head>
 <body>
   <a class="skip" href="#day">Skip to content</a>
@@ -46,6 +64,9 @@
       <img class="brand-icon" src="/app-icon@2x.webp" width="104" height="104" alt="">
       <span class="brand-name">Whealth Factory</span>
     </a>
+    <nav class="masthead-nav" aria-label="Sections">
+      <a href="#day">Day</a><a href="#streak">Streak</a><a href="#rank">Rank</a><a href="#coach">Coach</a><a href="#inside">Inside</a><a href="#arrival">Get it</a>
+    </nav>
     <p class="masthead-cta">Coming to the App Store</p>
   </header>
 
@@ -89,39 +110,29 @@
       <p class="hero-xp" data-reveal="late" aria-live="polite"><span>+150 XP</span><span class="dot" aria-hidden="true">·</span><span class="streak-day">Streak day 1</span></p>
     </section>
 
-    <section id="day" class="day" aria-labelledby="day-title">
-      <ul class="cards" aria-label="An example day">
-        <li class="card" data-reveal="card">
-          <span class="card-icon"><svg class="i i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>
-          <span class="card-copy">
-            <span class="card-label">Sleep</span>
-            <span class="card-value"><b data-count="7">7</b><small>h</small> <b data-count="42">42</b><small>m</small></span>
-          </span>
-        </li>
-        <li class="card" data-reveal="card">
-          <span class="card-icon"><svg class="i i-dumbbell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg></span>
-          <span class="card-copy">
-            <span class="card-label">Training</span>
-            <span class="card-value"><b data-count="45">45</b> <small>min</small></span>
-          </span>
-        </li>
-        <li class="card" data-reveal="card">
-          <span class="card-icon"><svg class="i i-soup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg></span>
-          <span class="card-copy">
-            <span class="card-label">Fuel</span>
-            <span class="card-value"><b data-count="142">142</b> <small>g</small></span>
-            <span class="card-sub">Protein</span>
-          </span>
-        </li>
-      </ul>
-      <p class="cards-note">An example day</p>
-      <div class="day-copy">
-        <h2 id="day-title" class="display">Every day you show up, it counts.</h2>
-        <p class="lede">Sleep comes in from Apple Health. Training from the sets you log. Fuel from a photo of your plate. Lock in takes under a minute and seals the day.</p>
+    <section id="day" class="score" aria-labelledby="score-title">
+      <div class="score-copy">
+        <p class="eyebrow">The day</p>
+        <h2 id="score-title" class="display">Every day scores 0 to 150.</h2>
+        <p class="lede">A tick is 25. A session your watch recorded is up to 50 — minutes times heart-rate zone. Typed into Health by hand, it is a tick. Every member can reach 100. A day your watch recorded reaches 150.</p>
+        <p class="lede lede-2">Works with whatever writes to Apple Health — Polar, Garmin, Oura, Apple Watch.</p>
       </div>
+      <figure class="sheet surface" data-reveal-group>
+        <figcaption class="sheet-head"><span class="eyebrow">Check-in · Thursday</span><span class="sheet-tag"><svg class="i i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Verified by Apple Health</span></figcaption>
+        <ol class="lines">
+          <li class="line" style="--i: 0; --p: 1.000"><span class="line-k">Training <svg class="i i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="line-d">Tennis · 62 min · 148 bpm · zone 4</span><span class="line-bar" aria-hidden="true"><i></i></span><b class="line-n">50<small>/50</small></b></li>
+          <li class="line" style="--i: 1; --p: 0.960"><span class="line-k">Sleep <svg class="i i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="line-d">7 h 48 min</span><span class="line-bar" aria-hidden="true"><i></i></span><b class="line-n">24<small>/25</small></b></li>
+          <li class="line" style="--i: 2; --p: 0.900"><span class="line-k">Steps <svg class="i i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="line-d">9 400</span><span class="line-bar" aria-hidden="true"><i></i></span><b class="line-n">9<small>/10</small></b></li>
+          <li class="line" style="--i: 3; --p: 1.000"><span class="line-k">Mind <svg class="i i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="line-d">12 min</span><span class="line-bar" aria-hidden="true"><i></i></span><b class="line-n">15<small>/15</small></b></li>
+          <li class="line" style="--i: 4; --p: 1.000"><span class="line-k">Water</span><span class="line-d">3 L</span><span class="line-bar" aria-hidden="true"><i></i></span><b class="line-n">15<small>/15</small></b></li>
+          <li class="line" style="--i: 5; --p: 1.000"><span class="line-k">Habits</span><span class="line-d">8 of 8</span><span class="line-bar" aria-hidden="true"><i></i></span><b class="line-n">25<small>/25</small></b></li>
+          <li class="line" style="--i: 6; --p: 1.000"><span class="line-k">Perfect day</span><span class="line-bar" aria-hidden="true"><i></i></span><b class="line-n">10<small>/10</small></b></li>
+        </ol>
+        <p class="sheet-total"><b class="figure">148<small>/150</small></b><span class="sheet-note">Four lines scored by Apple Health. The rest, by you.</span></p>
+      </figure>
     </section>
 
-    <section class="streak" aria-labelledby="streak-title">
+    <section id="streak" class="streak" aria-labelledby="streak-title">
       <div class="streak-stage">
         <div class="streak-flame" aria-hidden="true">
           <span class="streak-halo"></span>
@@ -143,42 +154,110 @@
         </div>
         <p class="streak-count" aria-hidden="true"><span class="streak-num">30</span><span class="streak-unit">days</span></p>
         <div class="streak-copy">
+          <p class="eyebrow">The streak</p>
           <h2 id="streak-title" class="display">Day one is easy. Day thirty is who you are.</h2>
           <p class="lede">Every locked-in day adds one. Your squad sees the number next to your name. So do you, every morning.</p>
         </div>
       </div>
     </section>
 
-    <section class="status" aria-labelledby="status-title">
-      <h2 id="status-title" class="display">Every tier is earned. Nobody skips the line.</h2>
-      <p class="lede">Rank, active days and streak move you up. Legend is the top 1%. Most people never get there.</p>
-      <ol class="tiers">
-        <li class="tier" style="--c: hsl(40 6% 72%)">Recruit</li>
-        <li class="tier" style="--c: hsl(38 90% 56%)">Operator</li>
-        <li class="tier" style="--c: hsl(210 90% 60%)">Performer</li>
-        <li class="tier" style="--c: hsl(24 80% 56%)">High Performer</li>
-        <li class="tier" style="--c: hsl(42 78% 56%)">Elite</li>
-        <li class="tier" style="--c: hsl(18 95% 58%)">Apex</li>
-        <li class="tier" style="--c: hsl(280 70% 70%)">Legend</li>
-      </ol>
+    <section id="rank" class="rating" aria-labelledby="rating-title">
+      <div class="rating-copy">
+        <p class="eyebrow">The board</p>
+        <h2 id="rating-title" class="display">One board. Days, not networks.</h2>
+        <p class="lede">Your rating is your last 28 days, a missed day counting as zero. Referrals, likes and friends move nothing. The season resets every month; everyone starts at zero.</p>
+      </div>
+      <div class="rating-strip" data-reveal-group>
+        <ol class="days" aria-label="The last 28 days: 25 locked in, 3 missed">
+          <li style="--i: 0"></li>
+          <li style="--i: 1"></li>
+          <li style="--i: 2"></li>
+          <li style="--i: 3"></li>
+          <li style="--i: 4"></li>
+          <li style="--i: 5"></li>
+          <li style="--i: 6" class="miss"></li>
+          <li style="--i: 7"></li>
+          <li style="--i: 8"></li>
+          <li style="--i: 9"></li>
+          <li style="--i: 10"></li>
+          <li style="--i: 11"></li>
+          <li style="--i: 12"></li>
+          <li style="--i: 13" class="miss"></li>
+          <li style="--i: 14"></li>
+          <li style="--i: 15"></li>
+          <li style="--i: 16"></li>
+          <li style="--i: 17"></li>
+          <li style="--i: 18"></li>
+          <li style="--i: 19"></li>
+          <li style="--i: 20"></li>
+          <li style="--i: 21"></li>
+          <li style="--i: 22" class="miss"></li>
+          <li style="--i: 23"></li>
+          <li style="--i: 24"></li>
+          <li style="--i: 25"></li>
+          <li style="--i: 26"></li>
+          <li style="--i: 27"></li>
+        </ol>
+        <p class="rating-num"><span class="eyebrow">Rating</span><b class="figure">92</b><span class="rating-note">of 150 · the 28-day average</span></p>
+      </div>
+      <div class="status">
+        <h3 id="status-title" class="display display-2">Every tier is earned. Nobody skips the line.</h3>
+        <p class="lede">Rank, active days and streak move you up. Legend is the top 1 %. Most people never get there.</p>
+        <ol class="tiers" aria-label="The seven tiers" data-reveal-group>
+          <li class="tier" style="--c: hsl(40 6% 72%)">Recruit</li>
+          <li class="tier" style="--c: hsl(38 90% 56%)">Operator</li>
+          <li class="tier" style="--c: hsl(210 90% 60%)">Performer</li>
+          <li class="tier" style="--c: hsl(24 80% 56%)">High Performer</li>
+          <li class="tier" style="--c: hsl(42 78% 56%)">Elite</li>
+          <li class="tier" style="--c: hsl(18 95% 58%)">Apex</li>
+          <li class="tier" style="--c: hsl(280 70% 70%)">Legend</li>
+        </ol>
+      </div>
     </section>
 
-    <section class="inside" aria-labelledby="inside-title">
-      <h2 id="inside-title" class="display">Everything hangs off one check-in.</h2>
-      <ul class="rows">
-        <li class="row"><span class="row-icon"><svg class="i i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span><span class="row-copy"><b>AI Coach</b><span>Knows your sleep, your sets and your streak before it says a word.</span></span></li>
-        <li class="row"><span class="row-icon"><svg class="i i-dumbbell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg></span><span class="row-copy"><b>Training</b><span>Pick the muscles and the minutes. The session builds itself.</span></span></li>
-        <li class="row"><span class="row-icon"><svg class="i i-soup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg></span><span class="row-copy"><b>Fuel</b><span>Snap the plate. The protein counts itself.</span></span></li>
-        <li class="row"><span class="row-icon"><svg class="i i-book-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></span><span class="row-copy"><b>The Vault</b><span>The playbook of the most disciplined minds. One lesson a day.</span></span></li>
-        <li class="row"><span class="row-icon"><svg class="i i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="row-copy"><b>Squad</b><span>Your tribe sees your proof. Your rivals see your rank.</span></span></li>
-        <li class="row"><span class="row-icon"><svg class="i i-swords" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg></span><span class="row-copy"><b>Battles</b><span>One on one with a friend. Steps, sleep or XP. The more disciplined wins.</span></span></li>
+    <section id="coach" class="coach" aria-labelledby="coach-title">
+      <div class="coach-copy">
+        <p class="eyebrow">The coach</p>
+        <h2 id="coach-title" class="display">It reads your day before it says a word.</h2>
+        <p class="lede">Your check-ins, your training logs, your Apple Health sleep. A morning brief, a plan for the day, a review of the week. On only when you switch it on.</p>
+      </div>
+      <figure class="brief surface" data-reveal-group>
+        <figcaption class="brief-head"><span class="eyebrow">Morning brief · Thursday</span><span class="brief-tier">Performer</span></figcaption>
+        <p class="brief-line" style="--i: 0"><span class="brief-t">Yesterday</span>Scored 94 of 150. Training 50, from your watch. Water 8 — the bottle stayed in the bag.</p>
+        <p class="brief-line" style="--i: 1"><span class="brief-t">Tonight</span>Three litres by six. In bed by half past ten.</p>
+        <p class="brief-line" style="--i: 2"><span class="brief-t">Tomorrow</span>Upper A, 42 minutes. Loads follow what you lifted on Monday.</p>
+      </figure>
+    </section>
+
+    <section id="inside" class="inside" aria-labelledby="inside-title">
+      <div class="inside-copy">
+        <p class="eyebrow">Inside</p>
+        <h2 id="inside-title" class="display">Everything hangs off one check-in.</h2>
+        <p class="lede">One ritual a day. The rest of the app reads it.</p>
+      </div>
+      <ul class="rows surface">
+        <li class="row"><span class="row-icon"><svg class="i i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span><span class="row-copy"><b>AI Coach</b><span>Morning brief, day plan, weekly review. Off until you switch it on.</span></span></li>
+        <li class="row"><span class="row-icon"><svg class="i i-dumbbell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg></span><span class="row-copy"><b>Training</b><span>Sessions from muscles, minutes and intensity. 260+ illustrated movements. Loads follow what you lift.</span></span></li>
+        <li class="row"><span class="row-icon"><svg class="i i-soup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg></span><span class="row-copy"><b>Fuel</b><span>Search, barcode, or a photo of the plate. Nordic and international food data.</span></span></li>
+        <li class="row"><span class="row-icon"><svg class="i i-book-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></span><span class="row-copy"><b>The Vault</b><span>80+ short lessons from 21 thinkers, each with an evidence rating and a same-day practice.</span></span></li>
+        <li class="row"><span class="row-icon"><svg class="i i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="row-copy"><b>Squad</b><span>Tribes, a proof feed, direct messages. Report and block everywhere.</span></span></li>
+        <li class="row"><span class="row-icon"><svg class="i i-swords" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg></span><span class="row-copy"><b>Battles</b><span>One on one. Steps, sleep or XP, scored from your own check-ins or Apple Health.</span></span></li>
       </ul>
     </section>
 
-    <section class="arrival" aria-labelledby="arrival-title">
+    <section id="arrival" class="arrival" aria-labelledby="arrival-title">
+      <p class="eyebrow">Membership</p>
       <h2 id="arrival-title" class="display">14 days free. Everything unlocked.</h2>
-      <p class="lede">Then Whealth Factory Premium, monthly or yearly, through Apple. iPhone only.</p>
+      <p class="lede">Then 8,99 € a month or 89,99 € a year, through Apple. Cancel any time in Settings. iPhone only.</p>
       <p class="arrival-badge"><svg class="i i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Coming to the App Store</p>
+      <div class="faq surface" aria-label="Questions">
+        <details><summary>Do I need a watch?</summary><p>No. Every member can score 100 a day by hand. A watch that writes to Apple Health — Polar, Garmin, Oura, Apple Watch — scores training, sleep, steps and mindful minutes for you, up to 150.</p></details>
+        <details><summary>What does it read from Apple Health?</summary><p>Sleep, workouts, steps, active energy and mindful minutes. Optional; nothing is read until you allow it, and you can turn it off.</p></details>
+        <details><summary>Is the trial free?</summary><p>14 days, everything unlocked, through the App Store. It renews at 8,99 € a month or 89,99 € a year unless you cancel in Settings before it ends.</p></details>
+        <details><summary>What does the coach know?</summary><p>Your check-ins, your training logs and your Apple Health sleep — and only once you switch AI on.</p></details>
+        <details><summary>Android or iPad?</summary><p>iPhone only.</p></details>
+        <details><summary>Is this medical advice?</summary><p>No. Whealth Factory is not a medical device and gives no medical advice.</p></details>
+      </div>
     </section>
   </main>
 
@@ -197,8 +276,6 @@
     <p class="company-fine">© 2026 Whealth Factory Corporation Finland Oy. Whealth Factory is not a medical device and gives no medical advice.</p>
   </footer>
 
-  <script src="/vendor/gsap.min.js" defer></script>
-  <script src="/vendor/ScrollTrigger.min.js" defer></script>
   <script src="/site.js" defer></script>
 </body>
 </html>

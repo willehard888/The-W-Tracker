@@ -1,8 +1,9 @@
 // whealthfactory.com — the app's LOCK IN, alive. One entrance (the words
 // slam in, the control rises and ignites), one forge (embers rising, gold
 // beading and dripping from the control's edge, sparks on commit), one
-// interaction (press and hold, exactly as in the app), and three scroll
-// moments (the day counts up, the streak grows, the tiers climb).
+// interaction (press and hold, exactly as in the app), reveals that play once
+// as a section arrives, and two scroll moments (the streak grows, the tiers
+// climb).
 (() => {
   const html = document.documentElement;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -182,6 +183,14 @@
   new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop())).observe(stage);
   document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
 
+  // ── Reveals: a group (the score sheet, the 28 days, the brief) waits for
+  // the viewport, then its lines rise in sequence — CSS transitions, once.
+  // No scroll listener, no per-frame work; the observer fires one event.
+  const reveal = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); reveal.unobserve(e.target); }
+  }, { rootMargin: "0px 0px -14% 0px" });
+  document.querySelectorAll("[data-reveal-group]").forEach((el) => reveal.observe(el));
+
   // ── Press and hold: the app's lock-in, playable.
   let holdTimer = null, cooling = null, locked = false;
   const HOLD_MS = 900; // the melt's own rise time in site.css
@@ -230,80 +239,70 @@
   // VoiceOver and switch access activate with a click (detail 0), not a hold.
   button.addEventListener("click", (e) => { if (e.detail === 0 && !locked) { button.classList.add("is-holding"); commit(); } });
 
-  if (reduce || !window.gsap) return;
-  const { gsap } = window;
-  if (window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
+  if (reduce) return;
 
   // ── Tilt: the control leans toward the cursor, the specular follows it.
+  // A small lerp on requestAnimationFrame that stops once it has settled —
+  // no library, no work while the pointer rests.
   if (matchMedia("(hover: hover)").matches) {
-    const rx = gsap.quickTo(button, "rotationX", { duration: 0.8, ease: "power3.out" });
-    const ry = gsap.quickTo(button, "rotationY", { duration: 0.8, ease: "power3.out" });
     const spec = button.querySelector(".lockin-spec");
-    const sx = gsap.quickTo(spec, "x", { duration: 0.5, ease: "power3.out" });
-    const sy = gsap.quickTo(spec, "y", { duration: 0.5, ease: "power3.out" });
+    const cur = { rx: 0, ry: 0, sx: 0, sy: 0 }, to = { rx: 0, ry: 0, sx: 0, sy: 0 };
+    let tilting = false;
+    const settle = () => {
+      let live = false;
+      for (const k in to) { const d = to[k] - cur[k]; if (Math.abs(d) > 0.02) live = true; cur[k] += d * 0.16; }
+      button.style.transform = `rotateX(${cur.rx.toFixed(2)}deg) rotateY(${cur.ry.toFixed(2)}deg)`;
+      spec.style.transform = `translate(${cur.sx.toFixed(1)}px, ${cur.sy.toFixed(1)}px)`;
+      if (live) requestAnimationFrame(settle); else tilting = false;
+    };
+    const wake = () => { if (!tilting) { tilting = true; requestAnimationFrame(settle); } };
     hero.addEventListener("pointermove", (e) => {
       const b = stage.getBoundingClientRect();
       const nx = (e.clientX - (b.left + b.width / 2)) / (innerWidth / 2);
       const ny = (e.clientY - (b.top + B.h / 2)) / (innerHeight / 2);
-      rx(Math.max(-1, Math.min(1, ny)) * -7);
-      ry(Math.max(-1, Math.min(1, nx)) * 9);
+      to.rx = Math.max(-1, Math.min(1, ny)) * -7;
+      to.ry = Math.max(-1, Math.min(1, nx)) * 9;
       // the highlight's centre starts at 10% across, 50% down the face
-      sx(e.clientX - b.left - b.width * 0.1);
-      sy(e.clientY - b.top - B.h * 0.5);
+      to.sx = e.clientX - b.left - b.width * 0.1;
+      to.sy = e.clientY - b.top - B.h * 0.5;
+      wake();
     });
-    hero.addEventListener("pointerleave", () => { rx(0); ry(0); });
+    hero.addEventListener("pointerleave", () => { to.rx = 0; to.ry = 0; wake(); });
   }
 
-  // ── Entrance: the words, the control and the cards are CSS animations that
-  // started at the first paint (site.css "Entrance"). Only the two things a
-  // script can do ride on top — the spark burst as the control lands, the day
-  // counting itself up — timed from that same paint, so a late script lands
-  // them late rather than replaying the whole opening.
-  const countUp = (el, to, dur, delay = 0) => {
-    const o = { v: 0 };
-    gsap.to(o, { v: to, duration: dur, delay, ease: "power3.out", onUpdate: () => { el.textContent = Math.round(o.v); } });
-  };
+  // ── Entrance: the words and the control are CSS animations that started
+  // at the first paint (site.css "Entrance"). The one thing only a script can
+  // do — the spark burst as the control lands — is timed from that same
+  // paint, so a late script lands it late rather than replaying the opening.
   if (html.classList.contains("motion")) {
     const paint = performance.getEntriesByType("paint").find((e) => e.name === "first-contentful-paint");
-    const since = (performance.now() - (paint ? paint.startTime : 0)) / 1000;
-    const at = (t) => Math.max(0, t - since);
-    gsap.delayedCall(at(0.95), () => burst(rect(), 90, 0.9));
-    gsap.delayedCall(at(1.35), () => document.querySelectorAll(".card b[data-count]").forEach((b, i) => countUp(b, Number(b.dataset.count), 1.6, i * 0.05)));
+    const since = performance.now() - (paint ? paint.startTime : 0);
+    setTimeout(() => burst(rect(), 90, 0.9), Math.max(0, 950 - since));
   }
 
-  if (!window.ScrollTrigger) return;
-  const mm = gsap.matchMedia();
-  // Complements of each other; NARROW matches the CSS narrow block.
-  const WIDE = "(min-width: 761px) and (orientation: landscape), (min-width: 1101px)";
-  const NARROW = "(max-width: 760px), (orientation: portrait) and (max-width: 1100px)";
-
-  // ── The streak grows with the scroll, 1 → 30, and the flame with it.
+  // ── The streak grows once, when it arrives: 1 → 30 over two seconds, the
+  // flame with it (CSS, on .in). It used to be pinned and scrubbed to the
+  // scroll, which on a phone means main-thread scroll events under momentum
+  // scrolling — the number visibly trailed the thumb.
+  const streak = document.querySelector(".streak");
   const num = document.querySelector(".streak-num");
   const unit = document.querySelector(".streak-unit");
-  const grow = (scrollTrigger) => {
+  const countStreak = () => {
+    const t0 = performance.now(), dur = 2000;
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / dur);
+      const d = Math.max(1, Math.round(1 + 29 * (1 - Math.pow(1 - k, 3))));
+      if (num.textContent !== String(d)) { num.textContent = d; unit.textContent = d === 1 ? "day" : "days"; }
+      if (k < 1) requestAnimationFrame(tick);
+    };
     num.textContent = "1"; unit.textContent = "day";
-    const o = { d: 1 };
-    gsap.timeline({ scrollTrigger })
-      .to(o, { d: 30, ease: "none", onUpdate: () => { const d = Math.round(o.d); num.textContent = d; unit.textContent = d === 1 ? "day" : "days"; } }, 0)
-      .fromTo(".streak-flame", { scale: 0.7 }, { scale: 1.25, ease: "none" }, 0)
-      .fromTo(".streak-halo", { opacity: 0.3, scale: 0.8 }, { opacity: 1, scale: 1.3, ease: "none" }, 0);
-    return () => { num.textContent = "30"; unit.textContent = "days"; };
+    requestAnimationFrame(tick);
   };
-  // the flame is alive while it grows
-  gsap.to(".flame-art", {
-    scaleY: 1.05, skewX: 2.5, duration: 0.9, ease: "sine.inOut", yoyo: true, repeat: -1, transformOrigin: "50% 100%",
-    scrollTrigger: { trigger: ".streak", start: "top bottom", end: "bottom top", toggleActions: "play pause resume pause" },
-  });
-  mm.add(WIDE, () => grow({ trigger: ".streak-stage", start: "center center", end: "+=140%", pin: true, scrub: 0.6 }));
-  mm.add(NARROW, () => grow({ trigger: ".streak", start: "top 70%", end: "bottom 40%", scrub: 0.6 }));
-
-  // ── The tiers light up one by one as you climb past them.
-  const tiers = gsap.utils.toArray(".tier");
-  const ladder = document.querySelector(".tiers");
-  ladder.classList.add("climbing");
-  ScrollTrigger.create({
-    trigger: ladder, start: "top 80%", end: "bottom 45%",
-    onUpdate: (self) => { const n = Math.ceil(self.progress * tiers.length); tiers.forEach((t, i) => t.classList.toggle("lit", i < n)); },
-    onLeave: () => tiers.forEach((t) => t.classList.add("lit")),
-  });
+  const streakIn = new IntersectionObserver(([e]) => {
+    // the flicker runs only while the flame is on screen
+    streak.classList.toggle("live", e.isIntersecting);
+    if (e.isIntersecting && !streak.classList.contains("in")) { streak.classList.add("in"); countStreak(); }
+  }, { rootMargin: "0px 0px -20% 0px" });
+  streakIn.observe(streak);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) streak.classList.remove("live"); });
 })();

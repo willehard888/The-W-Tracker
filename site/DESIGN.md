@@ -55,29 +55,65 @@ live, and Space Grotesk capitals.
 
 ## Sections
 
-- **Example day:** three cards (SLEEP, TRAINING, FUEL) with a visible "An
-  example day" caption. The numbers count up on entrance.
-- **Streak:** a filled gold→ember flame with a white-hot core. The count
-  scrubs 1 → 30 while the section is pinned at centre on wide screens.
-  Reduced-motion visitors see 30.
-- **Tiers:** app-coloured pills climb as a stair, Recruit up to Legend. They
-  light one by one as you scroll past.
-- **Inside:** one grouped list with hairline rows, like the app's Library card.
-- **Arrival:** 14 days free, and the App Store badge.
+Every section opens eyebrow → display → lede (`.eyebrow`, `.display`, `.lede`
+on the `--t-*` scale), left-aligned; the hero and the arrival are centred.
+Two-column sections alternate the copy's side on wide screens and stack on
+narrow. The app's surface (`.surface`) is the one material: plum on a gold
+wash, hairline, inner light, soft drop; radius 24 for surfaces, 16 for tiles,
+999 for pills. Hairline gold dividers between sections.
+
+- **Masthead:** sticky, solid plum (never a backdrop blur), the section links
+  on wide screens (Day · Streak · Rank · Coach · Inside · Get it).
+- **The day (`#day`):** the app's check-in summary at page scale — seven
+  lines (Training 50 · Sleep 24 · Steps 9 · Mind 15 · Water 15 · Habits 25 ·
+  Perfect day 10 = 148 / 150) with the Apple Health shield on the four lines
+  Health scored, bars that fill left → right as the section arrives. The
+  numbers are XP v3's (`src/lib/checkin-xp.ts`) and the only numbers the
+  page may state.
+- **Streak (`#streak`):** the flame grows and the count runs 1 → 30 over two
+  seconds once the section arrives; a CSS flicker runs only while it is on
+  screen. It was pinned and scrubbed to the scroll before, which trailed the
+  thumb on phones.
+- **The board (`#rank`):** 28 squares (25 lit, 3 missed) light in sequence,
+  then "Rating 92 · of 150 · the 28-day average"; then the tiers, lighting one
+  by one on arrival.
+- **The coach (`#coach`):** a morning brief in the surface — Yesterday /
+  Tonight / Tomorrow, three lines that rise in sequence. No typing effect.
+- **Inside (`#inside`):** the six rows, each a fact line from PRODUCT.md. A
+  list, not doors: no chevrons, no hover.
+- **Arrival (`#arrival`):** 14 days free, then 8,99 € / month or 89,99 € /
+  year through Apple; the App Store badge; six `<details>` questions (also as
+  FAQPage JSON-LD).
 - **Company footer:** legal name, business ID, address and email, plus Terms,
   Privacy and Support.
 
+Not done, on purpose: pictures of the app (founder, 2026-09-25), a founder
+note, testimonials, member counts, glass panels, gradient text, floating
+shapes, three-icon-card grids, counters that tick for their own sake.
+
 ## Performance rules
 
-The site shipped once with a lag the founder saw.
+The site shipped once with a lag the founder saw, and again with a streak
+that trailed the scroll.
 
-- No `mix-blend-mode` and no `backdrop-filter`.
-- Animated elements that carry blur or shadow get `will-change: transform`,
-  and move by transform only.
+- No `mix-blend-mode`, no `backdrop-filter`, no libraries: site.js is the
+  forge, the hold, the tilt (a settling lerp) and one IntersectionObserver.
+- The entrance is CSS from the first paint; nothing waits for a script.
+- Reveals are one verb — rise 12 px and fade, 0.9 s ease-out, staggered
+  60–130 ms — as CSS transitions on `.in`, which the observer adds once per
+  group (`[data-reveal-group]`, the streak, the tiers). Without `.motion`
+  (reduced motion) the final state is the only state; if site.js never
+  arrives, the inline script reveals everything at 4 s.
+- Nothing is scrubbed to the scroll and nothing is pinned.
+- Animated elements that carry blur or shadow get `will-change: transform`
+  and move by transform only. Off-screen sections are
+  `content-visibility: auto`.
 - No per-frame gradients or layout reads in the canvas loop. Geometry is
   measured on resize.
 - Infinite loops pause off-screen: the forge via IntersectionObserver, the
-  flame via ScrollTrigger `toggleActions`.
+  flame's flicker via `.live`, the parked lava via `visibility: hidden`.
+- Measure before shipping: `npx lighthouse@12` (mobile) ≥ 95 and the
+  puppeteer probe (16.7 ms frames idle and scrolling at CPU ×4).
 
 ## Copy
 

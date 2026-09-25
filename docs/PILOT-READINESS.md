@@ -1,0 +1,275 @@
+# Pilot readiness — 10–20 Finnish testers, 14 days
+
+Written 2026-09-25, against `main` at `03985e0f`.
+
+---
+
+## Verdict
+
+# NOT PILOT READY
+
+Not because of the code in this branch. The blockers are deployment and
+distribution, and the largest one has nothing to do with the pilot at all.
+
+The honest summary: **the app is ready to be piloted; the pilot cannot start
+until a build reaches ten to twenty phones, and it cannot work until eight
+migrations are run.** Both are outside what a branch can fix.
+
+---
+
+## Blockers, in order
+
+| # | Blocker | Owner | Cost | Consequence if skipped |
+|---|---|---|---|---|
+| 1 | **TestFlight distribution is paused** pending Apple's organisation migration | Apple / Rasmus | unknown, external | No build reaches any tester. Nothing else on this list matters until it clears. |
+| 2 | **Migrations from `20260922100000` onward are not deployed** | Rasmus | minutes | See below — one of them is the difference between a working app and one that looks broken on every launch. |
+| 3 | **`20260925120000_pilot_observation.sql` is not deployed** | Rasmus | minutes | The entire pilot layer stays dark. No questions, no feedback, no `/admin/pilot`. The app works normally — it just is not a pilot. |
+| 4 | **Regenerate `types.ts`, then delete the adapter cast** | Rasmus, then me | minutes | Nothing breaks. `pilot-leakage.test.ts` fails until the cast is removed, which is the point. |
+| 5 | **Check whether testers' accounts are grandfathered** | Rasmus, one query | 1 min | Testers see **no** teaching cards at all. They are handed an app that never explains itself. |
+| 6 | **Set the cohort and observation window on the code** | Rasmus, one `UPDATE` | 1 min | Feedback is stored with a null cohort and the admin page cannot slice it. |
+| 7 | **Four privacy decisions** | You and Rasmus | one conversation | Listed below. None is a technical blocker; all four are things a tester might reasonably ask about. |
+| 8 | **See the feedback sheet on a real device** | Rasmus, after deploy | 5 min | It has eleven passing component tests and has never been seen on a phone. |
+
+### Why #2 is sharper than it looks
+
+`src/integrations/supabase/types.ts` is generated from the live schema, so it is
+a reliable witness to what has actually been run. It has
+`profiles.ai_consent_version` (from `20260920100000`) but **not**
+`recovery_sessions` (`20260922100000`) and **not** `score_checkin`
+(`20260925100000`, XP v3). So the deploy boundary sits between 20 and 22
+September.
+
+The one that matters most is `20260922110000_onboarding_recovery_events.sql`.
+It adds `RECOVERY_INTRO` and `RECOVERY_REST_DAY_INTRO` to
+`onboarding_valid_event`, a hardcoded allowlist that all four onboarding write
+RPCs check. An event id that exists in TypeScript but not in that list is
+**dropped silently**: the card shows, the tester dismisses it, nothing persists,
+and it comes back on the next launch. And the next. Forever.
+
+A tester would report that as the app being broken, and they would be right.
+This failure mode is documented in the repo already, in
+`20260906100100_onboarding_training_events.sql:3-7`.
+
+*A correction to something I said earlier in this work: I had claimed "24 unrun
+migrations". That was stale — the boundary has moved. What is verifiable today
+is that `20260922100000` and `20260925100000` have not run. Rasmus should
+confirm the exact line.*
+
+---
+
+## What this branch built
+
+Six commits, all local. **Nothing has been pushed** — say the word.
+
+### Measurement: from dark to readable
+
+The brief assumes a measurement base that did not exist. Before this branch:
+
+- **a finished workout fired no event at all.** This is a training app.
+  `Workouts.tsx` does not import analytics; the only proxy was `program_edited`,
+  which is a hand edit to a plan and not a session.
+- **the AI coach fired no event at all.** The brief asks whether AI answers are
+  useful and trustworthy. Nothing in the app could answer it.
+- **the athlete-profile wizard** — the first screen a new member meets — had no
+  instrumentation, so somebody who quit on step two was indistinguishable from
+  somebody who never opened it.
+- **evening reflection** looked unused because nothing counted it.
+
+Seven events now cover those, all additive — no existing event name or shape
+changed, and `/admin/metrics` is untouched. `workout_started` and
+`workout_completed` fire from the hook rather than the page, so the auto-finish
+path counts the same as the button, and both are idempotent: `start()` runs on
+every open of the runner, and a naive event would have read one workout as five
+because the phone locked four times.
+
+There is deliberately **no `workout_abandoned`**. A session is abandoned when
+iOS kills the app, which is exactly when a client event does not arrive. It is
+read from `coach_program_logs` instead, where the evidence actually is.
+
+One new visible element in the whole branch: a thumbs up/down under the last AI
+answer. One tap, gone once given.
+
+### A test that stops the class of bug that makes dashboards lie
+
+`analytics-inventory.test.ts` walks `src/` and `supabase/functions/` and fails
+if a declared event has no emitter. `payment_failed` and `reminder_sent` sat in
+`FUNNEL` for years with nothing firing them, and the admin page rendered a
+permanent zero for one of them. Mutation-checked: re-adding `payment_failed`
+fails the suite by name.
+
+### Pilot infrastructure
+
+Roughly a third of the brief's twenty phases were already built, and the most
+important one was built better than the brief describes. `pilot_codes`,
+`pilot_code_redemptions` and `redeem_pilot_code()` are row-locked, rate-limited,
+RLS-sealed and already wired into the paywall. I did not rebuild any of it. I
+added two columns and read the rest.
+
+**Two windows, not one.** A code grants 90 days of access; the pilot watches for
+14. Keeping them separate means access does not evaporate in the tester's hand
+the moment we stop looking, and nothing has to be unwound when the pilot ends.
+The app says so once, at redemption, and never mentions it again.
+
+**No enrolment record**, because there is nothing one would know that
+`pilot_code_redemptions.redeemed_at` does not already say. Day is counted in the
+**tester's** timezone — a checkpoint that fires at 2am because the server
+disagrees with the phone about what day it is would be the first thing reported
+as a bug.
+
+### The rule about interrupting people
+
+Your mandate was *"älä rakenna palautekyselyitä niin aggressiivisesti, että ne
+häiritsevät sovelluksen normaalia käyttöä."* That is now a pure function with 22
+tests rather than a good intention:
+
+- at most **one** question per app launch
+- **never** in the same launch as an onboarding teaching card
+- at least **48 hours** between two contextual questions
+- **never** a question about a feature this person has not used
+- never the same question twice, ever, on any device
+
+Stricter than the app's own onboarding pacing, which allows two cards per
+launch. Teaching cards are the app explaining itself, which a new member wants.
+Questions are us interrupting to ask for something.
+
+Eight questions exist in total: three checkpoints (day 1, 7, 14) and five
+contextual. Across a whole 14-day run, one person can be asked at most eight
+things, and most will be asked fewer because the signals gate them.
+
+**Nothing is required.** No field blocks the send, the sheet closes on the
+backdrop, and a dismissal is recorded as an answer so the question never
+returns.
+
+### Feedback storage lives in the database for one specific reason
+
+Of this app's seven existing "we already asked you" memories, exactly **two**
+survive a reinstall (`onboarding_state` and `ai_consent_version`). The rest are
+`localStorage` and die with the app container. On TestFlight a build update
+keeps the container but a delete-and-reinstall does not — so a
+`localStorage`-backed prompt log would ask somebody the day-7 question twice,
+which tells them we are not paying attention.
+
+---
+
+## Two things the audit found that were already wrong
+
+### `soreness` was being sent to a third party
+
+`src/lib/analytics.ts` has said in writing, since the recovery funnel landed,
+that *"no health data rides along: areas are muscle names, never sleep, heart
+rate or soreness."* The `recovery_sessions` migration repeats the promise.
+
+Neither was true. `soreness` — a self-reported *good / tight / sore*, typed into
+an optional picker — shipped in `recovery_started` and `recovery_completed`, and
+the same value shipped in `session_built` as `feel`, undocumented. `track()`
+mirrors every prop to PostHog.
+
+Both are gone. Soreness still shapes the session on the device; it just never
+leaves it now.
+
+### Raw Postgres errors were going out with check-in failures
+
+`checkin_failed` carried `rpcError.message?.slice(0, 120)`. A slice is a length
+cap, not a filter, and PostgREST echoes constraint names and row contents. It
+now carries values from closed sets only.
+
+Also fixed: `onboarding_done` spread an untyped answers object (safe today,
+unsafe the day somebody adds a free-text question), and Sentry had **no**
+`beforeSend` at all — a thrown error's message, the URL at the time
+(`/reset-password` carries its token in the query string) and whatever the SDK
+attached to `user` all went out verbatim.
+
+---
+
+## Privacy: technical state, and what needs your decision
+
+**I am not making a legal assessment and I am not saying anything here is or is
+not GDPR compliant.** Below is what the code does, and separately what somebody
+has to decide.
+
+**What the code does now**
+
+- Pilot feedback goes to Supabase **only**. Not to PostHog.
+- `pilot_feedback` and `pilot_prompt_log` are in `delete-account`'s sweep, so
+  they go when an account goes. (`recovery_sessions` was missing from that list
+  since 22 September and is now added, before it has any rows.)
+- Feedback context is a **runtime whitelist** of two keys: which screen, which
+  door. Everything else is dropped. Tested.
+- The free-text box says, where somebody is about to type: *"Älä kirjoita tähän
+  terveystietoja."* We cannot enforce that technically, so we say it.
+- `pilot_day` and `cohort` are stamped server-side, not accepted from the
+  client.
+- Submissions are capped at 30 a day per person.
+
+**What needs a decision — four things**
+
+1. **What testers are told before they start, and in what form.** The pilot
+   collects free text. The current privacy policy does not mention it.
+2. **Retention.** `analytics_events` is purged at 180 days by cron;
+   `pilot_feedback` has no retention at all. I suggest matching the 180 days,
+   but it is a decision, not a default.
+3. **Whether testers may ask for their feedback back or deleted separately**
+   from deleting the whole account. Today the only route is account deletion,
+   which takes everything.
+4. **PostHog is a third-party processor** (EU-hosted by default). No pilot
+   feedback goes there, but ordinary product events still do.
+
+One thing found in passing, unrelated to the pilot but worth knowing:
+`admin_waitlist()` returns raw email addresses to any admin.
+
+---
+
+## Limits of what I verified
+
+Said plainly, because a readiness report that overstates its own testing is the
+one thing worse than no report.
+
+**Verified by running the app**, signed in, at 375×812:
+
+- Home renders identically for a non-tester; `/profile` shows no pilot row.
+- The pilot layer costs a non-tester **exactly one RPC per session**
+  (`pilot_context`) and nothing else. The prompt log and signals queries never
+  fire.
+- The app shipped **before** the migration behaves correctly: `pilot_context`
+  returned 404, the adapter returned `is_pilot: false`, and nothing noticed.
+  That is the design, not luck.
+- `/admin/pilot` renders and names the real cause of its own failure.
+
+**Verified by test only, not on a device:**
+
+- The feedback sheet itself (11 component tests). Seeing it live needs an
+  account that is a pilot tester, and making this one into a tester means
+  running SQL against production.
+- The thumbs on an AI answer. Reaching the coach chat requires answering an
+  AI-consent prompt on your real account, which is not mine to answer.
+
+**Not verified at all:**
+
+- Anything requiring the migration to be deployed — which is everything
+  server-side in this branch.
+- iOS behaviour. No build was made.
+
+**Known-red tests, pre-existing and Windows-only:** five files. Four import a
+`scripts/*.mjs` that Vite cannot transform here; `openrouter-chokepoint` uses a
+path suffix that misses backslash paths. They are not caused by this work and
+they pass in CI.
+
+---
+
+## Pre-pilot checklist
+
+Run `scripts/pilot-preflight.sql` top to bottom. It answers every one of these
+and has one deliberate write.
+
+1. TestFlight distribution unblocked, build delivered
+2. All migrations through `20260925120000` deployed
+3. `types.ts` regenerated; the adapter cast in `src/lib/pilot/rpc.ts` deleted
+4. `onboarding_valid_event('RECOVERY_INTRO')` returns true
+5. Testers' profiles are not `grandfathered` (or are fresh accounts)
+6. `cohort` and `observe_days` set on the code
+7. Code capacity ≥ tester count, `expires_at` in the future
+8. Open the app as a real tester: redeem, see the toast about the two windows,
+   reach day 1, see the checkpoint
+9. The four privacy decisions made
+
+When 1–9 are done, this reads **PILOT READY**. Until then it does not.

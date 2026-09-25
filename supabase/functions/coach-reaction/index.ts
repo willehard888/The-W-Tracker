@@ -83,6 +83,9 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const xp = Number(body?.xp_earned) || 0;
+    // XP v3: a day scores 0–100, or 0–150 when Apple Health recorded it. The
+    // client sends the ceiling it previewed against; default to the claim one.
+    const xpMax = Number(body?.xp_max) === 150 ? 150 : 100;
     const tasksDone = Number(body?.tasks_done) || 0;
     const tasksTotal = Number(body?.tasks_total) || 0;
     const streak = Number(body?.streak) || 0;
@@ -131,7 +134,7 @@ Deno.serve(async (req) => {
 
     const facts = [
       isSick ? "⚠️ THE USER IS SICK TODAY (self-reported)." : null,
-      `XP earned today: ${xp}`,
+      `Day score: ${xp} of ${xpMax} (0–100 by hand, 0–150 when Apple Health recorded the day)`,
       tasksTotal > 0 ? `Habits completed: ${tasksDone}/${tasksTotal}` : null,
       doneToday.length ? `DONE today: ${doneToday.join(", ")}` : null,
       missedToday.length ? `MISSED today: ${missedToday.join(", ")}` : null,

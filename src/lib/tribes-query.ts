@@ -23,6 +23,8 @@ export interface Tribe {
   primary_activity: string | null;
   collective_streak: number | null;
   weekly_xp: number | null;
+  /** Average XP per member per day over 7 days — the unit the tribe board ranks. */
+  weekly_score: number | null;
   fire_tier: number | null;
   is_paused?: boolean;
   created_at: string;
@@ -173,12 +175,13 @@ export const fetchTribesPage = async (
         }
 
         if (tab === "browse") {
-          // Featured = momentum, not size: the unjoined tribe with the most
-          // weekly XP. (The old pick was "biggest tribe you're not in".)
+          // Featured = momentum, not size: the unjoined tribe with the highest
+          // average XP per member this week — the unit the tribe board ranks.
+          // (The old pick was "biggest tribe you're not in".)
           const candidates = list.filter((t) => !joinedIds.has(t.id));
           const featured = candidates.reduce<Tribe | null>(
             (best, t) =>
-              (t.weekly_xp ?? 0) > (best?.weekly_xp ?? -1) ? t : best,
+              Number(t.weekly_score ?? 0) > Number(best?.weekly_score ?? -1) ? t : best,
             null,
           );
           if (featured && featured.member_count > 0) {

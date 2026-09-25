@@ -319,7 +319,7 @@ const Leaderboard = () => {
                     {activeSeason?.name || "Season"} · season XP
                     {activeSeason?.ends_at && <> · <CountdownTimer endsAt={activeSeason.ends_at} /></>}
                     {/* XP v3 (2026-09-25): one rulebook, stated where the race is. */}
-                    <span className="block mt-1 font-semibold text-muted-foreground/75">Every day scores 0–150 · verified by Apple Health · same rules for everyone</span>
+                    <span className="block mt-1 font-semibold text-muted-foreground/75">Every day scores 0–100, 150 with Apple Health · same rules for everyone</span>
                   </>
                 )
               ) : (

@@ -168,7 +168,8 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
   // Kudos = the premium, scarce recognition (fire/Heart is the unlimited like).
   // 2/month was too tight to feel alive; 10 keeps it meaningful but usable.
   // 2/month, matching the tribe feed and enforced server-side in the kudos
-  // RLS policy (kudos award +10 XP — the cap prevents collusion farming).
+  // RLS policy. Kudos carry no XP since XP v3; the cap keeps them rare enough
+  // to mean something.
   const KUDOS_PER_MONTH = 2;
   const kudosRemaining = Math.max(0, KUDOS_PER_MONTH - kudosGivenThisMonth);
 

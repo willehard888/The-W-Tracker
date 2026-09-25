@@ -68,7 +68,7 @@ const healthSessionsLine = (sessions: DayWorkout[]): string => {
 };
 
 // Sport catalog now lives in src/lib/sports.ts — shared with the athlete
-// profile, quests and (via the persisted sport column) the AI coach.
+// profile and (via the persisted sport column) the AI coach.
 const SPORT_CATEGORIES = SPORT_CATALOG;
 
 const PILLAR_ORDER: CheckinPillar[] = [
@@ -168,8 +168,8 @@ const DailyCheckin = () => {
   // even for somebody who never picked it. That is not editing their selection —
   // it is showing them credit for something the app watched them do, on the one
   // day they did it. Untick it and it is gone; it returns only on the next day
-  // they recover. `mobility` was already in the library at 15 XP, exactly half
-  // of a workout, so no constant moves and the server's mirror still agrees.
+  // they recover. It joins the chosen set for that day, so it shares the
+  // habits' 25 points like any other habit (score_checkin reads it the same way).
   // Routines tick their own habit (breathwork, meditation, evening meditation)
   // by the same rule.
   const earnedToday = useMemo(() => habitsEarnedToday(), []);
@@ -456,6 +456,7 @@ const DailyCheckin = () => {
       queryFn: () =>
         fetchCheckinReaction({
           xp_earned: totalXp,
+          xp_max: score.max === 150 ? 150 : 100,
           tasks_done: completedCount,
           tasks_total: maxCount,
           streak: (profile?.streak ?? 0) + 1,
@@ -539,6 +540,7 @@ const DailyCheckin = () => {
         p_no_phone_morning: done("no_phone_am"),
         p_no_phone_evening: done("no_phone_pm"),
         p_reading: done("reading"),
+        // Part of the RPC's signature; the server scores the row itself and ignores it.
         p_xp_earned: xpToSend,
         p_proof_photo_url: proof_photo_url ?? undefined,
         p_journal_entry: done("journaling") ? "logged" : undefined,
@@ -695,7 +697,8 @@ const DailyCheckin = () => {
         void track(FUNNEL.streakMilestone, { streak: r.new_streak });
       }
 
-      // HealthKit verification — fire-and-forget. Awards the bonus XP + badge.
+      // HealthKit re-score — fire-and-forget. The server scores the day again
+      // with the snapshot that just landed; the summary follows its total.
       if (newCheckinId && healthKit.available) {
         healthKit.syncToday().then(async (snap) => {
           try {

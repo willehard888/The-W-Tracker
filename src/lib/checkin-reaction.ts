@@ -15,6 +15,8 @@ export const checkinReactionKey = (userId: string) =>
 
 export interface CheckinReactionBody {
   xp_earned: number;
+  /** The day's ceiling the preview scored against: 100, or 150 with Apple Health (XP v3). */
+  xp_max?: 100 | 150;
   tasks_done: number;
   tasks_total: number;
   streak: number;

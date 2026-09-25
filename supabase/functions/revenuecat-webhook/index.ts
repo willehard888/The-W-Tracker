@@ -362,7 +362,7 @@ Deno.serve(async (req) => {
                     }
                   : {
                       title: "Your recruit went Premium",
-                      body: `@${(who as any)?.username ?? "A friend"} converted (+500 XP). ${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`,
+                      body: `@${(who as any)?.username ?? "A friend"} converted. ${toNext} more paid friend${toNext === 1 ? "" : "s"} until your next free month.`,
                       data: { route: "/referrals" },
                       threadId: "social",
                     }, { supabase, kind: "referral_converted" });

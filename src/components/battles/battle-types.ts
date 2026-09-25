@@ -14,7 +14,7 @@ export interface BattleType {
   description: string;
   icon: ElementType;
   color: string;
-  /** The unit a score gap is read in: "Ahead by 260 XP." */
+  /** The unit a score gap is read in: "Ahead by 120 XP." */
   unit: string;
   /** Scored from Apple Health on the server. */
   verified: boolean;

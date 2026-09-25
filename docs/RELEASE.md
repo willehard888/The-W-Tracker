@@ -161,7 +161,7 @@ app; the pilot code in the notes is the other door); subscriptions live in the
 opted into; model calls go to OpenAI and Google through OpenRouter and are gated
 behind the AI-consent sheet (guideline 5.1.2(i)) while automated moderation is
 disclosed and not switchable (guideline 1.2); report and block are on every
-user-generated surface; account deletion is Profile › ⋮ › Delete account.
+user-generated surface; account deletion is Profile › Settings › Delete account.
 
 ## 6. When something is wrong in production
 

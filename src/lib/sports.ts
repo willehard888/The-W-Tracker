@@ -20,7 +20,6 @@ export interface Sport {
   id: string;
   label: string;
   emoji: string;
-  /** XP for the workout habit when this sport is picked (≤ 35 — see above). */
   group: SportGroup;
   /** Matching tribe activity name (src/lib/tribe-activities.ts), if any. */
   tribeActivity?: string;

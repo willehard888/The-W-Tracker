@@ -54,7 +54,7 @@ SQUAD
 • Report and block on every surface. No tolerance for abuse
 
 APPLE HEALTH
-• Optional. Reads sleep, steps and active energy to verify your day and inform your coach. You choose what to share
+• Optional. Reads sleep, workouts, steps, active energy and mindful minutes to score your day and inform your coach. You choose what to share
 
 MEMBERSHIP
 Whealth Factory Premium is an auto-renewing subscription: Premium Monthly (1 month) or Premium Yearly (1 year), each with a 14-day free trial for new subscribers. Prices are shown in the app before you buy and vary by region. Payment is charged to your Apple Account when the free trial ends, and the subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period. Manage or cancel it any time in your Apple Account settings.
@@ -119,7 +119,7 @@ SIGN IN
 - Sign in with Apple (native) or email and password. The demo account is provided above.
 
 APPLE HEALTH
-- Optional. The app reads sleep, steps, active energy and workouts to verify the day's check-in and inform the coach. The two writes (a workout, mindful minutes) are separate opt-ins. Health data is never used for advertising.
+- Optional. The app reads sleep, workouts (with heart rate), steps, active energy and mindful minutes to score the day's check-in and inform the coach. The two writes (a logged meal, a finished workout) are separate opt-ins. Health data is never used for advertising.
 
 AI FEATURES AND CONSENT
 - The coach, the daily brief and plan, the weekly review and meal-photo logging send the member's data to AI models from OpenAI and Google through our gateway OpenRouter. The app asks for explicit consent first ("Your coach runs on AI", shown the first time Coach is opened or a meal photo is scanned), names the providers and the data, and the choice can be withdrawn in Profile. Without consent the rest of the app works in full.
@@ -129,7 +129,7 @@ USER-GENERATED CONTENT
 - Report and block: the "..." menu on every feed post, tribe post, comment, direct message thread and profile; blocked members are hidden in both directions. Reports reach our moderation queue and are reviewed within 24 hours; the Terms state zero tolerance for objectionable content.
 
 ACCOUNT DELETION
-- Profile > "..." > Delete account (type the username to confirm). It deletes the account and its data in the app, with no support contact needed.
+- Profile > Settings > Delete account (type the username to confirm). It deletes the account and its data in the app, with no support contact needed.
 
 The app is iPhone only and portrait. It is not a medical device and gives no medical advice; health content carries disclaimers and references.`;
 

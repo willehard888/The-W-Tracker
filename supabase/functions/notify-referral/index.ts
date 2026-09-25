@@ -58,12 +58,12 @@ Deno.serve(async (req) => {
     const push = isActivated
       ? {
           title: "Your recruit is locked in",
-          body: `${name} hit 3 check-ins — +250 XP for you.${progress}`,
+          body: `${name} hit 3 check-ins. They're in.${progress}`,
           data: { route: "/referrals" },
         }
       : {
           title: "New recruit joined",
-          body: `${name} signed up with your code — +50 XP.${progress}`,
+          body: `${name} signed up with your code.${progress}`,
           data: { route: "/referrals" },
         };
 

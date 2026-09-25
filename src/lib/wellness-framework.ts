@@ -43,8 +43,6 @@ export interface Protocol {
   /** Up to 3 anchor citations (DOI, meta-analysis, or canonical reference). */
   citations: string[];
   tags: ProtocolTag[];
-  /** Suggested daily XP if logged as a habit (5–15). */
-  habit_xp_base?: number;
 }
 
 export const PILLARS: Record<PillarId, PillarMeta> = {
@@ -155,7 +153,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Spending >9 h in bed correlates with depression — track time asleep, not time horizontal.",
     citations: ["Walker, 2017 — Why We Sleep", "Hirshkowitz, NSF Consensus 2015"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 12,
   },
   {
     id: "morning-light-10min",
@@ -167,7 +164,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Never look directly at the sun. On dark winter mornings a 10 000-lux lamp is a substitute.",
     citations: ["Wright et al., 2013 Curr Biol", "Blume et al., 2019 Somnologie"],
     tags: ["morning", "outdoor", "low-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "caffeine-cutoff-8h",
@@ -179,7 +175,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Individual genetics (CYP1A2) vary — some need 12 h, some tolerate 6 h.",
     citations: ["Drake et al., 2013 J Clin Sleep Med"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "alcohol-zero-on-training",
@@ -191,7 +186,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Social pressure — plan ahead. Effect is dose-dependent above ~0.5 g/kg.",
     citations: ["Ebrahim et al., 2013 Alcohol Clin Exp Res", "Parr et al., 2014 PLoS One"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "sleep-schedule-consistent",
@@ -203,7 +197,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Shift workers — anchor the longest sleep block instead.",
     citations: ["Windred et al., 2024 Sleep", "Lunsford-Avery et al., 2018 Sci Reports"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 11,
   },
   {
     id: "bedroom-cool-dark",
@@ -215,7 +208,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Cold-sensitive partners — use layered bedding rather than turning up heat.",
     citations: ["Mason et al., 2022 Sleep", "Cho et al., 2015 Chronobiol Int"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 7,
   },
   {
     id: "no-screens-60min-pre-bed",
@@ -227,7 +219,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Use night-mode + dim brightness if total avoidance isn't realistic.",
     citations: ["Chang et al., 2015 PNAS", "Hale & Guan, 2015 Sleep Med Rev"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "last-meal-3h-before-bed",
@@ -239,7 +230,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Hard training days — add a protein-forward earlier dinner, not a late snack.",
     citations: ["Crispim et al., 2011 J Clin Sleep Med"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 7,
   },
 
   // ── MOVEMENT ────────────────────────────────────────────────────────────
@@ -253,7 +243,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Low impact, but volume jumps >10%/week raise overuse-injury risk.",
     citations: ["WHO Physical Activity Guidelines 2020", "Maffetone, 2010"],
     tags: ["anytime", "outdoor"],
-    habit_xp_base: 15,
   },
   {
     id: "strength-2-3x",
@@ -265,7 +254,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Technique first. Untrained loads >5RM raise injury risk markedly.",
     citations: ["Momma et al., 2022 BJSM (meta-analysis)", "ACSM Position Stand 2009"],
     tags: ["anytime", "high-effort"],
-    habit_xp_base: 15,
   },
   {
     id: "vo2-intervals-1x",
@@ -277,7 +265,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Not for sedentary beginners — build a Z2 base first. Avoid if uncontrolled cardiac risk.",
     citations: ["Helgerud et al., 2007 Med Sci Sports Exerc", "Mandsager et al., 2018 JAMA"],
     tags: ["high-effort"],
-    habit_xp_base: 14,
   },
   {
     id: "strength-progressive-overload",
@@ -289,7 +276,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Form before load — track RPE and bar speed, not just plates.",
     citations: ["Schoenfeld, 2010 J Strength Cond Res"],
     tags: ["anytime", "high-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "walk-after-meals-10min",
@@ -301,7 +287,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "None of note. Replace, don't add to, sedentary time.",
     citations: ["Buffey et al., 2022 Sports Med (meta)"],
     tags: ["anytime", "low-effort", "outdoor"],
-    habit_xp_base: 8,
   },
   {
     id: "daily-8k-steps",
@@ -313,7 +298,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Volume jumps — ramp by ~10%/week to protect tendons.",
     citations: ["Paluch et al., 2022 Lancet Public Health (meta)", "del Pozo Cruz et al., 2022 JAMA Intern Med"],
     tags: ["anytime", "low-effort", "outdoor"],
-    habit_xp_base: 11,
   },
   {
     id: "break-sitting-30min",
@@ -325,7 +309,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Hard to remember without a timer/standing desk cue.",
     citations: ["Dunstan et al., 2012 Diabetes Care", "Duvivier et al., 2017 J Clin Endocrinol Metab"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 7,
   },
   {
     id: "plyometrics-2x",
@@ -337,7 +320,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "High impact — build base first, land soft, full warm-up.",
     citations: ["Sañudo et al., 2019 Bone", "Markov et al., 2022 Sports Med"],
     tags: ["high-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "loaded-carries",
@@ -349,7 +331,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Drop the weight, don't strain to set down.",
     citations: ["Bohannon, 2019 J Frailty Aging (grip-mortality)"],
     tags: ["high-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "mobility-daily-10min",
@@ -361,7 +342,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Mobility alone won't fix pain — combine with progressive loading.",
     citations: ["Behm et al., 2016 Appl Physiol Nutr Metab"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 7,
   },
 
   // ── NUTRITION ───────────────────────────────────────────────────────────
@@ -375,7 +355,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "No evidence of kidney harm in healthy individuals. Existing CKD patients should consult clinician.",
     citations: ["Morton et al., 2018 BJSM (meta)", "Phillips, 2014 Nutr Metab"],
     tags: ["anytime"],
-    habit_xp_base: 12,
   },
   {
     id: "log-meals-3x",
@@ -387,7 +366,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Diary figures are estimates (photo portions ±30 %) — never chase the last calorie.",
     citations: ["Burke et al., 2011 J Am Diet Assoc (self-monitoring review)"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "fiber-30g",
@@ -399,7 +377,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Ramp slowly (+5 g/week) to avoid bloating. Hydrate.",
     citations: ["Reynolds et al., 2019 Lancet"],
     tags: ["anytime"],
-    habit_xp_base: 10,
   },
   {
     id: "hydration-30ml-kg",
@@ -411,7 +388,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Hyponatremia is rare but real in endurance athletes — match electrolytes when sweating heavily.",
     citations: ["Sawka et al., 2007 ACSM Position Stand"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "fasted-cardio",
@@ -423,7 +399,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Performance drops in glycolytic work. Avoid for VO₂max sessions.",
     citations: ["Schoenfeld et al., 2014 J Int Soc Sports Nutr"],
     tags: ["morning"],
-    habit_xp_base: 6,
   },
   {
     id: "veggies-5-servings",
@@ -435,7 +410,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Juice doesn't count the same — keep fibre intact.",
     citations: ["Wang et al., 2021 Circulation (2M-person meta)"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "minimize-ultra-processed",
@@ -447,7 +421,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Convenience trap — meal prep is the only real fix.",
     citations: ["Lane et al., 2024 BMJ (umbrella review)", "Hall et al., 2019 Cell Metab"],
     tags: ["anytime"],
-    habit_xp_base: 11,
   },
   {
     id: "omega3-fatty-fish",
@@ -459,7 +432,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Mercury limits in larger predators — prefer small fish.",
     citations: ["Mozaffarian & Rimm, 2006 JAMA", "Liao et al., 2019 Transl Psychiatry"],
     tags: ["anytime"],
-    habit_xp_base: 9,
   },
   {
     id: "added-sugar-under-25g",
@@ -471,7 +443,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Fruit sugar in whole fruit is not 'added' — don't fear it.",
     citations: ["WHO 2015 guideline", "Te Morenga et al., 2013 BMJ"],
     tags: ["anytime"],
-    habit_xp_base: 9,
   },
   {
     id: "eating-window-12h",
@@ -483,7 +454,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Tighter windows (TRF <10h) add little vs 12h for most people; don't under-eat protein.",
     citations: ["Manoogian et al., 2022 Endocr Rev"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "creatine-5g",
@@ -495,7 +465,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Adds ~1 kg water weight (intracellular). Not for severe renal impairment.",
     citations: ["Kreider et al., 2017 J Int Soc Sports Nutr", "Roschel et al., 2021 Nutrients"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 9,
   },
   {
     id: "vitamin-d-supplement",
@@ -507,7 +476,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Toxic above ~4000 IU/day chronic. Test 25(OH)D yearly if possible.",
     citations: ["EFSA UL 2012", "Rejnmark et al., 2017 PLoS One"],
     tags: ["morning", "low-effort"],
-    habit_xp_base: 6,
   },
   {
     id: "fermented-foods-daily",
@@ -519,7 +487,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Histamine-sensitive — introduce slowly.",
     citations: ["Wastyk et al., 2021 Cell"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "electrolytes-balance",
@@ -531,7 +498,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Existing hypertension or CKD — work with clinician.",
     citations: ["Mente et al., 2018 Lancet (PURE)", "Gröber et al., 2015 Nutrients"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 6,
   },
 
   // ── STRESS / MIND ───────────────────────────────────────────────────────
@@ -545,7 +511,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Stop if dizzy. Not for severe untreated cardiopulmonary conditions.",
     citations: ["Zaccaro et al., 2018 Front Hum Neurosci"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "breath-physiological-sigh",
@@ -557,7 +522,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "None of note.",
     citations: ["Balban et al., 2023 Cell Reports Medicine"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 6,
   },
   {
     id: "mindfulness-10min",
@@ -569,7 +533,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Trauma history can surface — consider trauma-sensitive variants.",
     citations: ["Goyal et al., 2014 JAMA Intern Med (meta)"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "nsdr-yoga-nidra-10min",
@@ -581,7 +544,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Substitute for, not replacement of, full sleep.",
     citations: ["Datta et al., 2017 Int J Yoga"],
     tags: ["midday", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "nature-2h-week",
@@ -593,7 +555,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Practical logistics. Urban parks count.",
     citations: ["White et al., 2019 Sci Reports"],
     tags: ["outdoor"],
-    habit_xp_base: 9,
   },
   {
     id: "journaling-5min",
@@ -605,7 +566,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Avoid spiraling — keep prompts structured.",
     citations: ["Smyth et al., 2018 JMIR Ment Health"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 7,
   },
   {
     id: "social-media-under-30min",
@@ -617,7 +577,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Replace with offline activity, not another scroll surface.",
     citations: ["Hunt et al., 2018 J Soc Clin Psychol", "Lambert et al., 2022 Cyberpsychol"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "morning-pages-reflection",
@@ -629,7 +588,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Skip if it becomes performative — keep it tactical.",
     citations: ["Locke & Latham, 2002 Am Psychol"],
     tags: ["morning", "low-effort"],
-    habit_xp_base: 7,
   },
   {
     id: "values-weekly-review",
@@ -641,7 +599,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Ruminative spiral risk — keep to bulleted, action-oriented.",
     citations: ["Hayes et al., 2013 Behav Res Ther"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "read-30min-daily",
@@ -653,7 +610,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Scrolling articles ≠ reading. Use a Kindle or print.",
     citations: ["Bavishi et al., 2016 Soc Sci Med"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "deliberate-practice-skill",
@@ -665,7 +621,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Practice ≠ repetition. Needs feedback loop and edge-of-ability difficulty.",
     citations: ["Ericsson et al., 1993 Psychol Rev"],
     tags: ["anytime", "high-effort"],
-    habit_xp_base: 10,
   },
 
   // ── RECOVERY ────────────────────────────────────────────────────────────
@@ -679,7 +634,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Stretching alone does not reduce DOMS — pair with strength.",
     citations: ["Behm et al., 2016 Appl Physiol Nutr Metab"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 8,
   },
   {
     id: "sauna-20min-4x",
@@ -691,7 +645,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Dehydration, hypotension. Avoid in pregnancy or uncontrolled cardiac disease.",
     citations: ["Laukkanen et al., 2015 JAMA Intern Med"],
     tags: ["evening", "high-effort"],
-    habit_xp_base: 10,
   },
   {
     id: "cold-2-3min",
@@ -703,7 +656,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Cold within ~6 h after strength training blunts hypertrophy adaptation.",
     citations: ["Roberts et al., 2015 J Physiol", "Søberg et al., 2021 Cell Reports Med"],
     tags: ["morning", "high-effort"],
-    habit_xp_base: 9,
   },
   {
     id: "sun-vitd-15min",
@@ -715,7 +667,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Cumulative UV raises skin-cancer risk — never burn.",
     citations: ["Holick, 2007 N Engl J Med"],
     tags: ["midday", "outdoor"],
-    habit_xp_base: 6,
   },
   {
     id: "cwt-contrast",
@@ -727,7 +678,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Cardiovascular load — caution if hypertensive.",
     citations: ["Higgins et al., 2017 Sports Med"],
     tags: ["high-effort"],
-    habit_xp_base: 5,
   },
   {
     id: "heart-rate-variability-track",
@@ -739,7 +689,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Single-day numbers are noisy — over-interpretation drives anxiety.",
     citations: ["Plews et al., 2013 Sports Med"],
     tags: ["morning", "low-effort"],
-    habit_xp_base: 4,
   },
   {
     id: "ice-bath-pre-sleep",
@@ -751,7 +700,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Acute cold close to bed can also delay sleep onset for some — test cautiously.",
     citations: ["Anecdotal, awaiting RCT"],
     tags: ["evening", "high-effort"],
-    habit_xp_base: 4,
   },
   {
     id: "foam-rolling-10min",
@@ -763,7 +711,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Roll muscle, not joints or low back spine. 30s–2 min per area.",
     citations: ["Wiewelhove et al., 2019 Front Physiol (meta)"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 6,
   },
   {
     id: "active-recovery-day",
@@ -775,7 +722,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "If you can't hold the easy intensity, it's not recovery — it's training.",
     citations: ["Seiler, 2010 Int J Sports Physiol Perform"],
     tags: ["anytime", "low-effort", "outdoor"],
-    habit_xp_base: 6,
   },
   {
     id: "sleep-wind-down-routine",
@@ -787,7 +733,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Skip productivity in this window — the point is parasympathetic shift.",
     citations: ["Riemann et al., 2017 J Sleep Res (CBT-I components)"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 7,
   },
 
   // ── FOCUS — bucketed under "stress" pillar to keep 6 pillars clean ─────
@@ -801,7 +746,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Requires explicit calendaring — won't happen by accident.",
     citations: ["Newport, 2016 Deep Work", "Mark et al., 2008 CHI"],
     tags: ["anytime", "high-effort"],
-    habit_xp_base: 12,
   },
   {
     id: "no-phone-first-60min",
@@ -813,7 +757,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Mostly anecdotal at the population level.",
     citations: ["Lanaj et al., 2014 Org Behav Hum Decis Process"],
     tags: ["morning", "low-effort"],
-    habit_xp_base: 9,
   },
 
   // ── CONNECTION ──────────────────────────────────────────────────────────
@@ -827,7 +770,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "None — quality > quantity.",
     citations: ["Waldinger & Schulz, 2023 — Harvard Study of Adult Dev."],
     tags: ["social"],
-    habit_xp_base: 12,
   },
   {
     id: "gratitude-3x",
@@ -839,7 +781,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Effect is small and tends to fade — combine with action.",
     citations: ["Emmons & McCullough, 2003 J Pers Soc Psychol"],
     tags: ["evening", "low-effort"],
-    habit_xp_base: 6,
   },
   {
     id: "express-appreciation-weekly",
@@ -851,7 +792,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Performative gratitude reads as fake — be specific.",
     citations: ["Seligman et al., 2005 Am Psychol"],
     tags: ["social", "low-effort"],
-    habit_xp_base: 7,
   },
   {
     id: "physical-touch-daily",
@@ -863,7 +803,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Consent + context. Not a substitute for hard conversation.",
     citations: ["Light et al., 2005 Biol Psychol", "Packheiser et al., 2024 Nat Hum Behav (meta)"],
     tags: ["social", "low-effort"],
-    habit_xp_base: 7,
   },
   {
     id: "quality-time-loved-ones",
@@ -875,7 +814,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Quality > duration. 15 min without a phone beats 60 with one.",
     citations: ["Przybylski & Weinstein, 2013 J Soc Pers Relatsh", "Misra et al., 2016 Environ Behav"],
     tags: ["evening", "social"],
-    habit_xp_base: 9,
   },
   {
     id: "volunteer-give-monthly",
@@ -887,7 +825,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "Burnout if forced — pick a cause you care about.",
     citations: ["Okun et al., 2013 Psychol Aging (meta)"],
     tags: ["social"],
-    habit_xp_base: 8,
   },
   {
     id: "no-comparison-social",
@@ -899,7 +836,6 @@ export const PROTOCOLS: Protocol[] = [
     risk: "FOMO is real — explicit replacement (walk, call) beats willpower.",
     citations: ["Vogel et al., 2014 Psychol Pop Media Cult"],
     tags: ["anytime", "low-effort"],
-    habit_xp_base: 5,
   },
 ];
 

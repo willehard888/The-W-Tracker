@@ -95,7 +95,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
       onClose={() => onOpenChange(false)}
       label="Challenge a tribe"
       title="Challenge a tribe"
-      subtitle="Total XP earned by all members during the battle decides the winner."
+      subtitle="Average XP per member per day during the battle decides the winner — a small tribe can beat a big one."
       height="tall"
       headerExtra={
         <div className="relative px-4 pb-2">

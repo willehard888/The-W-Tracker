@@ -29,7 +29,14 @@ interface Checkin {
   meditation_morning: boolean;
   meditation_evening: boolean;
   journal_entry: string | null;
+  /** XP v3 (20260925100000): the server's line-by-line score; null on rows scored before it. */
+  score_breakdown?: { v?: number; lines?: Array<{ k: string; pts: number }> } | null;
 }
+
+/** A perfect day is the server's call — the +10 line in score_breakdown
+ *  (trained, 7–9 h, 3 L, mind, every chosen habit) — not the old core-8. */
+const isPerfectDay = (c: Checkin): boolean =>
+  (c.score_breakdown?.lines ?? []).some((l) => l.k === "perfect" && l.pts > 0);
 
 interface MealRow {
   log_date: string;
@@ -112,17 +119,7 @@ function computeStats(checkins: Checkin[], meals: MealRow[] = [], proteinTargetG
     days > 0 ? checkins.reduce((s, c) => s + Number(c.hydration_liters ?? 0), 0) / days : 0;
   const workouts = checkins.filter((c) => c.workout).length;
   const coldShowers = checkins.filter((c) => c.cold_shower).length;
-  const perfectDays = checkins.filter(
-    (c) =>
-      c.workout &&
-      c.cold_shower &&
-      c.healthy_food &&
-      c.protein_intake &&
-      c.hydration_liters >= 3 &&
-      c.reading &&
-      c.no_phone_morning &&
-      c.no_phone_evening,
-  ).length;
+  const perfectDays = checkins.filter(isPerfectDay).length;
 
   let bestDay: { date: string; xp: number } | null = null;
   let worstDay: { date: string; xp: number } | null = null;
@@ -235,7 +232,7 @@ Deno.serve(async (req) => {
       const { data: checkins } = await supabase
         .from("daily_checkins")
         .select(
-          "checked_in_at, xp_earned, workout, extra_workout, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening, meditation_morning, meditation_evening, journal_entry",
+          "checked_in_at, xp_earned, workout, extra_workout, cold_shower, healthy_food, protein_intake, hydration_liters, sleep_hours, reading, no_phone_morning, no_phone_evening, meditation_morning, meditation_evening, journal_entry, score_breakdown",
         )
         .eq("user_id", profile.user_id)
         .gte("checked_in_at", startISO)
@@ -310,7 +307,7 @@ ${journalSnippets.length > 0 ? `Journal excerpts:\n${journalSnippets.join("\n")}
 Rules:
 - Reply in the user's language (detect from journal entries; default English).
 - Direct, sharp, no clichés. Use concrete numbers from the data.
-- Insights must reference real patterns (e.g., "Sleep dropped Wed–Fri → workout XP -30%").
+- Insights must reference real patterns (e.g., "Sleep dropped Wed–Fri → training scored 25 instead of 50"). A day scores 0–100, or 0–150 when Apple Health recorded it.
 - Protocol items must be specific actions (sets/reps/minutes), not vague advice.
 - Diary figures are estimates; say 'about' and never compute deficits to the calorie.
 - You are an AI coach. Never claim or imply you are human; if the user asks, say

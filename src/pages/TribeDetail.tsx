@@ -776,9 +776,9 @@ const TribeDetail = () => {
                   {todayPulse.checked}/{todayPulse.total} lit today
                 </span>
               )}
-              {isOwner && (tribe.weekly_xp ?? 0) > 0 && (
+              {isOwner && Number(tribe.weekly_score ?? 0) > 0 && (
                 <span className="inline-flex items-center gap-1 text-meta font-bold tabular-nums text-gold">
-                  <Zap size={12} fill="currentColor" aria-hidden /> +{fmtInt(tribe.weekly_xp ?? 0)} XP
+                  <Zap size={12} fill="currentColor" aria-hidden /> {fmtInt(Math.round(Number(tribe.weekly_score)))} XP / member / day
                 </span>
               )}
             </span>

@@ -20,7 +20,6 @@ export interface Mission {
   kind: MissionKind;
   title: string;
   detail?: string;
-  xp: number;
   priority: MissionPriority;
   /** coach-daily-plan catalog id — says which check-in habit settles the reminder. */
   protocol_id?: string;

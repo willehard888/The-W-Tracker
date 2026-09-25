@@ -401,9 +401,9 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                   {p.checked}/{p.total} lit today
                 </span>
               )}
-              {heroIsFeatured && (t.weekly_xp ?? 0) > 0 && (
+              {heroIsFeatured && Number(t.weekly_score ?? 0) > 0 && (
                 <span className="inline-flex items-center gap-1 text-meta font-black tabular-nums text-gold">
-                  On fire this week · +{fmtInt(t.weekly_xp ?? 0)} XP
+                  On fire this week · {fmtInt(Math.round(Number(t.weekly_score)))} XP per member a day
                 </span>
               )}
             </div>

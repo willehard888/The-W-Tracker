@@ -65,7 +65,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
           size="compact"
           icon={Rocket}
           title="Be the first inviter this month"
-          description="Every paid invite earns XP, credits and badges."
+          description="Every paid invite counts toward a free month and a badge."
           action={hideEmptyCta ? undefined : (
             <Button variant="ember" size="sm" className="min-h-11" onClick={() => navigate("/referrals")}>
               Get your link

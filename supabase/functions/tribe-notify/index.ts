@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
         push = {
           title: w ? "Battle decided" : "Battle ends in a draw",
           body: w
-            ? `${w === (b as any).challenger_tribe_id ? cName : oName} takes it ${score}. Winners earn +50 XP.`
+            ? `${w === (b as any).challenger_tribe_id ? cName : oName} takes it ${score} per member per day. The fire is the prize.`
             : `${cName} vs ${oName} ends ${score}.`,
           route: `/tribes/${(b as any).challenger_tribe_id}/battles`,
         };
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
             }
           : {
               title: `${name} crushed the weekly goal`,
-              body: `${pay.target ?? "?"} check-ins together. +25 XP each — claimed.`,
+              body: `${pay.target ?? "?"} check-ins together. The milestone is on the tribe's wall.`,
               route: `/tribes/${(ms as any).tribe_id}`,
             };
       }

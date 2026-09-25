@@ -102,6 +102,7 @@ const WeeklyBriefing = lazy(() => import("./pages/WeeklyBriefing"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const AdminLegendInvites = lazy(() => import("./pages/AdminLegendInvites"));
 const AdminMetrics = lazy(() => import("./pages/AdminMetrics"));
+const AdminPilot = lazy(() => import("./pages/AdminPilot"));
 const ButtonGallery = lazy(() => import("./pages/ButtonGallery"));
 
 // queryClient moved to src/lib/query-client.ts so AuthContext.signOut can
@@ -456,6 +457,7 @@ const AppRoutes = () => {
           <Route path="/admin/moderation" element={<ProtectedRoute><AdminRoute><AdminModeration /></AdminRoute></ProtectedRoute>} />
           <Route path="/admin/legend-invites" element={<ProtectedRoute><AdminRoute><AdminLegendInvites /></AdminRoute></ProtectedRoute>} />
           <Route path="/admin/metrics" element={<ProtectedRoute><AdminRoute><AdminMetrics /></AdminRoute></ProtectedRoute>} />
+          <Route path="/admin/pilot" element={<ProtectedRoute><AdminRoute><AdminPilot /></AdminRoute></ProtectedRoute>} />
           {import.meta.env.DEV && <Route path="/button-gallery" element={<ProtectedRoute><ButtonGallery /></ProtectedRoute>} />}
           <Route path="/feed" element={<Navigate to="/squad" replace />} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />

@@ -207,3 +207,87 @@ export const submitFeedback = async (input: FeedbackInput): Promise<SubmitResult
     return { success: false, reason: "network" };
   }
 };
+
+// ── The founders' side ───────────────────────────────────────────────────────
+//
+// Same adapter, same reason: none of this is in the generated types yet. The
+// aggregates have to be an RPC because analytics_events has no SELECT policy at
+// all, but the feedback ROWS are read straight from the table — pilot_feedback
+// carries an admin SELECT policy shaped like pilot_code_redemptions', because a
+// comment has to be read as it was written and an aggregate cannot do that.
+
+export interface PilotReach {
+  onboarded: number;
+  checked_in: number;
+  trained: number;
+  reflected: number;
+  asked_coach: number;
+  recovered: number;
+  opened_3d: number;
+}
+
+export interface PilotOverview {
+  cohort: string | null;
+  members: number;
+  in_window: number;
+  median_day: number | null;
+  observe_days: number | null;
+  reach: PilotReach | null;
+  feedback_new: number;
+  bugs_open: number;
+  ttv_minutes: { first_checkin: number | null; first_workout: number | null } | null;
+  stalled_sessions: number;
+}
+
+export interface FeedbackRow {
+  id: string;
+  prompt_id: string;
+  kind: string;
+  rating: number | null;
+  choice: string | null;
+  comment: string | null;
+  pilot_day: number | null;
+  cohort: string | null;
+  app_version: string | null;
+  status: string;
+  created_at: string;
+}
+
+interface AdminDb {
+  rpc(fn: string, args?: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }>;
+  from(table: string): {
+    select(cols: string): {
+      order(col: string, opts: { ascending: boolean }): {
+        limit(n: number): PromiseLike<{ data: unknown; error: unknown }>;
+      };
+    };
+    update(patch: Record<string, unknown>): {
+      eq(col: string, val: string): PromiseLike<{ error: unknown }>;
+    };
+  };
+}
+const adminDb = supabase as unknown as AdminDb;
+
+/** Throws on failure: an admin page that renders zeroes when the RPC refused is worse than one that says so. */
+export const fetchPilotOverview = async (cohort?: string | null): Promise<PilotOverview> => {
+  const { data, error } = await adminDb.rpc("admin_pilot_overview", { p_cohort: cohort ?? null });
+  if (error) throw error instanceof Error ? error : new Error("admin_pilot_overview failed");
+  if (!isRecord(data)) throw new Error("admin_pilot_overview returned nothing");
+  return data as unknown as PilotOverview;
+};
+
+export const fetchFeedback = async (limit = 200): Promise<FeedbackRow[]> => {
+  const { data, error } = await adminDb
+    .from("pilot_feedback")
+    .select("id, prompt_id, kind, rating, choice, comment, pilot_day, cohort, app_version, status, created_at")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error instanceof Error ? error : new Error("pilot_feedback read failed");
+  return Array.isArray(data) ? (data as unknown as FeedbackRow[]) : [];
+};
+
+/** Triage. The only column an admin may move, and the RLS policy says so too. */
+export const setFeedbackStatus = async (id: string, status: string): Promise<void> => {
+  const { error } = await adminDb.from("pilot_feedback").update({ status }).eq("id", id);
+  if (error) throw error instanceof Error ? error : new Error("status update failed");
+};

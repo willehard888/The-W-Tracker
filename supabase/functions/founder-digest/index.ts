@@ -155,12 +155,53 @@ Deno.serve(async (req) => {
       ? `money ok`
       : `money ${webhookPurchases ?? 0}w/${purchases}c ⚠`;
 
+    // ── The pilot, while one is running ──────────────────────────────────
+    //
+    // Silent when there is no pilot: the line is appended only if somebody has
+    // redeemed a code, so the digest does not grow a permanent "pilot 0" that
+    // everybody learns to skip.
+    //
+    // Computed directly rather than through admin_pilot_overview() for the same
+    // reason the numbers above are: the admin_* RPCs check
+    // has_role(auth.uid()) and RAISE under the service role, where no uid
+    // exists.
+    let pilotStr = "";
+    try {
+      const { data: redemptions } = await supabase
+        .from("pilot_code_redemptions").select("user_id, redeemed_at");
+      const testers = redemptions ?? [];
+      if (testers.length > 0) {
+        const { count: newFeedback } = await supabase
+          .from("pilot_feedback").select("id", { count: "exact", head: true })
+          .eq("status", "new");
+        const { count: openBugs } = await supabase
+          .from("pilot_feedback").select("id", { count: "exact", head: true })
+          .eq("kind", "bug").eq("status", "new");
+        // Who has not opened the app in three days. In a twenty-person pilot
+        // this is a name to message, not a metric to chart.
+        const ids = testers.map((t: { user_id: string }) => t.user_id);
+        const { data: recent } = await supabase
+          .from("analytics_events").select("user_id")
+          .eq("event", "app_opened").gte("created_at", daysAgo(3)).in("user_id", ids);
+        const active = new Set((recent ?? []).map((r: { user_id: string }) => r.user_id)).size;
+        const quiet = testers.length - active;
+        pilotStr =
+          ` · pilot ${testers.length} (${quiet} quiet 3d)` +
+          ` · ${newFeedback ?? 0} feedback` +
+          ((openBugs ?? 0) > 0 ? ` · ${openBugs} BUGS` : "");
+      }
+    } catch {
+      // The pilot tables may not be deployed yet. The digest is the only alarm
+      // this app has and it must go out regardless of what the pilot is doing.
+    }
+
     const title = "The numbers";
     const body =
       `WAU ${wau} (${deltaStr}) · ${newUsers ?? 0} new · ` +
       `${purchases} purchase${purchases === 1 ? "" : "s"} · ${trials} trials · ` +
       `D1 ${d1Str} · D7 ${d7Str} · push ${pushSent} sent / ${pushOpened} opened` +
-      ` · ${moneyStr} · push fail ${failPct}% · ${cronStr}`;
+      ` · ${moneyStr} · push fail ${failPct}% · ${cronStr}` +
+      pilotStr;
 
     // ── Deliver to every admin's devices ─────────────────────────────────
     const { data: admins, error: adminErr } = await supabase

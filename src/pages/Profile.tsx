@@ -700,6 +700,7 @@ const Profile = () => {
           {isAdmin && (
             <SettingsGroup title="Founder">
               <SettingsRow icon={BarChart3} label="Command Center" sub="Growth metrics & waitlist" onClick={() => navigate("/admin/metrics")} />
+              <SettingsRow icon={MessageSquare} label="Pilot" sub="Testaajat, palaute ja mikä on löytämättä" onClick={() => navigate("/admin/pilot")} />
               {/* Shows the paywall to an admin who already has access, so a
                   sandbox purchase can be driven on this device. Closes the
                   gate for this session only; never opens it. */}

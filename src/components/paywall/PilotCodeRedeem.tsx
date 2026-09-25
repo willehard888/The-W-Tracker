@@ -63,7 +63,19 @@ const PilotCodeRedeem = () => {
 
       hapticNotification("success");
       const days = result.granted_days;
-      toast.success(days ? `Access unlocked for ${days} day${days === 1 ? "" : "s"}.` : "Access unlocked.");
+      // The pilot and the access are two different lengths on purpose — 14 days
+      // of being watched, 90 of being let in — and the only moment that
+      // difference can be explained without it sounding like a catch is now,
+      // before anybody has grown used to either. Said once, here, and not
+      // repeated in the app afterwards.
+      toast.success(
+        days ? `Access unlocked for ${days} day${days === 1 ? "" : "s"}.` : "Access unlocked.",
+        {
+        description:
+          "Pilotti kestää 14 päivää — kysymme matkan varrella muutaman kysymyksen. " +
+          "Pääsysi jatkuu sen jälkeenkin.",
+        },
+      );
       setCode("");
       setOpen(false);
       // Pull the new membership_credits_until so the paywall lets them through

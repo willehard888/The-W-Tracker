@@ -1,0 +1,209 @@
+// The pilot's data layer, and the one place in it that lies to the compiler.
+//
+// WHY THIS FILE EXISTS
+//
+// `src/integrations/supabase/types.ts` is generated from the LIVE schema, so
+// nothing in migration 20260925120000 is in it until that migration is deployed
+// and the types are regenerated. The house rule for this is written down in
+// 20260922100000_recovery_sessions.sql: ship the table, then the types, then
+// the client — and `as any` fails the type-debt ratchet, correctly.
+//
+// So the boundary is drawn here instead: ONE adapter, with the exact shapes the
+// migration defines written out by hand, and every caller fully typed against
+// them. That is strictly better than `as any` (which checks nothing) and better
+// than waiting (which ships a pilot with no feedback in it).
+//
+// FAIL OPEN, ALWAYS
+//
+// Every call here swallows its error and returns the inert answer. This is not
+// defensive habit — it is the design. If the app ships before the migration
+// runs, `pilot_context()` returns 404, this returns { is_pilot: false }, and
+// the entire pilot layer is simply dark. That is the same state every
+// non-pilot user is in, so there is no broken state to be in: the feature is
+// either switched on by the server or it does not exist.
+//
+// WHEN THE TYPES ARE REGENERATED
+//
+// Delete the adapter below and call supabase.rpc directly. pilot-rpc.test.ts
+// fails the moment the generated types carry `pilot_context`, so this cleanup
+// is enforced rather than hoped for.
+
+import { supabase } from "@/integrations/supabase/client";
+import { captureException } from "@/lib/observability";
+
+/** Exactly what pilot_context() returns. */
+export interface PilotContext {
+  is_pilot: boolean;
+  cohort: string | null;
+  day: number;
+  observe_days: number;
+  in_window: boolean;
+  redeemed_at: string | null;
+}
+
+export const NOT_IN_PILOT: PilotContext = {
+  is_pilot: false,
+  cohort: null,
+  day: 0,
+  observe_days: 0,
+  in_window: false,
+  redeemed_at: null,
+};
+
+/** One row of pilot_prompt_log. */
+export interface PromptLogRow {
+  prompt_id: string;
+  shown_at: string | null;
+  answered_at: string | null;
+  dismissed_at: string | null;
+}
+
+export interface FeedbackInput {
+  promptId: string;
+  kind: "checkpoint" | "contextual" | "volunteered" | "bug";
+  rating?: number | null;
+  choice?: string | null;
+  comment?: string | null;
+  /** WHICH SCREEN. Never health data — pilot-leakage.test.ts enforces the keys. */
+  context?: { route?: string; surface?: string } | null;
+  appVersion?: string | null;
+}
+
+/**
+ * The single cast. `supabase` really does accept these calls at runtime once
+ * the migration is deployed; the generated types just have not caught up.
+ */
+interface LooseDb {
+  rpc(fn: string, args?: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }>;
+  from(table: string): {
+    select(cols: string): PromiseLike<{ data: unknown; error: unknown }>;
+  };
+}
+const db = supabase as unknown as LooseDb;
+
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
+
+const num = (v: unknown, fallback = 0): number => (typeof v === "number" ? v : fallback);
+const str = (v: unknown): string | null => (typeof v === "string" ? v : null);
+
+/**
+ * Who the caller is, as far as the pilot is concerned.
+ *
+ * Never throws and never rejects. A missing function, a network failure and a
+ * genuine "not a tester" all produce the same inert answer, on purpose.
+ */
+export const fetchPilotContext = async (): Promise<PilotContext> => {
+  try {
+    const { data, error } = await db.rpc("pilot_context");
+    if (error || !isRecord(data)) return NOT_IN_PILOT;
+    if (data.is_pilot !== true) return NOT_IN_PILOT;
+    return {
+      is_pilot: true,
+      cohort: str(data.cohort),
+      day: num(data.day),
+      observe_days: num(data.observe_days, 14),
+      in_window: data.in_window === true,
+      redeemed_at: str(data.redeemed_at),
+    };
+  } catch {
+    return NOT_IN_PILOT;
+  }
+};
+
+/** What this person has already been asked. Empty on any failure. */
+export const fetchPromptLog = async (): Promise<PromptLogRow[]> => {
+  try {
+    const { data, error } = await db
+      .from("pilot_prompt_log")
+      .select("prompt_id, shown_at, answered_at, dismissed_at");
+    if (error || !Array.isArray(data)) return [];
+    return data.filter(isRecord).map((r) => ({
+      prompt_id: String(r.prompt_id ?? ""),
+      shown_at: str(r.shown_at),
+      answered_at: str(r.answered_at),
+      dismissed_at: str(r.dismissed_at),
+    }));
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Note that a prompt was shown, answered or dismissed.
+ *
+ * Fire-and-forget by contract, like `track`. But unlike analytics, a lost write
+ * here has a visible cost — the same question comes back — so a failure is
+ * reported to Sentry rather than swallowed in silence. The onboarding system
+ * learned this the hard way: a silently-failed mark made a spotlight return on
+ * every launch, forever, with nothing in any log.
+ */
+export const markPrompt = async (promptId: string, outcome: "shown" | "answered" | "dismissed"): Promise<void> => {
+  try {
+    const { error } = await db.rpc("pilot_mark_prompt", { _prompt_id: promptId, _outcome: outcome });
+    if (error) captureException(error, { where: "pilot.markPrompt", promptId, outcome });
+  } catch (e) {
+    captureException(e, { where: "pilot.markPrompt", promptId, outcome });
+  }
+};
+
+/**
+ * The only keys allowed out of the device with a piece of feedback.
+ *
+ * A whitelist rather than a blacklist, and enforced at runtime rather than by
+ * review, because the failure mode is silent: a caller adds one more field for
+ * debugging, it ships, and self-reported body state is in a table again. That
+ * exact bug is the reason `soreness` had to be taken out of the recovery
+ * events — the contract said it was not there and it was.
+ *
+ * `route` is which screen. `surface` is which door the sheet was opened by.
+ * Nothing else is worth the risk.
+ */
+const CONTEXT_KEYS = ["route", "surface"] as const;
+
+export const sanitizeContext = (
+  ctx: Record<string, unknown> | null | undefined,
+): { route?: string; surface?: string } | null => {
+  if (!isRecord(ctx)) return null;
+  const out: { route?: string; surface?: string } = {};
+  for (const key of CONTEXT_KEYS) {
+    const v = ctx[key];
+    // Capped: a route is a path, not a place to put a paragraph.
+    if (typeof v === "string" && v) out[key] = v.slice(0, 120);
+  }
+  return Object.keys(out).length ? out : null;
+};
+
+export interface SubmitResult {
+  success: boolean;
+  reason?: string;
+}
+
+/**
+ * Send one piece of feedback.
+ *
+ * `pilot_day` and `cohort` are NOT sent — the function reads them from
+ * pilot_context() server-side, because they are what the whole read is sliced
+ * by and a client that can set them can rewrite the finding.
+ */
+export const submitFeedback = async (input: FeedbackInput): Promise<SubmitResult> => {
+  try {
+    const { data, error } = await db.rpc("pilot_submit_feedback", {
+      _prompt_id: input.promptId,
+      _kind: input.kind,
+      _rating: input.rating ?? null,
+      _choice: input.choice ?? null,
+      _comment: input.comment ?? null,
+      _context: sanitizeContext(input.context),
+      _app_version: input.appVersion ?? null,
+    });
+    if (error) {
+      captureException(error, { where: "pilot.submitFeedback", promptId: input.promptId });
+      return { success: false, reason: "network" };
+    }
+    if (isRecord(data) && data.success === true) return { success: true };
+    return { success: false, reason: isRecord(data) ? String(data.reason ?? "unknown") : "unknown" };
+  } catch (e) {
+    captureException(e, { where: "pilot.submitFeedback", promptId: input.promptId });
+    return { success: false, reason: "network" };
+  }
+};

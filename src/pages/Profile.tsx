@@ -8,6 +8,9 @@ import { fmtDate, fmtInt, fmtRelative } from "@/lib/format";
 import { localDateKey } from "@/lib/date";
 import { Flame, LogOut, Users, Image, GitCompare, MessageSquare, Heart, Trophy, CreditCard, Trash2, MoreVertical, Settings as SettingsIcon, BarChart3, Gauge, ChevronRight, Brain, UserRound, FileText, Ban, Bell, Utensils, Compass, FlaskConical } from "lucide-react";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsList";
+import { usePilotContext } from "@/hooks/use-pilot";
+import { requestPilotFeedback } from "@/components/pilot/PilotHost";
+import { pilotDayLabel } from "@/lib/pilot/day";
 import ProgressionSummaryCard from "@/components/profile/ProgressionSummaryCard";
 import RecoveryCard from "@/components/profile/RecoveryCard";
 import ProfileHero from "@/components/profile/ProfileHero";
@@ -69,6 +72,9 @@ const snapshotWhen = (snapshotDate: string): string => {
 };
 
 const Profile = () => {
+  // Inert for everyone who is not a tester, and inert for everyone if the
+  // migration has not been deployed — pilot_context() fails closed.
+  const { context: pilot } = usePilotContext();
   const { profile, signOut, isElite, isApexSubscriber } = useAuth();
   const isAdmin = useIsAdmin(profile?.user_id);
   const navigate = useNavigate();
@@ -699,6 +705,25 @@ const Profile = () => {
                   gate for this session only; never opens it. */}
               <SettingsRow icon={FlaskConical} label="Paywall test mode" sub="Open the offer screen as a tester" onClick={() => { writeSession(HARNESS_KEY, "1"); navigate("/paywall"); }} />
               <SettingsRow icon={Gauge} label="Store diagnostics" sub="What RevenueCat and the App Store returned" onClick={() => navigate("/ios-debug")} />
+            </SettingsGroup>
+          )}
+
+          {/* The always-available door. The brief asks for it to be there without
+              being in the way, so it is a settings row like any other — not a
+              floating button, not a banner. Pilot testers only: everyone else
+              never sees it, and neither does anyone if the migration is not
+              deployed (pilot_context fails closed). */}
+          {pilot.is_pilot && (
+            <SettingsGroup title="Pilotti">
+              {/* One row, not two: SettingsRow is a tappable row by definition,
+                  and a day counter with a chevron that does nothing is a lie
+                  about what it is. The day rides in the subtitle instead. */}
+              <SettingsRow
+                icon={MessageSquare}
+                label="Kerro meille"
+                sub={`${pilotDayLabel(pilot.day, pilot.observe_days)} · bugi, idea tai jotain sekavaa`}
+                onClick={requestPilotFeedback}
+              />
             </SettingsGroup>
           )}
 

@@ -154,6 +154,14 @@ Deno.serve(async (req) => {
       "moderation_queue", "health_night_metrics", "workout_set_logs",
       "health_sync_snapshots", "ai_usage", "coach_preference_signals",
       "pilot_code_redemptions", "pod_members",
+      // The pilot. pilot_feedback holds free text somebody typed about the
+      // product; a deleted account must not leave it behind, and a table that
+      // is not on this list outlives the person who wrote it.
+      "pilot_feedback", "pilot_prompt_log",
+      // recovery_sessions has been deployed with no writer since 20260922100000
+      // and was never added here. Adding it now, before it has any rows, rather
+      // than after somebody notices.
+      "recovery_sessions",
       // Tribes: the member's own contributions. The tribes they own are
       // handled above, because deleting one cascades over everybody else's.
       "tribe_posts", "tribe_post_comments", "tribe_post_reactions",

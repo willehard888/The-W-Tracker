@@ -39,6 +39,9 @@ import TierPromotionCelebration from "@/components/TierPromotionCelebration";
 
 // Lazy: the sheet is asked for once, and it must not ride in the boot chunk.
 const AiConsentSheet = lazy(() => import("@/components/consent/AiConsentSheet"));
+// Lazy so the pilot layer costs a non-tester nothing at first paint — and so
+// boot-graph.test.ts can forbid it from entering Home's static graph at all.
+const PilotHost = lazy(() => import("@/components/pilot/PilotHost"));
 import Index from "./pages/Index";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
@@ -494,6 +497,10 @@ const AppRoutes = () => {
           It registers with the consent gate; every AI surface asks through it. */}
       {user && <Suspense fallback={null}><AiConsentSheet /></Suspense>}
       <PushPrimingSheet open={needsPriming} context={primingContext} onEnable={enablePush} onDismiss={dismissPriming} />
+      {/* Asks a pilot tester at most one question per launch, and never in the
+          same launch as a teaching card. Renders null for everyone else —
+          including everyone, if the migration has not been deployed yet. */}
+      {user && <Suspense fallback={null}><PilotHost /></Suspense>}
     </div>
     </OnboardingProvider>
     </PushControlsContext.Provider>

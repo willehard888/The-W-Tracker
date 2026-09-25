@@ -18,6 +18,11 @@ const HEAVY = [
   // Recovery's movement library and routine scripts (both files by prefix).
   "src/data/recovery",
   "src/components/StoryShareModal",
+  // The pilot layer. It is small, but it is for ten to twenty people and it
+  // must cost the rest of the app nothing at first paint — App.tsx lazy-loads
+  // PilotHost, and this is what keeps somebody from making it a static import
+  // to fix a re-render.
+  "src/components/pilot/",
   "supabase/functions/",
 ];
 

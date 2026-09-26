@@ -65,11 +65,10 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
       <main className="relative flex-1 flex flex-col px-6 pt-10">
         {/* Opening beat */}
         <div className="home-rise home-rise-1 max-w-md">
-          <p className="eyebrow">Discipline is the new flex</p>
           {/* Three lines by design: at 44 px "You either level up" does not fit
               a phone width, and a break inside "level up" split the one gold
               phrase across two lines. */}
-          <h1 className="mt-3 font-display text-[2.75rem] font-black tracking-tight leading-[0.92]">
+          <h1 className="font-display text-[2.75rem] font-black tracking-tight leading-[0.92]">
             You either
             <br />
             <span className="text-gold">level up</span>
@@ -107,10 +106,9 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
           </button>
         </div>
 
-        {/* What you actually get — one app replaces the whole stack */}
+        {/* What you actually get */}
         <div className="home-rise home-rise-3 mt-14 max-w-md">
-          <p className="font-display font-black text-lead tracking-tight leading-tight">One app · replaces five</p>
-          <ul className="mt-2 divide-y divide-border/35 border-t border-border/35">
+          <ul className="divide-y divide-border/35 border-t border-border/35">
             {WHAT_YOU_GET.map(({ icon: Icon, title, text }) => (
               <li key={title} className="flex items-start gap-3 py-3">
                 <Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />

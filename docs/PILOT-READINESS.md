@@ -59,7 +59,7 @@ confirm the exact line.*
 
 ## What this branch built
 
-Six commits, all local. **Nothing has been pushed** — say the word.
+Eight commits, all local. **Nothing has been pushed** — say the word.
 
 ### Measurement: from dark to readable
 
@@ -151,6 +151,28 @@ which tells them we are not paying attention.
 
 ---
 
+### Three things this branch shipped that did nothing
+
+Found by reading my own diff back, not by anything failing — which is the only
+way any of them would have been found.
+
+- **`app_version` was never populated.** The column, the RPC parameter, the
+  client field and the admin column that displays it all existed, end to end,
+  and nothing set it. A pipe laid the whole way and never connected, in a pilot
+  whose job is telling us which build a bug came from. It is resolved inside
+  `rpc.ts` now and gone from the caller's interface entirely: a caller that *can*
+  forget eventually does, so callers are not offered the chance.
+- **`classifyUse` had six tests and no callers.** It named the brief's
+  distinction between "never found it" and "tried it and stopped" — but that
+  rule is already enforced, in the `requires` predicate that gates every
+  contextual question. The same rule stated twice is worse than stated once: the
+  second copy reads as load-bearing and gets maintained. Deleted.
+- **`loggedFood` was a signal no question consulted** and nothing derived —
+  hardcoded `false` in the only place that built it. A field that is always false
+  is not a signal, it is a promise the reader has to go and check. Deleted.
+
+---
+
 ## Two things the audit found that were already wrong
 
 ### `soreness` was being sent to a third party
@@ -217,6 +239,39 @@ has to decide.
 One thing found in passing, unrelated to the pilot but worth knowing:
 `admin_waitlist()` returns raw email addresses to any admin.
 
+**A fifth decision, not a privacy one:** the brief asked for *personal* pilot
+codes. What exists is one shared code with 50 redemptions, because that is what
+was already built and it works. The redeemer is identified either way, through
+`pilot_code_redemptions.user_id` — a per-person code would only add binding a
+code to a named tester *in advance*. `create_pilot_code()` can mint them; I did
+not, and it is worth a minute's thought rather than a default.
+
+---
+
+## What I did not do
+
+Separated by why, because "not done" covers two different things and only one
+of them is a decision I would defend.
+
+**Deliberate, and I stand behind it**
+
+- **There is no `workout_abandoned` event.** A session is abandoned when iOS
+  kills the app, which is precisely when a client event does not arrive. It is
+  read from the row instead — `status in_progress` with an old `started_at` —
+  where the evidence actually is.
+
+**Promised in my own plan and not delivered**
+
+- **Time-to-value is two numbers, not three.** `admin_pilot_overview` gives time
+  to first check-in and to first workout. **Time to first AI answer is missing**,
+  and of the three it is the one that would say whether testers find the coach at
+  all.
+- **Bug reports carry no Sentry correlation id.** They carry the route and the
+  build; there is no link from a tester's description to the stack trace it
+  belongs to, so joining the two is manual.
+- **No named PostHog funnels.** The events exist and are emitted; funnels are
+  defined in PostHog's own interface, which is not code and not somewhere I go.
+
 ---
 
 ## Limits of what I verified
@@ -270,6 +325,12 @@ and has one deliberate write.
 7. Code capacity ≥ tester count, `expires_at` in the future
 8. Open the app as a real tester: redeem, see the toast about the two windows,
    reach day 1, see the checkpoint
-9. The four privacy decisions made
+9. The four privacy decisions made, and the shared-vs-personal code question
+   settled
 
 When 1–9 are done, this reads **PILOT READY**. Until then it does not.
+
+Re-checked 26 September: the working tree is clean, the deploy boundary has not
+moved (`types.ts` still has `ai_consent_version` and still lacks
+`recovery_sessions`, `score_checkin` and both pilot tables), and the adapter cast
+is still in place. Every blocker above stands as written.

@@ -10,6 +10,7 @@ import {
   stepReps,
   parseDecimal,
   decimalInput,
+  extendRestState,
   e1rm,
   sessionPRs,
   DEFAULT_REST_SEC,
@@ -331,5 +332,66 @@ describe("parseDecimal / decimalInput", () => {
     const logged = { squat: [{ set_index: 1, weight: 100, reps: 5 }], gone: [{ set_index: 1, weight: 50, reps: 10 }] };
     expect(sessionVolume(logged)).toBe(1000);
     expect(sessionVolume(logged, new Set(["squat"]))).toBe(500);
+  });
+});
+
+/**
+ * The rest clock, extended from the past.
+ *
+ * `endsAt` is an absolute deadline and "+30 s" used to add to it unconditionally,
+ * while the card deliberately never dismisses itself at zero. So the tap that
+ * follows "Rest is up" is late by construction, and what came back was
+ * `30 − overdue` seconds: ten at twenty seconds late, nothing at all past
+ * thirty. A founder reported it as "+30 gives about 10".
+ */
+describe("extending the rest clock", () => {
+  const NOW = 1_700_000_000_000;
+
+  it("gives a full thirty seconds to somebody who tapped twenty seconds late", () => {
+    const next = extendRestState({ endsAt: NOW - 20_000, seconds: 120 }, 30_000, NOW);
+    expect(next.endsAt - NOW, "the clock the athlete now sees, in ms").toBe(30_000);
+  });
+
+  it("gives a full thirty seconds even a long way past the deadline", () => {
+    // Before the fix this was negative: the button did nothing at all.
+    const next = extendRestState({ endsAt: NOW - 90_000, seconds: 120 }, 30_000, NOW);
+    expect(next.endsAt - NOW, "90 s overdue").toBe(30_000);
+  });
+
+  it("adds to a clock that is still running instead of restarting it", () => {
+    const next = extendRestState({ endsAt: NOW + 75_000, seconds: 120 }, 30_000, NOW);
+    expect(next.endsAt - NOW, "1:15 remaining plus 30 s").toBe(105_000);
+  });
+
+  it("grows the ring with the clock, so the arc cannot read full through an extension", () => {
+    const next = extendRestState({ endsAt: NOW + 75_000, seconds: 120 }, 30_000, NOW);
+    expect(next.seconds, "the ring's denominator").toBe(150);
+  });
+
+  it("restarts the ring at the amount added when the clock had expired", () => {
+    const next = extendRestState({ endsAt: NOW - 20_000, seconds: 120 }, 30_000, NOW);
+    expect(next.seconds, "a fresh 30 s ring, not a stale 120 s one").toBe(30);
+  });
+
+  it("never leaves the ring reading more than full, running or expired", () => {
+    for (const endsAt of [NOW + 75_000, NOW - 20_000, NOW - 90_000, NOW]) {
+      const next = extendRestState({ endsAt, seconds: 120 }, 30_000, NOW);
+      const remaining = (next.endsAt - NOW) / 1000;
+      expect(remaining / next.seconds, `endsAt ${endsAt - NOW} ms from now`).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("stacks: two taps are a full minute, whether late or early", () => {
+    const once = extendRestState({ endsAt: NOW - 20_000, seconds: 120 }, 30_000, NOW);
+    const twice = extendRestState(once, 30_000, NOW);
+    expect(twice.endsAt - NOW, "0:30 then +30 again").toBe(60_000);
+    expect(twice.seconds).toBe(60);
+  });
+
+  it("still gives a full clock to a deadline restored from before an app kill", () => {
+    // CoachSession restores a rest record up to 60 s stale; that used to make
+    // the button a no-op on exactly the launch where the athlete needed it.
+    const next = extendRestState({ endsAt: NOW - 59_000, seconds: 120 }, 30_000, NOW);
+    expect(next.endsAt, "a restored stale deadline").toBeGreaterThan(NOW);
   });
 });

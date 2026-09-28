@@ -116,6 +116,12 @@ export const FUNNEL = {
   workoutStarted: "workout_started",
   workoutCompleted: "workout_completed",
 
+  // "+30 s" during rest. `overdue` says whether the clock had already run out
+  // when they reached for it — which is the interesting half, because that is
+  // the case that used to hand back less than thirty seconds, and it tells us
+  // whether two minutes is the right default rest at all.
+  restExtended: "rest_extended",
+
   // The coach, which was equally dark. `turn` is the message number in the
   // thread; the message text never leaves the device and is not stored server
   // side at all. coach_answer_rated is the pilot's only direct read on whether

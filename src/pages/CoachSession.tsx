@@ -57,6 +57,7 @@ import {
   stepReps,
   parseDecimal,
   decimalInput,
+  extendRestState,
 } from "@/lib/training/runner";
 
 /**
@@ -302,12 +303,18 @@ const CoachSession = () => {
     setRest(next);
     if (restKey) writeLocal(restKey, JSON.stringify(next));
   };
-  const extendRest = (ms: number) => setRest((r) => {
-    if (!r) return r;
-    const next = { ...r, endsAt: r.endsAt + ms };
-    if (restKey) writeLocal(restKey, JSON.stringify(next));
-    return next;
-  });
+  const extendRest = (ms: number) => {
+    // Read the clock before the updater runs: whether the athlete was already
+    // overdue is the one thing worth counting here, and a functional updater
+    // is not the place to fire an event from.
+    void track(FUNNEL.restExtended, { overdue: !!rest && rest.endsAt <= Date.now() });
+    setRest((r) => {
+      if (!r) return r;
+      const next = extendRestState(r, ms, Date.now());
+      if (restKey) writeLocal(restKey, JSON.stringify(next));
+      return next;
+    });
+  };
   const clearRest = () => {
     setRest(null);
     if (restKey) removeLocal(restKey);

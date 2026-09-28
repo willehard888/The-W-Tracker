@@ -197,6 +197,34 @@ export const formatRest = (seconds: number): string => {
   return `${m}:${String(s % 60).padStart(2, "0")}`;
 };
 
+/** A rest clock: an absolute deadline, and the span the ring is drawn against. */
+export interface RestState {
+  endsAt: number;
+  seconds: number;
+}
+
+/**
+ * "+30 s" means thirty more seconds of rest.
+ *
+ * It did not. `endsAt` is an absolute deadline and the old handler added to it
+ * unconditionally — but the rest card never dismisses itself at zero, which is
+ * deliberate: "Rest is up" in ember is the signal for an athlete who is not
+ * looking at the screen. So the card sits there, and the tap that follows is
+ * usually late. Twenty seconds late gave ten seconds of rest. Thirty seconds
+ * late gave none at all, and the button looked broken because it was.
+ *
+ * Extending from `now` rather than from the deadline is the whole fix, and it
+ * repairs the app-kill path for free: a deadline restored from up to a minute
+ * in the past now yields a full clock too.
+ *
+ * `seconds` grows alongside because it is the ring's denominator. Without it
+ * the arc reads full for the whole extension and then drains at the old rate.
+ */
+export const extendRestState = (rest: RestState, ms: number, now: number): RestState =>
+  rest.endsAt > now
+    ? { endsAt: rest.endsAt + ms, seconds: rest.seconds + ms / 1000 }
+    : { endsAt: now + ms, seconds: ms / 1000 };
+
 /** Total volume (kg × reps) across logged sets — the session summary's headline. */
 export const sessionVolume = (logged: Record<string, LoggedSet[]>, slugs?: ReadonlySet<string>): number => {
   let total = 0;

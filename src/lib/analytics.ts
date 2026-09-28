@@ -116,6 +116,14 @@ export const FUNNEL = {
   workoutStarted: "workout_started",
   workoutCompleted: "workout_completed",
 
+  // Opening a movement to find out what it is, before committing to the day.
+  // `drawn` says whether we had an illustration for it: a preview of a glyph
+  // and a paragraph is a different experience from a preview of the movement,
+  // and if undrawn previews are what people open, the drawing set has a gap.
+  // Never the slug or the name — a funnel does not need to know what anybody
+  // pressed.
+  exercisePreviewOpened: "exercise_preview_opened",
+
   // "+30 s" during rest. `overdue` says whether the clock had already run out
   // when they reached for it — which is the interesting half, because that is
   // the case that used to hand back less than thirty seconds, and it tells us

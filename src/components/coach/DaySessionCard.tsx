@@ -1,5 +1,5 @@
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
-import { useMemo, useState, type ReactNode } from "react";
+import { Suspense, lazy, useMemo, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Loader2, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import ExerciseRow from "@/components/coach/ExerciseRow";
+// The preview pulls the coaching prose (130 KB) and the illustrated
+// catalogue. A day card that nobody taps should pay for neither.
+const ExercisePreviewSheet = lazy(() =>
+  import("@/components/coach/ExercisePreviewSheet").then((m) => ({ default: m.ExercisePreviewSheet })),
+);
 
 // Full 1–10 RPE. The readiness formula in coach-daily-plan clamps anything
 // below 6 to the same score, but the number is the athlete's own record of the
@@ -48,6 +53,9 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
   const [rpeSaving, setRpeSaving] = useState<number | null>(null);
   const [openWarmup, setOpenWarmup] = useState(false);
   const [openCooldown, setOpenCooldown] = useState(false);
+  // The movement being read about. Held after close so the sheet still has
+  // something to draw while it animates out.
+  const [preview, setPreview] = useState<ProgramBlock | null>(null);
 
   const week = program.plan_json.weeks.find((w) => w.week === currentWeek);
   const day = week?.days[todayDayIndex];
@@ -177,6 +185,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
                 loggable={isCurrentWeek || !!todayLog}
                 onSwap={onSwap && b.slug ? () => onSwap(b) : undefined}
                 onRemove={onRemove && b.slug ? () => onRemove(b.slug!) : undefined}
+                onOpen={() => setPreview(b)}
               />
             ))}
             {day.conditioning && (
@@ -272,6 +281,17 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
       )}
 
       {children && <div className="mt-4 border-t border-border/35 divide-y divide-border/35">{children}</div>}
+
+      {preview && (
+        <Suspense fallback={null}>
+          <ExercisePreviewSheet
+            open={!!preview}
+            onClose={() => setPreview(null)}
+            block={preview}
+            source="program"
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

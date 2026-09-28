@@ -1,7 +1,7 @@
 import { localDateKey } from "@/lib/date";
 import { parseDecimal, decimalInput } from "@/lib/training/runner";
 import { Suspense, lazy, useEffect, useState } from "react";
-import { ArrowLeftRight, ChevronDown, Check, Loader2 } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, ChevronRight, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
@@ -32,6 +32,14 @@ interface Props {
   /** Hand edits, offered only while nothing is logged for this movement. */
   onSwap?: () => void;
   onRemove?: () => void;
+  /**
+   * Open the movement full size instead of expanding the row.
+   *
+   * The accordion answers "what does this row not tell me"; the sheet
+   * answers "what IS this". Where a parent can show the sheet it wins,
+   * because a 40 px thumbnail is not a demonstration.
+   */
+  onOpen?: () => void;
 }
 
 // Whole local days between two day keys. `logged_on` is a date, and parsing
@@ -46,7 +54,7 @@ const daysAgo = (day: string) => {
  * step-by-step instructions and an inline "log your set" row (weight × reps).
  * The logged result is what the AI coach reads to progress the next block.
  */
-const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap, onRemove }: Props) => {
+const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap, onRemove, onOpen }: Props) => {
   const libReady = useExerciseLibrary();
   const ex = libReady ? resolveExercise(block.slug, block.name) : null;
   const [open, setOpen] = useState(false);
@@ -127,7 +135,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
     <li className="border-b border-border/30 last:border-b-0 pb-1.5 last:pb-0">
       <button
         type="button"
-        onClick={() => hasMore && (hapticImpact("light"), setOpen((v) => !v))}
+        onClick={() => onOpen ? (hapticImpact("light"), onOpen()) : hasMore && (hapticImpact("light"), setOpen((v) => !v))}
         className="w-full flex items-center gap-2.5 py-1.5 text-left"
       >
         {/* The drawing, or the muscle-group glyph. The stock photo that used to
@@ -152,7 +160,9 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
         </div>
         <span className="text-meta font-bold text-foreground/85 tabular-nums whitespace-nowrap inline-flex items-center gap-1">
           {block.sets}×{block.reps}{block.rpe ? ` · RPE ${block.rpe}` : ""}
-          {hasMore && (
+          {onOpen ? (
+            <ChevronRight aria-hidden size={11} className="text-muted-foreground/75" />
+          ) : hasMore && (
             <ChevronDown aria-hidden size={11} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
           )}
         </span>

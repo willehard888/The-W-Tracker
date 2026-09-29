@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
@@ -10,6 +10,8 @@ import { backOr } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { fetchPilotOverview, fetchFeedback, setFeedbackStatus, type FeedbackRow } from "@/lib/pilot/rpc";
 import { promptById } from "@/lib/pilot/prompts";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * The pilot, on one screen.
@@ -57,17 +59,33 @@ const choiceLabel = (row: FeedbackRow): string | null => {
 const AdminPilot = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [filter, setFilter] = useState("all");
+
+  // The same door as the other admin pages (AdminMetrics): has_role answers,
+  // anybody else is sent home. The RPCs enforce it again server-side.
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    let alive = true;
+    void supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(
+      ({ data }) => { if (alive) setIsAdmin(!!data); },
+      () => { if (alive) setIsAdmin(false); },
+    );
+    return () => { alive = false; };
+  }, [user]);
 
   const overview = useQuery({
     queryKey: ["admin-pilot-overview"],
     queryFn: () => fetchPilotOverview(null),
     retry: false,
+    enabled: !!isAdmin,
   });
   const feedback = useQuery({
     queryKey: ["admin-pilot-feedback"],
     queryFn: () => fetchFeedback(200),
     retry: false,
+    enabled: !!isAdmin,
   });
 
   const advance = async (row: FeedbackRow) => {
@@ -79,6 +97,9 @@ const AdminPilot = () => {
   const rows = (feedback.data ?? []).filter((r) => filter === "all" || r.kind === filter);
   const o = overview.data;
   const reach = o?.reach;
+
+  if (isAdmin === null) return <SettingsSkeleton />;
+  if (!isAdmin) return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-dvh">

@@ -8,8 +8,9 @@ import { mountRoute, watchConsole } from "@/test/mount-route";
 import AdminMetrics from "@/pages/AdminMetrics";
 import AdminModeration from "@/pages/AdminModeration";
 import AdminLegendInvites from "@/pages/AdminLegendInvites";
+import AdminPilot from "@/pages/AdminPilot";
 
-// The three admin pages. Each asks has_role first; an admin sees the page,
+// The four admin pages. Each asks has_role first; an admin sees the page,
 // anybody else is sent home. Both answers must mount without a console error.
 type Row = { path: string; pattern: string; page: React.ComponentType; expect: RegExp | string; admin: boolean };
 
@@ -20,6 +21,8 @@ const ROWS: Row[] = [
   { path: "/admin/moderation", pattern: "/admin/moderation", page: AdminModeration, expect: "redirected", admin: false },
   { path: "/admin/legend-invites", pattern: "/admin/legend-invites", page: AdminLegendInvites, expect: /legend invites/i, admin: true },
   { path: "/admin/legend-invites", pattern: "/admin/legend-invites", page: AdminLegendInvites, expect: "redirected", admin: false },
+  { path: "/admin/pilot", pattern: "/admin/pilot", page: AdminPilot, expect: /pilot/i, admin: true },
+  { path: "/admin/pilot", pattern: "/admin/pilot", page: AdminPilot, expect: "redirected", admin: false },
 ];
 
 describe.each<StubMode>(["empty", "error"])("admin routes mount cleanly (%s data)", (mode) => {

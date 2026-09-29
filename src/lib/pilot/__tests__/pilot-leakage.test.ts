@@ -1,6 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
 import { sanitizeContext, NOT_IN_PILOT } from "../rpc";
 
 /**
@@ -72,29 +70,5 @@ describe("failing open is the design, not a habit", () => {
     expect(NOT_IN_PILOT.is_pilot).toBe(false);
     expect(NOT_IN_PILOT.in_window).toBe(false);
     expect(NOT_IN_PILOT.day).toBe(0);
-  });
-});
-
-describe("the hand-written adapter is temporary", () => {
-  /**
-   * rpc.ts exists only because the generated types do not carry migration
-   * 20260925120000 yet. The moment they do, the adapter is dead weight that
-   * type-checks against a copy of the schema instead of the schema.
-   *
-   * Left to a comment, that cleanup never happens. So it is a failing test
-   * instead — the only kind of reminder that survives a busy month.
-   */
-  it("fails once the generated types catch up, so the cast gets deleted", () => {
-    const types = readFileSync(
-      join(resolve(__dirname, "../../../.."), "src", "integrations", "supabase", "types.ts"),
-      "utf8",
-    );
-    const deployed = types.includes("pilot_context");
-    expect(
-      deployed,
-      "Migration 20260925120000 is deployed and types.ts now knows pilot_context. " +
-        "Delete the LooseDb cast in src/lib/pilot/rpc.ts, call supabase.rpc directly, " +
-        "and delete this test.",
-    ).toBe(false);
   });
 });

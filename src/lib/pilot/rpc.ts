@@ -1,32 +1,17 @@
-// The pilot's data layer, and the one place in it that lies to the compiler.
-//
-// WHY THIS FILE EXISTS
-//
-// `src/integrations/supabase/types.ts` is generated from the LIVE schema, so
-// nothing in migration 20260925120000 is in it until that migration is deployed
-// and the types are regenerated. The house rule for this is written down in
-// 20260922100000_recovery_sessions.sql: ship the table, then the types, then
-// the client — and `as any` fails the type-debt ratchet, correctly.
-//
-// So the boundary is drawn here instead: ONE adapter, with the exact shapes the
-// migration defines written out by hand, and every caller fully typed against
-// them. That is strictly better than `as any` (which checks nothing) and better
-// than waiting (which ships a pilot with no feedback in it).
+// The pilot's data layer.
 //
 // FAIL OPEN, ALWAYS
 //
-// Every call here swallows its error and returns the inert answer. This is not
-// defensive habit — it is the design. If the app ships before the migration
-// runs, `pilot_context()` returns 404, this returns { is_pilot: false }, and
-// the entire pilot layer is simply dark. That is the same state every
-// non-pilot user is in, so there is no broken state to be in: the feature is
-// either switched on by the server or it does not exist.
+// Every member-side call here swallows its error and returns the inert answer.
+// This is not defensive habit — it is the design. If pilot_context() is ever
+// missing or refuses, this returns { is_pilot: false } and the entire pilot
+// layer is simply dark. That is the same state every non-pilot user is in, so
+// there is no broken state to be in: the feature is either switched on by the
+// server or it does not exist.
 //
-// WHEN THE TYPES ARE REGENERATED
-//
-// Delete the adapter below and call supabase.rpc directly. pilot-rpc.test.ts
-// fails the moment the generated types carry `pilot_context`, so this cleanup
-// is enforced rather than hoped for.
+// (Until 2026-09-29 this file carried a hand-written adapter over `supabase`
+// because the generated types did not know migration 20260925120000. They do
+// now; the calls go straight through.)
 
 import { supabase } from "@/integrations/supabase/client";
 import { captureException } from "@/lib/observability";
@@ -95,18 +80,6 @@ const resolveAppVersion = async (): Promise<string | null> => {
   return appVersion;
 };
 
-/**
- * The single cast. `supabase` really does accept these calls at runtime once
- * the migration is deployed; the generated types just have not caught up.
- */
-interface LooseDb {
-  rpc(fn: string, args?: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }>;
-  from(table: string): {
-    select(cols: string): PromiseLike<{ data: unknown; error: unknown }>;
-  };
-}
-const db = supabase as unknown as LooseDb;
-
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 
 const num = (v: unknown, fallback = 0): number => (typeof v === "number" ? v : fallback);
@@ -120,7 +93,7 @@ const str = (v: unknown): string | null => (typeof v === "string" ? v : null);
  */
 export const fetchPilotContext = async (): Promise<PilotContext> => {
   try {
-    const { data, error } = await db.rpc("pilot_context");
+    const { data, error } = await supabase.rpc("pilot_context");
     if (error || !isRecord(data)) return NOT_IN_PILOT;
     if (data.is_pilot !== true) return NOT_IN_PILOT;
     return {
@@ -139,7 +112,7 @@ export const fetchPilotContext = async (): Promise<PilotContext> => {
 /** What this person has already been asked. Empty on any failure. */
 export const fetchPromptLog = async (): Promise<PromptLogRow[]> => {
   try {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from("pilot_prompt_log")
       .select("prompt_id, shown_at, answered_at, dismissed_at");
     if (error || !Array.isArray(data)) return [];
@@ -165,7 +138,7 @@ export const fetchPromptLog = async (): Promise<PromptLogRow[]> => {
  */
 export const markPrompt = async (promptId: string, outcome: "shown" | "answered" | "dismissed"): Promise<void> => {
   try {
-    const { error } = await db.rpc("pilot_mark_prompt", { _prompt_id: promptId, _outcome: outcome });
+    const { error } = await supabase.rpc("pilot_mark_prompt", { _prompt_id: promptId, _outcome: outcome });
     if (error) captureException(error, { where: "pilot.markPrompt", promptId, outcome });
   } catch (e) {
     captureException(e, { where: "pilot.markPrompt", promptId, outcome });
@@ -213,14 +186,14 @@ export interface SubmitResult {
  */
 export const submitFeedback = async (input: FeedbackInput): Promise<SubmitResult> => {
   try {
-    const { data, error } = await db.rpc("pilot_submit_feedback", {
+    const { data, error } = await supabase.rpc("pilot_submit_feedback", {
       _prompt_id: input.promptId,
       _kind: input.kind,
-      _rating: input.rating ?? null,
-      _choice: input.choice ?? null,
-      _comment: input.comment ?? null,
-      _context: sanitizeContext(input.context),
-      _app_version: await resolveAppVersion(),
+      _rating: input.rating ?? undefined,
+      _choice: input.choice ?? undefined,
+      _comment: input.comment ?? undefined,
+      _context: sanitizeContext(input.context) ?? undefined,
+      _app_version: (await resolveAppVersion()) ?? undefined,
     });
     if (error) {
       captureException(error, { where: "pilot.submitFeedback", promptId: input.promptId });
@@ -236,8 +209,7 @@ export const submitFeedback = async (input: FeedbackInput): Promise<SubmitResult
 
 // ── The founders' side ───────────────────────────────────────────────────────
 //
-// Same adapter, same reason: none of this is in the generated types yet. The
-// aggregates have to be an RPC because analytics_events has no SELECT policy at
+// The aggregates have to be an RPC because analytics_events has no SELECT policy at
 // all, but the feedback ROWS are read straight from the table — pilot_feedback
 // carries an admin SELECT policy shaped like pilot_code_redemptions', because a
 // comment has to be read as it was written and an aggregate cannot do that.
@@ -279,31 +251,16 @@ export interface FeedbackRow {
   created_at: string;
 }
 
-interface AdminDb {
-  rpc(fn: string, args?: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }>;
-  from(table: string): {
-    select(cols: string): {
-      order(col: string, opts: { ascending: boolean }): {
-        limit(n: number): PromiseLike<{ data: unknown; error: unknown }>;
-      };
-    };
-    update(patch: Record<string, unknown>): {
-      eq(col: string, val: string): PromiseLike<{ error: unknown }>;
-    };
-  };
-}
-const adminDb = supabase as unknown as AdminDb;
-
 /** Throws on failure: an admin page that renders zeroes when the RPC refused is worse than one that says so. */
 export const fetchPilotOverview = async (cohort?: string | null): Promise<PilotOverview> => {
-  const { data, error } = await adminDb.rpc("admin_pilot_overview", { p_cohort: cohort ?? null });
+  const { data, error } = await supabase.rpc("admin_pilot_overview", { p_cohort: cohort ?? undefined });
   if (error) throw error instanceof Error ? error : new Error("admin_pilot_overview failed");
   if (!isRecord(data)) throw new Error("admin_pilot_overview returned nothing");
   return data as unknown as PilotOverview;
 };
 
 export const fetchFeedback = async (limit = 200): Promise<FeedbackRow[]> => {
-  const { data, error } = await adminDb
+  const { data, error } = await supabase
     .from("pilot_feedback")
     .select("id, prompt_id, kind, rating, choice, comment, pilot_day, cohort, app_version, status, created_at")
     .order("created_at", { ascending: false })
@@ -314,6 +271,6 @@ export const fetchFeedback = async (limit = 200): Promise<FeedbackRow[]> => {
 
 /** Triage. The only column an admin may move, and the RLS policy says so too. */
 export const setFeedbackStatus = async (id: string, status: string): Promise<void> => {
-  const { error } = await adminDb.from("pilot_feedback").update({ status }).eq("id", id);
+  const { error } = await supabase.from("pilot_feedback").update({ status }).eq("id", id);
   if (error) throw error instanceof Error ? error : new Error("status update failed");
 };

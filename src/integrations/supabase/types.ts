@@ -862,8 +862,8 @@ export type Database = {
           no_phone_morning: boolean
           proof_photo_url: string | null
           protein_intake: boolean
-          score_breakdown: Json | null
           reading: boolean
+          score_breakdown: Json | null
           sleep_hours: number
           sport: string | null
           tz_offset_minutes: number | null
@@ -890,8 +890,8 @@ export type Database = {
           no_phone_morning?: boolean
           proof_photo_url?: string | null
           protein_intake?: boolean
-          score_breakdown?: Json | null
           reading?: boolean
+          score_breakdown?: Json | null
           sleep_hours?: number
           sport?: string | null
           tz_offset_minutes?: number | null
@@ -918,8 +918,8 @@ export type Database = {
           no_phone_morning?: boolean
           proof_photo_url?: string | null
           protein_intake?: boolean
-          score_breakdown?: Json | null
           reading?: boolean
+          score_breakdown?: Json | null
           sleep_hours?: number
           sport?: string | null
           tz_offset_minutes?: number | null
@@ -1479,18 +1479,18 @@ export type Database = {
           id: string
           last_synced_at: string
           mindful_minutes: number | null
+          primary_sport: string | null
           sleep_hours: number | null
           snapshot_date: string
           source: string
-          primary_sport: string | null
           sources: string[]
-          workouts: Json
           steps: number | null
           updated_at: string
           user_id: string
           vo2max: number | null
           workout_count: number | null
           workout_minutes: number | null
+          workouts: Json
         }
         Insert: {
           active_kcal?: number | null
@@ -1502,18 +1502,18 @@ export type Database = {
           id?: string
           last_synced_at?: string
           mindful_minutes?: number | null
+          primary_sport?: string | null
           sleep_hours?: number | null
           snapshot_date: string
           source?: string
-          primary_sport?: string | null
           sources?: string[]
-          workouts?: Json
           steps?: number | null
           updated_at?: string
           user_id: string
           vo2max?: number | null
           workout_count?: number | null
           workout_minutes?: number | null
+          workouts?: Json
         }
         Update: {
           active_kcal?: number | null
@@ -1525,18 +1525,18 @@ export type Database = {
           id?: string
           last_synced_at?: string
           mindful_minutes?: number | null
+          primary_sport?: string | null
           sleep_hours?: number | null
           snapshot_date?: string
           source?: string
-          primary_sport?: string | null
           sources?: string[]
-          workouts?: Json
           steps?: number | null
           updated_at?: string
           user_id?: string
           vo2max?: number | null
           workout_count?: number | null
           workout_minutes?: number | null
+          workouts?: Json
         }
         Relationships: []
       }
@@ -2243,6 +2243,7 @@ export type Database = {
       pilot_codes: {
         Row: {
           code: string
+          cohort: string | null
           created_at: string
           created_by: string
           expires_at: string | null
@@ -2250,9 +2251,11 @@ export type Database = {
           id: string
           max_redemptions: number
           note: string | null
+          observe_days: number
         }
         Insert: {
           code: string
+          cohort?: string | null
           created_at?: string
           created_by: string
           expires_at?: string | null
@@ -2260,9 +2263,11 @@ export type Database = {
           id?: string
           max_redemptions?: number
           note?: string | null
+          observe_days?: number
         }
         Update: {
           code?: string
+          cohort?: string | null
           created_at?: string
           created_by?: string
           expires_at?: string | null
@@ -2270,6 +2275,82 @@ export type Database = {
           id?: string
           max_redemptions?: number
           note?: string | null
+          observe_days?: number
+        }
+        Relationships: []
+      }
+      pilot_feedback: {
+        Row: {
+          app_version: string | null
+          choice: string | null
+          cohort: string | null
+          comment: string | null
+          context: Json | null
+          created_at: string
+          id: string
+          kind: string
+          pilot_day: number | null
+          prompt_id: string
+          rating: number | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          app_version?: string | null
+          choice?: string | null
+          cohort?: string | null
+          comment?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          kind: string
+          pilot_day?: number | null
+          prompt_id: string
+          rating?: number | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          app_version?: string | null
+          choice?: string | null
+          cohort?: string | null
+          comment?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          kind?: string
+          pilot_day?: number | null
+          prompt_id?: string
+          rating?: number | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pilot_prompt_log: {
+        Row: {
+          answered_at: string | null
+          dismissed_at: string | null
+          id: string
+          prompt_id: string
+          shown_at: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          dismissed_at?: string | null
+          id?: string
+          prompt_id: string
+          shown_at?: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          dismissed_at?: string | null
+          id?: string
+          prompt_id?: string
+          shown_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2446,6 +2527,71 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      recovery_sessions: {
+        Row: {
+          actual_sec: number | null
+          areas: string[]
+          completed_movements: number
+          day_index: number | null
+          ended_at: string | null
+          id: string
+          length: string
+          movement_ids: string[]
+          planned_sec: number
+          program_id: string | null
+          source: string
+          started_at: string
+          status: string
+          user_id: string
+          was_general: boolean
+          week: number | null
+        }
+        Insert: {
+          actual_sec?: number | null
+          areas?: string[]
+          completed_movements?: number
+          day_index?: number | null
+          ended_at?: string | null
+          id?: string
+          length?: string
+          movement_ids?: string[]
+          planned_sec?: number
+          program_id?: string | null
+          source: string
+          started_at?: string
+          status?: string
+          user_id: string
+          was_general?: boolean
+          week?: number | null
+        }
+        Update: {
+          actual_sec?: number | null
+          areas?: string[]
+          completed_movements?: number
+          day_index?: number | null
+          ended_at?: string | null
+          id?: string
+          length?: string
+          movement_ids?: string[]
+          planned_sec?: number
+          program_id?: string | null
+          source?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+          was_general?: boolean
+          week?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovery_sessions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "coach_programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referrals: {
         Row: {
@@ -3374,6 +3520,7 @@ export type Database = {
           event_id: string
           event_ts: number
           event_type: string | null
+          expires_at: string | null
           product_id: string | null
           source: string
         }
@@ -3384,6 +3531,7 @@ export type Database = {
           event_id: string
           event_ts?: number
           event_type?: string | null
+          expires_at?: string | null
           product_id?: string | null
           source: string
         }
@@ -3394,6 +3542,7 @@ export type Database = {
           event_id?: string
           event_ts?: number
           event_type?: string | null
+          expires_at?: string | null
           product_id?: string | null
           source?: string
         }
@@ -3505,14 +3654,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_pod_invite: { Args: { p_pod: string }; Returns: Json }
       add_chat_memory: {
         Args: { _confidence?: number; _fact: string; _source?: string }
         Returns: string
       }
-      add_user_habit: { Args: { _protocol_id: string }; Returns: Json }
       admin_funnel: { Args: { p_days?: number }; Returns: Json }
       admin_metrics_overview: { Args: never; Returns: Json }
+      admin_pilot_overview: { Args: { p_cohort?: string }; Returns: Json }
+      admin_pilot_prompts: {
+        Args: { p_cohort?: string }
+        Returns: {
+          answered: number
+          dismissed: number
+          prompt_id: string
+          shown: number
+        }[]
+      }
       admin_retention_cohorts: {
         Args: { p_weeks?: number }
         Returns: {
@@ -3579,6 +3736,19 @@ export type Database = {
       }
       calculate_rank_score: { Args: { p_user_id: string }; Returns: number }
       can_create_tribe: { Args: { _user_id: string }; Returns: boolean }
+      checkin_default_keys: { Args: never; Returns: string[] }
+      checkin_habit_done: {
+        Args: {
+          dc: Database["public"]["Tables"]["daily_checkins"]["Row"]
+          key: string
+        }
+        Returns: boolean
+      }
+      checkin_habit_keys: { Args: never; Returns: string[] }
+      checkin_local_day: {
+        Args: { dc: Database["public"]["Tables"]["daily_checkins"]["Row"] }
+        Returns: string
+      }
       claim_referral: { Args: { p_referrer_code: string }; Returns: Json }
       close_tribe_challenges: { Args: never; Returns: undefined }
       create_battle: {
@@ -3603,7 +3773,6 @@ export type Database = {
         }
         Returns: Json
       }
-      create_pod: { Args: { p_name: string }; Returns: Json }
       create_tribe: {
         Args: {
           p_cover_url?: string
@@ -3651,7 +3820,6 @@ export type Database = {
       }
       debug_net_ping: { Args: never; Returns: number }
       debug_net_result: { Args: { p_id: number }; Returns: Json }
-      decline_pod_invite: { Args: { p_pod: string }; Returns: undefined }
       delete_chat_memory: { Args: { _id: string }; Returns: boolean }
       delete_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
       delete_tribe_event: { Args: { p_event: string }; Returns: undefined }
@@ -3786,13 +3954,11 @@ export type Database = {
           source_id: string
         }[]
       }
-      invite_to_pod: { Args: { p_invitee: string }; Returns: undefined }
       invite_to_tribe: {
         Args: { p_invitee_id: string; p_tribe_id: string }
         Returns: string
       }
       is_blocked: { Args: { a: string; b: string }; Returns: boolean }
-      is_pod_member: { Args: { p_pod: string }; Returns: boolean }
       is_tribe_admin: {
         Args: { _tribe_id: string; _user_id: string }
         Returns: boolean
@@ -3805,10 +3971,9 @@ export type Database = {
         Args: { _tribe_id: string; _user_id: string }
         Returns: boolean
       }
-      join_pod: { Args: { p_code: string }; Returns: Json }
       join_tribe: { Args: { p_tribe_id: string }; Returns: string }
-      leave_pod: { Args: never; Returns: undefined }
       leave_tribe: { Args: { p_tribe_id: string }; Returns: undefined }
+      level_for_xp: { Args: { p_xp: number }; Returns: number }
       list_friend_requests: { Args: never; Returns: Json }
       list_friends: { Args: never; Returns: Json }
       list_my_referrals: {
@@ -3822,11 +3987,9 @@ export type Database = {
           referred_username: string
         }[]
       }
-      list_pod_invites: { Args: never; Returns: Json }
       list_sent_friend_requests: { Args: never; Returns: Json }
       list_tribe_events: { Args: { p_tribe: string }; Returns: Json }
       log_anon_event: { Args: { _event: string }; Returns: undefined }
-      log_habit: { Args: { _date?: string; _habit_id: string }; Returns: Json }
       log_meal: {
         Args: {
           p_items: Json
@@ -3843,6 +4006,7 @@ export type Database = {
       log_workout_set: {
         Args: {
           p_day: number
+          p_logged_on?: string
           p_name: string
           p_program: string
           p_reps: number
@@ -3855,7 +4019,6 @@ export type Database = {
         Returns: string
       }
       mark_notifications_read: { Args: { p_before?: string }; Returns: number }
-      mark_nudge_seen: { Args: { _nudge_id: string }; Returns: undefined }
       mark_onboarded: { Args: never; Returns: undefined }
       meal_payload: { Args: { p_meal_id: string }; Returns: Json }
       normalize_barcode: { Args: { p_raw: string }; Returns: string }
@@ -3902,7 +4065,27 @@ export type Database = {
           username: string
         }[]
       }
-      pod_today: { Args: { p_tz_offset_minutes?: number }; Returns: Json }
+      pilot_context: { Args: never; Returns: Json }
+      pilot_mark_prompt: {
+        Args: { _outcome: string; _prompt_id: string }
+        Returns: undefined
+      }
+      pilot_submit_feedback: {
+        Args: {
+          _app_version?: string
+          _choice?: string
+          _comment?: string
+          _context?: Json
+          _kind: string
+          _prompt_id: string
+          _rating?: number
+        }
+        Returns: Json
+      }
+      proof_photo_shared_with: {
+        Args: { p_name: string; p_uid: string }
+        Returns: boolean
+      }
       recent_night_metrics: {
         Args: { p_days?: number }
         Returns: {
@@ -3997,6 +4180,10 @@ export type Database = {
       }
       redeem_legend_invite: { Args: { p_code: string }; Returns: Json }
       redeem_pilot_code: { Args: { p_code: string }; Returns: Json }
+      refresh_tribe_collective: {
+        Args: { p_tribe_id: string }
+        Returns: undefined
+      }
       refresh_tribe_fire: { Args: never; Returns: undefined }
       remove_tribe_member: {
         Args: { p_tribe_id: string; p_user_id: string }
@@ -4032,7 +4219,6 @@ export type Database = {
         Args: { p_accept: boolean; p_invite_id: string }
         Returns: undefined
       }
-      revoke_tribe_invite: { Args: { p_invite_id: string }; Returns: undefined }
       reward_referral_conversion: { Args: { p_user: string }; Returns: Json }
       rsvp_tribe_event: {
         Args: { p_event: string; p_status: string }
@@ -4043,6 +4229,7 @@ export type Database = {
         Returns: Json
       }
       scan_user_priors: { Args: never; Returns: Json }
+      score_checkin: { Args: { p_checkin_id: string }; Returns: Json }
       search_foods: {
         Args: {
           p_barcode?: string
@@ -4105,6 +4292,8 @@ export type Database = {
         Args: { p_role: string; p_tribe_id: string; p_user_id: string }
         Returns: undefined
       }
+      sleep_claim: { Args: { h: number }; Returns: number }
+      sleep_curve: { Args: { h: number }; Returns: number }
       submit_battle_proof: {
         Args: { battle_id: string; proof_url: string }
         Returns: undefined
@@ -4123,6 +4312,10 @@ export type Database = {
           tribe_name: string
           user_id: string
         }[]
+      }
+      tribe_member_avg: {
+        Args: { p_from: string; p_to: string; p_tribe: string }
+        Returns: number
       }
       tribe_today_pulse: {
         Args: { p_tribe_ids: string[] }
@@ -4311,9 +4504,9 @@ export type Database = {
           _distance_m?: number
           _flights?: number
           _mindful_minutes?: number
+          _primary_sport?: string
           _sleep_hours?: number
           _source?: string
-          _primary_sport?: string
           _sources?: string[]
           _steps?: number
           _vo2max?: number

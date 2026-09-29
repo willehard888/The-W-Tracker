@@ -196,15 +196,141 @@ export const SESSION_POOL: Record<string, PoolEntry> = {
 
 export interface Rx { sets: number; reps: string; rpe: number; rest_sec: number }
 
-/** Sets / reps / RPE / rest by goal — the data form of the generator's prose. */
-export const SCHEMES: Record<string, { compound: Rx; isolation: Rx }> = {
-  all:         { compound: { sets: 4, reps: "5-8",   rpe: 8,   rest_sec: 120 }, isolation: { sets: 3, reps: "8-12",  rpe: 8, rest_sec: 60 } },
-  strength:    { compound: { sets: 5, reps: "3-6",   rpe: 8.5, rest_sec: 180 }, isolation: { sets: 3, reps: "8-12",  rpe: 8, rest_sec: 90 } },
-  hypertrophy: { compound: { sets: 4, reps: "6-10",  rpe: 8,   rest_sec: 90  }, isolation: { sets: 3, reps: "10-15", rpe: 8, rest_sec: 60 } },
-  fat_loss:    { compound: { sets: 3, reps: "12-15", rpe: 7,   rest_sec: 60  }, isolation: { sets: 3, reps: "15-20", rpe: 8, rest_sec: 45 } },
-  endurance:   { compound: { sets: 3, reps: "12-15", rpe: 7,   rest_sec: 60  }, isolation: { sets: 3, reps: "15-20", rpe: 7, rest_sec: 45 } },
-  longevity:   { compound: { sets: 3, reps: "8-12",  rpe: 6.5, rest_sec: 90  }, isolation: { sets: 2, reps: "12-15", rpe: 7, rest_sec: 60 } },
-  focus:       { compound: { sets: 3, reps: "6-10",  rpe: 7,   rest_sec: 120 }, isolation: { sets: 2, reps: "10-15", rpe: 7, rest_sec: 60 } },
+/**
+ * How heavy a movement is to prescribe — the axis the dose actually turns on.
+ *
+ * This used to be `tier < 3`, one bit, and it produced the bug a member
+ * reported: every movement in a 60-minute session read 4 × 5-8 at RPE 8 with
+ * two minutes' rest, a rear delt row included. A bench press and a rear delt
+ * row are both "compound" under that test and nothing else about them is alike.
+ *
+ * Tier answers "how central is this to the day" and drives selection. Load
+ * class answers "how heavy can this be loaded" and drives the dose. They were
+ * the same field doing both jobs, and the second job was the one being done
+ * badly.
+ */
+export type LoadClass =
+  | "lead"            // the day's heavy bilateral lift
+  | "compound"        // multi-joint, not the heaviest: pulls, machine and DB presses
+  | "small_compound"  // small-joint compound, or unilateral work the balance limits
+  | "isolation"       // single joint, large muscle
+  | "isolation_small" // single joint, small and fatigue-resistant: delts, glutes
+  | "core";
+
+export const LOAD_CLASSES: LoadClass[] =
+  ["lead", "compound", "small_compound", "isolation", "isolation_small", "core"];
+
+const LEAD_PATTERNS: Pattern[] = ["squat", "hinge", "horizontal_push", "vertical_push"];
+
+/**
+ * What a movement is, for dosing.
+ *
+ * Ordered rules, first match wins. The shoulder rule is the one that earns its
+ * keep: an upright row and a rear delt row are tier 2 because they are built
+ * like rows, and they were being loaded like rows. Reading `focus[0]` rather
+ * than retiering them leaves selection, `swapCandidates` and the pool parity
+ * assertions exactly as they were.
+ */
+export const loadClassOf = (e: Partial<PoolEntry> & Partial<CatalogItem>): LoadClass => {
+  const { pattern, focus, tier } = e;
+  if (pattern) {
+    if (pattern === "core") return "core";
+    if (pattern === "shoulder_iso" || pattern === "glute_iso") return "isolation_small";
+    if (pattern === "chest_iso" || pattern === "back_iso" || pattern === "leg_iso") return "isolation";
+    if (pattern === "arm_biceps" || pattern === "arm_triceps") {
+      // A JM press is a triceps compound; a barbell curl is not.
+      return (tier ?? 3) < 3 ? "small_compound" : "isolation";
+    }
+    if ((pattern === "vertical_pull" || pattern === "horizontal_pull") && focus?.[0] === "shoulders") {
+      return "small_compound";
+    }
+    if (pattern === "lunge") return "small_compound";
+    if (tier === 1 && LEAD_PATTERNS.includes(pattern)) return "lead";
+    return "compound";
+  }
+  // Outside the pool — a hand-picked movement, or a plan built before the pool
+  // existed. The 542-item catalog carries mechanic and primary for all of them.
+  // Never "lead" from here: without a tier we cannot know, and the safe error
+  // is the middle of the range rather than the heaviest end of it.
+  if (e.primary === "abdominals") return "core";
+  return e.mechanic === "compound" ? "compound" : "isolation";
+};
+
+/** Sets / reps / RPE / rest by goal and load class — the dose, as data. */
+export const SCHEMES: Record<string, Record<LoadClass, Rx>> = {
+  all: {
+    lead:            { sets: 4, reps: "5-8",   rpe: 8,   rest_sec: 150 },
+    compound:        { sets: 4, reps: "6-10",  rpe: 8,   rest_sec: 120 },
+    small_compound:  { sets: 3, reps: "8-12",  rpe: 8,   rest_sec: 75  },
+    isolation:       { sets: 3, reps: "10-12", rpe: 8,   rest_sec: 60  },
+    isolation_small: { sets: 3, reps: "12-15", rpe: 8,   rest_sec: 60  },
+    core:            { sets: 3, reps: "12-20", rpe: 7,   rest_sec: 45  },
+  },
+  strength: {
+    lead:            { sets: 5, reps: "3-5",   rpe: 8.5, rest_sec: 210 },
+    compound:        { sets: 4, reps: "5-6",   rpe: 8,   rest_sec: 180 },
+    small_compound:  { sets: 3, reps: "6-10",  rpe: 8,   rest_sec: 90  },
+    isolation:       { sets: 3, reps: "8-12",  rpe: 8,   rest_sec: 60  },
+    isolation_small: { sets: 3, reps: "10-15", rpe: 8,   rest_sec: 45  },
+    core:            { sets: 3, reps: "8-12",  rpe: 7,   rest_sec: 60  },
+  },
+  hypertrophy: {
+    lead:            { sets: 4, reps: "6-8",   rpe: 8,   rest_sec: 120 },
+    compound:        { sets: 4, reps: "8-12",  rpe: 8,   rest_sec: 90  },
+    small_compound:  { sets: 3, reps: "10-12", rpe: 8,   rest_sec: 75  },
+    isolation:       { sets: 3, reps: "12-15", rpe: 8,   rest_sec: 60  },
+    isolation_small: { sets: 3, reps: "12-20", rpe: 8,   rest_sec: 45  },
+    core:            { sets: 3, reps: "12-20", rpe: 7,   rest_sec: 45  },
+  },
+  fat_loss: {
+    lead:            { sets: 3, reps: "8-10",  rpe: 7.5, rest_sec: 90  },
+    compound:        { sets: 3, reps: "10-12", rpe: 7.5, rest_sec: 60  },
+    small_compound:  { sets: 3, reps: "12-15", rpe: 8,   rest_sec: 45  },
+    isolation:       { sets: 3, reps: "15-20", rpe: 8,   rest_sec: 45  },
+    isolation_small: { sets: 3, reps: "15-20", rpe: 8,   rest_sec: 30  },
+    core:            { sets: 3, reps: "15-25", rpe: 7,   rest_sec: 30  },
+  },
+  endurance: {
+    lead:            { sets: 3, reps: "10-12", rpe: 7,   rest_sec: 75  },
+    compound:        { sets: 3, reps: "12-15", rpe: 7,   rest_sec: 60  },
+    small_compound:  { sets: 3, reps: "15-20", rpe: 7,   rest_sec: 45  },
+    isolation:       { sets: 3, reps: "15-20", rpe: 7,   rest_sec: 40  },
+    isolation_small: { sets: 3, reps: "15-25", rpe: 7,   rest_sec: 30  },
+    core:            { sets: 3, reps: "20-30", rpe: 7,   rest_sec: 30  },
+  },
+  longevity: {
+    lead:            { sets: 3, reps: "6-8",   rpe: 6.5, rest_sec: 150 },
+    compound:        { sets: 3, reps: "8-12",  rpe: 6.5, rest_sec: 105 },
+    small_compound:  { sets: 2, reps: "10-12", rpe: 7,   rest_sec: 75  },
+    isolation:       { sets: 2, reps: "12-15", rpe: 7,   rest_sec: 60  },
+    isolation_small: { sets: 2, reps: "12-20", rpe: 7,   rest_sec: 45  },
+    core:            { sets: 2, reps: "10-15", rpe: 6.5, rest_sec: 45  },
+  },
+  focus: {
+    lead:            { sets: 3, reps: "5-8",   rpe: 7,   rest_sec: 150 },
+    compound:        { sets: 3, reps: "6-10",  rpe: 7,   rest_sec: 120 },
+    small_compound:  { sets: 3, reps: "10-12", rpe: 7,   rest_sec: 75  },
+    isolation:       { sets: 2, reps: "12-15", rpe: 7,   rest_sec: 60  },
+    isolation_small: { sets: 2, reps: "12-20", rpe: 7,   rest_sec: 45  },
+    core:            { sets: 2, reps: "12-20", rpe: 6.5, rest_sec: 45  },
+  },
+};
+
+/**
+ * Nobody learns a barbell pattern at five reps without a coach in the room,
+ * and the app cannot put one there. The floor lifts the low end of the range
+ * and carries the span with it, so "3-5" becomes "8-10" rather than "8-5".
+ */
+export const repFloor = (experience: string | null | undefined): number =>
+  experience === "never_trained" ? 8 : experience === "under_6_months" ? 6 : 0;
+
+export const raiseReps = (reps: string, floor: number): string => {
+  const m = reps.match(/^(\d+)(?:-(\d+))?$/);
+  if (!m || floor <= 0) return reps;
+  const lo = parseInt(m[1], 10);
+  if (lo >= floor) return reps;
+  const hi = m[2] ? parseInt(m[2], 10) : null;
+  return hi == null ? String(floor) : `${floor}-${floor + (hi - lo)}`;
 };
 
 export interface SessionBlock { slug: string; name: string; sets: number; reps: string; rpe: number; rest_sec: number }
@@ -247,6 +373,14 @@ const NOVICE_EQUIP = new Set(["machine", "cable", "dumbbell", "bodyweight"]);
 // grows in sets before it grows in movements (see the densify pass).
 const maxBlocks = (minutes: number) => (minutes <= 30 ? 5 : minutes <= 45 ? 6 : minutes <= 60 ? 8 : minutes <= 75 ? 9 : 10);
 const maxLeads = (minutes: number) => (minutes >= 75 ? 3 : 2);
+/**
+ * Accessory slots a session of this length owes the athlete.
+ *
+ * A product decision, not a physiological constant: one table, one function,
+ * tune it freely. What it must not be is zero, which is what the budget was
+ * effectively giving at an hour and above.
+ */
+const accessoryQuota = (minutes: number) => (minutes <= 30 ? 1 : minutes <= 45 ? 2 : minutes <= 60 ? 3 : 4);
 
 /** FNV-1a — the tie-break that makes a seed reproducible and a shuffle different. */
 const fnv = (s: string): number => {
@@ -263,14 +397,28 @@ export const blockMinutes = (b: { sets: number; rest_sec: number }): number => (
 
 export type PoolItem = CatalogItem & PoolEntry;
 
+/** The heavy end of the session: what the budget reserve protects work from. */
+export const HEAVY: ReadonlySet<LoadClass> = new Set<LoadClass>(["lead", "compound"]);
+/** Everything that is not a main lift — the work that kept losing the budget. */
+export const ACCESSORY: ReadonlySet<LoadClass> =
+  new Set<LoadClass>(["small_compound", "isolation", "isolation_small", "core"]);
+
 /** Sets / reps / RPE / rest for one movement, from the goal and the athlete. */
 export const prescribe = (e: PoolItem, o: Pick<BuildInput, "goal" | "experience" | "minutes">): SessionBlock => {
   const scheme = SCHEMES[o.goal ?? "all"] ?? SCHEMES.all;
   const novice = o.experience === "never_trained";
   const rpeAdj = novice ? -1 : o.experience === "under_6_months" ? -0.5 : 0;
-  const r = e.tier < 3 ? scheme.compound : scheme.isolation;
-  const drop = e.tier < 3 ? (o.minutes < 40 ? 1 : 0) + (novice ? 1 : 0) : 0;
-  return { slug: e.slug, name: e.name, sets: Math.max(2, r.sets - drop), reps: r.reps, rpe: r.rpe + rpeAdj, rest_sec: r.rest_sec };
+  const cls = loadClassOf(e);
+  const r = scheme[cls];
+  const drop = HEAVY.has(cls) || cls === "small_compound" ? (o.minutes < 40 ? 1 : 0) + (novice ? 1 : 0) : 0;
+  return {
+    slug: e.slug,
+    name: e.name,
+    sets: Math.max(2, r.sets - drop),
+    reps: raiseReps(r.reps, repFloor(o.experience)),
+    rpe: r.rpe + rpeAdj,
+    rest_sec: r.rest_sec,
+  };
 };
 
 /** The athlete's safe, drawable, equipment-matched pool for the picked muscles. */
@@ -366,6 +514,33 @@ export function buildSession(o: BuildInput): BuiltSession {
   const seen = new Map<Pattern, number>();
   let total = 10;
   let leads = 0;
+  // The minutes accessory work is owed, held back from the heavy lifts.
+  //
+  // Movements are ranked tier 1, then 2, then 3, and a compound costs about
+  // twice what an accessory does. So the heavy end reached the budget ceiling
+  // before tier 3 was ever considered: at sixty minutes a session came out as
+  // five compounds and nothing else, and at seventy-five it was six. Adding
+  // time made it worse, which is the opposite of what anyone expects.
+  //
+  // Reserving is the smallest fix that holds. Interleaving the tiers would
+  // reorder the session — blocks are pushed in ranked order and never sorted
+  // again, so selection order IS display order, and a lateral raise would come
+  // before a row. A hard cap on compounds would spoil the short sessions that
+  // should be nothing but compounds.
+  const quota = Math.min(accessoryQuota(o.minutes), maxBlocks(o.minutes) - 2);
+  const scheme = SCHEMES[o.goal ?? "all"] ?? SCHEMES.all;
+  // Priced from the scheme table, not from whatever the pool happens to hold,
+  // so the reserve is the same for a given goal and length either way.
+  const wanted = Math.max(0, quota) * blockMinutes(scheme.isolation);
+  // But never at the cost of the session's two main lifts. Strength rests for
+  // three minutes, so one lead there costs twenty-one of the forty-five the
+  // athlete has; reserving three accessory slots out of that leaves no room
+  // to press or pull at all. The reserve takes what is left once two heavy
+  // blocks are paid for, and nothing more.
+  const roomAfterHeavy = o.minutes + 5 - 10 - blockMinutes(scheme.lead) - blockMinutes(scheme.compound);
+  const reserve = Math.max(0, Math.min(wanted, roomAfterHeavy));
+  let accessorySpend = 0;
+
   // Pass 1 takes one exercise per pattern and at most two leads; pass 2
   // spends the minutes that are left — a second isolation of a pattern, or a
   // second compound when a single muscle was picked.
@@ -375,15 +550,27 @@ export function buildSession(o: BuildInput): BuiltSession {
       if (used.has(e.slug)) continue;
       const patternCap = pass === 1 ? 1 : focus.length === 1 || e.tier === 3 || o.minutes >= 60 ? 2 : 1;
       if ((seen.get(e.pattern) ?? 0) >= patternCap) continue;
-      if (e.tier === 1 && leads >= maxLeads(o.minutes)) continue;
+      const cls = loadClassOf(e);
+      // Counting leads by load class, not by tier: a tier-1 pulldown is a
+      // compound, and letting two of them spend the lead budget is why an
+      // upper day could finish without pressing overhead at all.
+      if (cls === "lead" && leads >= maxLeads(o.minutes)) continue;
       const b = rx(e);
       const cost = blockMinutes(b);
-      if (total + cost > o.minutes + 5) continue;
+      const accessory = ACCESSORY.has(cls);
+      // Accessories may spend the whole budget. Heavy work stops short of
+      // what the reserve still holds — so once the day owns its accessory
+      // work, a further compound is welcome again.
+      const ceiling = accessory
+        ? o.minutes + 5
+        : o.minutes + 5 - Math.max(0, reserve - accessorySpend);
+      if (total + cost > ceiling) continue;
       blocks.push(b);
       used.add(e.slug);
       seen.set(e.pattern, (seen.get(e.pattern) ?? 0) + 1);
       total += cost;
-      if (e.tier === 1) leads++;
+      if (accessory) accessorySpend += cost;
+      if (cls === "lead") leads++;
     }
   }
 
@@ -402,7 +589,7 @@ function densify(blocks: SessionBlock[], minutes: number): void {
   while (grew) {
     grew = false;
     for (const b of blocks) {
-      const capExtra = (SESSION_POOL[b.slug]?.tier ?? 3) < 3 ? 2 : 1;
+      const capExtra = HEAVY.has(loadClassOf(SESSION_POOL[b.slug] ?? {})) ? 2 : 1;
       if ((extra.get(b.slug) ?? 0) >= capExtra) continue;
       const cost = (45 + b.rest_sec) / 60;
       if (total + cost > minutes + 3) continue;

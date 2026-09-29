@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   SESSION_POOL,
+  loadClassOf,
   DROPPED_FROM_POOL,
   buildSession,
   buildWeek,
@@ -89,7 +90,11 @@ describe("session builder", () => {
     }
     const long = build(["chest", "back", "legs"], { minutes: 90 });
     expect(long.blocks.length).toBeLessThanOrEqual(10);
-    expect(long.blocks.filter((b) => SESSION_POOL[b.slug].tier === 1).length).toBeLessThanOrEqual(3);
+    // Counted by load class, not by tier. maxLeads caps the day’s heavy
+    // bilateral lifts; a tier-1 pulldown is not one of those, and counting
+    // tier 1 measured something the cap no longer means.
+    const leads = long.blocks.filter((b) => loadClassOf(SESSION_POOL[b.slug]) === "lead");
+    expect(leads.length, "heavy leads in a 90-minute day").toBeLessThanOrEqual(3);
   });
 
   it("swaps a movement for a sibling of the same pattern that is not already in the session", () => {

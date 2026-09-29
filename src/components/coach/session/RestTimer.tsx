@@ -22,6 +22,8 @@ import { cancelRestDone, scheduleRestDone } from "@/lib/rest-notification";
 const RestTimer = ({
   endsAt,
   seconds,
+  /** The movement this clock belongs to, when it is not the one on stage. */
+  after,
   onExtend,
   onDone,
   onDismiss,
@@ -30,6 +32,7 @@ const RestTimer = ({
   endsAt: number;
   /** The prescribed rest length — the ring's full circle. */
   seconds: number;
+  after?: string | null;
   onExtend: (ms: number) => void;
   onDone?: () => void;
   onDismiss: () => void;
@@ -111,8 +114,12 @@ const RestTimer = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-meta font-semibold text-muted-foreground mb-0.5">
+        {/* One clock, so once the athlete has moved to another movement it
+            has to say which set it is counting for — otherwise "Resting" on
+            a curl screen looks like it belongs to the curl. */}
+        <p className="text-meta font-semibold text-muted-foreground mb-0.5 truncate">
           {over ? "Rest is up" : "Resting"}
+          {after ? ` · after ${after}` : ""}
         </p>
         <p className="text-lead font-black tabular-nums leading-none text-foreground">
           {formatRest(remaining)}

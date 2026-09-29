@@ -158,6 +158,88 @@ export const sessionProgress = (
 };
 
 /**
+ * Which exercise is on stage.
+ *
+ * `sessionProgress` derives a position — the first movement with an unlogged
+ * set — and that is the right default: it is where an athlete working through
+ * the day in order wants to be, and it survives an app kill for free because
+ * it is computed from the logged sets rather than stored.
+ *
+ * What it cannot express is "I chose this one". Supersets, alternating sets,
+ * a busy rack, going back to correct set 2 of a movement already finished —
+ * all of those need the athlete's own choice to outrank the derivation, and a
+ * derived value has nowhere to put it.
+ *
+ * So the cursor is an overlay, `null` means "follow the derivation", and with
+ * no cursor set every session behaves exactly as it did. A slug rather than an
+ * index because the plan is editable mid-session: swap a movement and an index
+ * would quietly point at a different exercise, where a slug either resolves or
+ * falls back.
+ */
+export const resolveCursor = (
+  plan: SessionExercise[],
+  progress: SessionProgress,
+  cursor: string | null,
+): number => {
+  if (!cursor) return progress.currentExerciseIndex;
+  const i = plan.findIndex((e) => e.slug === cursor);
+  return i >= 0 ? i : progress.currentExerciseIndex;
+};
+
+/**
+ * Should the cursor let go after this set?
+ *
+ * Tapping into a movement and finishing it should hand the athlete back to
+ * the linear flow without asking. Holding the cursor there would leave them
+ * parked on a completed exercise wondering what to press.
+ */
+export const cursorReleases = (
+  ex: SessionExercise,
+  loggedForEx: LoggedSet[] | undefined,
+): boolean => setsDoneFor(ex, loggedForEx) >= ex.sets;
+
+/** What a set row shows before the athlete touches it. */
+export interface SetSeed {
+  weight: string;
+  reps: string;
+}
+
+/**
+ * Typing survives leaving the exercise.
+ *
+ * The draft used to live inside the set row, which unmounts when the movement
+ * changes — so a weight typed and not yet logged was dropped silently. That
+ * was survivable while the runner was a one-way cursor. Once an athlete can
+ * move between movements mid-set it is not, and the alternative is a "you
+ * have unsaved input" dialog on every switch, which is worse than either.
+ *
+ * Order matters: the athlete's own typing outranks everything, including a
+ * history query that resolves late and would otherwise overwrite the number
+ * under their thumb.
+ */
+export const setRowSeed = (
+  draft: SetSeed | undefined,
+  existing: LoggedSet | undefined,
+  suggestion: { weight: number | null; reps: number | null },
+  isCurrent: boolean,
+): SetSeed => {
+  if (draft) return draft;
+  if (existing) {
+    return {
+      weight: existing.weight != null ? String(existing.weight) : "",
+      reps: existing.reps != null ? String(existing.reps) : "",
+    };
+  }
+  // A set still ahead of the athlete shows nothing: a suggestion on row 4
+  // while they are working row 1 reads as a number they already entered.
+  if (!isCurrent) return { weight: "", reps: "" };
+  return {
+    weight: suggestion.weight != null ? String(suggestion.weight) : "",
+    reps: suggestion.reps != null ? String(suggestion.reps) : "",
+  };
+};
+
+/**
  * The set to prefill from: the same set number last time, falling back to the
  * previous set in this session. Beginners have no idea what to load; the number
  * they used last week is the single most useful hint available.

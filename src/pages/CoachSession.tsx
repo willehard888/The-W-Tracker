@@ -37,6 +37,7 @@ import { deferRecovery } from "@/lib/recovery/deferred";
 import { IllustrationPlayer, preloadIllustration } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
+import SessionOverview from "@/components/coach/session/SessionOverview";
 import SessionSkeleton from "@/components/coach/session/SessionSkeleton";
 import PageBar from "@/components/ui/page-bar";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
@@ -58,6 +59,9 @@ import {
   parseDecimal,
   decimalInput,
   extendRestState,
+  resolveCursor,
+  setRowSeed,
+  type SetSeed,
 } from "@/lib/training/runner";
 
 /**
@@ -145,6 +149,7 @@ const SetRow = ({
   isCurrent,
   weight,
   reps,
+  onChange,
   onLog,
   saving,
 }: {
@@ -153,17 +158,20 @@ const SetRow = ({
   isCurrent: boolean;
   weight: string;
   reps: string;
+  /** Raised on every keystroke, so the draft outlives this component. */
+  onChange: (weight: string, reps: string) => void;
   onLog: (weight: string, reps: string) => Promise<void>;
   saving: boolean;
 }) => {
-  const [w, setW] = useState(weight);
-  const [r, setR] = useState(reps);
   const [editing, setEditing] = useState(false);
-  // Re-seed when the suggestion changes (a new set, or history arriving late),
-  // but never over what the athlete has started typing: history lands after
-  // first paint and used to replace a half-typed 82 with last week's 80.
-  const touched = useRef(false);
-  useEffect(() => { if (!touched.current) { setW(weight); setR(reps); } }, [weight, reps]);
+  // The draft lives in the page now. It used to live here, and this component
+  // unmounts when the movement changes — survivable while the runner was a
+  // one-way cursor, not once an athlete can step away mid-set and come back.
+  // setRowSeed still keeps a late history query from overwriting typing.
+  const w = weight;
+  const r = reps;
+  const setW = (v: string) => onChange(v, r);
+  const setR = (v: string) => onChange(w, v);
   // Springs once, on the set that just landed — never on rows loaded as done.
   const pop = useCommitPop(done);
   const expanded = (isCurrent && !done) || editing;
@@ -219,7 +227,7 @@ const SetRow = ({
           inputMode="decimal"
           label={`Set ${index} weight in kilograms`}
           stepLabel="2.5 kg"
-          onChange={(v) => { touched.current = true; setW(v); }}
+          onChange={(v) => setW(v)}
           onStep={(d) => step(() => setW(String(stepWeight(w, d))))}
         />
       </div>
@@ -231,7 +239,7 @@ const SetRow = ({
           inputMode="numeric"
           label={`Set ${index} reps`}
           stepLabel="1 rep"
-          onChange={(v) => { touched.current = true; setR(v); }}
+          onChange={(v) => setR(v)}
           onStep={(d) => step(() => setR(String(stepReps(r, d))))}
         />
         <Button
@@ -285,21 +293,30 @@ const CoachSession = () => {
   // first and does not survive a kill. A deadline more than a minute past is
   // history and is cleared on read.
   const restKey = program?.id ? `wf_rest:${program.id}:${week}:${day}` : null;
-  const [rest, setRest] = useState<{ endsAt: number; seconds: number } | null>(null);
+  /** The clock, and the set that started it — see startRest. */
+  const [rest, setRest] = useState<{ endsAt: number; seconds: number; slug?: string; setIndex?: number } | null>(null);
   useEffect(() => {
     if (!restKey) return;
     const raw = readLocal(restKey);
     if (!raw) return;
     try {
-      const saved = JSON.parse(raw) as { endsAt: number; seconds: number };
+      const saved = JSON.parse(raw) as { endsAt: number; seconds: number; slug?: string; setIndex?: number };
       if (saved.endsAt > Date.now() - 60_000) setRest(saved);
       else removeLocal(restKey);
     } catch {
       removeLocal(restKey);
     }
   }, [restKey]);
-  const startRest = (seconds: number) => {
-    const next = { endsAt: Date.now() + seconds * 1000, seconds };
+  /**
+   * One clock, and it names its set.
+   *
+   * With free navigation the athlete can rest after a bench set and go do
+   * a curl, and a timer that says only "Resting" is then ambiguous. Five
+   * concurrent timers would be worse: the athlete is one person and rests
+   * once. So it stays one clock that says which set it belongs to.
+   */
+  const startRest = (seconds: number, slug?: string, setIndex?: number) => {
+    const next = { endsAt: Date.now() + seconds * 1000, seconds, slug, setIndex };
     setRest(next);
     if (restKey) writeLocal(restKey, JSON.stringify(next));
   };
@@ -366,9 +383,20 @@ const CoachSession = () => {
   // next finish rewrites it with the longer, true duration.
   const [resumed, setResumed] = useState(false);
 
+  // The athlete's own choice of movement, or null to follow the derivation.
+  // Not persisted: which exercise you were looking at is worth nothing after
+  // the app dies, and the derivation puts you back on the next open set.
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [overviewOpen, setOverviewOpen] = useState(false);
+  // Weight and reps typed but not yet logged, keyed `${slug}:${setIndex}`.
+  // Lifted out of SetRow, which unmounts on a movement change and used to
+  // drop the number under the athlete's thumb without saying so.
+  const [drafts, setDrafts] = useState<Record<string, SetSeed>>({});
+
   const progress = sessionProgress(plan, logged, skipped);
 
-  const current = progress.currentExerciseIndex >= 0 ? plan[progress.currentExerciseIndex] : null;
+  const stageIndex = resolveCursor(plan, progress, cursor);
+  const current = stageIndex >= 0 ? plan[stageIndex] : null;
   const summaryShown = progress.isComplete || showSummary || (!!session?.completed && !resumed);
 
   // What to offer stretching, built from the sets that were actually logged.
@@ -426,11 +454,15 @@ const CoachSession = () => {
   const illustrated = useMemo(() => (current ? resolveIllustration(current.slug, current.name) : null), [current]);
   // The next open exercise, by name, is the step the "Next" door offers — and
   // its drawing is warmed now so the step lands on a drawn tile.
-  const nextExercise = useMemo(
-    () => plan.slice(progress.currentExerciseIndex + 1).find((ex) => !skipped.has(ex.slug) && setsDoneFor(ex, logged[ex.slug]) < ex.sets) ?? null,
+  const nextExercise = useMemo(() => {
+    if (stageIndex < 0) return null;
+    // Wrap: with a cursor the athlete can be standing on the last movement
+    // while earlier ones are still open, and a button that vanishes there
+    // is a dead end back to the one-way runner.
+    const order = [...plan.slice(stageIndex + 1), ...plan.slice(0, stageIndex)];
+    return order.find((ex) => !skipped.has(ex.slug) && setsDoneFor(ex, logged[ex.slug]) < ex.sets) ?? null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plan, progress.currentExerciseIndex, skipped, daySets],
-  );
+  }, [plan, stageIndex, skipped, daySets]);
   useEffect(() => {
     const next = nextExercise ? resolveIllustration(nextExercise.slug, nextExercise.name) : null;
     if (next) preloadIllustration(next);
@@ -682,11 +714,25 @@ const CoachSession = () => {
         weight: w, reps: r, rpe: current.rpe ?? null,
         setIndex,
       });
+      setDrafts((d) => { const { [`${current.slug}:${setIndex}`]: _gone, ...rest } = d; return rest; });
+      // The cursor lets go once the movement it was holding is finished, so
+      // tapping into an exercise and completing it hands the athlete back to
+      // the linear flow without a dialog or a mode to leave.
+      if (cursor === current.slug && setIndex >= current.sets) setCursor(null);
       // Rest after every set but the session's last — walking to the next
       // exercise is not a rest, and the clock kept vanishing there.
-      const lastOfSession = setIndex >= current.sets && progress.currentExerciseIndex >= plan.length - 1;
+      //
+      // "Last" is now every prescribed set being logged, not "the last set of
+      // the last exercise in order": with free navigation, position no longer
+      // says anything about what is left.
+      const others = plan.reduce(
+        (t, e) => t + (e.slug === current.slug ? 0 : setsDoneFor(e, logged[e.slug])),
+        0,
+      );
+      const prescribed = plan.reduce((t, e) => t + e.sets, 0);
+      const lastOfSession = others + Math.max(setIndex, setsDoneFor(current, logged[current.slug])) >= prescribed;
       if (lastOfSession) clearRest();
-      else startRest(current.restSec);
+      else startRest(current.restSec, current.slug, setIndex);
     } catch {
       toast.error("Couldn't save that set.");
     } finally {
@@ -714,9 +760,32 @@ const CoachSession = () => {
             {/* Opening beat: where you are, what is on stage, what it asks. */}
             <div className="home-rise">
               <p className="text-dense font-semibold text-muted-foreground tabular-nums">
-                Exercise {fmtInt(progress.currentExerciseIndex + 1)} of {fmtInt(progress.totalExercises)}
+                Exercise {fmtInt(stageIndex + 1)} of {fmtInt(progress.totalExercises)}
                 {focus ? ` · ${focus}` : ""}
               </p>
+              <SessionOverview
+                plan={plan}
+                logged={logged}
+                skipped={skipped}
+                onStage={current.slug}
+                open={overviewOpen}
+                onToggle={() => setOverviewOpen((v) => !v)}
+                onPick={(slug: string) => {
+                  const target = plan.find((e) => e.slug === slug);
+                  void track(FUNNEL.exerciseSwitched, {
+                    via: "list",
+                    back: plan.findIndex((e) => e.slug === slug) < stageIndex,
+                    openSets: target ? target.sets - setsDoneFor(target, logged[slug]) : 0,
+                  });
+                  // Picking a movement un-skips it: choosing it is the
+                  // clearest possible statement that it is not being skipped.
+                  if (skipped.has(slug)) {
+                    const next = new Set(skipped); next.delete(slug); persistSkipped(next);
+                  }
+                  setCursor(slug);
+                  setOverviewOpen(false);
+                }}
+              />
               <div className="flex items-start justify-between gap-3">
                 <h2 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight">
                   {current.name}
@@ -762,36 +831,23 @@ const CoachSession = () => {
             )}
 
             {/* Arrives after a commit, not on open — no entrance of its own. */}
-            {rest && (
-              <div className="mt-4">
-                <RestTimer
-                  endsAt={rest.endsAt}
-                  seconds={rest.seconds}
-                  onExtend={extendRest}
-                  onDismiss={clearRest}
-                />
-              </div>
-            )}
 
             <div className="home-rise home-rise-3 mt-5" ref={loggingTargetRef}>
               <p className="text-label font-bold text-muted-foreground mb-2">Sets</p>
               <div className="space-y-1">
                 {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
                   const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);
-                  const isDone = !!existing;
-                  const seed = isDone
-                    ? { weight: existing.weight ?? null, reps: existing.reps ?? null }
-                    : n === nextSet
-                      ? suggestion
-                      : { weight: null, reps: null };
+                  const key = `${current.slug}:${n}`;
+                  const seed = setRowSeed(drafts[key], existing, suggestion, n === nextSet);
                   return (
                     <SetRow
-                      key={n}
+                      key={key}
                       index={n}
-                      done={isDone}
+                      done={!!existing}
                       isCurrent={n === nextSet}
-                      weight={seed.weight != null ? String(seed.weight) : ""}
-                      reps={seed.reps != null ? String(seed.reps) : ""}
+                      weight={seed.weight}
+                      reps={seed.reps}
+                      onChange={(w, r) => setDrafts((d) => ({ ...d, [key]: { weight: w, reps: r } }))}
                       saving={pendingSet === n}
                       onLog={(w, r) => logCurrent(n, w, r)}
                     />
@@ -800,6 +856,24 @@ const CoachSession = () => {
               </div>
             </div>
           </>
+        )}
+
+        {/* One clock for the athlete, not one per movement, and it outlives
+            the exercise that started it: resting after a bench set and going
+            to do a curl is the whole point of moving freely. It says where
+            it came from once that is no longer obvious. */}
+        {rest && (
+          <div className="mt-4">
+            <RestTimer
+              endsAt={rest.endsAt}
+              seconds={rest.seconds}
+              after={rest.slug && rest.slug !== current?.slug
+                ? plan.find((e) => e.slug === rest.slug)?.name ?? null
+                : null}
+              onExtend={extendRest}
+              onDismiss={clearRest}
+            />
+          </div>
         )}
 
         {/* Moving on before every set is logged is how a gym session actually
@@ -812,8 +886,14 @@ const CoachSession = () => {
               className="w-full"
               onClick={() => {
                 hapticImpact("light");
-                clearRest();
-                persistSkipped(new Set([...skipped, current.slug]));
+                void track(FUNNEL.exerciseSwitched, {
+                  via: "next",
+                  back: false,
+                  openSets: current.sets - setsDoneFor(current, logged[current.slug]),
+                });
+                // The rest clock survives the move: it belongs to the set
+                // that started it, not to whatever is on screen.
+                setCursor(nextExercise.slug);
               }}
             >
               <span className="truncate">Next · {nextExercise.name}</span>

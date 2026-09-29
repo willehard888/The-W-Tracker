@@ -124,6 +124,13 @@ export const FUNNEL = {
   // pressed.
   exercisePreviewOpened: "exercise_preview_opened",
 
+  // Moving between movements mid-session, which the runner could not do at
+  // all: it was a one-way cursor, and the only way back was to finish and
+  // press "Keep training". `back` is a revisit, `openSets` is how much was
+  // left behind. Together they say whether anybody supersets, or whether the
+  // linear day is what people actually want. Never a slug, never a name.
+  exerciseSwitched: "exercise_switched",
+
   // "+30 s" during rest. `overdue` says whether the clock had already run out
   // when they reached for it — which is the interesting half, because that is
   // the case that used to hand back less than thirty seconds, and it tells us

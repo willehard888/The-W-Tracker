@@ -37,7 +37,6 @@ export default defineConfig({
         "src/lib/observability.ts",
         "src/lib/sentry-lite.ts",
         "src/lib/analytics.ts",
-        "src/lib/badge-awards.ts",
         "src/lib/tribe-streak.ts",
         "src/lib/exercise-library.ts",
         "src/lib/recipe-images.ts",

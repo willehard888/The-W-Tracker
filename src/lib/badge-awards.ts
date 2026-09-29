@@ -1,264 +1,62 @@
 import { supabase } from "@/integrations/supabase/client";
 import { captureException } from "@/lib/observability";
+import type { Tables } from "@/integrations/supabase/types";
 
-interface BadgeCheckResult {
-  badge: any;
-  isNew: boolean;
-}
+// The badge engine lives in SQL (20260929100000_badge_engine.sql): one stat
+// computation, badge_stats(), and one award pass, award_earned_badges(), that
+// returns exactly the badges the call earned. This file is the door and the
+// progress arithmetic — the two mirrors of the server's stats that used to
+// live here (and disagree with each other) are gone.
 
-/**
- * Compute extended stats for tribe / tier / phoenix badges.
- * Server-side `award_badge_if_earned` re-validates these against the DB,
- * so the client only needs to identify *candidates*.
- */
-/**
- * Profile-derived badge stats — pure computation, no queries.
- */
-const profileDerivedStats = (profile: any): Record<string, number> => {
-  const apexStart = profile.apex_subscription_started_at
-    ? new Date(profile.apex_subscription_started_at).getTime()
-    : null;
-  const heldDays = apexStart
-    ? Math.floor((Date.now() - apexStart) / (1000 * 60 * 60 * 24))
-    : 0;
-  const isApexOrAbove =
-    profile.status_tier === "apex" || profile.status_tier === "legend";
-  const isLegend = profile.status_tier === "legend" || profile.legend_pinned;
+export type Badge = Tables<"badges">;
 
-  // Phoenix recovery: longest_streak ≥30, current ≥30, longest > current (proves a break)
-  const phoenix =
-    profile.longest_streak >= 30 &&
-    profile.streak >= 30 &&
-    profile.longest_streak > profile.streak
-      ? 1
-      : 0;
+export interface BadgeProgress { current: number; target: number; percent: number }
 
-  return {
-    personal_streak: profile.longest_streak ?? 0,
-    phoenix_recovery: phoenix,
-    apex_reached: isApexOrAbove ? 1 : 0,
-    legend_reached: isLegend ? 1 : 0,
-    apex_founding:
-      profile.is_apex_subscriber && profile.apex_subscription_started_at ? 1 : 0,
-    apex_held_days: isApexOrAbove ? heldDays : 0,
-    legend_held_days: isLegend ? heldDays : 0,
-  };
-};
-
-/**
- * All query-derived badge stats in ONE round trip via the user_badge_stats()
- * RPC (SECURITY INVOKER — same RLS visibility the old per-criterion count
- * queries had). Replaces ~45 REST requests per Profile open.
- */
-const fetchQueryStats = async (): Promise<Record<string, number>> => {
-  const { data, error } = await supabase.rpc("user_badge_stats");
-  if (error || !data) return {};
-  return data as unknown as Record<string, number>;
-};
-
-/**
- * Check and award all applicable badges after a check-in.
- * Returns the first newly unlocked badge (for modal display).
- */
-export const checkAndAwardBadges = async (userId: string): Promise<BadgeCheckResult | null> => {
-  const [{ data: allBadges }, { data: earnedBadges }, { data: profile }] = await Promise.all([
-    supabase.from("badges").select("*"),
-    supabase.from("user_badges").select("badge_id").eq("user_id", userId),
-    supabase
-      .from("profiles")
-      .select(
-        "xp, level, streak, longest_streak, is_elite, status_tier, is_apex_subscriber, apex_subscription_started_at, legend_pinned",
-      )
-      .eq("user_id", userId)
-      .single(),
-  ]);
-
-  if (!allBadges || !profile) return null;
-
-  const earnedIds = new Set((earnedBadges || []).map((b) => b.badge_id));
-
-  const q = await fetchQueryStats();
-  const extended = profileDerivedStats(profile);
-
-  const stats: Record<string, number> = {
-    ...q,
-    xp: profile.xp,
-    level: profile.level,
-    streak: profile.streak,
-    longest_streak: profile.longest_streak,
-    is_elite: profile.is_elite ? 1 : 0,
-    ...extended,
-  };
-
-  // Map ALL requirement_types to stat keys (including aliases)
-  const typeToStat: Record<string, string> = {
-    checkins: "checkins",
-    workouts: "workouts",
-    cold_shower: "cold_shower",
-    cold_showers: "cold_shower",
-    healthy_food: "healthy_food",
-    protein: "protein",
-    hydration: "hydration",
-    no_phone_morning: "no_phone_morning",
-    no_phone_evening: "no_phone_evening",
-    reading: "reading",
-    battles_won: "battles_won",
-    referrals: "referrals",
-    double_workout: "double_workout",
-    meditation: "meditation",
-    meditation_streak: "meditation",
-    proofs: "proofs",
-    perfect_day: "perfect_day",
-    elite_member: "is_elite",
-    combat_workouts: "workouts",
-    run_workouts: "workouts",
-    xp: "xp",
-    total_xp: "xp",
-    level: "level",
-    streak: "longest_streak",
-    // New types
-    personal_streak: "personal_streak",
-    phoenix_recovery: "phoenix_recovery",
-    apex_reached: "apex_reached",
-    legend_reached: "legend_reached",
-    apex_founding: "apex_founding",
-    apex_held_days: "apex_held_days",
-    legend_held_days: "legend_held_days",
-    tribe_battles_won: "tribe_battles_won",
-    tribe_collective_streak: "tribe_collective_streak",
-    tribe_founder_streak: "tribe_founder_streak",
-  };
-
-  // Social + special badges handled by triggers — skip
-  const TRIGGER_TYPES = new Set([
-    "total_likes", "total_comments", "single_post_likes",
-    "total_kudos", "season_champion",
-    "leaderboard_percentile", "percentile",
-  ]);
-
-  let firstNewBadge: BadgeCheckResult | null = null;
-
-  for (const badge of allBadges) {
-    if (earnedIds.has(badge.id)) continue;
-    if (!badge.requirement_type || !badge.requirement_value) continue;
-    if (TRIGGER_TYPES.has(badge.requirement_type)) continue;
-
-    const statKey = typeToStat[badge.requirement_type];
-    if (!statKey) continue;
-
-    const currentValue = stats[statKey] || 0;
-    if (currentValue >= badge.requirement_value) {
-      const { data: awarded, error } = await supabase.rpc("award_badge_if_earned", {
-        p_user_id: userId,
-        p_badge_id: badge.id,
-      });
-
-      // `error` used to be read purely as a gate and then dropped. `supabase.rpc`
-      // resolves with `{ error }` instead of rejecting, so the `try/catch` around
-      // this function at its call sites never fired either — a failing RPC meant
-      // the user silently earned no badges, ever, with nothing logged anywhere.
-      if (error) {
-        captureException(error, { where: "badges.awardIfEarned", badgeId: badge.id });
-        continue;
-      }
-      if (awarded && !firstNewBadge) {
-        firstNewBadge = { badge, isNew: true };
-      }
-    }
+/** Run the award pass for the signed-in member; the badges it just earned, best first. */
+export const awardEarnedBadges = async (where: string): Promise<Badge[]> => {
+  const { data, error } = await supabase.rpc("award_earned_badges");
+  if (error) {
+    // rpc() resolves with { error } — it never rejects — so this is the one
+    // place a failed pass is seen.
+    captureException(error, { where });
+    return [];
   }
-
-  return firstNewBadge;
+  return (data ?? []) as Badge[];
 };
 
 /**
- * Get progress data for all badges for a user
+ * "3 of 7", from the member's stats and a badge's requirement. Counts go up
+ * to the target; the leaderboard percentile goes down to it (top 10 % is
+ * reached at 10 or less).
  */
-export const getBadgeProgress = async (userId: string): Promise<Record<string, { current: number; target: number; percent: number }>> => {
-  const [{ data: profile }, q] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "xp, level, streak, longest_streak, is_elite, status_tier, is_apex_subscriber, apex_subscription_started_at, legend_pinned",
-      )
-      .eq("user_id", userId)
-      .single(),
-    fetchQueryStats(),
-  ]);
-
-  const extended = profile
-    ? profileDerivedStats(profile)
-    : {
-        personal_streak: 0,
-        phoenix_recovery: 0,
-        apex_reached: 0,
-        legend_reached: 0,
-        apex_founding: 0,
-        apex_held_days: 0,
-        legend_held_days: 0,
-      };
-
-  const stats: Record<string, number> = {
-    ...q,
-    xp: profile?.xp || 0,
-    level: profile?.level || 1,
-    streak: profile?.longest_streak || 0,
-    is_elite: profile?.is_elite ? 1 : 0,
-    ...extended,
-  };
-
-  const typeToStat: Record<string, string> = {
-    checkins: "checkins",
-    workouts: "workouts",
-    cold_shower: "cold_shower",
-    cold_showers: "cold_shower",
-    healthy_food: "healthy_food",
-    protein: "protein",
-    hydration: "hydration",
-    no_phone_morning: "no_phone_morning",
-    no_phone_evening: "no_phone_evening",
-    reading: "reading",
-    battles_won: "battles_won",
-    referrals: "referrals",
-    double_workout: "double_workout",
-    meditation: "meditation",
-    meditation_streak: "meditation",
-    proofs: "proofs",
-    perfect_day: "perfect_day",
-    elite_member: "is_elite",
-    combat_workouts: "workouts",
-    run_workouts: "workouts",
-    xp: "xp",
-    total_xp: "xp",
-    level: "level",
-    streak: "streak",
-    // New types
-    personal_streak: "personal_streak",
-    phoenix_recovery: "phoenix_recovery",
-    apex_reached: "apex_reached",
-    legend_reached: "legend_reached",
-    apex_founding: "apex_founding",
-    apex_held_days: "apex_held_days",
-    legend_held_days: "legend_held_days",
-    tribe_battles_won: "tribe_battles_won",
-    tribe_collective_streak: "tribe_collective_streak",
-    tribe_founder_streak: "tribe_founder_streak",
-  };
-
-  const progress: Record<string, { current: number; target: number; percent: number }> = {};
-  
-  const { data: allBadges } = await supabase.from("badges").select("id, requirement_type, requirement_value");
-  for (const badge of allBadges || []) {
-    if (!badge.requirement_type || !badge.requirement_value) continue;
-    const statKey = typeToStat[badge.requirement_type];
-    if (!statKey) continue;
-    const current = stats[statKey] || 0;
-    const target = badge.requirement_value;
-    progress[badge.id] = {
-      current: Math.min(current, target),
-      target,
-      percent: Math.min(Math.round((current / target) * 100), 100),
-    };
+export const badgeProgress = (
+  stats: Record<string, number> | null,
+  type: string | null,
+  target: number | null,
+): BadgeProgress | null => {
+  if (!type || !target || !stats || !(type in stats)) return null;
+  const value = Number(stats[type]) || 0;
+  if (type === "leaderboard_percentile") {
+    // 100 = unranked; the bar fills as the percentile falls towards the target.
+    const done = value <= target;
+    const percent = done ? 100 : Math.max(0, Math.min(99, Math.round(((100 - value) / (100 - target)) * 100)));
+    return { current: done ? target : Math.round(value), target, percent };
   }
+  return { current: Math.min(value, target), target, percent: Math.min(Math.round((value / target) * 100), 100) };
+};
 
-  return progress;
+/** Progress for every badge, keyed by badge id — one stats call, one catalogue read. */
+export const getBadgeProgress = async (): Promise<Record<string, BadgeProgress>> => {
+  const [{ data: stats, error }, { data: badges }] = await Promise.all([
+    supabase.rpc("badge_stats"),
+    supabase.from("badges").select("id, requirement_type, requirement_value"),
+  ]);
+  if (error) captureException(error, { where: "badges.progress" });
+  const s = (stats ?? null) as Record<string, number> | null;
+  const out: Record<string, BadgeProgress> = {};
+  for (const b of badges ?? []) {
+    const p = badgeProgress(s, b.requirement_type, b.requirement_value);
+    if (p) out[b.id] = p;
+  }
+  return out;
 };

@@ -4,6 +4,7 @@ import { backOr } from "@/lib/nav";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import StatusAvatar from "@/components/StatusAvatar";
+import FeaturedBadgeHero from "@/components/FeaturedBadgeHero";
 import ApexBadge from "@/components/ApexBadge";
 import StatusNameplate from "@/components/StatusNameplate";
 import StreakFlameInline from "@/components/StreakFlameInline";
@@ -33,6 +34,8 @@ interface PublicProfileBundle {
   is_apex_subscriber: boolean | null;
   legend_pinned: boolean | null;
   champion_wins: number;
+  /** The badge they wear as their title (null until they pick one). */
+  featured_badge: { name: string; icon: string; rarity: string } | null;
   badges: { badge_id: string; earned_at: string; badges: { name: string; icon: string; rarity: string } }[];
 }
 
@@ -186,6 +189,16 @@ const PublicProfile = () => {
             )}
           </div>
           <p className="text-dense text-muted-foreground/80 italic mt-3 max-w-[280px] leading-snug">{tier.message}</p>
+          {/* The title badge — the same chip their own profile shows. */}
+          {profile.featured_badge && (
+            <div className="mt-4 flex justify-center">
+              <FeaturedBadgeHero
+                name={profile.featured_badge.name}
+                icon={profile.featured_badge.icon}
+                rarity={profile.featured_badge.rarity as "common" | "rare" | "epic" | "legendary"}
+              />
+            </div>
+          )}
         </div>
 
         {/* ── STANDING — the numbers as one line, XP the felt one ── */}

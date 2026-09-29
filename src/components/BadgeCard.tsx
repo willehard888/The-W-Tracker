@@ -90,7 +90,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
               earned && "badge-holo-sweep",
             )}
           >
-            <span className="relative z-[2]">{icon}</span>
+            <span aria-hidden className="relative z-[2]">{icon}</span>
           </div>
           <p className="text-label font-semibold text-foreground text-center leading-tight truncate w-full max-w-[64px]">
             {name}
@@ -135,7 +135,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
             earned && isLegendary && "badge-shine animate-badge-float",
           )}
         >
-          <span className="relative z-[2]">{icon}</span>
+          <span aria-hidden className="relative z-[2]">{icon}</span>
           {/* Outer halo ring for epic+ */}
           {earned && isEpicPlus && (
             <div

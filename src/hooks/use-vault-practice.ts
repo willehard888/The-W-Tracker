@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { track, FUNNEL } from "@/lib/analytics";
 import { captureException } from "@/lib/observability";
+import { awardEarnedBadges } from "@/lib/badge-awards";
 
 /**
  * The practice, recorded server-side (record_vault_practice): one per piece,
@@ -34,9 +35,7 @@ export const useRecordPractice = () => {
       let newBadge: PracticeResult["newBadge"] = null;
       if (!result.already) {
         void track(FUNNEL.vaultPracticed, { slug, master: master ?? null, path: path ?? null, xp: result.xp_awarded });
-        const { data: badges, error: badgeErr } = await supabase.rpc("award_vault_badges");
-        if (badgeErr) captureException(badgeErr, { where: "vault.awardBadges" });
-        const first = (badges ?? [])[0];
+        const [first] = await awardEarnedBadges("vault.awardBadges");
         if (first) newBadge = { name: first.name, icon: first.icon, rarity: first.rarity, description: first.description ?? undefined };
       }
       return { ...result, newBadge };

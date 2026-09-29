@@ -25,7 +25,7 @@ import { track, FUNNEL } from "@/lib/analytics";
 import { classifyError } from "@/lib/analytics-error";
 import { useQueryClient } from "@tanstack/react-query";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
-import { checkAndAwardBadges } from "@/lib/badge-awards";
+import { awardEarnedBadges, type Badge } from "@/lib/badge-awards";
 import ConfettiBurst from "@/components/ConfettiBurst";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
@@ -242,7 +242,7 @@ const DailyCheckin = () => {
   const [healthSessions, setHealthSessions] = useState<DayWorkout[]>([]);
   const recentSports = useRecentSports();
 
-  const [unlockedBadge, setUnlockedBadge] = useState<any>(null);
+  const [unlockedBadge, setUnlockedBadge] = useState<Badge | null>(null);
   const [honest, setHonest] = useState<boolean | null>(null);
   // "Yes" is the commit that unlocks submission — same pop vocabulary as a
   // habit tick (it used to only cross-fade a colour).
@@ -721,6 +721,12 @@ const DailyCheckin = () => {
                 duration: 4500,
               });
             }
+            // The re-score can complete a badge the first pass could not see
+            // (a verified day, a 150, a max-effort session): one more pass.
+            if (rescored) {
+              const [late] = await awardEarnedBadges("checkin.badgeAwardVerified");
+              if (late) setUnlockedBadge((cur) => cur ?? late);
+            }
           } catch (err) { console.warn("verify_checkin failed", err); captureException(err, { where: "checkin.verify" }); }
         }).catch((err) => { console.warn("HK sync failed", err); captureException(err, { where: "checkin.hkSync" }); });
       }
@@ -739,17 +745,10 @@ const DailyCheckin = () => {
         // The moment of intent: the user just locked a day in. If the OS would
         // still prompt for reminders, ask now — with the chain as the reason.
         try { await pushControls?.primeAfterCheckin(); } catch { /* the Home fallback still exists */ }
-        // rpc() resolves with { error } — it never rejects, so this catch was
-        // unreachable and the tier silently stopped advancing after check-ins
-        // without the captureException below ever firing.
-        try {
-          const { error: tierErr } = await supabase.rpc("update_status_tier", { target_user_id: user.id });
-          if (tierErr) throw tierErr;
-        } catch (e) { console.warn("tier update", e); captureException(e, { where: "checkin.tierUpdate" }); }
-        try {
-          const newBadge = await checkAndAwardBadges(user.id);
-          if (newBadge?.isNew) setUnlockedBadge(newBadge.badge);
-        } catch (e) { console.warn("badge award", e); captureException(e, { where: "checkin.badgeAward" }); }
+        // record_checkin runs update_status_tier itself (hygiene §4, 2026-09-25);
+        // the badge pass is one server call that returns what was just earned.
+        const [newBadge] = await awardEarnedBadges("checkin.badgeAward");
+        if (newBadge) setUnlockedBadge(newBadge);
         try {
           // Rich loopback: name the fire this check-in fed and open it on tap.
           const { data: mems } = await supabase
@@ -815,7 +814,8 @@ const DailyCheckin = () => {
         // Rank sits in the header, Home, Profile and Ranks behind a 5-minute
         // staleTime: without this it kept the pre-check-in number everywhere.
         queryClient.invalidateQueries({ queryKey: ["my-rank"] });
-        queryClient.invalidateQueries({ queryKey: ["user-badges"] });
+        queryClient.invalidateQueries({ queryKey: ["earned-badges"] });
+        queryClient.invalidateQueries({ queryKey: ["badge-progress"] });
         queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
         queryClient.invalidateQueries({ queryKey: ["recent-checkins"] });
       })();

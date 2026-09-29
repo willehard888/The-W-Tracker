@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell, Swords, Users, Trophy, MessageSquare,
-  Gift, Flame, Crown, CheckCheck, UserPlus, ChevronRight, FileText } from "lucide-react";
+  Gift, Flame, Crown, CheckCheck, UserPlus, ChevronRight, FileText, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
@@ -50,6 +50,7 @@ const KIND_ICONS: Record<string, typeof Bell> = {
   referral_activated: Gift,
   referral_converted: Gift,
   weekly_briefing: FileText,
+  badge: Award,
 };
 
 /**

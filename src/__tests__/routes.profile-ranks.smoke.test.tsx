@@ -18,6 +18,8 @@ const ROWS: Row[] = [
   { path: "/leaderboard", pattern: "/leaderboard", page: Leaderboard, expect: /board/i },
   { path: "/battles", pattern: "/battles", page: Battles, expect: /battles/i },
   { path: "/profile", pattern: "/profile", page: Profile, expect: /account menu/i },
+  // The badges tab: the vault renders from the catalogue and the progress RPC.
+  { path: "/profile?tab=badges", pattern: "/profile", page: Profile, expect: /badge vault/i },
   { path: "/badges/compare", pattern: "/badges/compare", page: BadgeCompare, expect: /badge/i },
   { path: "/badges/compare?with=u2", pattern: "/badges/compare", page: BadgeCompare, expect: /badge/i },
   { path: "/settings/blocked", pattern: "/settings/blocked", page: BlockedUsers, expect: /blocked/i },

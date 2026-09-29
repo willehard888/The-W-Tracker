@@ -66,7 +66,7 @@ const ApexBadge = ({
         )}
       >
         <Crown aria-hidden size={s.icon} strokeWidth={3} />
-        Funding Apex
+        Founding Apex
       </span>
     );
   }

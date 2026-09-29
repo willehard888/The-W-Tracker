@@ -33,7 +33,7 @@ import StoryShareModal from "@/components/StoryShareModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { subDays, format } from "date-fns";
-import { getBadgeProgress, checkAndAwardBadges } from "@/lib/badge-awards";
+import { getBadgeProgress, awardEarnedBadges } from "@/lib/badge-awards";
 import { onIdle } from "@/lib/idle";
 import { getTierConfig } from "@/lib/status-tiers";
 import NextTierProgress from "@/components/NextTierProgress";
@@ -318,7 +318,7 @@ const Profile = () => {
     queryKey: ["badge-progress", profile?.user_id],
     staleTime: 10 * 60_000,
     gcTime:    30 * 60_000,
-    queryFn: () => getBadgeProgress(profile!.user_id),
+    queryFn: () => getBadgeProgress(),
     // Eleven progress reads for a tab most visits never open.
     enabled: !!profile && profileTab === "badges",
   });
@@ -330,13 +330,13 @@ const Profile = () => {
     if (!userId) return;
     if (syncedBadgesForUserRef.current === userId) return;
     let cancelled = false;
-    // Once the screen has painted and settled: the award pass is a batch of
-    // reads that used to compete with the profile's first paint.
+    // Once the screen has painted and settled: the pass catches up on the
+    // keys only time moves (days at a tier, a rank percentile).
     const cancelIdle = onIdle(() => {
       syncedBadgesForUserRef.current = userId;
       void (async () => {
         try {
-          await checkAndAwardBadges(userId);
+          await awardEarnedBadges("profile.badgeSync");
           if (cancelled) return;
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["earned-badges", userId] }),

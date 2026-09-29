@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
 interface BadgeUnlockModalProps {
-  badge: { name: string; icon: string; rarity: string; description?: string } | null;
+  badge: { name: string; icon: string; rarity: string; description?: string | null } | null;
   onClose: () => void;
   /** Profile opens every badge through this modal; a locked one must not say "Unlocked". */
   earned?: boolean;
@@ -80,7 +80,7 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action }: BadgeUnlock
 
   return (
     <Portal>
-    <div role="dialog" aria-modal="true" aria-label="Badge unlocked" className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center" onClick={onClose}>
+    <div role="dialog" aria-modal="true" aria-label={earned ? "Badge unlocked" : "Badge"} className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center" onClick={onClose}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/95 transition-opacity duration-700"

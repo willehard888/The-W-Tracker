@@ -22,17 +22,28 @@ interface BadgeVaultProps {
   onSetFeatured?: (badgeId: string) => void;
 }
 
-const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "streak", label: "Streak" },
-  { id: "discipline", label: "Discipline" },
-  { id: "sport", label: "Sport" },
-  { id: "xp", label: "XP" },
-  { id: "level", label: "Level" },
-  { id: "social", label: "Social" },
-  { id: "checkin", label: "Check-in" },
-  { id: "battles", label: "Battles" },
-];
+// Labels for the catalogue's categories; the chips are built from what the
+// catalogue actually holds, so a category that gains a badge gains a chip.
+const CATEGORY_LABEL: Record<string, string> = {
+  streak: "Streak",
+  discipline: "Discipline",
+  sport: "Sport",
+  checkin: "Check-in",
+  xp: "XP",
+  level: "Level",
+  social: "Social",
+  battles: "Battles",
+  battle: "Battles",
+  tribe: "Tribe",
+  tier: "Tier",
+  vault: "Vault",
+  referral: "Referrals",
+  leaderboard: "Ranks",
+  status: "Status",
+  special: "Special",
+  seasonal: "Seasonal",
+};
+const CATEGORY_ORDER = Object.keys(CATEGORY_LABEL);
 
 const RARITY_ORDER: Record<string, number> = {
   legendary: 0,
@@ -85,15 +96,15 @@ const BadgeVault = ({
 
   const earnedSet = useMemo(() => new Set(earnedBadgeIds), [earnedBadgeIds]);
 
-  const isBadgeEarned = (badgeId: string) => {
-    const p = progress?.[badgeId];
-    const achievedByProgress = !!p && p.current >= p.target;
-    return earnedSet.has(badgeId) || achievedByProgress;
-  };
+  // Earned means the server wrote the row. The award pass returns the moment
+  // a check-in or practice lands, so a "ready" bar no longer has to stand in.
+  const isBadgeEarned = (badgeId: string) => earnedSet.has(badgeId);
 
   const availableCategories = useMemo(() => {
     const cats = new Set(allBadges.map((b) => b.category));
-    return CATEGORIES.filter((c) => c.id === "all" || cats.has(c.id));
+    const known = CATEGORY_ORDER.filter((c) => cats.has(c));
+    const unknown = [...cats].filter((c) => !CATEGORY_LABEL[c]).sort();
+    return [{ id: "all", label: "All" }, ...[...known, ...unknown].map((id) => ({ id, label: CATEGORY_LABEL[id] ?? id }))];
   }, [allBadges]);
 
   const filteredBadges = useMemo(() => {

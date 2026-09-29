@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { subDays, format } from "date-fns";
 import { getBadgeProgress, awardEarnedBadges } from "@/lib/badge-awards";
+import { trackLine } from "@/lib/badge-tracks";
 import { onIdle } from "@/lib/idle";
 import { getTierConfig } from "@/lib/status-tiers";
 import NextTierProgress from "@/components/NextTierProgress";
@@ -433,6 +434,7 @@ const Profile = () => {
 
       <BadgeUnlockModal
         badge={previewBadge}
+        track={previewBadge ? trackLine(previewBadge, allBadges ?? []) : null}
         earned={!previewBadge || !!earnedBadgeIds?.includes(previewBadge.id)}
         action={previewBadge && earnedBadgeIds?.includes(previewBadge.id) ? {
           label: profile.featured_badge_id === previewBadge.id ? "Remove as title" : "Set as title",

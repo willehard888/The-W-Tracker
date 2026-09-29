@@ -122,6 +122,24 @@ tick; hand-entered steps/sleep/mindful samples are dropped natively. A day is
   against the :5499 dry-run cluster — every case in
   `src/lib/__fixtures__/day-score-cases.json` must agree SQL ↔ TS.
 
+## Badges (one engine, 2026-09-29)
+
+- `badge_stats(uid)` is the only stat computation and `award_earned_badges_for(uid)`
+  the only award pass; every path (check-in, Vault practice, likes, comments,
+  kudos, seasons, paid referrals, the Profile idle pass) calls it. A new badge
+  is a catalogue row whose `requirement_type` is a key of `badge_stats` —
+  nothing else to wire. The bell row comes from the trigger on `user_badges`.
+- The catalogue lives in `scripts/badge-catalog.py`; a change is a new
+  migration made of its output (`python3 scripts/badge-catalog.py`). Renames
+  are `UPDATE … name` by the old name, deletions explicit — `user_badges`
+  cascades on delete, so never `NOT IN`.
+- After any badge migration: `supabase db query --linked -f
+  scripts/audit/badge-reachability.sql` (read-only; asserts every
+  requirement_type is producible, grants, triggers). On the :5499 stub,
+  `scripts/audit/badge-engine-check.sql` runs a fixture through the pass.
+- Secret badges (`hidden`) show as ? until earned; the vault, the compare
+  page and the modal read `maskSecret()` from `src/lib/badge-tracks.ts`.
+
 ## Push
 
 `_shared/apns.ts` is the only sender, and it records every send. If a member says

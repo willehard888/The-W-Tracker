@@ -4,6 +4,7 @@ import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
+import type { TrackLine } from "@/lib/badge-tracks";
 
 interface BadgeUnlockModalProps {
   badge: { name: string; icon: string; rarity: string; description?: string | null } | null;
@@ -12,6 +13,8 @@ interface BadgeUnlockModalProps {
   earned?: boolean;
   /** One action under the details, e.g. "Set as title" from the Profile vault. */
   action?: { label: string; onClick: () => void };
+  /** Where this badge sits on its ladder — see lib/badge-tracks. */
+  track?: TrackLine | null;
 }
 
 const rarityConfig: Record<string, {
@@ -51,7 +54,7 @@ const rarityConfig: Record<string, {
   },
 };
 
-const BadgeUnlockModal = ({ badge, onClose, earned = true, action }: BadgeUnlockModalProps) => {
+const BadgeUnlockModal = ({ badge, onClose, earned = true, action, track }: BadgeUnlockModalProps) => {
   const [phase, setPhase] = useState<"enter" | "burst" | "reveal" | "details">("enter");
   // Mounted unconditionally by Profile and the check-in page with a null
   // badge (it renders nothing then) — the lock must follow the badge, or the
@@ -217,6 +220,12 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action }: BadgeUnlock
           </div>
           {badge.description && (
             <p className="text-sm text-muted-foreground mt-3 max-w-[260px] leading-relaxed">{badge.description}</p>
+          )}
+          {track && (
+            <p className="text-label text-muted-foreground/80 mt-2 tabular-nums">
+              {track.label} · rung {track.rung} of {track.of}
+              {track.next ? ` · next ${track.next.name} at ${track.next.value.toLocaleString("en-US")}` : " · the top of the ladder"}
+            </p>
           )}
           {action && (
             <Button

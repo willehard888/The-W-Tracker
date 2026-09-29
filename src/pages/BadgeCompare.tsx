@@ -1,3 +1,4 @@
+import { maskSecret } from "@/lib/badge-tracks";
 import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Shield, Check, Minus } from "lucide-react";
@@ -86,7 +87,8 @@ const BadgeCompare = () => {
   const rows = useMemo(
     () =>
       (badgesQ.data ?? [])
-        .map((b) => ({ b, me: mine.has(b.id), them: theirs.has(b.id) }))
+        // A secret neither of you holds stays a secret here too.
+        .map((b) => ({ b: maskSecret(b, mine.has(b.id) || theirs.has(b.id)), me: mine.has(b.id), them: theirs.has(b.id) }))
         .sort((x, y) => (x.me !== x.them ? 0 : x.me ? 1 : 2) - (y.me !== y.them ? 0 : y.me ? 1 : 2)),
     [badgesQ.data, mine, theirs],
   );

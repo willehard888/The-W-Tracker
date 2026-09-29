@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import BadgeCard from "./BadgeCard";
 import type { BadgeRarity } from "./BadgeCard";
 import { cn } from "@/lib/utils";
+import { maskSecret } from "@/lib/badge-tracks";
 import { Crown, Sparkles, Target, Lock } from "lucide-react";
 
 interface BadgeData {
@@ -12,6 +13,8 @@ interface BadgeData {
   category: string;
   description?: string | null;
   requirement_type?: string | null;
+  requirement_value?: number | null;
+  hidden?: boolean | null;
 }
 
 interface BadgeVaultProps {
@@ -100,13 +103,17 @@ const BadgeVault = ({
   const [activeCategory, setActiveCategory] = useState("all");
 
   const earnedSet = useMemo(() => new Set(earnedBadgeIds), [earnedBadgeIds]);
+  // A secret badge shows itself only once earned; everything below reads
+  // the masked catalogue so no name, icon or target leaks through a tile.
+  const visibleBadges = useMemo(() => allBadges.map((b) => maskSecret(b, earnedSet.has(b.id))), [allBadges, earnedSet]);
+  const secretLocked = (b: BadgeData) => !!b.hidden && !earnedSet.has(b.id);
 
   // Earned means the server wrote the row. The award pass returns the moment
   // a check-in or practice lands, so a "ready" bar no longer has to stand in.
   const isBadgeEarned = (badgeId: string) => earnedSet.has(badgeId);
 
   const availableCategories = useMemo(() => {
-    const cats = new Set(allBadges.map((b) => b.category));
+    const cats = new Set(visibleBadges.map((b) => b.category));
     const known = CATEGORY_ORDER.filter((c) => cats.has(c));
     const unknown = [...cats].filter((c) => !CATEGORY_LABEL[c]).sort();
     return [{ id: "all", label: "All" }, ...[...known, ...unknown].map((id) => ({ id, label: CATEGORY_LABEL[id] ?? id }))];
@@ -115,8 +122,8 @@ const BadgeVault = ({
   const filteredBadges = useMemo(() => {
     const filtered =
       activeCategory === "all"
-        ? allBadges
-        : allBadges.filter((b) => b.category === activeCategory);
+        ? visibleBadges
+        : visibleBadges.filter((b) => b.category === activeCategory);
 
     return [...filtered].sort((a, b) => {
       const aEarned = isBadgeEarned(a.id);
@@ -129,7 +136,7 @@ const BadgeVault = ({
       if (aProgress !== bProgress) return bProgress - aProgress;
       return (RARITY_ORDER[a.rarity] ?? 4) - (RARITY_ORDER[b.rarity] ?? 4);
     });
-  }, [allBadges, activeCategory, earnedSet, progress]);
+  }, [visibleBadges, activeCategory, earnedSet, progress]);
 
   const totalEarned = useMemo(
     () => allBadges.filter((b) => isBadgeEarned(b.id)).length,
@@ -155,8 +162,8 @@ const BadgeVault = ({
 
   // "Next Drop" — closest unearned badge by progress %, prioritizing higher rarity on ties
   const nextDrop = useMemo(() => {
-    const candidates = allBadges
-      .filter((b) => !isBadgeEarned(b.id))
+    const candidates = visibleBadges
+      .filter((b) => !isBadgeEarned(b.id) && !secretLocked(b))
       .map((b) => ({ badge: b, p: progress?.[b.id] }))
       .filter((x) => x.p && x.p.percent > 0);
 
@@ -304,7 +311,8 @@ const BadgeVault = ({
       {/* === Badge grid === */}
       <div className="grid grid-cols-3 gap-2.5">
         {filteredBadges.map((badge) => {
-          const badgeProgress = progress?.[badge.id];
+          // No bar under a ? tile: the target is part of the secret.
+          const badgeProgress = secretLocked(badge) ? undefined : progress?.[badge.id];
           const earned = isBadgeEarned(badge.id);
           const isFeatured = badge.id === featuredBadgeId;
 

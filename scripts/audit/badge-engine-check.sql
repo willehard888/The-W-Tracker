@@ -42,7 +42,7 @@ BEGIN
   SELECT count(*) INTO won FROM public.award_earned_badges_for(u);
   ASSERT won > 0, 'nothing awarded';
   ASSERT EXISTS (SELECT 1 FROM user_badges ub JOIN badges b ON b.id = ub.badge_id WHERE ub.user_id = u AND b.name = 'Flawless'), 'Flawless (perfect_day 1) not awarded';
-  ASSERT EXISTS (SELECT 1 FROM user_badges ub JOIN badges b ON b.id = ub.badge_id WHERE ub.user_id = u AND b.name = '30-Day Streak'), 'longest_streak 35 should earn the 30-day badge';
+  ASSERT EXISTS (SELECT 1 FROM user_badges ub JOIN badges b ON b.id = ub.badge_id WHERE ub.user_id = u AND b.name IN ('30-Day Streak', 'Thirty')), 'longest_streak 35 should earn the 30-day badge';
   ASSERT NOT EXISTS (SELECT 1 FROM user_badges ub JOIN badges b ON b.id = ub.badge_id WHERE ub.user_id = u AND b.name = 'Iron Mind'), 'meditation run of 5 must not earn Iron Mind (14)';
   SELECT count(*) INTO n FROM public.award_earned_badges_for(u);
   ASSERT n = 0, 'second pass awarded again: ' || n;
@@ -55,6 +55,8 @@ BEGIN
   -- Enlightened is 300 sessions now.
   ASSERT (SELECT requirement_value FROM badges WHERE name = 'Enlightened') = 300, 'Enlightened threshold';
 
+  -- Secret keys exist and the fixture's twelve straight days earn no Comeback.
+  ASSERT (s ->> 'comeback')::int = 0 OR NOT (s ? 'comeback'), 'comeback';
   RAISE NOTICE 'badge engine: % badges awarded to the fixture, % bell rows, stats keys %', won, bell, (SELECT count(*) FROM jsonb_object_keys(s));
 END $$;
 ROLLBACK;

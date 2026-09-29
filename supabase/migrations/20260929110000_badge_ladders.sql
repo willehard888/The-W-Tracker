@@ -1,0 +1,359 @@
+-- Badge round (2026-09-29), batch 2 — the ladders.
+--
+-- Every track is a ladder now: one Mythic per track as the horizon (a
+-- thousand days, a thousand workouts, three hundred meditations, a hundred
+-- thousand XP), the rungs before it close enough to feel. Rarity follows the
+-- rung. The generic names ("10 Check-ins", "Level 5") are named; members
+-- keep what they earned because a rename is an UPDATE. New tracks read the
+-- XP v3 day score — verified days, full days, max-effort sessions, full
+-- nights, step days — so the quality of a day earns something, not only
+-- the tick. Four badges are secret (hidden): the vault shows a ? until
+-- they are earned. scripts/badge-catalog.py is the source; this file is its
+-- output plus the schema and stat keys the new rows need.
+
+ALTER TABLE public.badges ADD COLUMN IF NOT EXISTS hidden boolean NOT NULL DEFAULT false;
+
+-- ── badge_stats: three keys for the secret badges ──────────────────────────
+CREATE OR REPLACE FUNCTION public.badge_stats(p_user uuid DEFAULT auth.uid())
+RETURNS jsonb
+LANGUAGE sql STABLE SECURITY INVOKER
+SET search_path = public
+AS $$
+WITH p AS (SELECT * FROM profiles WHERE user_id = p_user),
+dc AS (
+  SELECT count(*) AS checkins,
+         count(*) FILTER (WHERE d.workout)               AS workouts,
+         count(*) FILTER (WHERE d.cold_shower)           AS cold_shower,
+         count(*) FILTER (WHERE d.healthy_food)          AS healthy_food,
+         count(*) FILTER (WHERE d.protein_intake)        AS protein,
+         count(*) FILTER (WHERE d.hydration_liters >= 3) AS hydration,
+         count(*) FILTER (WHERE d.no_phone_morning)      AS no_phone_morning,
+         count(*) FILTER (WHERE d.no_phone_evening)      AS no_phone_evening,
+         count(*) FILTER (WHERE d.reading)               AS reading,
+         count(*) FILTER (WHERE d.extra_workout)         AS double_workout,
+         count(*) FILTER (WHERE d.meditation_morning) + count(*) FILTER (WHERE d.meditation_evening) AS meditation,
+         count(*) FILTER (WHERE d.meditation_morning AND d.meditation_evening) AS both_ends_days,
+         count(*) FILTER (WHERE d.proof_photo_url IS NOT NULL) AS proofs,
+         count(*) FILTER (WHERE d.verified_at IS NOT NULL)     AS verified_days,
+         count(*) FILTER (WHERE (d.score_breakdown ->> 'total')::int >= 100) AS full_days,
+         count(*) FILTER (WHERE (d.score_breakdown ->> 'total')::int >= 150) AS health_days,
+         count(*) FILTER (WHERE ln.perfect > 0)    AS perfect_day,
+         count(*) FILTER (WHERE ln.training = 50)  AS max_effort_days,
+         count(*) FILTER (WHERE ln.sleep = 25)     AS full_sleep_nights,
+         count(*) FILTER (WHERE ln.steps = 10)     AS step_days,
+         count(*) FILTER (WHERE ln.mind = 15)      AS mind_days
+    FROM daily_checkins d
+    LEFT JOIN LATERAL (
+      SELECT max((l ->> 'pts')::int) FILTER (WHERE l ->> 'k' = 'perfect')  AS perfect,
+             max((l ->> 'pts')::int) FILTER (WHERE l ->> 'k' = 'training') AS training,
+             max((l ->> 'pts')::int) FILTER (WHERE l ->> 'k' = 'sleep')    AS sleep,
+             max((l ->> 'pts')::int) FILTER (WHERE l ->> 'k' = 'steps')    AS steps,
+             max((l ->> 'pts')::int) FILTER (WHERE l ->> 'k' = 'mind')     AS mind
+        FROM jsonb_array_elements(COALESCE(d.score_breakdown -> 'lines', '[]'::jsonb)) l
+    ) ln ON true
+   WHERE d.user_id = p_user
+),
+-- Longest run of consecutive local days with a meditation tick (gaps and islands).
+med AS (
+  SELECT COALESCE(max(n), 0) AS longest FROM (
+    SELECT count(*) AS n FROM (
+      SELECT day, day - (row_number() OVER (ORDER BY day))::int AS grp FROM (
+        SELECT DISTINCT public.checkin_local_day(d) AS day
+          FROM daily_checkins d
+         WHERE d.user_id = p_user AND (d.meditation_morning OR d.meditation_evening)) x) y
+     GROUP BY grp) z
+),
+-- A return after thirty or more days away: the day, and the day before it.
+back AS (
+  SELECT count(*) AS n FROM (
+    SELECT day, lag(day) OVER (ORDER BY day) AS prev FROM (
+      SELECT DISTINCT public.checkin_local_day(d) AS day FROM daily_checkins d WHERE d.user_id = p_user) x) y
+   WHERE prev IS NOT NULL AND day - prev >= 30
+),
+-- The same population update_status_tier ranks; ties share the best rank.
+rk AS (
+  SELECT count(*) AS total,
+         1 + count(*) FILTER (WHERE r.rank_score > COALESCE((SELECT rank_score FROM p), 0)) AS mine
+    FROM profiles r WHERE r.rank_score > 0
+),
+my_tribes AS (SELECT tribe_id FROM tribe_members WHERE user_id = p_user AND status = 'active'),
+owned     AS (SELECT id AS tribe_id FROM tribes WHERE owner_id = p_user),
+mins AS (
+  SELECT tm.tribe_id, min(COALESCE(pr.streak, 0)) AS min_streak
+    FROM tribe_members tm JOIN profiles pr ON pr.user_id = tm.user_id
+   WHERE tm.status = 'active'
+     AND tm.tribe_id IN (SELECT tribe_id FROM my_tribes UNION SELECT tribe_id FROM owned)
+   GROUP BY tm.tribe_id
+),
+-- One key per vault_master:<slugs> row in the catalogue.
+vm AS (
+  SELECT t.requirement_type AS k,
+         (SELECT count(*) FROM vault_lesson_progress vp JOIN vault_articles a ON a.id = vp.article_id
+           WHERE vp.user_id = p_user AND vp.practiced_at IS NOT NULL
+             AND a.master_slug = ANY (string_to_array(substr(t.requirement_type, 14), ','))) AS v
+    FROM (SELECT DISTINCT requirement_type FROM badges WHERE requirement_type LIKE 'vault_master:%') t
+)
+SELECT jsonb_build_object(
+  'checkins', dc.checkins, 'workouts', dc.workouts, 'cold_shower', dc.cold_shower,
+  'healthy_food', dc.healthy_food, 'protein', dc.protein, 'hydration', dc.hydration,
+  'no_phone_morning', dc.no_phone_morning, 'no_phone_evening', dc.no_phone_evening,
+  'reading', dc.reading, 'double_workout', dc.double_workout, 'meditation', dc.meditation,
+  'proofs', dc.proofs, 'perfect_day', dc.perfect_day,
+  'verified_days', dc.verified_days, 'full_days', dc.full_days, 'health_days', dc.health_days,
+  'max_effort_days', dc.max_effort_days, 'full_sleep_nights', dc.full_sleep_nights,
+  'step_days', dc.step_days, 'mind_days', dc.mind_days,
+  'meditation_streak', med.longest,
+  'both_ends_days', dc.both_ends_days,
+  'comeback', back.n,
+  -- A recorded (not hand-entered) Health workout of two hours or more.
+  'long_haul', (SELECT count(*) FROM health_sync_snapshots h, jsonb_array_elements(COALESCE(h.workouts, '[]'::jsonb)) w
+                 WHERE h.user_id = p_user AND (w ->> 'duration_min')::numeric >= 120
+                   AND NOT COALESCE((w ->> 'manual')::boolean, false)),
+  'battles_won',       (SELECT count(*) FROM battles WHERE winner_id = p_user),
+  'referrals',         (SELECT count(*) FROM referrals WHERE referrer_id = p_user),
+  'paid_referrals',    (SELECT count(*) FROM referrals WHERE referrer_id = p_user AND converted),
+  'vault_practices',   (SELECT count(*) FROM vault_lesson_progress WHERE user_id = p_user AND practiced_at IS NOT NULL),
+  'total_likes',       (SELECT COALESCE(sum(likes_count), 0) FROM feed_posts WHERE user_id = p_user),
+  'single_post_likes', (SELECT COALESCE(max(likes_count), 0) FROM feed_posts WHERE user_id = p_user),
+  'total_comments',    (SELECT count(*) FROM feed_comments WHERE user_id = p_user),
+  'total_kudos',       (SELECT count(*) FROM kudos WHERE receiver_id = p_user),
+  'season_champion',   (SELECT count(*) FROM leaderboard_champions WHERE user_id = p_user),
+  'tribe_battles_won', (SELECT count(*) FROM tribe_battles tb
+                         WHERE tb.status = 'completed' AND tb.winner_tribe_id IN (SELECT tribe_id FROM my_tribes)),
+  'tribe_collective_streak', COALESCE((SELECT max(min_streak) FROM mins WHERE tribe_id IN (SELECT tribe_id FROM my_tribes)), 0),
+  'tribe_founder_streak',    COALESCE((SELECT max(min_streak) FROM mins WHERE tribe_id IN (SELECT tribe_id FROM owned)), 0),
+  'xp', COALESCE(p.xp, 0), 'level', COALESCE(p.level, 1), 'longest_streak', COALESCE(p.longest_streak, 0),
+  'elite_member',     COALESCE(p.is_elite, false)::int,
+  'phoenix_recovery', (COALESCE(p.longest_streak, 0) >= 30 AND COALESCE(p.streak, 0) >= 30 AND p.longest_streak > p.streak)::int,
+  'apex_reached',     (p.status_tier IN ('apex', 'legend'))::int,
+  'legend_reached',   (p.status_tier = 'legend' OR COALESCE(p.legend_pinned, false))::int,
+  'apex_founding',    (COALESCE(p.is_apex_subscriber, false) AND p.apex_subscription_started_at IS NOT NULL)::int,
+  'apex_held_days',   CASE WHEN p.status_tier IN ('apex', 'legend') AND p.apex_subscription_started_at IS NOT NULL
+                           THEN floor(extract(epoch FROM now() - p.apex_subscription_started_at) / 86400) ELSE 0 END,
+  'legend_held_days', CASE WHEN (p.status_tier = 'legend' OR COALESCE(p.legend_pinned, false)) AND p.apex_subscription_started_at IS NOT NULL
+                           THEN floor(extract(epoch FROM now() - p.apex_subscription_started_at) / 86400) ELSE 0 END,
+  -- "Top N %": rank / total × 100, lower is better. Top 1 % needs a hundred ranked members.
+  'leaderboard_percentile', CASE WHEN COALESCE(p.rank_score, 0) <= 0 OR rk.total = 0 THEN 100
+                                 ELSE round(100.0 * rk.mine / rk.total, 2) END
+) || COALESCE((SELECT jsonb_object_agg(k, v) FROM vm), '{}'::jsonb)
+-- An unknown uid still answers, with zeros: the audit asks with any uid.
+FROM dc CROSS JOIN med CROSS JOIN back CROSS JOIN rk LEFT JOIN p ON true;
+$$;
+REVOKE ALL ON FUNCTION public.badge_stats(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.badge_stats(uuid) TO authenticated, service_role;
+
+-- ── The catalogue ──────────────────────────────────────────────────────────
+-- Generated by scripts/badge-catalog.py — edit the script, not this file.
+-- 174 badges.
+
+-- Renames first: a badge is its row, and members keep what they earned.
+UPDATE public.badges SET name = 'Ten Days' WHERE name = '10 Check-ins';
+UPDATE public.badges SET name = 'Fifty' WHERE name = '50 Check-ins';
+UPDATE public.badges SET name = 'Century' WHERE name = '100 Check-ins';
+UPDATE public.badges SET name = 'Five Hundred' WHERE name = '500 Check-ins';
+UPDATE public.badges SET name = 'Thirty' WHERE name = '30-Day Streak';
+UPDATE public.badges SET name = 'Dynasty' WHERE name = '60-Day Dynasty';
+UPDATE public.badges SET name = 'Ninety' WHERE name = '90-Day Streak';
+UPDATE public.badges SET name = 'Hundred' WHERE name = '100-Day Legend';
+UPDATE public.badges SET name = 'Journeyman' WHERE name = 'Level 5';
+UPDATE public.badges SET name = 'Veteran' WHERE name = 'Level 15';
+UPDATE public.badges SET name = 'Master' WHERE name = 'Level 30';
+UPDATE public.badges SET name = 'Night Owl' WHERE name = 'Night Owl Discipline';
+
+-- Retired (no holders): explicit, never NOT IN.
+DELETE FROM public.badges WHERE name IN ('200 Workouts', 'Inferno Personal');
+
+INSERT INTO public.badges (name, description, icon, rarity, category, requirement_type, requirement_value, hidden) VALUES
+  ('First Step', 'Your first check-in. The day is on the record.', '👣', 'common', 'checkin', 'checkins', 1, false),
+  ('Ten Days', 'Ten days logged.', '📋', 'common', 'checkin', 'checkins', 10, false),
+  ('Consistent', 'Twenty-five days. This is a habit now.', '📊', 'rare', 'checkin', 'checkins', 25, false),
+  ('Fifty', 'Fifty days logged.', '📝', 'rare', 'checkin', 'checkins', 50, false),
+  ('Devoted', 'Seventy-five days on the record.', '🔒', 'rare', 'checkin', 'checkins', 75, false),
+  ('Century', 'A hundred days logged.', '💯', 'rare', 'checkin', 'checkins', 100, false),
+  ('Unstoppable', 'Two hundred days. Nothing has stopped you.', '🚀', 'epic', 'checkin', 'checkins', 200, false),
+  ('Five Hundred', 'Five hundred days logged.', '🗓️', 'epic', 'checkin', 'checkins', 500, false),
+  ('Eternal', 'A thousand days on the record.', '♾️', 'legendary', 'checkin', 'checkins', 1000, false),
+  ('First Spark', 'Three days in a row. The fire is lit.', '🔥', 'common', 'streak', 'longest_streak', 3, false),
+  ('Week Warrior', 'Seven days without a gap.', '⚡', 'common', 'streak', 'longest_streak', 7, false),
+  ('Fortnight Force', 'Fourteen days in a row.', '💫', 'rare', 'streak', 'longest_streak', 14, false),
+  ('Thirty', 'Thirty days without a gap.', '💎', 'rare', 'streak', 'longest_streak', 30, false),
+  ('Dynasty', 'Sixty days in a row.', '🏛️', 'rare', 'streak', 'longest_streak', 60, false),
+  ('Ninety', 'Ninety days without a gap. You are the habit.', '🐉', 'rare', 'streak', 'longest_streak', 90, false),
+  ('Hundred', 'A hundred consecutive days.', '🗿', 'rare', 'streak', 'longest_streak', 100, false),
+  ('Half Year', 'A hundred and eighty days in a row.', '🌓', 'epic', 'streak', 'longest_streak', 180, false),
+  ('Year of Steel', 'A whole year without a gap.', '⭐', 'epic', 'streak', 'longest_streak', 365, false),
+  ('Unbroken', 'A thousand consecutive days.', '⛓️', 'legendary', 'streak', 'longest_streak', 1000, false),
+  ('First Breath', 'Your first meditation session.', '🌬️', 'common', 'discipline', 'meditation', 1, false),
+  ('Inner Peace', 'Ten sessions.', '☮️', 'common', 'discipline', 'meditation', 10, false),
+  ('Mind Over Matter', 'Thirty sessions.', '🧠', 'rare', 'discipline', 'meditation', 30, false),
+  ('Zen Master', 'Fifty sessions.', '🧘', 'rare', 'discipline', 'meditation', 50, false),
+  ('Still Mind', 'A hundred sessions.', '🪷', 'epic', 'discipline', 'meditation', 100, false),
+  ('Deep Water', 'Two hundred sessions.', '🌌', 'epic', 'discipline', 'meditation', 200, false),
+  ('Enlightened', 'Three hundred sessions. Morning and evening both count.', '✨', 'legendary', 'discipline', 'meditation', 300, false),
+  ('Iron Mind', 'Fourteen days of meditation without missing one.', '🧠', 'common', 'discipline', 'meditation_streak', 14, false),
+  ('Unmoved', 'Thirty days of meditation in a row.', '🗻', 'common', 'discipline', 'meditation_streak', 30, false),
+  ('Stillness', 'A hundred days of meditation without a gap.', '🕯️', 'rare', 'discipline', 'meditation_streak', 100, false),
+  ('Apprentice', 'Level 3.', '🎖️', 'common', 'level', 'level', 3, false),
+  ('Journeyman', 'Level 5.', '⭐', 'common', 'level', 'level', 5, false),
+  ('Warrior', 'Level 10.', '⚔️', 'rare', 'level', 'level', 10, false),
+  ('Veteran', 'Level 15.', '🌟', 'rare', 'level', 'level', 15, false),
+  ('Champion', 'Level 25.', '🏅', 'epic', 'level', 'level', 25, false),
+  ('Master', 'Level 30.', '💫', 'epic', 'level', 'level', 30, false),
+  ('Grandmaster', 'Level 50. The highest order.', '♔', 'legendary', 'level', 'level', 50, false),
+  ('Rising Star', '500 XP.', '⭐', 'common', 'xp', 'xp', 500, false),
+  ('First 1K', '1,000 XP.', '🎯', 'common', 'xp', 'xp', 1000, false),
+  ('XP Collector', '2,000 XP.', '💰', 'rare', 'xp', 'xp', 2000, false),
+  ('XP Machine', '5,000 XP.', '🔥', 'rare', 'xp', 'xp', 5000, false),
+  ('10K Club', '10,000 XP.', '🏅', 'rare', 'xp', 'xp', 10000, false),
+  ('XP Overlord', '25,000 XP.', '🔮', 'epic', 'xp', 'xp', 25000, false),
+  ('XP Immortal', '50,000 XP.', '💀', 'epic', 'xp', 'xp', 50000, false),
+  ('100K Legend', '100,000 XP. Around a thousand full days.', '👑', 'legendary', 'xp', 'xp', 100000, false),
+  ('First Sweat', 'Your first workout logged.', '💦', 'common', 'sport', 'workouts', 1, false),
+  ('Gym Regular', 'Twenty workouts.', '🏋️', 'common', 'sport', 'workouts', 20, false),
+  ('Gym Rat', 'Fifty workouts.', '🏋️', 'rare', 'sport', 'workouts', 50, false),
+  ('Beast Mode', 'A hundred workouts.', '🐺', 'rare', 'sport', 'workouts', 100, false),
+  ('Titan of Iron', 'Two hundred and fifty workouts.', '🗡️', 'epic', 'sport', 'workouts', 250, false),
+  ('Forged', 'Five hundred workouts.', '🔨', 'epic', 'sport', 'workouts', 500, false),
+  ('Iron Immortal', 'A thousand workouts.', '⚙️', 'legendary', 'sport', 'workouts', 1000, false),
+  ('Double Down', 'Two workouts in one day.', '💪', 'common', 'sport', 'double_workout', 1, false),
+  ('Double Trouble', 'Five double days.', '⚡', 'epic', 'sport', 'double_workout', 5, false),
+  ('Overachiever', 'Twenty double days.', '🎯', 'epic', 'sport', 'double_workout', 20, false),
+  ('Twice a Day', 'Fifty days with two workouts.', '⏫', 'legendary', 'sport', 'double_workout', 50, false),
+  ('Ice Breaker', 'Your first cold shower logged.', '❄️', 'common', 'discipline', 'cold_shower', 1, false),
+  ('First Chill', 'Five cold showers.', '🥶', 'common', 'discipline', 'cold_shower', 5, false),
+  ('Cold Warrior', 'Ten cold showers.', '🧊', 'rare', 'discipline', 'cold_shower', 10, false),
+  ('Polar Bear', 'Thirty cold showers.', '🐻‍❄️', 'rare', 'discipline', 'cold_shower', 30, false),
+  ('Arctic Soul', 'Fifty cold showers.', '❄️', 'rare', 'discipline', 'cold_shower', 50, false),
+  ('Frost King', 'A hundred cold showers.', '🧊', 'epic', 'discipline', 'cold_shower', 100, false),
+  ('Absolute Zero', 'Two hundred cold showers.', '🧊', 'epic', 'discipline', 'cold_shower', 200, false),
+  ('Permafrost', 'Five hundred cold showers.', '🌨️', 'legendary', 'discipline', 'cold_shower', 500, false),
+  ('First Chapter', 'Your first reading session.', '📖', 'common', 'discipline', 'reading', 1, false),
+  ('Bookworm', 'Ten reading sessions.', '📚', 'common', 'discipline', 'reading', 10, false),
+  ('Knowledge Seeker', 'Thirty reading sessions.', '🔍', 'rare', 'discipline', 'reading', 30, false),
+  ('Scholar', 'Seventy-five reading sessions.', '🎓', 'epic', 'discipline', 'reading', 75, false),
+  ('Library Legend', 'A hundred and fifty reading sessions.', '🏛️', 'epic', 'discipline', 'reading', 150, false),
+  ('Lifelong', 'Three hundred and sixty-five reading sessions.', '📜', 'legendary', 'discipline', 'reading', 365, false),
+  ('First Clean Meal', 'Your first clean day logged.', '🥦', 'common', 'discipline', 'healthy_food', 1, false),
+  ('Clean Eater', 'Thirty clean days.', '🥗', 'common', 'discipline', 'healthy_food', 30, false),
+  ('Nutrition Nerd', 'Fifty clean days.', '🧬', 'epic', 'discipline', 'healthy_food', 50, false),
+  ('Diet King', 'A hundred clean days.', '👑', 'epic', 'discipline', 'healthy_food', 100, false),
+  ('Clean Year', 'Three hundred and sixty-five clean days.', '🥬', 'legendary', 'discipline', 'healthy_food', 365, false),
+  ('Protein Beast', 'Protein target hit twenty days.', '🥩', 'common', 'discipline', 'protein', 20, false),
+  ('Protein Machine', 'Fifty days on target.', '🥩', 'epic', 'discipline', 'protein', 50, false),
+  ('Protein Titan', 'A hundred days on target.', '🏆', 'epic', 'discipline', 'protein', 100, false),
+  ('Protein Year', 'Three hundred and sixty-five days on target.', '🍗', 'legendary', 'discipline', 'protein', 365, false),
+  ('Hydration King', 'Three litres or more, thirty days.', '💧', 'common', 'discipline', 'hydration', 30, false),
+  ('Ocean Inside', 'Sixty days at three litres.', '🌊', 'epic', 'discipline', 'hydration', 60, false),
+  ('Water God', 'A hundred days at three litres.', '💎', 'epic', 'discipline', 'hydration', 100, false),
+  ('The Tide', 'Three hundred and sixty-five days at three litres.', '🌊', 'legendary', 'discipline', 'hydration', 365, false),
+  ('Early Riser', 'Ten mornings without the phone.', '🌅', 'common', 'discipline', 'no_phone_morning', 10, false),
+  ('Morning Monk', 'Thirty phone-free mornings.', '🌄', 'epic', 'discipline', 'no_phone_morning', 30, false),
+  ('Digital Ascetic', 'Sixty phone-free mornings.', '📵', 'epic', 'discipline', 'no_phone_morning', 60, false),
+  ('Quiet Mornings', 'A hundred and eighty phone-free mornings.', '🌤️', 'legendary', 'discipline', 'no_phone_morning', 180, false),
+  ('Night Owl', 'Ten nights without the phone before sleep.', '🌙', 'common', 'discipline', 'no_phone_evening', 10, false),
+  ('Night Guardian', 'Thirty phone-free evenings.', '🌙', 'epic', 'discipline', 'no_phone_evening', 30, false),
+  ('Sunset Sage', 'Sixty phone-free evenings.', '🌅', 'epic', 'discipline', 'no_phone_evening', 60, false),
+  ('Quiet Nights', 'A hundred and eighty phone-free evenings.', '🌌', 'legendary', 'discipline', 'no_phone_evening', 180, false),
+  ('Show Don''t Tell', 'Five proof photos.', '📸', 'common', 'checkin', 'proofs', 5, false),
+  ('Receipts Only', 'Twenty-five proof photos.', '🧾', 'epic', 'checkin', 'proofs', 25, false),
+  ('Proof Machine', 'Fifty proof photos.', '📹', 'epic', 'checkin', 'proofs', 50, false),
+  ('On Record', 'A hundred proof photos.', '🗂️', 'legendary', 'checkin', 'proofs', 100, false),
+  ('Flawless', 'Every line of the day landed.', '💎', 'common', 'checkin', 'perfect_day', 1, false),
+  ('Perfect Week', 'Seven perfect days.', '🌟', 'common', 'checkin', 'perfect_day', 7, false),
+  ('Perfectionist', 'Thirty perfect days.', '👑', 'epic', 'checkin', 'perfect_day', 30, false),
+  ('Immaculate', 'A hundred perfect days.', '💠', 'epic', 'checkin', 'perfect_day', 100, false),
+  ('Flawless Year', 'Three hundred and sixty-five perfect days.', '🏵️', 'legendary', 'checkin', 'perfect_day', 365, false),
+  ('Witnessed', 'Apple Health scored a day of yours.', '🔏', 'common', 'checkin', 'verified_days', 1, false),
+  ('Signal', 'Ten days scored by Apple Health.', '📡', 'common', 'checkin', 'verified_days', 10, false),
+  ('Steady Signal', 'Thirty verified days.', '🛰️', 'epic', 'checkin', 'verified_days', 30, false),
+  ('Proven', 'A hundred verified days.', '📈', 'epic', 'checkin', 'verified_days', 100, false),
+  ('Verified Year', 'Three hundred and sixty-five verified days.', '🧿', 'legendary', 'checkin', 'verified_days', 365, false),
+  ('Full Day', 'A day that scored a hundred or more.', '🟡', 'common', 'checkin', 'full_days', 1, false),
+  ('Ten Full', 'Ten full days.', '🔆', 'common', 'checkin', 'full_days', 10, false),
+  ('Full Month', 'Thirty full days.', '🌕', 'epic', 'checkin', 'full_days', 30, false),
+  ('Hundred Full', 'A hundred full days.', '☀️', 'epic', 'checkin', 'full_days', 100, false),
+  ('Full Year', 'Three hundred and sixty-five full days.', '🌞', 'legendary', 'checkin', 'full_days', 365, false),
+  ('All Out', 'A training line at 50 of 50.', '🫀', 'common', 'sport', 'max_effort_days', 1, false),
+  ('Ten All Out', 'Ten max-effort days.', '💥', 'common', 'sport', 'max_effort_days', 10, false),
+  ('Fifty All Out', 'Fifty max-effort days.', '🔥', 'epic', 'sport', 'max_effort_days', 50, false),
+  ('Engine', 'A hundred max-effort days.', '🏎️', 'epic', 'sport', 'max_effort_days', 100, false),
+  ('Relentless', 'Two hundred and fifty max-effort days.', '⚡', 'legendary', 'sport', 'max_effort_days', 250, false),
+  ('Ten Nights', 'Ten nights of seven to nine hours on the record.', '😴', 'common', 'discipline', 'full_sleep_nights', 10, false),
+  ('Well Slept', 'Thirty full nights.', '🛌', 'epic', 'discipline', 'full_sleep_nights', 30, false),
+  ('Hundred Nights', 'A hundred full nights.', '🌙', 'epic', 'discipline', 'full_sleep_nights', 100, false),
+  ('Year of Nights', 'Three hundred and sixty-five full nights.', '🌠', 'legendary', 'discipline', 'full_sleep_nights', 365, false),
+  ('Ten Thousand, Ten Times', 'Ten days over ten thousand steps.', '👟', 'common', 'sport', 'step_days', 10, false),
+  ('Walker', 'Thirty days over ten thousand steps.', '🚶', 'epic', 'sport', 'step_days', 30, false),
+  ('Long Walker', 'A hundred days over ten thousand steps.', '🥾', 'epic', 'sport', 'step_days', 100, false),
+  ('A Year on Foot', 'Three hundred and sixty-five days over ten thousand steps.', '🗺️', 'legendary', 'sport', 'step_days', 365, false),
+  ('Integrator', 'Ran a full Vault loop: idea, reflection, practice, integration.', '🪞', 'common', 'vault', 'vault_practices', 1, false),
+  ('Wayfinder', 'Ten Vault practices run and integrated.', '🧭', 'common', 'vault', 'vault_practices', 10, false),
+  ('Mastery Builder', 'Twenty-five Vault practices run. The library is a workshop now.', '🗝️', 'epic', 'vault', 'vault_practices', 25, false),
+  ('Deep Shelf', 'Fifty Vault practices.', '📚', 'epic', 'vault', 'vault_practices', 50, false),
+  ('Whole Vault', 'Every piece in the Vault, practised.', '🔐', 'legendary', 'vault', 'vault_practices', 87, false),
+  ('First Blood', 'Your first battle won.', '⚔️', 'common', 'battles', 'battles_won', 1, false),
+  ('Battle Hardened', 'Three battles won.', '🛡️', 'common', 'battles', 'battles_won', 3, false),
+  ('Gladiator', 'Five battles won.', '🏟️', 'rare', 'battles', 'battles_won', 5, false),
+  ('Undefeated', 'Ten battles won.', '👑', 'rare', 'battles', 'battles_won', 10, false),
+  ('Champion Fighter', 'Fifteen battles won.', '🥊', 'epic', 'battles', 'battles_won', 15, false),
+  ('Warlord', 'Twenty-five battles won.', '🔱', 'epic', 'battles', 'battles_won', 25, false),
+  ('Battle God', 'Fifty battles won.', '⚡', 'legendary', 'battles', 'battles_won', 50, false),
+  ('First Tribe Blood', 'Your tribe''s first battle won.', '⚔️', 'common', 'tribe', 'tribe_battles_won', 1, false),
+  ('War Chief', 'Five tribe battles won.', '🛡️', 'common', 'tribe', 'tribe_battles_won', 5, false),
+  ('Tribe Conqueror', 'Fifteen tribe battles won.', '🏆', 'rare', 'tribe', 'tribe_battles_won', 15, false),
+  ('Spark Brother', 'Your whole tribe kept the fire seven days straight.', '🔥', 'common', 'tribe', 'tribe_collective_streak', 7, false),
+  ('Tribe Ember', 'The whole tribe, thirty days without a gap.', '🪵', 'epic', 'tribe', 'tribe_collective_streak', 30, false),
+  ('Tribe Inferno', 'The whole tribe, ninety days.', '🌋', 'epic', 'tribe', 'tribe_collective_streak', 90, false),
+  ('Eternal Pyre', 'The whole tribe, a hundred and eighty days.', '☄️', 'legendary', 'tribe', 'tribe_collective_streak', 180, false),
+  ('First Recruit', 'A friend you invited went paid.', '🎯', 'common', 'social', 'paid_referrals', 1, false),
+  ('Brand Ambassador', 'Five paying friends.', '🌟', 'common', 'social', 'paid_referrals', 5, false),
+  ('Inner Circle Founder', 'Ten paying friends.', '👑', 'epic', 'social', 'paid_referrals', 10, false),
+  ('Kingmaker', 'Twenty-five paying friends.', '🏆', 'epic', 'social', 'paid_referrals', 25, false),
+  ('Founders Circle', 'Fifty paying friends.', '🔱', 'legendary', 'social', 'paid_referrals', 50, false),
+  ('Recruiter', 'A friend joined with your code.', '📣', 'common', 'social', 'referrals', 1, false),
+  ('Squad Leader', 'Five friends joined with your code.', '🫂', 'common', 'social', 'referrals', 5, false),
+  ('Army Builder', 'Fifteen friends joined with your code.', '🪖', 'rare', 'social', 'referrals', 15, false),
+  ('Top 10%', 'The top ten percent by rating.', '📊', 'rare', 'leaderboard', 'leaderboard_percentile', 10, false),
+  ('Top 5%', 'The top five percent by rating.', '🏅', 'epic', 'leaderboard', 'leaderboard_percentile', 5, false),
+  ('Top 1%', 'The top one percent by rating.', '💎', 'legendary', 'leaderboard', 'leaderboard_percentile', 1, false),
+  ('Season Champion', 'Finished first in a season.', '🏆', 'legendary', 'leaderboard', 'season_champion', 1, false),
+  ('Viral', 'Twenty likes on one post.', '🔥', 'epic', 'social', 'single_post_likes', 20, false),
+  ('Commentator', 'Fifty comments written.', '💬', 'rare', 'social', 'total_comments', 50, false),
+  ('Kudos Master', 'Ten kudos received for proof worth studying.', '🏆', 'legendary', 'social', 'total_kudos', 10, false),
+  ('Influencer', 'Fifty likes across your posts.', '👑', 'epic', 'social', 'total_likes', 50, false),
+  ('One of the Winners', 'Premium member. You went all in.', '🏆', 'epic', 'status', 'elite_member', 1, false),
+  ('Founding Apex', 'Joined Apex on day one, paid.', '✨', 'legendary', 'tier', 'apex_founding', 1, false),
+  ('Apex Stronghold', 'Held Apex for fourteen days.', '🏔️', 'epic', 'tier', 'apex_held_days', 14, false),
+  ('Apex Reached', 'Reached the Apex tier.', '💎', 'epic', 'tier', 'apex_reached', 1, false),
+  ('Eternal Legend', 'Held Legend for thirty days.', '👁️', 'legendary', 'tier', 'legend_held_days', 30, false),
+  ('Legend Ascendant', 'Reached the Legend tier.', '🌟', 'legendary', 'tier', 'legend_reached', 1, false),
+  ('Tribe Founder', 'A tribe you founded kept the fire thirty days.', '👑', 'epic', 'tribe', 'tribe_founder_streak', 30, false),
+  ('Discipline Builder', 'Practised Clear, Aristotle and Goggins: systems, habituation, discomfort.', '⚒️', 'rare', 'vault', 'vault_master:clear,aristotle,goggins', 3, false),
+  ('Stoic Path', 'Three Stoic practices run: Epictetus, Marcus Aurelius and Seneca.', '🏛️', 'rare', 'vault', 'vault_master:epictetus,marcus-aurelius,seneca', 3, false),
+  ('Meaning Seeker', 'Practised Frankl and Campbell: meaning, and the call to change.', '🔦', 'rare', 'vault', 'vault_master:frankl,campbell', 2, false),
+  ('Shadow Explorer', 'Worked Jung''s lens twice: the shadow and what it projects.', '🌑', 'rare', 'vault', 'vault_master:jung', 2, false),
+  ('Phoenix', 'Lost a thirty-day streak and built another.', '🦅', 'rare', 'streak', 'phoenix_recovery', 1, true),
+  ('Comeback', 'Back after thirty days away. The door was open.', '🚪', 'rare', 'streak', 'comeback', 1, true),
+  ('Both Ends', 'Morning and evening meditation on the same day, thirty times.', '🌗', 'epic', 'discipline', 'both_ends_days', 30, true),
+  ('Long Haul', 'A recorded workout of two hours or more.', '🛤️', 'epic', 'sport', 'long_haul', 1, true),
+  ('Founder', 'Early adopter of Whealth Factory.', '⭐', 'legendary', 'special', NULL, NULL, false),
+  ('Spring 26', 'Active during spring 2026.', '🌸', 'rare', 'seasonal', NULL, NULL, false)
+ON CONFLICT (name) DO UPDATE SET
+  description = EXCLUDED.description, icon = EXCLUDED.icon, rarity = EXCLUDED.rarity,
+  category = EXCLUDED.category, requirement_type = EXCLUDED.requirement_type,
+  requirement_value = EXCLUDED.requirement_value, hidden = EXCLUDED.hidden;
+
+-- ── Backfill the new rungs quietly ─────────────────────────────────────────
+-- Members who already stand past a new rung get it now, without a bell row
+-- for each: the vault shows them earned; the next real unlock rings.
+ALTER TABLE public.user_badges DISABLE TRIGGER user_badges_notify;
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN SELECT user_id FROM public.profiles LOOP
+    PERFORM * FROM public.award_earned_badges_for(r.user_id);
+  END LOOP;
+END $$;
+ALTER TABLE public.user_badges ENABLE TRIGGER user_badges_notify;
+
+NOTIFY pgrst, 'reload schema';

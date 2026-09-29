@@ -64,6 +64,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          hidden: boolean
           icon: string
           id: string
           name: string
@@ -75,6 +76,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          hidden?: boolean
           icon: string
           id?: string
           name: string
@@ -86,6 +88,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          hidden?: boolean
           icon?: string
           id?: string
           name?: string
@@ -3700,6 +3703,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          hidden: boolean
           icon: string
           id: string
           name: string
@@ -3720,6 +3724,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          hidden: boolean
           icon: string
           id: string
           name: string
@@ -3740,6 +3745,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          hidden: boolean
           icon: string
           id: string
           name: string

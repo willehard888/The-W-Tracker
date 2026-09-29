@@ -11,6 +11,7 @@ interface BadgeData {
   rarity: BadgeRarity;
   category: string;
   description?: string | null;
+  requirement_type?: string | null;
 }
 
 interface BadgeVaultProps {
@@ -44,6 +45,10 @@ const CATEGORY_LABEL: Record<string, string> = {
   seasonal: "Seasonal",
 };
 const CATEGORY_ORDER = Object.keys(CATEGORY_LABEL);
+
+/** "7/10" for a count; the rank percentile reads the other way round, so it says where you stand. */
+const progressLabel = (type: string | null | undefined, p: { current: number; target: number }) =>
+  type === "leaderboard_percentile" ? `top ${p.current}% → ${p.target}%` : `${p.current}/${p.target}`;
 
 const RARITY_ORDER: Record<string, number> = {
   legendary: 0,
@@ -268,7 +273,7 @@ const BadgeVault = ({
                   />
                 </div>
                 <span className="text-label font-bold text-foreground tabular-nums shrink-0">
-                  {nextDrop.p?.current}/{nextDrop.p?.target}
+                  {nextDrop.p && progressLabel(nextDrop.badge.requirement_type, nextDrop.p)}
                 </span>
               </div>
             </div>
@@ -339,7 +344,7 @@ const BadgeVault = ({
                       />
                     </div>
                     <p className="text-label text-muted-foreground text-center mt-0.5 tabular-nums">
-                      {badgeProgress.current}/{badgeProgress.target}
+                      {progressLabel(badge.requirement_type, badgeProgress)}
                     </p>
                   </div>
                 )}

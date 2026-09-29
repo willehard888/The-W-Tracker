@@ -3690,13 +3690,32 @@ export type Database = {
       }
       are_friends: { Args: { a: string; b: string }; Returns: boolean }
       auto_resolve_expired_tribe_battles: { Args: never; Returns: undefined }
-      badge_stats: { Args: { p_user?: string }; Returns: Json }
       award_badge_if_earned: {
         Args: { p_badge_id: string; p_user_id: string }
         Returns: boolean
       }
       award_earned_badges: {
         Args: never
+        Returns: {
+          category: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          rarity: Database["public"]["Enums"]["badge_rarity"]
+          requirement_type: string | null
+          requirement_value: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "badges"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      award_earned_badges_for: {
+        Args: { p_user: string }
         Returns: {
           category: string
           created_at: string
@@ -3735,6 +3754,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      badge_stats: { Args: { p_user?: string }; Returns: Json }
       battle_day_scores: {
         Args: { p_from: string; p_to: string; p_type: string; p_user: string }
         Returns: {

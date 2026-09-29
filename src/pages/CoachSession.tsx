@@ -60,6 +60,7 @@ import {
   decimalInput,
   extendRestState,
   resolveCursor,
+  nextSetFor,
   setRowSeed,
   type SetSeed,
 } from "@/lib/training/runner";
@@ -327,7 +328,11 @@ const CoachSession = () => {
     void track(FUNNEL.restExtended, { overdue: !!rest && rest.endsAt <= Date.now() });
     setRest((r) => {
       if (!r) return r;
-      const next = extendRestState(r, ms, Date.now());
+      // Spread first: extendRestState answers about the clock and says
+      // nothing about which set it belongs to, and replacing the record
+      // wholesale dropped the binding — so one tap of +30s turned
+      // “Resting · after Bench Press” back into a bare “Resting”.
+      const next = { ...r, ...extendRestState(r, ms, Date.now()) };
       if (restKey) writeLocal(restKey, JSON.stringify(next));
       return next;
     });
@@ -696,7 +701,14 @@ const CoachSession = () => {
   }
 
   // ── Active session ────────────────────────────────────────────────────────
-  const nextSet = progress.currentSetIndex;
+  // The next open set OF THE MOVEMENT ON STAGE.
+  //
+  // progress.currentSetIndex answers for the DERIVED exercise, which is the
+  // same thing only while nobody has chosen otherwise. Tapping into a
+  // movement with nothing logged while the derived one was on set 2 opened
+  // set 2 there too — so the runner offered to log set 2 of a movement whose
+  // set 1 did not exist, and would have written exactly that.
+  const nextSet = current ? nextSetFor(current, logged[current.slug]) : progress.currentSetIndex;
   const suggestion = suggestedLoad(history, nextSet, logged[current!.slug], current!.reps);
 
   const logCurrent = async (setIndex: number, weightStr: string, repsStr: string) => {

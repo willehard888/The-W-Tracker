@@ -39,9 +39,19 @@ export const EQUIPMENT_LABEL: Record<EquipmentValue, string> = {
   bodyweight: "Bodyweight",
 };
 
+/**
+ * What a commercial gym has.
+ *
+ * Mirrors EQUIP_ALIAS.full_gym in exercise-catalog rather than "everything":
+ * bands are not standard gym kit there, and two different definitions of a
+ * full gym is how the label ended up reading "Barbell + Dumbbells + Cable +
+ * Machines + Kettlebells + Bodyweight" on the founder's own card.
+ */
+const FULL_GYM: EquipmentValue[] = ["barbell", "dumbbell", "machine", "cable", "kettlebells", "bodyweight"];
+
 /** One tap for the rooms people actually stand in. */
 export const EQUIPMENT_PRESETS: { id: string; label: string; values: EquipmentValue[] }[] = [
-  { id: "full_gym", label: "Full gym", values: [...EQUIPMENT_VALUES] },
+  { id: "full_gym", label: "Full gym", values: FULL_GYM },
   { id: "dumbbells", label: "Dumbbells only", values: ["dumbbell", "bodyweight"] },
   { id: "home", label: "Home", values: ["dumbbell", "bands", "bodyweight"] },
   { id: "bodyweight", label: "Bodyweight", values: ["bodyweight"] },
@@ -68,7 +78,7 @@ export const defaultContext = (profileEquipment: string[] | null | undefined): E
 
 /** The four onboarding presets, in catalog terms. Mirrors EQUIP_ALIAS. */
 const PROFILE_PRESETS: Record<string, EquipmentValue[]> = {
-  full_gym: ["barbell", "dumbbell", "machine", "cable", "kettlebells", "bodyweight"],
+  full_gym: FULL_GYM,
   home_minimal: ["dumbbell", "bands", "bodyweight"],
   outdoor: ["bodyweight"],
   combat_sport: ["bodyweight"],
@@ -171,9 +181,20 @@ export const substituteForEquipment = (
 
   for (const block of blocks) {
     const slug = block.slug;
-    // No slug means nothing can be looked up, so nothing can be judged
-    // unreachable either — a hand-written movement stays as written.
-    if (!slug || reachable.has(slug) || locked.has(slug)) {
+    // Three ways a movement is left exactly as it is.
+    //
+    // No slug: nothing to look up, so nothing to judge — a hand-written
+    // movement stays as written.
+    //
+    // A slug the pool has never heard of: also nothing to judge, and this one
+    // matters. Programs built before the current pool existed carry invented
+    // names ("Barbell Overhead Press" was never a catalog slug), and treating
+    // "I don't know this movement" as "this room cannot do it" reported every
+    // movement in such a day as having no equivalent — in a full gym. Picking
+    // any equipment at all would have emptied the day.
+    //
+    // Logged: trading it would orphan real sets against a slug no longer here.
+    if (!slug || !engine.pool[slug] || reachable.has(slug) || locked.has(slug)) {
       out.push(block);
       continue;
     }

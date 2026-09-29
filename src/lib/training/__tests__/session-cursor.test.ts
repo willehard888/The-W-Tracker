@@ -4,6 +4,8 @@ import {
   resolveCursor,
   cursorReleases,
   setRowSeed,
+  extendRestState,
+  nextSetFor,
   type SessionExercise,
   type LoggedSet,
 } from "../runner";
@@ -116,5 +118,53 @@ describe("what a set row shows", () => {
   it("shows an empty field rather than the word null", () => {
     const seed = setRowSeed(undefined, { set_index: 1, weight: null, reps: null }, suggestion, false);
     expect(seed).toEqual({ weight: "", reps: "" });
+  });
+});
+
+/**
+ * Extending the clock must not forget whose clock it is.
+ *
+ * Caught in a real session, not by a test: extendRestState answers about the
+ * deadline and says nothing about which set started it, so replacing the
+ * record with its return value dropped the binding — and one tap of "+30 s"
+ * turned "Resting · after Bench Press" back into a bare "Resting".
+ */
+describe("the rest record through an extension", () => {
+  it("keeps the set it belongs to", () => {
+    const rest = { endsAt: 1_000, seconds: 120, slug: "bench", setIndex: 2 };
+    const next = { ...rest, ...extendRestState(rest, 30_000, 2_000) };
+    expect(next.slug, "which movement the clock is for").toBe("bench");
+    expect(next.setIndex).toBe(2);
+    expect(next.endsAt, "and still extends from now when overdue").toBe(32_000);
+  });
+});
+
+/**
+ * Which set is next, once the athlete chooses what is on stage.
+ *
+ * Caught in a real session: sessionProgress answers for the DERIVED exercise,
+ * so tapping into a movement with nothing logged while the derived one was on
+ * set 2 opened set 2 there too. The runner offered to log set 2 of a movement
+ * whose set 1 did not exist, and the upsert would have written exactly that.
+ */
+describe("the next set of the movement on stage", () => {
+  it("is set one when nothing has been logged for it", () => {
+    expect(nextSetFor(plan[1], undefined), "an untouched movement starts at one").toBe(1);
+    expect(nextSetFor(plan[1], [])).toBe(1);
+  });
+
+  it("does not inherit the position of whatever else was open", () => {
+    const logged: Record<string, LoggedSet[]> = { bench: sets(1) };
+    const p = sessionProgress(plan, logged);
+    expect(p.currentSetIndex, "the derived exercise is on its second set").toBe(2);
+    expect(nextSetFor(plan[2], logged["curl"]), "the chosen one is still on its first").toBe(1);
+  });
+
+  it("fills a gap left by an interrupted session rather than skipping it", () => {
+    expect(nextSetFor(plan[0], sets(1, 3)), "set 2 is missing").toBe(2);
+  });
+
+  it("stops one past the last set when the movement is finished", () => {
+    expect(nextSetFor(plan[0], sets(1, 2, 3))).toBe(4);
   });
 });

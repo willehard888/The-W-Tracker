@@ -187,6 +187,21 @@ export const resolveCursor = (
 };
 
 /**
+ * The lowest prescribed set of this movement that has not been logged.
+ *
+ * The same rule sessionProgress uses for the derived exercise, pulled out
+ * so it can be asked about any movement: once the athlete can choose what is
+ * on stage, “which set is next” has to be asked of THAT one. A gap left by an
+ * interrupted session gets filled rather than skipped.
+ */
+export const nextSetFor = (ex: SessionExercise, loggedForEx: LoggedSet[] | undefined): number => {
+  const seen = new Set((loggedForEx ?? []).map((l) => l.set_index));
+  let next = 1;
+  while (next <= ex.sets && seen.has(next)) next += 1;
+  return next;
+};
+
+/**
  * Should the cursor let go after this set?
  *
  * Tapping into a movement and finishing it should hand the athlete back to

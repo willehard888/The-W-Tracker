@@ -69,7 +69,10 @@ describe("today's equipment", () => {
 
   it("names a chosen room, and falls back to listing it", () => {
     expect(contextLabel(["dumbbell", "bodyweight"])).toBe("Dumbbells only");
-    expect(contextLabel([...EQUIPMENT_VALUES])).toBe("Full gym");
+    // A full gym is what EQUIP_ALIAS says it is, not "every value" — the two
+    // disagreed and the founder’s own card read the list instead of the name.
+    expect(contextLabel(EQUIPMENT_PRESETS[0].values)).toBe("Full gym");
+    expect(contextLabel(defaultContext(["full_gym"])), "the profile preset agrees").toBe("Full gym");
     expect(contextLabel(["barbell", "cable"])).toBe("Barbell + Cable");
   });
 
@@ -152,5 +155,34 @@ describe("substituting a day for the room it will be done in", () => {
     const hand: ProgramBlock = { slug: null, name: "Coach's own thing", sets: 3, reps: "10" };
     const r = substituteForEquipment([hand], ["bodyweight"], engine, input, new Set());
     expect(r.blocks, "nothing to look up means nothing to judge").toEqual([hand]);
+  });
+});
+
+/**
+ * Programs built before the current pool existed carry movement names that
+ * were never catalog slugs. Caught on the founder's own card: opening the
+ * sheet in a fully-equipped gym offered to change all five movements,
+ * because "the pool has never heard of this" was being read as "this room
+ * cannot do this". Picking any equipment would have emptied the day.
+ */
+describe("a movement the pool has never heard of", () => {
+  const legacy: ProgramBlock[] = [
+    { slug: "Barbell_Overhead_Press", name: "Barbell Overhead Press", sets: 4, reps: "5-8", rpe: 8 },
+    { slug: "Seated_Cable_Row_Invented", name: "Seated Cable Row", sets: 3, reps: "8", rpe: 7.5 },
+  ];
+
+  it("is left alone rather than reported as unreachable", () => {
+    for (const b of legacy) {
+      expect(SESSION_POOL[b.slug!], `${b.slug} must be absent for this test to mean anything`).toBeUndefined();
+    }
+    const r = substituteForEquipment(legacy, [...EQUIPMENT_VALUES], engine, input, new Set());
+    expect(r.dropped, "nothing is dropped in a full gym").toEqual([]);
+    expect(r.replaced).toEqual([]);
+    expect(r.blocks).toEqual(legacy);
+  });
+
+  it("is still left alone in the narrowest possible room", () => {
+    const r = substituteForEquipment(legacy, ["bodyweight"], engine, input, new Set());
+    expect(r.blocks, "unknown is not the same as impossible").toEqual(legacy);
   });
 });

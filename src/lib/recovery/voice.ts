@@ -8,7 +8,7 @@
 //
 // WHY THE AUDIO IS IN THE APP AND NOT ON A SERVER
 //
-// 94 minutes at 32 kbps is 22 MB, which is more than the drawings but less than
+// 94 minutes of AAC at 32 kbps is 22 MB, which is more than the drawings but less than
 // the sourcemaps that already ship. In exchange a session starts instantly, runs
 // on a plane and in a basement gym, and there is no cache, no signed URL and no
 // half-downloaded file to get wrong. If the library grows past a handful of
@@ -17,7 +17,7 @@
 import { readLocal, writeLocal } from "@/lib/storage";
 
 /** Routines with a recorded voice, by routine id. */
-const VOICED = new Set([
+export const VOICED_ROUTINES: ReadonlySet<string> = new Set([
   "stress-reset",
   "box-five",
   "even-breathing",
@@ -44,10 +44,14 @@ const FILE: Record<string, string> = {
   "open-awareness-10": "open-awareness",
 };
 
-export const hasVoice = (routineId?: string | null): boolean => !!routineId && VOICED.has(routineId);
+export const hasVoice = (routineId?: string | null): boolean => !!routineId && VOICED_ROUTINES.has(routineId);
 
-export const voiceSrc = (routineId: string): string =>
-  `/audio/recovery/${FILE[routineId] ?? routineId}.mp3`;
+/** The file's base name — scripts/recovery-voice.ts writes to the same name. */
+export const voiceFile = (routineId: string): string => FILE[routineId] ?? routineId;
+
+// AAC in an .m4a: native to WKWebView and Safari, and the one encoder every
+// Mac has (afconvert) writes it. The 2026-09-20 .mp3 files were silence.
+export const voiceSrc = (routineId: string): string => `/audio/recovery/${voiceFile(routineId)}.m4a`;
 
 const KEY = "recovery-voice-off";
 

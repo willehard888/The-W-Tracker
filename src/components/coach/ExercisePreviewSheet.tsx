@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
@@ -9,6 +9,10 @@ import { resolveIllustration } from "@/lib/exercise-match";
 import { resolveGroup } from "@/lib/exercise-group";
 import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
 import { ExerciseLogForm } from "@/components/coach/ExerciseLogForm";
+import { Stepper } from "@/components/coach/session/SetRow";
+import { prescriptionLabel } from "@/lib/training/prescription";
+import { clampDose, type DosePatch } from "@/lib/training/plan-edit";
+import { formatRest } from "@/lib/training/runner";
 import { track, FUNNEL } from "@/lib/analytics";
 import type { ProgramBlock } from "@/hooks/use-coach-program";
 
@@ -40,6 +44,8 @@ export const ExercisePreviewSheet = ({
   logging,
   onSwap,
   onRemove,
+  onEditDose,
+  editReach,
 }: {
   open: boolean;
   onClose: () => void;
@@ -52,7 +58,29 @@ export const ExercisePreviewSheet = ({
   /** Hand edits, offered only while nothing is logged for this movement. */
   onSwap?: () => void;
   onRemove?: () => void;
+  /** The dose by hand — sets, reps, RPE, rest. Same gate as swap. */
+  onEditDose?: (patch: DosePatch) => void;
+  /** What the page says an edit reaches ("Also changes the weeks after this one"). */
+  editReach?: string;
 }) => {
+  const [editing, setEditing] = useState(false);
+  const [dose, setDose] = useState<{ sets: string; reps: string; rpe: string; rest: string }>({ sets: "", reps: "", rpe: "", rest: "" });
+  const beginEdit = () => {
+    if (!block) return;
+    setDose({ sets: String(block.sets), reps: String(block.reps ?? ""), rpe: block.rpe != null ? String(block.rpe) : "", rest: block.rest_sec != null ? String(block.rest_sec) : "" });
+    setEditing(true);
+  };
+  const saveDose = () => {
+    const patch = clampDose({
+      sets: Number(dose.sets) || undefined,
+      reps: dose.reps,
+      rpe: dose.rpe.trim() === "" ? null : Number(dose.rpe),
+      rest_sec: dose.rest.trim() === "" ? null : Number(dose.rest),
+    });
+    onEditDose?.(patch);
+    setEditing(false);
+  };
+  useEffect(() => { if (!open) setEditing(false); }, [open]);
   const libReady = useExerciseLibrary();
   const ex = block && libReady ? resolveExercise(block.slug, block.name) : null;
   const illustrated = block
@@ -84,15 +112,79 @@ export const ExercisePreviewSheet = ({
       onClose={onClose}
       label={block?.name ?? "Exercise"}
       title={block?.name}
-      subtitle={
-        block
-          ? `${block.sets}×${block.reps}${block.rpe ? ` · RPE ${block.rpe}` : ""}`
-          : undefined
-      }
+      subtitle={block ? prescriptionLabel(block, { rest: true }) : undefined}
       height="tall"
     >
       {block && (
         <div className="space-y-5">
+          {/* The dose, and the hand on it. A self-built program used to carry
+              the engine's numbers with no way to change them. */}
+          {onEditDose && (
+            editing ? (
+              <div className="rounded-xl border border-gold/35 bg-gold/[0.05] p-2.5 space-y-2">
+                <p className="text-label font-bold text-muted-foreground">Your dose</p>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                  <Stepper value={dose.sets} unit="sets" inputMode="numeric" label="Sets" stepLabel="1 set"
+                    onChange={(v) => setDose((d) => ({ ...d, sets: v }))}
+                    onStep={(k) => setDose((d) => ({ ...d, sets: String(Math.min(20, Math.max(1, (Number(d.sets) || 1) + k))) }))} />
+                  <Stepper value={dose.rpe} unit="RPE" inputMode="decimal" label="RPE" stepLabel="0.5 RPE"
+                    onChange={(v) => setDose((d) => ({ ...d, rpe: v }))}
+                    onStep={(k) => setDose((d) => ({ ...d, rpe: String(Math.min(10, Math.max(5, (Number(d.rpe) || 8) + 0.5 * k))) }))} />
+                  <label className="flex items-center gap-2 text-label text-muted-foreground">
+                    <span className="w-9">Reps</span>
+                    <input type="text" inputMode="numeric" value={dose.reps} aria-label="Reps, a number or a range like 5-8" placeholder="5-8"
+                      onChange={(e) => setDose((d) => ({ ...d, reps: e.target.value.replace(/[^0-9-]/g, "") }))}
+                      className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-copy font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50" />
+                  </label>
+                  <Stepper value={dose.rest} unit="s" inputMode="numeric" label="Rest in seconds" stepLabel="15 seconds"
+                    onChange={(v) => setDose((d) => ({ ...d, rest: v }))}
+                    onStep={(k) => setDose((d) => ({ ...d, rest: String(Math.min(900, Math.max(0, (Number(d.rest) || 0) + 15 * k))) }))} />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-label text-muted-foreground/80">{editReach ?? "From this week on"}</p>
+                  <div className="flex gap-1.5">
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Button>
+                    <Button type="button" variant="ember" size="sm" onClick={saveDose}>Save dose</Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Button type="button" variant="outline" size="sm" onClick={beginEdit}>
+                Edit dose
+              </Button>
+            )
+          )}
+
+          {logging && (
+            <ExerciseLogForm
+              block={block}
+              programId={logging.programId}
+              week={logging.week}
+              dayIndex={logging.dayIndex}
+            />
+          )}
+
+          {(onSwap || onRemove) && (
+            <div className="flex gap-2">
+              {onSwap && (
+                <Button type="button" variant="outline" size="sm" onClick={() => { onSwap(); onClose(); }}>
+                  <ArrowLeftRight aria-hidden size={13} /> Swap
+                </Button>
+              )}
+              {onRemove && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => { onRemove(); onClose(); }}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+          )}
+
           {illustrated ? (
             <IllustrationPlayer ex={illustrated} />
           ) : (
@@ -119,7 +211,7 @@ export const ExercisePreviewSheet = ({
 
           {(block.rest_sec || block.tempo) && (
             <p className="text-meta text-muted-foreground/75">
-              {block.rest_sec ? `Rest ${block.rest_sec}s` : ""}
+              {block.rest_sec ? `Rest ${formatRest(block.rest_sec)}` : ""}
               {block.rest_sec && block.tempo ? " · " : ""}
               {block.tempo ? `Tempo ${block.tempo}` : ""}
             </p>
@@ -156,35 +248,6 @@ export const ExercisePreviewSheet = ({
             </p>
           )}
 
-          {(onSwap || onRemove) && (
-            <div className="flex gap-2">
-              {onSwap && (
-                <Button type="button" variant="outline" size="sm" onClick={() => { onSwap(); onClose(); }}>
-                  <ArrowLeftRight aria-hidden size={13} /> Swap
-                </Button>
-              )}
-              {onRemove && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground"
-                  onClick={() => { onRemove(); onClose(); }}
-                >
-                  Remove
-                </Button>
-              )}
-            </div>
-          )}
-
-          {logging && (
-            <ExerciseLogForm
-              block={block}
-              programId={logging.programId}
-              week={logging.week}
-              dayIndex={logging.dayIndex}
-            />
-          )}
         </div>
       )}
     </BottomSheet>

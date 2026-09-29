@@ -5,7 +5,9 @@ import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
 import { IllustrationThumb } from "@/components/coach/ExerciseIllustration";
 import { resolveIllustration } from "@/lib/exercise-match";
-import { useDayLogs } from "@/hooks/use-workout-log";
+import { useDaySets } from "@/hooks/use-workout-log";
+import { fmtKg } from "@/components/coach/session/SetRow";
+import { prescriptionLabel } from "@/lib/training/prescription";
 
 import type { ProgramBlock } from "@/hooks/use-coach-program";
 export type { ProgramBlock };
@@ -35,9 +37,13 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen
   const libReady = useExerciseLibrary();
   const ex = libReady ? resolveExercise(block.slug, block.name) : null;
 
-  const dayLogs = useDayLogs(loggable ? programId : undefined, week, dayIndex);
-  const existing = block.slug ? dayLogs.data?.[block.slug] : undefined;
-  const logged = !!existing && (existing.weight != null || existing.reps != null);
+  const daySets = useDaySets(loggable ? programId : undefined, week, dayIndex);
+  const rows = (block.slug ? daySets.data?.[block.slug] : undefined) ?? [];
+  const done = rows.filter((r) => r.weight != null || r.reps != null);
+  const sets = Math.max(1, block.sets || 1);
+  const lockedCount = new Set(done.map((r) => r.set_index)).size;
+  // The heaviest locked set is the one worth a glance on the row.
+  const top = [...done].sort((a, b) => (b.weight ?? -1) - (a.weight ?? -1) || (b.reps ?? 0) - (a.reps ?? 0))[0];
 
   // The drawing, or the muscle-group glyph. There is no third option any
   // more: the duotone photo that used to sit between them was the one thing
@@ -61,16 +67,17 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen
           {/* Two lines before an ellipsis: beside the prescription a long name
               lost the word that tells two lifts apart ("Reverse Grip Bent-Ov…"). */}
           <span className="font-bold text-sm leading-snug text-foreground line-clamp-2">{block.name}</span>
-          {logged && (
-            <span className="text-label font-bold text-xp-green inline-flex items-center gap-1">
-              <Check aria-hidden size={12} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}
-              {existing!.weight != null && existing!.reps != null ? " × " : ""}
-              {existing!.reps != null ? `${existing!.reps}` : ""} logged
+          {lockedCount > 0 && top && (
+            <span className="text-label font-bold text-xp-green inline-flex items-center gap-1 tabular-nums">
+              <Check aria-hidden size={12} /> {Math.min(lockedCount, sets)}/{sets} locked
+              {top.weight != null ? ` · ${fmtKg(Number(top.weight))}` : ""}
+              {top.weight != null && top.reps != null ? " × " : top.reps != null ? " · " : ""}
+              {top.reps != null ? `${top.reps}` : ""}
             </span>
           )}
         </div>
         <span className="text-meta font-bold text-foreground/85 tabular-nums whitespace-nowrap inline-flex items-center gap-1">
-          {block.sets}×{block.reps}{block.rpe ? ` · RPE ${block.rpe}` : ""}
+          {prescriptionLabel(block)}
           <ChevronRight aria-hidden size={11} className="text-muted-foreground/75" />
         </span>
       </button>

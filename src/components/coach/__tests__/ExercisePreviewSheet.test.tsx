@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { ExercisePreviewSheet } from "@/components/coach/ExercisePreviewSheet";
 import { ILLUSTRATED_EXERCISES } from "@/data/exercises-illustrated";
 import type { ProgramBlock } from "@/hooks/use-coach-program";
@@ -33,7 +33,7 @@ describe("the exercise preview sheet", () => {
   it("names the movement and its prescription in the header", () => {
     render(<ExercisePreviewSheet open onClose={() => {}} block={block()} source="program" />);
     expect(screen.getByText(drawn.title)).toBeInTheDocument();
-    expect(screen.getByText("4×8-12 · RPE 8"), "sets, reps and RPE").toBeInTheDocument();
+    expect(screen.getByText("4 × 8–12 · RPE 8"), "sets, reps and RPE, the one label").toBeInTheDocument();
   });
 
   it("never renders a photograph, drawn or not", () => {
@@ -87,7 +87,9 @@ describe("the exercise preview sheet", () => {
         source="program"
       />,
     );
-    expect(screen.getByText("Rest 90s · Tempo 3-1-1")).toBeInTheDocument();
+    expect(screen.getByText("Rest 1:30 · Tempo 3-1-1")).toBeInTheDocument();
+    // The header carries the rest too, as the runner shows it.
+    expect(screen.getByText("4 × 8–12 · RPE 8 · 1:30 rest")).toBeInTheDocument();
   });
 
   it("renders nothing at all when closed", () => {
@@ -102,5 +104,20 @@ describe("the exercise preview sheet", () => {
     expect(() =>
       render(<ExercisePreviewSheet open={false} onClose={() => {}} block={null} source="program" />),
     ).not.toThrow();
+  });
+});
+
+describe("the hand on the dose", () => {
+  it("offers Edit dose only when the page allows hand edits, and saves the athlete's numbers", async () => {
+    const { rerender } = render(<ExercisePreviewSheet open onClose={() => {}} block={block()} source="program" />);
+    expect(screen.queryByText("Edit dose")).toBeNull();
+    const onEditDose = vi.fn();
+    rerender(<ExercisePreviewSheet open onClose={() => {}} block={block()} source="program" onEditDose={onEditDose} editReach="Also changes the weeks after this one" />);
+    fireEvent.click(screen.getByText("Edit dose"));
+    expect(screen.getByText("Also changes the weeks after this one")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Reps, a number or a range like 5-8"), { target: { value: "5-8" } });
+    fireEvent.click(screen.getByLabelText("Add 1 set"));
+    fireEvent.click(screen.getByText("Save dose"));
+    expect(onEditDose).toHaveBeenCalledWith({ sets: 5, reps: "5-8", rpe: 8, rest_sec: null });
   });
 });

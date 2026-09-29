@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { useEditProgram, type CoachProgram, type ProgramBlock, type ProgramLog, type ProgramWeek } from "@/hooks/use-coach-program";
 import { loadEngine } from "@/hooks/use-focus-session";
 import { isRestDay, isTrainingDay } from "@/lib/training/session";
-import { addBlock, isRepeatingWeek, removeBlock, replaceBlock, setRest, setTraining, type At } from "@/lib/training/plan-edit";
+import { addBlock, isRepeatingWeek, removeBlock, replaceBlock, setRest, setTraining, updateBlock, type At, type DosePatch } from "@/lib/training/plan-edit";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
@@ -106,6 +106,11 @@ const ProgramWeekView = ({ program, currentWeek, todayDayIndex, logs, onLogged, 
     edit.mutate((plan) => setRest(plan, at(scope)));
     edited("rest", scope, "manual");
   };
+  const editDose = (slug: string, patch: DosePatch) => {
+    hapticImpact("light");
+    edit.mutate((plan) => updateBlock(plan, at(), slug, patch));
+    edited("dose", "remaining", "manual");
+  };
   const remove = async (slug: string) => {
     hapticImpact("light");
     const label = await loadLabeller();
@@ -156,6 +161,8 @@ const ProgramWeekView = ({ program, currentWeek, todayDayIndex, logs, onLogged, 
         onLogged={onLogged}
         onSwap={canEdit ? (b) => setPicker({ current: b }) : undefined}
         onRemove={canEdit ? (slug) => void remove(slug) : undefined}
+        onEditDose={canEdit ? editDose : undefined}
+        editReach={reach}
       >
         {rest && canRest && (
           <>

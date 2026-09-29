@@ -82,6 +82,36 @@ export const addBlock = (plan: PlanJson, at: At, block: ProgramBlock, label?: st
     return finish({ ...d, focus, blocks: [...d.blocks, clone(block)] });
   });
 
+/** What a member may set by hand on a movement: the dose, nothing else. */
+export type DosePatch = Partial<Pick<ProgramBlock, "sets" | "reps" | "rpe" | "rest_sec">>;
+
+/** The runner's own bounds (buildSessionPlan clamps the same way), so a hand-set dose runs as written. */
+export const clampDose = (patch: DosePatch): DosePatch => {
+  const out: DosePatch = {};
+  if (patch.sets != null) out.sets = Math.min(20, Math.max(1, Math.round(patch.sets)));
+  if (patch.reps != null) {
+    const reps = String(patch.reps).trim().replace(/\s*[–—]\s*/g, "-");
+    if (/^\d+(-\d+)?$/.test(reps)) out.reps = reps;
+  }
+  if (patch.rpe !== undefined) out.rpe = patch.rpe == null ? null : Math.min(10, Math.max(5, Math.round(patch.rpe * 2) / 2));
+  if (patch.rest_sec !== undefined) out.rest_sec = patch.rest_sec == null ? null : Math.min(900, Math.max(0, Math.round(patch.rest_sec)));
+  return out;
+};
+
+/**
+ * A movement's dose, set by hand — the numbers a self-built program lacked.
+ * Later weeks take it only where the movement is still in that day.
+ */
+export const updateBlock = (plan: PlanJson, at: At, slug: string, patch: DosePatch): PlanJson => {
+  const dose = clampDose(patch);
+  if (Object.keys(dose).length === 0) return plan;
+  return mapDays(plan, at, (d) => {
+    if (!d.blocks.some((b) => b.slug === slug)) return d;
+    const blocks = d.blocks.map((b) => (b.slug === slug ? { ...b, ...dose } : b));
+    return { ...d, blocks, duration_min: sessionMinutes(blocks) };
+  });
+};
+
 /** A movement out of the day; the last one out leaves a rest day. */
 export const removeBlock = (plan: PlanJson, at: At, slug: string, label?: string): PlanJson =>
   mapDays(plan, at, (d) => {

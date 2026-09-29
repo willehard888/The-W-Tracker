@@ -18,7 +18,7 @@ export interface Mover {
 
 export interface ProgressionSummary {
   liftsThisWeek: number; // distinct exercises logged in last 7d
-  setsThisWeek: number; // total logs in last 7d
+  setsThisWeek: number; // sets locked in the last 7d (every row, not the top set per day)
   prCount: number; // PRs (best-ever est 1RM) hit this week
   movers: Mover[]; // climbing lifts this week, biggest gain first
 }
@@ -32,9 +32,17 @@ export const useProgressionSummary = () =>
     queryKey: ["progression-summary"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("recent_workout_logs", { p_limit: 200 });
+      // recent_workout_logs is the heaviest set per exercise per day — right
+      // for lifts and PRs, wrong for a set count (a 4-set session read
+      // "1 sets"). The sets are counted from the rows themselves.
+      const since = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10);
+      const [{ data, error }, setsRes] = await Promise.all([
+        supabase.rpc("recent_workout_logs", { p_limit: 200 }),
+        supabase.from("workout_set_logs").select("id", { count: "exact", head: true }).gte("logged_on", since),
+      ]);
       if (error) throw error;
       const rows = (data as unknown as LogRow[]) ?? [];
+      const setsThisWeek = setsRes.count ?? 0;
 
       const groups = new Map<string, LogRow[]>();
       for (const r of rows) {
@@ -44,7 +52,6 @@ export const useProgressionSummary = () =>
       }
 
       let liftsThisWeek = 0;
-      let setsThisWeek = 0;
       let prCount = 0;
       const movers: Mover[] = [];
 
@@ -53,7 +60,6 @@ export const useProgressionSummary = () =>
         const weekLogs = list.filter((r) => within7d(r.logged_on));
         if (!weekLogs.length) continue;
         liftsThisWeek++;
-        setsThisWeek += weekLogs.length;
 
         const latest = list[0];
         const prev = list[1];

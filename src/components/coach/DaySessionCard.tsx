@@ -13,8 +13,8 @@ import ExerciseRow from "@/components/coach/ExerciseRow";
 import { useEditProgram } from "@/hooks/use-coach-program";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { useEquipmentContext } from "@/hooks/use-equipment-context";
-import { useDayLogs } from "@/hooks/use-workout-log";
-import { setTraining } from "@/lib/training/plan-edit";
+import { useDayLogs, useDaySets } from "@/hooks/use-workout-log";
+import { setTraining, type DosePatch } from "@/lib/training/plan-edit";
 import { track, FUNNEL } from "@/lib/analytics";
 import {
   defaultContext,
@@ -53,6 +53,9 @@ interface Props {
   /** Hand edits, offered per movement while nothing is logged for it. */
   onSwap?: (block: ProgramBlock) => void;
   onRemove?: (slug: string) => void;
+  /** The dose by hand, same gate as swap. */
+  onEditDose?: (slug: string, patch: DosePatch) => void;
+  editReach?: string;
   /** The day's own doors (add, rest, build), under everything else. */
   children?: ReactNode;
 }
@@ -62,7 +65,7 @@ interface Props {
  * the day, so this card says it once: its name, its focus, its length, the way
  * into the runner, and the ways to change it by hand.
  */
-const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, isToday, isCurrentWeek, logs, onLogged, onSwap, onRemove, children }: Props) => {
+const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, isToday, isCurrentWeek, logs, onLogged, onSwap, onRemove, onEditDose, editReach, children }: Props) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -80,6 +83,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
   const { profile, upsert: saveProfile } = useAthleteProfile();
   const equip = useEquipmentContext(program.id, currentWeek, todayDayIndex);
   const dayLogs = useDayLogs(program.id, currentWeek, todayDayIndex);
+  const daySets = useDaySets(program.id, currentWeek, todayDayIndex);
   const editProgram = useEditProgram(program);
   const [engine, setEngine] = useState<Engine | null>(null);
   // The builder is 540 lines under supabase/functions, and boot-graph.test.ts
@@ -115,6 +119,13 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
   const isRest = isRestDay(day);
   const inProgress = logs.some((l) => l.week === currentWeek && l.day_index === todayDayIndex && !l.completed && l.status === "in_progress");
   const canStart = isCurrentWeek && !isRest && !todayLog && day.blocks.length > 0;
+  // Every prescribed set of every movement locked from the sheet: the day is
+  // done in all but name, so the button says so.
+  const allLocked = canStart && day.blocks.every((b) => {
+    const rows = b.slug ? daySets.data?.[b.slug] ?? [] : [];
+    const done = new Set(rows.filter((r) => r.weight != null || r.reps != null).map((r) => r.set_index));
+    return Array.from({ length: Math.max(1, b.sets || 1) }, (_, i) => i + 1).every((n) => done.has(n));
+  });
   const recovery = week?.recovery;
   // On a rest day the card's second line points forward — the next session
   // this week, wrapping to Monday — instead of saying "Rest" twice.
@@ -336,7 +347,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
           finished session simply says so. */}
       {isToday ? (
         <Button
-          variant={alreadyLogged ? "secondary" : canStart ? "outline" : "ember"}
+          variant={alreadyLogged ? "secondary" : canStart && !allLocked ? "outline" : "ember"}
           size="lg"
           disabled={alreadyLogged || saving}
           onClick={markDone}
@@ -344,7 +355,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
         >
           {saving ? <Loader2 aria-hidden size={16} className="animate-spin" />
             : alreadyLogged ? <><Check aria-hidden size={16} /> Done · today</>
-            : <><Check aria-hidden size={16} /> {isRest ? "Mark rest" : "Done"}</>}
+            : <><Check aria-hidden size={16} /> {isRest ? "Mark rest" : allLocked ? "Finish session" : "Done"}</>}
         </Button>
       ) : alreadyLogged ? (
         <p className="mt-4 flex items-center gap-1.5 text-dense font-bold text-xp-green">
@@ -397,8 +408,10 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
             logging={isCurrentWeek || !!todayLog
               ? { programId: program.id, week: currentWeek, dayIndex: todayDayIndex }
               : undefined}
-            onSwap={onSwap && preview.slug ? () => onSwap(preview) : undefined}
-            onRemove={onRemove && preview.slug ? () => onRemove(preview.slug!) : undefined}
+            onSwap={onSwap && preview.slug && !locked.has(preview.slug) ? () => onSwap(preview) : undefined}
+            onRemove={onRemove && preview.slug && !locked.has(preview.slug) ? () => onRemove(preview.slug!) : undefined}
+            onEditDose={onEditDose && preview.slug && !locked.has(preview.slug) ? (patch) => onEditDose(preview.slug!, patch) : undefined}
+            editReach={editReach}
           />
         </Suspense>
       )}

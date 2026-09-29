@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PlanJson, ProgramBlock, ProgramDay } from "@/hooks/use-coach-program";
-import { addBlock, isAutoLabel, isRepeatingWeek, removeBlock, repeatWeek, replaceBlock, sessionMinutes, setRest, setTraining } from "../plan-edit";
+import { addBlock, clampDose, isAutoLabel, isRepeatingWeek, removeBlock, repeatWeek, replaceBlock, sessionMinutes, setRest, setTraining, updateBlock } from "../plan-edit";
 import { sessionMinutes as engineMinutes } from "../../../../supabase/functions/_shared/session-builder";
 
 const block = (slug: string, sets = 3): ProgramBlock => ({ slug, name: slug.replace(/_/g, " "), sets, reps: "8-12", rpe: 8, rest_sec: 60 });
@@ -106,5 +106,29 @@ describe("plan-edit", () => {
     for (const s of ["Upper A", "Full body", "Push", "Lower"]) expect(isAutoLabel(s), s).toBe(false);
     const blocks = [{ sets: 4, rest_sec: 120 }, { sets: 3, rest_sec: 60 }];
     expect(sessionMinutes(blocks)).toBe(engineMinutes(blocks));
+  });
+});
+
+describe("updateBlock — a dose set by hand", () => {
+  it("changes the movement in this week only, or this week and after, and re-times the day", () => {
+    const once = updateBlock(plan(), { week: 1, day: 0, scope: "week" }, "Bench", { sets: 5, reps: "3-5", rpe: 9, rest_sec: 180 });
+    expect(dayOf(once, 1, 0).blocks[0]).toMatchObject({ slug: "Bench", sets: 5, reps: "3-5", rpe: 9, rest_sec: 180 });
+    expect(dayOf(once, 1, 0).blocks[1]).toMatchObject({ slug: "Row", sets: 3 });
+    expect(dayOf(once, 2, 0).blocks[0]).toMatchObject({ sets: 3 });
+    expect(dayOf(once, 1, 0).duration_min).toBe(sessionMinutes(dayOf(once, 1, 0).blocks));
+
+    const onward = updateBlock(plan(), { week: 1, day: 0, scope: "remaining" }, "Bench", { sets: 5 });
+    expect(dayOf(onward, 2, 0).blocks[0].sets).toBe(5);
+    expect(dayOf(onward, 3, 0).blocks[0].sets).toBe(5);
+    // A day without the movement is left alone.
+    expect(dayOf(onward, 2, 3).blocks.map((b) => b.sets)).toEqual([3, 3]);
+  });
+
+  it("keeps the runner's bounds and ignores a rep string it cannot run", () => {
+    expect(clampDose({ sets: 40, rpe: 3, rest_sec: 5000 })).toEqual({ sets: 20, rpe: 5, rest_sec: 900 });
+    expect(clampDose({ reps: "5 – 8", rpe: 7.3 })).toEqual({ reps: "5-8", rpe: 7.5 });
+    expect(clampDose({ reps: "lots" })).toEqual({});
+    expect(clampDose({ rpe: null, rest_sec: null })).toEqual({ rpe: null, rest_sec: null });
+    expect(updateBlock(plan(), { week: 1, day: 0, scope: "week" }, "Bench", { reps: "x" })).toEqual(plan());
   });
 });

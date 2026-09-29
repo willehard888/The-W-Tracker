@@ -3,13 +3,12 @@ import { localDateKey } from "@/lib/date";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
-import { ArrowLeftRight, Check, ChevronRight, HeartPulse, Loader2, Minus, Plus, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, HeartPulse, Loader2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { ActionRow } from "@/components/ActionRow";
-import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { isNativePlatform } from "@/lib/platform";
 import {
@@ -26,7 +25,6 @@ import ExercisePickerSheet from "@/components/coach/ExercisePickerSheet";
 import { track, FUNNEL } from "@/lib/analytics";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { useDaySets, useExerciseHistory, useLogSet, useRecentWorkoutLogs } from "@/hooks/use-workout-log";
-import { useCommitPop } from "@/hooks/use-commit-pop";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { resolveIllustration } from "@/lib/exercise-match";
 import RecoveryOffer from "@/components/recovery/RecoveryOffer";
@@ -37,12 +35,14 @@ import { deferRecovery } from "@/lib/recovery/deferred";
 import { IllustrationPlayer, preloadIllustration } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
+import { SetRow } from "@/components/coach/session/SetRow";
+import { prescriptionGloss, prescriptionLabel } from "@/lib/training/prescription";
 import SessionOverview from "@/components/coach/session/SessionOverview";
 import SessionSkeleton from "@/components/coach/session/SessionSkeleton";
 import PageBar from "@/components/ui/page-bar";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 import { dayFocus } from "@/lib/training/session";
-import { fmtInt, fmtUnit, NBSP } from "@/lib/format";
+import { fmtInt, fmtUnit } from "@/lib/format";
 import { ErrorState } from "@/components/ui/error-state";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
@@ -54,10 +54,7 @@ import {
   suggestedLoad,
   sessionVolume,
   sessionPRs,
-  stepWeight,
-  stepReps,
   parseDecimal,
-  decimalInput,
   extendRestState,
   resolveCursor,
   nextSetFor,
@@ -89,173 +86,6 @@ import {
  * The summary is a beat ("Push day done.") and one standing line, volume in
  * gold — no tiles.
  */
-
-/** "62.5 kg" keeps its half; fmtInt would round a plate pair away. */
-const fmtKg = (n: number) => (Number.isInteger(n) ? fmtUnit(n, "kg") : `${n}${NBSP}kg`);
-// A set logged without a load (bodyweight, a machine you didn't note) reads
-// "6 reps", not "— × 6": the dash looked like a value that failed to save.
-const setLine = (w: string, r: string) =>
-  w === ""
-    ? (r === "" ? "—" : `${fmtInt(Number(r))} reps`)
-    : `${fmtKg(Number(w))} × ${r === "" ? "—" : fmtInt(Number(r))}`;
-
-/** `[−] value [+] unit` — two 44 pt targets around a typed field. */
-const Stepper = ({
-  value,
-  unit,
-  inputMode,
-  label,
-  stepLabel,
-  onChange,
-  onStep,
-}: {
-  value: string;
-  unit: string;
-  inputMode: "decimal" | "numeric";
-  label: string;
-  /** e.g. "2.5 kg" → "Add 2.5 kg" / "Remove 2.5 kg". */
-  stepLabel: string;
-  onChange: (v: string) => void;
-  onStep: (dir: 1 | -1) => void;
-}) => (
-  <div className="flex items-center gap-0.5">
-    <Button variant="ghost" size="icon" aria-label={`Remove ${stepLabel}`} onClick={() => onStep(-1)}>
-      <Minus size={16} aria-hidden />
-    </Button>
-    {/* type="text": a number field rejects the comma a Finnish keypad types
-        and hands back "", which wiped the digits already entered. */}
-    <input
-      type="text"
-      inputMode={inputMode}
-      value={value}
-      aria-label={label}
-      onChange={(e) => onChange(decimalInput(e.target.value))}
-      className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-copy font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50"
-    />
-    <Button variant="ghost" size="icon" aria-label={`Add ${stepLabel}`} onClick={() => onStep(1)}>
-      <Plus size={16} aria-hidden />
-    </Button>
-    <span className="w-8 text-meta font-semibold text-muted-foreground">{unit}</span>
-  </div>
-);
-
-/**
- * One prescribed set. Only the set being done right now is open: weight and
- * reps with plate-pair steppers and the Log button. A done set folds to one
- * line (Edit reopens it); a set still ahead is a number and a dash.
- */
-const SetRow = ({
-  index,
-  done,
-  isCurrent,
-  weight,
-  reps,
-  onChange,
-  onLog,
-  saving,
-}: {
-  index: number;
-  done: boolean;
-  isCurrent: boolean;
-  weight: string;
-  reps: string;
-  /** Raised on every keystroke, so the draft outlives this component. */
-  onChange: (weight: string, reps: string) => void;
-  onLog: (weight: string, reps: string) => Promise<void>;
-  saving: boolean;
-}) => {
-  const [editing, setEditing] = useState(false);
-  // The draft lives in the page now. It used to live here, and this component
-  // unmounts when the movement changes — survivable while the runner was a
-  // one-way cursor, not once an athlete can step away mid-set and come back.
-  // setRowSeed still keeps a late history query from overwriting typing.
-  const w = weight;
-  const r = reps;
-  const setW = (v: string) => onChange(v, r);
-  const setR = (v: string) => onChange(w, v);
-  // Springs once, on the set that just landed — never on rows loaded as done.
-  const pop = useCommitPop(done);
-  const expanded = (isCurrent && !done) || editing;
-
-  const badge = (
-    <span
-      className={cn(
-        "shrink-0 h-8 w-8 rounded-full text-meta font-black flex items-center justify-center",
-        done
-          ? "bg-xp-green/15 text-xp-green"
-          : isCurrent
-            ? "bg-gold/15 text-gold"
-            : "border border-border/50 text-muted-foreground",
-        pop && "commit-pop",
-      )}
-    >
-      {done ? <Check size={14} aria-hidden /> : index}
-    </span>
-  );
-
-  if (!expanded) {
-    return (
-      <div className="flex items-center gap-3 min-h-12 px-1">
-        {badge}
-        {done ? (
-          <>
-            <span className="flex-1 min-w-0 text-read font-bold tabular-nums">{setLine(weight, reps)}</span>
-            <Button variant="ghost" size="sm" className="min-h-11 text-muted-foreground" onClick={() => setEditing(true)}>
-              Edit
-            </Button>
-          </>
-        ) : (
-          <span className="text-read font-bold text-muted-foreground/75">—</span>
-        )}
-      </div>
-    );
-  }
-
-  const step = (apply: () => void) => { hapticImpact("light"); apply(); };
-
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border px-2.5 py-2",
-        done ? "border-border/50 bg-background/30" : "border-gold/45 bg-gold/[0.05]",
-      )}
-    >
-      <div className="flex items-center gap-2">
-        {badge}
-        <Stepper
-          value={w}
-          unit="kg"
-          inputMode="decimal"
-          label={`Set ${index} weight in kilograms`}
-          stepLabel="2.5 kg"
-          onChange={(v) => setW(v)}
-          onStep={(d) => step(() => setW(String(stepWeight(w, d))))}
-        />
-      </div>
-      <div className="mt-1 flex items-center gap-2">
-        <span className="w-8 shrink-0" aria-hidden />
-        <Stepper
-          value={r}
-          unit="reps"
-          inputMode="numeric"
-          label={`Set ${index} reps`}
-          stepLabel="1 rep"
-          onChange={(v) => setR(v)}
-          onStep={(d) => step(() => setR(String(stepReps(r, d))))}
-        />
-        <Button
-          variant="ember"
-          size="sm"
-          className="ml-auto min-h-11 min-w-16 shrink-0"
-          disabled={saving}
-          onClick={async () => { await onLog(w, r); setEditing(false); }}
-        >
-          {saving ? <Loader2 aria-hidden size={13} className="animate-spin" /> : done ? "Save" : "Log"}
-        </Button>
-      </div>
-    </div>
-  );
-};
 
 const CoachSession = () => {
   const navigate = useNavigate();
@@ -819,14 +649,12 @@ const CoachSession = () => {
                 )}
               </div>
               <p className="mt-1.5 text-dense font-bold tabular-nums text-foreground/85">
-                {current.sets} × {current.reps || "—"}
-                {current.rpe ? ` · RPE ${current.rpe}` : ""}
+                {prescriptionLabel({ ...current, reps: current.reps || "—" })}
               </p>
               {/* The first time someone meets this notation it means nothing.
                   One line, inline, where the number actually is. */}
               <p className="mt-0.5 text-meta text-muted-foreground leading-snug">
-                {current.sets} sets of {current.reps || "your target"} reps
-                {current.rpe ? `, leaving about ${Math.max(0, 10 - current.rpe)} reps in reserve` : ""}.
+                {prescriptionGloss(current)}
               </p>
             </div>
 

@@ -6,6 +6,7 @@ import { hapticImpact } from "@/lib/haptics";
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { decimalInput, stepReps, stepWeight } from "@/lib/training/runner";
 import { fmtInt, fmtUnit, NBSP } from "@/lib/format";
+import { Input } from "@/components/ui/input";
 
 // One set row, for both places a set is locked: the runner (/coach/session)
 // and the program page's movement sheet. They used to differ — the page had
@@ -46,13 +47,13 @@ export const Stepper = ({
     </Button>
     {/* type="text": a number field rejects the comma a Finnish keypad types
         and hands back "", which wiped the digits already entered. */}
-    <input
+    <Input
       type="text"
       inputMode={inputMode}
       value={value}
       aria-label={label}
       onChange={(e) => onChange(decimalInput(e.target.value))}
-      className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-copy font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50"
+      className="w-[4.25rem] rounded-lg px-1 text-center font-bold tabular-nums"
     />
     <Button variant="ghost" size="icon" aria-label={`Add ${stepLabel}`} onClick={() => onStep(1)}>
       <Plus size={16} aria-hidden />

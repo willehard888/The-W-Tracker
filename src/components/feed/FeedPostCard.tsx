@@ -14,6 +14,7 @@ import StreakFlameInline from "@/components/StreakFlameInline";
 import PostMedia from "@/components/feed/PostMedia";
 import CommentThread from "@/components/feed/CommentThread";
 import type { CommentNode } from "@/lib/comment-tree";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -414,19 +415,14 @@ const FeedPostCard = memo(function FeedPostCard({
                   {composerInitial}
                 </div>
                 <div className="flex-1 min-w-0 relative">
-                  <input
+                  <Input
                     ref={commentInputRef}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder={replyTo ? `Reply to @${replyTo.username}…` : "Add a comment…"}
                     aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                     maxLength={300}
-                    className={cn(
-                      "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-copy text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
-                      replyTo
-                        ? "border-gold/40 focus:ring-gold/50 focus:border-gold/60"
-                        : "border-border focus:ring-gold/40 focus:border-gold/40",
-                    )}
+                    className={cn("rounded-full pl-4 pr-12", replyTo && "border-gold/40")}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && commentText.trim()) {
                         onSubmitComment();

@@ -33,29 +33,31 @@ export default function OnboardingBottomSheet({ def, onComplete, onSkip }: Onboa
           <button
             aria-label="Dismiss"
             onClick={skip}
-            className={`absolute inset-0 bg-black/60 ${reduced ? "" : "animate-in fade-in"}`}
+            className={`absolute inset-0 bg-black/70 ${reduced ? "" : "animate-in fade-in"}`}
           />
         ) : (
-          <div className={`absolute inset-0 bg-black/60 ${reduced ? "" : "animate-in fade-in"}`} />
+          <div className={`absolute inset-0 bg-black/70 ${reduced ? "" : "animate-in fade-in"}`} />
         )}
         <div
           role="dialog"
           aria-modal="true"
           aria-label={def.title}
-          className={`relative w-full max-w-md rounded-t-3xl border-t border-gold/25 bg-card px-6 pt-2.5 pb-[calc(1.5rem+var(--safe-bottom))] shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.6)] ${
-            reduced ? "" : "animate-in slide-in-from-bottom duration-300"
+          className={`relative w-full max-w-md rounded-t-[28px] border-t border-gold/25 bg-[hsl(255_14%_7%)] px-6 pt-2.5 pb-[calc(1.5rem+var(--safe-bottom))] shadow-[0_-20px_60px_-12px_hsl(0_0%_0%/0.7)] ${
+            reduced ? "" : "animate-in slide-in-from-bottom duration-300 [animation-timing-function:var(--ease-ios)]"
           }`}
         >
           <div className="flex justify-center pb-1">
-            <div className="h-1 w-10 rounded-full bg-white/15" />
+            <div className="h-1 w-10 rounded-full bg-white/20" />
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={skip}
             aria-label="Close"
-            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/75 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
+            className="absolute right-2 top-1.5 z-10 min-h-11 min-w-11 rounded-full text-muted-foreground/75"
           >
             <X size={18} />
-          </button>
+          </Button>
 
           <div
             className={`mx-auto mt-4 mb-4 flex h-16 w-16 items-center justify-center rounded-2xl gradient-gold glow-gold ${

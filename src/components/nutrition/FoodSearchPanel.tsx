@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { SEARCH_FIELD } from "@/components/ui/input";
+import { SEARCH_FIELD, Input } from "@/components/ui/input";
 import { Camera, ChefHat, Globe, Loader2, ScanBarcode, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -72,7 +72,7 @@ const FoodSearchPanel = ({
     <div className="space-y-3">
       <div className="relative">
         <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-        <input
+        <Input
           ref={inputRef}
           type="search"
           inputMode="search"
@@ -80,7 +80,7 @@ const FoodSearchPanel = ({
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder="Search foods or brands" {...SEARCH_FIELD}
           aria-label="Search foods"
-          className="w-full surface-inset rounded-xl h-11 pl-9 pr-24 text-read outline-none focus:border-gold/50 transition-colors"
+          className="pl-9 pr-24"
         />
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
           {query && (

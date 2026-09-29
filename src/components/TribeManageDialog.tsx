@@ -15,6 +15,7 @@ import { useModeration } from "@/hooks/use-moderation";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
+import { FIELD_LABEL as LABEL } from "@/components/ui/label";
 
 interface Member {
   user_id: string;
@@ -42,7 +43,6 @@ interface Props {
 const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const MAX_COVER_SIZE_MB = 8;
 
-const LABEL = "text-label font-bold text-muted-foreground";
 
 const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, currentUserId, onChanged }: Props) => {
   const { user } = useAuth();
@@ -295,7 +295,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       <div className="space-y-3">
         <div>
           <label className={cn(LABEL, "mb-1.5 block")}>Name</label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} className="h-11" />
+          <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
         </div>
         <div>
           <label className={cn(LABEL, "mb-1.5 block")}>Description</label>

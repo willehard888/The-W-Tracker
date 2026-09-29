@@ -26,6 +26,7 @@ import { parseQty } from "@/lib/nutrition/resolve-grams";
 import { MEAL_SLOTS, defaultSlotForHour } from "@/lib/nutrition/slots";
 import { macroSummary } from "@/lib/nutrition/totals";
 import type { Food, MealSlot } from "@/lib/nutrition/types";
+import { Input } from "@/components/ui/input";
 
 type Ingredient = { key: number; food_id: string; name: string; grams: string };
 let seq = 0;
@@ -269,13 +270,13 @@ const NutritionRecipeEditor = () => {
                     </span>
                     <label className="shrink-0 flex items-center gap-1.5">
                       <span className="sr-only">Grams for {f?.name ?? it.name}</span>
-                      <input
+                      <Input
                         type="text"
                         inputMode="decimal"
                         value={it.grams}
                         aria-label={`Grams for ${f?.name ?? it.name}`}
                         onChange={(e) => setItems((rows) => rows.map((r) => (r.key === it.key ? { ...r, grams: e.target.value } : r)))}
-                        className="w-20 surface-inset rounded-xl h-11 px-3 text-read font-black tabular-nums outline-none focus:border-gold/50"
+                        className="w-20 px-3 font-black tabular-nums"
                       />
                       <span className="text-meta font-bold text-muted-foreground">g</span>
                     </label>

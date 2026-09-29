@@ -30,6 +30,7 @@ import { buildReviewRows } from "@/lib/nutrition/scan-review";
 import { confidenceTier, LABEL_KEYS, type LabelKey, type ScanCandidate, type ScanItem, type ScanMacroPreview } from "@/lib/nutrition/scan-types";
 import { MEAL_SLOTS, defaultSlotForHour } from "@/lib/nutrition/slots";
 import type { Food, MealSlot, NutrientVector } from "@/lib/nutrition/types";
+import { Input } from "@/components/ui/input";
 
 const isSlot = (v: string | null): v is MealSlot => MEAL_SLOTS.some((s) => s.key === v);
 const lang = typeof navigator !== "undefined" ? navigator.language : "en";
@@ -392,13 +393,12 @@ const NutritionPhotoReview = () => {
           <p className="text-dense text-muted-foreground mt-1">{copy.body}</p>
         </div>
         {failure.retryable && (
-          <input
+          <Input
             type="text"
             value={hint}
             onChange={(e) => setHint(e.target.value)}
             placeholder="What is it? e.g. salmon and potatoes"
             aria-label="Hint for the scanner"
-            className="w-full surface-inset rounded-xl h-11 px-3 text-read outline-none focus:border-gold/50"
           />
         )}
         <div className="space-y-2">
@@ -552,13 +552,12 @@ const NutritionPhotoReview = () => {
       <div className="home-rise space-y-4">
         {photo()}
         <p className="text-meta text-muted-foreground leading-snug">A fork or your hand next to the plate, shot from about 45°, makes the portions far more accurate.</p>
-        <input
+        <Input
           type="text"
           value={hint}
           onChange={(e) => setHint(e.target.value)}
           placeholder="What is it? e.g. salmon and potatoes"
           aria-label="Hint for the scanner"
-          className="w-full surface-inset rounded-xl h-11 px-3 text-read outline-none focus:border-gold/50"
         />
         <p className="text-meta text-muted-foreground leading-snug">Optional. A word or two helps the scanner tell salmon from trout.</p>
         <div>

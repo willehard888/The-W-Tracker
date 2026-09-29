@@ -4,6 +4,7 @@ import { hapticSelection } from "@/lib/haptics";
 import { availableUnits, parseQty } from "@/lib/nutrition/resolve-grams";
 import { fmtQty } from "@/lib/nutrition/format";
 import type { Food, Unit } from "@/lib/nutrition/types";
+import { Input } from "@/components/ui/input";
 
 export interface PortionState {
   /** Raw text as typed — parsed with `parseQty` ("1,5", "1/2", "1 1/2" all work). */
@@ -77,7 +78,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
       <div className="flex items-center gap-3">
         <label className="flex-1">
           <span className="sr-only">Amount</span>
-          <input
+          <Input
             type="text"
             inputMode="decimal"
             enterKeyHint="done"
@@ -85,10 +86,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
             aria-invalid={!qtyValid}
             aria-label="Amount"
             onChange={(e) => onChange({ ...value, qty: e.target.value })}
-            className={cn(
-              "w-full surface-inset rounded-xl h-12 px-4 text-head font-black tabular-nums outline-none focus:border-gold/50 transition-colors",
-              !qtyValid && "border-destructive/60",
-            )}
+            className="h-12 px-4 text-head font-black tabular-nums"
           />
         </label>
         <span className="text-dense font-bold text-muted-foreground shrink-0 min-w-[3rem]">
@@ -99,13 +97,13 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
       {value.unit === "custom" && (
         <label className="flex items-center gap-3">
           <span className="text-meta font-bold text-muted-foreground shrink-0">grams per unit</span>
-          <input
+          <Input
             type="text"
             inputMode="decimal"
             value={value.customGrams}
             aria-label="Grams per unit"
             onChange={(e) => onChange({ ...value, customGrams: e.target.value })}
-            className="flex-1 surface-inset rounded-xl h-11 px-3 text-read font-bold tabular-nums outline-none focus:border-gold/50"
+            className="flex-1 px-3 font-bold tabular-nums"
           />
         </label>
       )}

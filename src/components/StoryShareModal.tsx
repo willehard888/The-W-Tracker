@@ -446,13 +446,13 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
 
   return (
     <Portal>
-    <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-0" onClick={onClose}>
+    <div className="fixed inset-0 z-[var(--z-modal)] flex items-end sm:items-center justify-center px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-0" onClick={onClose}>
       <div className="absolute inset-0 bg-background/95" />
 
       <div className="relative flex flex-col items-center gap-3 w-full max-w-[320px]" onClick={(e) => e.stopPropagation()}>
-        <button aria-label="Close" onClick={onClose} className="absolute -top-1 -right-1 z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors before:absolute before:-inset-1.5 before:content-['']">
+        <Button variant="secondary" size="icon" aria-label="Close" onClick={onClose} className="absolute -top-3 -right-3 z-10 rounded-full">
           <X aria-hidden size={16} />
-        </button>
+        </Button>
 
         {/* Preview Card */}
         <div

@@ -9,6 +9,7 @@ import { useExerciseHistory, useDaySets, useLogSet } from "@/hooks/use-workout-l
 import { SetRow, fmtKg } from "@/components/coach/session/SetRow";
 import Sparkline from "@/components/coach/Sparkline";
 import type { ProgramBlock } from "@/hooks/use-coach-program";
+import { Input } from "@/components/ui/input";
 
 // Whole local days between two day keys. `logged_on` is a date, and parsing
 // it as UTC midnight then rounding called a set logged this evening "1d ago".
@@ -170,12 +171,12 @@ export const ExerciseLogForm = ({
         {/* Felt RPE. Optional — leaving it blank stores the prescribed value. */}
         <label className="mt-2 flex items-center justify-end gap-2 text-label text-muted-foreground">
           <span>Felt RPE</span>
-          <input
+          <Input
             type="number" inputMode="numeric" min={1} max={10} value={rpe}
             placeholder={block.rpe ? String(block.rpe) : "1–10"}
             aria-label="Felt RPE, 1 to 10"
             onChange={(e) => setRpe(e.target.value)}
-            className="w-16 rounded-lg border border-border/50 bg-background/60 px-2 py-1.5 text-copy text-center tabular-nums outline-none focus:border-gold/50"
+            className="w-16 rounded-lg px-2 text-center tabular-nums"
           />
         </label>
       </div>

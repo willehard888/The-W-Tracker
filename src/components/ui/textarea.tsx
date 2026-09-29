@@ -1,24 +1,13 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { FIELD } from "@/components/ui/input";
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
+/** The text field, taller. Same shape, same focus; no resize handle on a phone. */
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, ...props }, ref) => {
-  return (
-    <textarea
-      className={cn(
-        "surface-inset flex min-h-[80px] w-full rounded-md px-3 py-2 text-base ring-offset-background transition-shadow duration-200 [transition-timing-function:var(--ease-soft)]",
-        "placeholder:text-fg-faint",
-        "focus-visible:outline-none focus-visible:border-[hsl(var(--gold)/0.45)]",
-        "focus-visible:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.5),0_0_0_1px_hsl(var(--gold)/0.35),0_0_18px_-4px_hsl(var(--gold)/0.4)]",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
-      ref={ref}
-      {...props}
-    />
-  );
+  return <textarea className={cn(FIELD, "min-h-24 py-3 leading-relaxed resize-none", className)} ref={ref} {...props} />;
 });
 Textarea.displayName = "Textarea";
 

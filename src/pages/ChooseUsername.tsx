@@ -150,7 +150,7 @@ const ChooseUsername = () => {
                 placeholder="your_name"
                 maxLength={20}
                 className={cn(
-                  "h-12 pl-8 rounded-xl text-copy",
+                  "h-12 pl-8",
                   availability === "taken" && "border-destructive/60",
                   availability === "available" && "border-xp-green/60",
                 )}

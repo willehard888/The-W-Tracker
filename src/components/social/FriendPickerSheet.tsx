@@ -41,7 +41,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search friends" {...SEARCH_FIELD}
-              className="h-11 rounded-xl pl-9 pr-9 text-copy"
+              className="pl-9 pr-9"
             />
           </div>
         </div>

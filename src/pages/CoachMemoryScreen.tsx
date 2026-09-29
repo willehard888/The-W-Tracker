@@ -57,7 +57,6 @@ const CoachMemoryScreen = () => {
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void addFact(); } }}
             placeholder="e.g. I race a 10k in October"
             enterKeyHint="done"
-            className="h-11 rounded-xl"
           />
           <Button variant="ember" size="icon" className="h-11 w-11 min-h-11 shrink-0 rounded-xl" aria-label="Add fact" disabled={!draft.trim()} onClick={addFact}>
             <Plus aria-hidden size={16} />

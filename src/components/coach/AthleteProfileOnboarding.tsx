@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { track, FUNNEL } from "@/lib/analytics";
+import { Textarea } from "@/components/ui/textarea";
 
 const DRAFT_KEY = "w_coach_onboarding_draft_v2";
 const STEP_KEY = "w_coach_onboarding_step_v2";
@@ -309,12 +310,12 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
           </Field>
 
           <Field label="A line about your life right now">
-            <textarea
+            <Textarea
               rows={2}
               value={draft.life_context ?? ""}
               onChange={e => set({ life_context: e.target.value.slice(0, 160) })}
               placeholder="e.g. New baby, working remote, training around 6am only."
-              className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-copy focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
+              className="min-h-0"
             />
             <p className="text-label text-muted-foreground/75 mt-1 tabular-nums">{(draft.life_context ?? "").length}/160</p>
           </Field>
@@ -382,12 +383,12 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
             ))}
           </div>
           <Field label="Your why — who are you becoming?">
-            <textarea
+            <Textarea
               rows={2}
               value={draft.i_am}
               onChange={e => set({ i_am: e.target.value.slice(0, 160) })}
               placeholder="e.g. The dad my kids see show up strong every day. Someone who keeps promises to himself."
-              className="w-full resize-none surface-inset rounded-xl px-3.5 py-3 text-copy focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30"
+              className="min-h-0"
             />
             <p className="text-label text-muted-foreground/75 mt-1 tabular-nums">
               {draft.i_am.length}/160 · This is what every check-in is really for.

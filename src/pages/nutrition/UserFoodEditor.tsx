@@ -24,6 +24,7 @@ import { fetchFood, type UserFoodPayload } from "@/lib/nutrition/queries";
 import { parseQty } from "@/lib/nutrition/resolve-grams";
 import { BASE_KEYS } from "@/lib/nutrition/scale";
 import type { NutrientKey } from "@/lib/nutrition/types";
+import { Input } from "@/components/ui/input";
 
 const REQUIRED: readonly NutrientKey[] = ["kcal", "protein_g", "carbs_g", "fat_g"];
 const SECONDARY: readonly { key: NutrientKey; label: string; unit: string }[] = [
@@ -246,7 +247,7 @@ const UserFoodEditor = () => {
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
               <span className="text-meta font-bold text-muted-foreground">Brand</span>
-              <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Optional" className="mt-1 w-full surface-inset rounded-xl h-11 px-3 text-read font-bold outline-none focus:border-gold/50" />
+              <Input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Optional" className="mt-1 px-3 font-bold" />
             </label>
             <NumField label="Barcode" mode="numeric" value={barcode} onChange={setBarcode} placeholder="Optional" />
           </div>
@@ -300,13 +301,13 @@ const UserFoodEditor = () => {
                   <div className="flex items-end gap-2">
                     <label className="flex-1 min-w-0 block">
                       <span className="text-label font-bold text-muted-foreground">Label</span>
-                      <input
+                      <Input
                         type="text"
                         value={s.label}
                         placeholder="1 slice"
                         aria-label="Serving label"
                         onChange={(e) => updateServing(s.key, { label: e.target.value })}
-                        className="mt-1 w-full surface-inset rounded-xl h-11 px-3 text-read font-bold outline-none focus:border-gold/50"
+                        className="mt-1 px-3 font-bold"
                       />
                     </label>
                     <NumField label="Grams" className="w-24" value={s.grams} onChange={(v) => updateServing(s.key, { grams: v })} />

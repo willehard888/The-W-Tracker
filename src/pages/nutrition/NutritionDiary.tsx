@@ -52,6 +52,7 @@ import { defaultSlotForHour, MEAL_SLOTS } from "@/lib/nutrition/slots";
 import { dayState, macroSummary, sumVectors, type DayState } from "@/lib/nutrition/totals";
 import { NUTRIENT_KEYS, type Food, type MealSlot, type NutrientKey, type NutrientVector, type Targets } from "@/lib/nutrition/types";
 import { captureException } from "@/lib/observability";
+import { Input } from "@/components/ui/input";
 
 /**
  * The diary: what you ate today against what you need. One display line
@@ -646,7 +647,7 @@ const NutritionDiary = () => {
             }}
           >
             <p className="text-dense text-muted-foreground">The digits under the bars — EAN-8, EAN-13 or UPC.</p>
-            <input
+            <Input
               type="text"
               inputMode="numeric"
               autoComplete="off"
@@ -655,7 +656,7 @@ const NutritionDiary = () => {
               onChange={(e) => setManualCode(e.target.value)}
               aria-label="Barcode"
               placeholder="6412345678901"
-              className="w-full surface-inset rounded-xl h-11 px-3 text-read tabular-nums outline-none focus:border-gold/50 transition-colors"
+              className="px-3 tabular-nums"
             />
             <Button type="submit" size="lg" className="w-full" disabled={manualCode.replace(/\D/g, "").length < 8} loading={lookingUp}>
               Look up

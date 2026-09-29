@@ -240,7 +240,7 @@ const Auth = () => {
                   placeholder="your_handle"
                   maxLength={20}
                   className={cn(
-                    "h-12 pl-8 rounded-xl text-copy",
+                    "h-12 pl-8",
                     nameStatus === "taken" && "border-destructive/60",
                     nameStatus === "available" && "border-xp-green/60",
                   )}
@@ -276,7 +276,7 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="h-12 rounded-xl text-copy"
+              className="h-12"
               required
             />
           </div>
@@ -292,7 +292,7 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 minLength={6}
-                className="h-12 rounded-xl pr-12 text-copy"
+                className="h-12 pr-12"
                 required
               />
               <Button
@@ -352,7 +352,7 @@ const Auth = () => {
                   onChange={(e) => onInviteCode(e.target.value)}
                   placeholder="friend_a1b2c3"
                   maxLength={20}
-                  className="h-12 rounded-xl text-copy"
+                  className="h-12"
                 />
                 <p className="text-label text-muted-foreground mt-1.5">Links you to the friend who sent it. They hear when you join.</p>
               </div>

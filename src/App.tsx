@@ -9,9 +9,11 @@ import { LazyMotion, MotionConfig } from "framer-motion";
 
 // Animation features load AFTER first paint. With the eager `motion` import
 // the 40 kB gzip framer chunk sat in modulepreload on every cold start to
-// power one StatusHeader bar; `m` renders the same elements, `domAnimation`
-// arrives on the first animation.
-const loadMotionFeatures = () => import("framer-motion").then((mod) => mod.domAnimation);
+// power one StatusHeader bar; `m` renders the same elements, the features
+// arrive on the first animation. `domMax` (not `domAnimation`) because the
+// bottom sheet is dragged closed — drag is the one feature the smaller set
+// leaves out.
+const loadMotionFeatures = () => import("framer-motion").then((mod) => mod.domMax);
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { readLocal, writeLocal } from "@/lib/storage";

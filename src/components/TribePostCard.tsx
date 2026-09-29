@@ -28,6 +28,8 @@ const isUnsupportedHeic = (value: string) => /\.hei(c|f)$/i.test(value);
 import { buildCommentTree, MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
 import { friendlyError } from "@/lib/error-copy";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 /**
  * Shared look for the Reply / Edit / Delete actions on a comment: uppercase
@@ -109,12 +111,12 @@ const CommentThread = ({
             </div>
             {isEditing ? (
               <div className="mt-1.5 flex flex-col gap-2 min-w-[200px]">
-                <textarea
+                <Textarea
                   value={draft}
                   onChange={(e) => setDraft(e.target.value.slice(0, 300))}
                   rows={2}
                   autoFocus
-                  className="w-full bg-background/50 border border-[hsl(var(--ember))]/30 focus:border-[hsl(var(--ember))] rounded-lg px-2 py-1.5 text-copy text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-[hsl(var(--ember))]/30"
+                  className="min-h-0 py-2 border-[hsl(var(--ember)/0.3)] focus-visible:border-[hsl(var(--ember)/0.6)] focus-visible:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.45),0_0_0_1px_hsl(var(--ember)/0.3),0_0_16px_-4px_hsl(var(--ember)/0.35)]"
                   onKeyDown={(e) => { if (e.key === "Escape") { e.preventDefault(); cancelEdit(); } }}
                 />
                 <div className="flex items-center justify-end gap-1.5">
@@ -685,7 +687,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     {profile?.username?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0 relative">
-                    <input
+                    <Input
                       ref={commentInputRef}
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
@@ -693,10 +695,8 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       aria-label={replyTo ? `Reply to @${replyTo.username}` : "Add a comment"}
                       maxLength={300}
                       className={cn(
-                        "w-full h-9 pl-3 pr-12 rounded-full border bg-background text-copy text-foreground placeholder:text-muted-foreground/75 focus:outline-none focus:ring-2 transition-[border-color,box-shadow]",
-                        replyTo
-                          ? "border-[hsl(var(--ember))]/40 focus:ring-[hsl(var(--ember))]/50 focus:border-[hsl(var(--ember))]/60"
-                          : "border-border focus:ring-[hsl(var(--ember))]/40 focus:border-[hsl(var(--ember))]/40",
+                        "rounded-full pl-4 pr-12 focus-visible:border-[hsl(var(--ember)/0.6)] focus-visible:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.45),0_0_0_1px_hsl(var(--ember)/0.3),0_0_16px_-4px_hsl(var(--ember)/0.35)]",
+                        replyTo && "border-[hsl(var(--ember)/0.4)]",
                       )}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && commentText.trim()) { hapticImpact("light"); addComment.mutate(); }

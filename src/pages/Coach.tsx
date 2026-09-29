@@ -715,7 +715,6 @@ const ChatSheet = ({
             placeholder="Ask your coach…"
             enterKeyHint="send"
             disabled={streaming}
-            className="h-11 rounded-xl"
             ref={inputRef}
           />
           <Button

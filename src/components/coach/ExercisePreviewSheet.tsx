@@ -15,6 +15,7 @@ import { clampDose, type DosePatch } from "@/lib/training/plan-edit";
 import { formatRest } from "@/lib/training/runner";
 import { track, FUNNEL } from "@/lib/analytics";
 import type { ProgramBlock } from "@/hooks/use-coach-program";
+import { Input } from "@/components/ui/input";
 
 /**
  * "What is this movement, actually?"
@@ -132,9 +133,9 @@ export const ExercisePreviewSheet = ({
                     onStep={(k) => setDose((d) => ({ ...d, rpe: String(Math.min(10, Math.max(5, (Number(d.rpe) || 8) + 0.5 * k))) }))} />
                   <label className="flex items-center gap-2 text-label text-muted-foreground">
                     <span className="w-9">Reps</span>
-                    <input type="text" inputMode="numeric" value={dose.reps} aria-label="Reps, a number or a range like 5-8" placeholder="5-8"
+                    <Input type="text" inputMode="numeric" value={dose.reps} aria-label="Reps, a number or a range like 5-8" placeholder="5-8"
                       onChange={(e) => setDose((d) => ({ ...d, reps: e.target.value.replace(/[^0-9-]/g, "") }))}
-                      className="surface-inset w-[4.25rem] min-h-11 rounded-lg px-1 text-center text-copy font-bold tabular-nums outline-none focus:ring-1 focus:ring-gold/50" />
+                      className="w-[4.25rem] rounded-lg px-1 text-center font-bold tabular-nums" />
                   </label>
                   <Stepper value={dose.rest} unit="s" inputMode="numeric" label="Rest in seconds" stepLabel="15 seconds"
                     onChange={(v) => setDose((d) => ({ ...d, rest: v }))}

@@ -7,6 +7,7 @@ import { hapticSelection } from "@/lib/haptics";
 import { gramChips, liquidGrams, liquidMl } from "@/lib/nutrition/scan-review";
 import { parseQty } from "@/lib/nutrition/resolve-grams";
 import { confidenceTier, type ScanItem } from "@/lib/nutrition/scan-types";
+import { Input } from "@/components/ui/input";
 
 const TIER_LABEL = { solid: null, estimated: "Estimated", check: "Check this" } as const;
 
@@ -117,7 +118,7 @@ const DetectedItemRow = ({
           <span className="sr-only">
             {liquid ? "Millilitres" : "Grams"} for {item.name}
           </span>
-          <input
+          <Input
             type="text"
             inputMode="decimal"
             value={draft ?? String(shown)}
@@ -128,7 +129,7 @@ const DetectedItemRow = ({
               if (n !== null && n > 0) onGramsChange(item.id, toGrams(n));
             }}
             onBlur={() => setDraft(null)}
-            className="w-20 surface-inset rounded-xl h-11 px-3 text-read font-black tabular-nums outline-none focus:border-gold/50"
+            className="w-20 px-3 font-black tabular-nums"
           />
         </label>
         <span className="text-meta font-bold text-muted-foreground">{unit}</span>

@@ -49,7 +49,7 @@ const TribeComposer = ({
       placeholder="Share with your tribe…"
       rows={3}
       maxLength={500}
-      className="border-0 bg-transparent focus-visible:ring-0 resize-none"
+      className="border-0 bg-transparent shadow-none focus-visible:shadow-none px-1"
     />
 
     {/* Image preview */}

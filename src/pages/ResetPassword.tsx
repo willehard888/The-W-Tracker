@@ -146,7 +146,7 @@ const ResetPassword = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 minLength={6}
-                className="h-12 rounded-xl pr-12 text-copy"
+                className="h-12 pr-12"
                 required
               />
               <Button

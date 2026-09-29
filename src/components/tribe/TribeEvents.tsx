@@ -13,6 +13,8 @@ import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { safeHttpUrl } from "@/lib/safe-url";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon, activityDefaults } from "@/lib/tribe-activities";
+import { FIELD_LABEL as LABEL } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const ERR: Record<string, string> = {
   not_member: "Join the tribe to do that.",
@@ -24,7 +26,6 @@ const ERR: Record<string, string> = {
 const errMsg = (e: any) =>
   ERR[e?.message?.match(/not_member|event_full|title_required|unauthorized|forbidden/)?.[0] ?? ""] ?? e?.message ?? "Something went wrong";
 
-const LABEL = "text-label font-bold text-muted-foreground";
 
 // Native datetime-local under house type: the picker stays the platform's,
 // the field is ours. Same shape as nutrition's DateBar.
@@ -478,8 +479,6 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
     setBusy(false);
   };
 
-  const field = "w-full surface-inset rounded-xl px-3 py-2.5 text-dense outline-none focus:border-gold/50";
-  const input = "h-11 rounded-xl text-dense";
 
   const sessionCount = sessions.filter((s) => s.trim()).length;
 
@@ -521,7 +520,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
         )}
 
         <div className="space-y-2.5">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder={titlePlaceholder} className={input} />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder={titlePlaceholder} />
           <div className="space-y-2">
             {TRIBE_ACTIVITY_GROUPS.map((group) => (
               <div key={group.label}>
@@ -597,9 +596,9 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
             ))}
           </div>
           {mode === "in_person" ? (
-            <Input value={place} onChange={(e) => setPlace(e.target.value)} maxLength={80} placeholder="Place — e.g. Central Park, main gate" className={input} />
+            <Input value={place} onChange={(e) => setPlace(e.target.value)} maxLength={80} placeholder="Place — e.g. Central Park, main gate" />
           ) : (
-            <Input value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="Paste link — Google Meet, Teams, Zoom…" className={cn(field, linkInvalid && "border-destructive/60")} />
+            <Input value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="Paste link — Google Meet, Teams, Zoom…" aria-invalid={linkInvalid || undefined} />
           )}
           <div className="flex gap-2">
             <div className="flex-1">
@@ -613,17 +612,16 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                 step={5}
                 onChange={(e) => { setDuration(e.target.value); setDurationTouched(true); }}
                 onBlur={() => setDuration(String(durationMin))}
-                className={input}
               />
             </div>
             {kind === "single" && (
               <div className="flex-1">
                 <label className={cn(LABEL, "mb-1 block")}>Capacity (optional)</label>
-                <Input type="number" value={capacity} min={1} placeholder="No limit" onChange={(e) => setCapacity(e.target.value)} className={input} />
+                <Input type="number" value={capacity} min={1} placeholder="No limit" onChange={(e) => setCapacity(e.target.value)} />
               </div>
             )}
           </div>
-          <textarea value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={280} placeholder="Details (optional)" rows={2} className={cn(field, "resize-none")} />
+          <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={280} placeholder="Details (optional)" rows={2} className="min-h-0" />
         </div>
       </div>
     </BottomSheet>

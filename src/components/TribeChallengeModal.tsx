@@ -104,7 +104,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tribe by name…" {...SEARCH_FIELD}
-            className="pl-9 h-11"
+            className="pl-9"
           />
         </div>
       }

@@ -100,7 +100,7 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="LEGEND-XXXX"
-              className="font-mono tracking-wider text-center uppercase h-11"
+              className="font-mono tracking-wider text-center uppercase"
               maxLength={40}
               autoFocus
             />

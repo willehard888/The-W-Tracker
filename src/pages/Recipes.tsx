@@ -205,7 +205,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search recipes or ingredients" {...SEARCH_FIELD}
               aria-label="Search recipes or ingredients"
-              className="h-11 rounded-xl pl-9 pr-9 text-note"
+              className="pl-9 pr-9"
             />
             {query && (
               <button

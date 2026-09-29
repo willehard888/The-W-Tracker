@@ -126,7 +126,7 @@ const ExercisePickerSheet = ({ open, onClose, title, current, exclude, onPick }:
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search movements" {...SEARCH_FIELD}
               aria-label="Search movements"
-              className="pl-9 text-copy"
+              className="pl-9"
             />
           </div>
           <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4">

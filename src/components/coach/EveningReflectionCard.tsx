@@ -5,6 +5,7 @@ import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 const Scale = ({
   label,
@@ -151,20 +152,18 @@ const EveningReflectionCard = () => {
 
               <div className="space-y-1.5">
                 <span className="text-label font-bold text-muted-foreground">One win</span>
-                <input
+                <Input
                   value={win}
                   onChange={(e) => setWin(e.target.value.slice(0, 200))}
                   placeholder="What worked today?"
-                  className="w-full rounded-lg bg-card/60 border border-border/50 px-3 py-2 text-copy focus:outline-none focus:border-gold/60"
                 />
               </div>
               <div className="space-y-1.5">
                 <span className="text-label font-bold text-muted-foreground">One friction</span>
-                <input
+                <Input
                   value={friction}
                   onChange={(e) => setFriction(e.target.value.slice(0, 200))}
                   placeholder="What got in the way?"
-                  className="w-full rounded-lg bg-card/60 border border-border/50 px-3 py-2 text-copy focus:outline-none focus:border-gold/60"
                 />
               </div>
 

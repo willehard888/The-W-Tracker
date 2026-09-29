@@ -50,6 +50,11 @@ const RULES = [
   // A segmented control opts out of the global press scale through
   // SEGMENT_BUTTON; a hand-written one shrinks inside its track.
   { re: /^(?![\s\S]*SEGMENT_BUTTON)[\s\S]*?SEGMENT_(?:ACTIVE|IDLE)/, msg: "segment without SEGMENT_BUTTON — the prefix carries the size and the press opt-out", exempt: ["src/components/ui/segment.ts"] },
+  // One field: a raw <input>/<textarea> that re-declares the inset surface or
+  // its own focus ring is a copy of src/components/ui/input.tsx.
+  { re: /<(?:input|textarea)\b(?:[^>]|=>)*?className=(?:[^>]|=>)*?(?:surface-inset|focus(?:-visible)?:ring-|focus(?:-visible)?:border-gold)/, msg: "raw field with its own surface or focus — use <Input>/<Textarea> (one field, one focus)",
+    // The two editors' title line is a transparent underline field by design.
+    exempt: [UI, "src/pages/nutrition/NutritionRecipeEditor.tsx", "src/pages/nutrition/UserFoodEditor.tsx"] },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

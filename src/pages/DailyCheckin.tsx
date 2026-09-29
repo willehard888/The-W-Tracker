@@ -1,5 +1,5 @@
 import { backOr } from "@/lib/nav";
-import { SEARCH_FIELD } from "@/components/ui/input";
+import { SEARCH_FIELD, Input } from "@/components/ui/input";
 import { useSessionDoneToday } from "@/hooks/use-session-done-today";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { getEffectiveStreak } from "@/lib/streak";
@@ -1149,12 +1149,12 @@ const DailyCheckin = () => {
               {/* Search — "ten" → Tennis. The whole catalog is one keystroke away. */}
               <div className="px-3 pt-3 pb-1 relative">
                 <Search aria-hidden size={14} className="absolute left-6 top-1/2 mt-1 -translate-y-1/2 text-muted-foreground/75 pointer-events-none" />
-                <input
+                <Input
                   value={sportQuery}
                   onChange={(e) => setSportQuery(e.target.value)}
                   placeholder="Search sports…" {...SEARCH_FIELD}
                   aria-label="Search sports"
-                  className="w-full surface-inset rounded-xl pl-9 pr-9 py-2.5 text-copy outline-none focus:border-gold/50 transition-colors"
+                  className="pl-9 pr-9"
                 />
                 {sportQuery && (
                   <button

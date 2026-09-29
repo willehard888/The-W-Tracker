@@ -17,7 +17,7 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const itemBase =
-  "relative flex cursor-default select-none items-center rounded-md px-2.5 py-1.5 text-sm text-foreground outline-none transition-[background,color,box-shadow] duration-150 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-[hsl(0_0%_100%/0.05)] focus:text-foreground data-[state=checked]:border-l-2 data-[state=checked]:border-[hsl(var(--gold))] data-[state=checked]:pl-[calc(0.625rem-2px)]";
+  "relative flex min-h-11 cursor-default select-none items-center rounded-lg px-3 py-2 text-read text-foreground outline-none transition-[background-color,color,box-shadow] duration-[140ms] [transition-timing-function:var(--ease-ios)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-[hsl(0_0%_100%/0.06)] focus:text-foreground active:bg-[hsl(0_0%_100%/0.09)] data-[state=checked]:border-l-2 data-[state=checked]:border-[hsl(var(--gold))] data-[state=checked]:pl-[calc(0.75rem-2px)]";
 
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,

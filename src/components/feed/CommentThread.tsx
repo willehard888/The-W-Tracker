@@ -5,6 +5,7 @@ import { Reply, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface CommentThreadProps {
   node: CommentNode;
@@ -99,12 +100,12 @@ const CommentThread = memo(function CommentThread({
             </div>
             {isEditing ? (
               <div className="mt-1.5 flex flex-col gap-2 min-w-[200px]">
-                <textarea
+                <Textarea
                   value={draft}
                   onChange={(e) => setDraft(e.target.value.slice(0, 300))}
                   rows={2}
                   autoFocus
-                  className="w-full bg-background/50 border border-gold/30 focus:border-gold rounded-lg px-2 py-1.5 text-copy text-foreground/90 outline-none resize-none focus:ring-2 focus:ring-gold/30"
+                  className="min-h-0 py-2 border-gold/30"
                   onKeyDown={(e) => {
                     if (e.key === "Escape") {
                       e.preventDefault();

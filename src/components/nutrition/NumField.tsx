@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 /**
  * One labelled numeric field for the nutrition forms. Text input with the
@@ -34,7 +35,7 @@ const NumField = ({
       </span>
       {unit && <span className="text-label text-muted-foreground/75 shrink-0">{unit}</span>}
     </span>
-    <input
+    <Input
       type="text"
       inputMode={mode}
       enterKeyHint="next"
@@ -43,10 +44,7 @@ const NumField = ({
       aria-required={required}
       aria-invalid={!!error}
       onChange={(e) => onChange(e.target.value)}
-      className={cn(
-        "mt-1 w-full surface-inset rounded-xl h-11 px-3 text-read font-bold tabular-nums outline-none focus:border-gold/50 transition-colors",
-        error && "border-destructive/60",
-      )}
+      className="mt-1 px-3 font-bold tabular-nums"
     />
     {error && (
       <span role="alert" className="block text-label text-[hsl(var(--ember))] mt-1 leading-snug">

@@ -94,7 +94,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by username…" {...SEARCH_FIELD}
-            className="pl-9 h-11"
+            className="pl-9"
             autoFocus
           />
         </div>

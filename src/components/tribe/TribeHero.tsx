@@ -11,6 +11,7 @@ import TribeFireCanvas from "@/components/tribe/TribeFireCanvas";
 import type { FireEvent } from "@/hooks/use-tribe-fire-reactor";
 import { useSignedMediaUrl } from "@/lib/signed-url";
 import { cn } from "@/lib/utils";
+import { FIELD_LABEL as LABEL } from "@/components/ui/label";
 import {
   collectiveStreakTier,
   collectiveTierName,
@@ -97,7 +98,6 @@ const SegmentBar = ({ pct, color }: { pct: number; color: string }) => (
   </div>
 );
 
-const LABEL = "text-label font-bold text-muted-foreground";
 
 /**
  * The tribe's one cinematic hero — collective fire, identity, and actions in

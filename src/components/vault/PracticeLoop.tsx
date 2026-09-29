@@ -323,7 +323,7 @@ const AnswerBox = ({
         rows={4}
         placeholder="In your own words. Nobody else reads this."
         aria-label={prompt}
-        className="mt-3 text-copy leading-relaxed bg-card/50 border-border/50 rounded-xl min-h-[96px] resize-y focus-visible:ring-1"
+        className="mt-3 resize-y"
         style={{ caretColor: accent }}
       />
       <div className="mt-2 flex items-center justify-between gap-3">

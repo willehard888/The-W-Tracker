@@ -1,4 +1,6 @@
 import { useEffect } from "react";
+import { ArrowLeftRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { IllustrationPlayer } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingBlock } from "@/components/coach/ExerciseCoachingBlock";
@@ -6,6 +8,7 @@ import ExerciseTile from "@/components/coach/ExerciseTile";
 import { resolveIllustration } from "@/lib/exercise-match";
 import { resolveGroup } from "@/lib/exercise-group";
 import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
+import { ExerciseLogForm } from "@/components/coach/ExerciseLogForm";
 import { track, FUNNEL } from "@/lib/analytics";
 import type { ProgramBlock } from "@/hooks/use-coach-program";
 
@@ -34,6 +37,9 @@ export const ExercisePreviewSheet = ({
   onClose,
   block,
   source,
+  logging,
+  onSwap,
+  onRemove,
 }: {
   open: boolean;
   onClose: () => void;
@@ -41,6 +47,11 @@ export const ExercisePreviewSheet = ({
   block: ProgramBlock | null;
   /** Which surface opened it. A funnel does not need to know the movement. */
   source: "program" | "runner";
+  /** Where to write a logged result. Omitted while browsing a future week. */
+  logging?: { programId: string; week: number; dayIndex: number };
+  /** Hand edits, offered only while nothing is logged for this movement. */
+  onSwap?: () => void;
+  onRemove?: () => void;
 }) => {
   const libReady = useExerciseLibrary();
   const ex = block && libReady ? resolveExercise(block.slug, block.name) : null;
@@ -136,6 +147,43 @@ export const ExercisePreviewSheet = ({
 
           {block.notes && (
             <p className="text-meta text-muted-foreground/80 leading-relaxed">{block.notes}</p>
+          )}
+
+          {block.alt && (
+            <p className="text-meta text-muted-foreground/85">
+              <span className="text-label font-bold text-muted-foreground mr-1">Swap</span>
+              {block.alt}
+            </p>
+          )}
+
+          {(onSwap || onRemove) && (
+            <div className="flex gap-2">
+              {onSwap && (
+                <Button type="button" variant="outline" size="sm" onClick={() => { onSwap(); onClose(); }}>
+                  <ArrowLeftRight aria-hidden size={13} /> Swap
+                </Button>
+              )}
+              {onRemove && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => { onRemove(); onClose(); }}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+          )}
+
+          {logging && (
+            <ExerciseLogForm
+              block={block}
+              programId={logging.programId}
+              week={logging.week}
+              dayIndex={logging.dayIndex}
+            />
           )}
         </div>
       )}

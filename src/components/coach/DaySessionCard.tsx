@@ -183,8 +183,6 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
                 week={currentWeek}
                 dayIndex={todayDayIndex}
                 loggable={isCurrentWeek || !!todayLog}
-                onSwap={onSwap && b.slug ? () => onSwap(b) : undefined}
-                onRemove={onRemove && b.slug ? () => onRemove(b.slug!) : undefined}
                 onOpen={() => setPreview(b)}
               />
             ))}
@@ -289,6 +287,11 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
             onClose={() => setPreview(null)}
             block={preview}
             source="program"
+            logging={isCurrentWeek || !!todayLog
+              ? { programId: program.id, week: currentWeek, dayIndex: todayDayIndex }
+              : undefined}
+            onSwap={onSwap && preview.slug ? () => onSwap(preview) : undefined}
+            onRemove={onRemove && preview.slug ? () => onRemove(preview.slug!) : undefined}
           />
         </Suspense>
       )}

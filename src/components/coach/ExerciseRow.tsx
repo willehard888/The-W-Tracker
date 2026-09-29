@@ -1,23 +1,11 @@
-import { localDateKey } from "@/lib/date";
-import { parseDecimal, decimalInput } from "@/lib/training/runner";
-import { Suspense, lazy, useEffect, useState } from "react";
-import { ArrowLeftRight, ChevronDown, ChevronRight, Check, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { hapticImpact, hapticNotification } from "@/lib/haptics";
-import { toast } from "sonner";
+import { hapticImpact } from "@/lib/haptics";
+import { Check, ChevronRight } from "lucide-react";
 import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
 import ExerciseTile from "@/components/coach/ExerciseTile";
-import { IllustrationThumb, IllustrationHero } from "@/components/coach/ExerciseIllustration";
-// The coaching prose (130 KB of text) rode in the first row's chunk; it only
-// renders once a movement is expanded, so it loads then.
-const ExerciseCoachingCompact = lazy(() =>
-  import("@/components/coach/ExerciseCoachingBlock").then((m) => ({ default: m.ExerciseCoachingCompact })),
-);
+import { IllustrationThumb } from "@/components/coach/ExerciseIllustration";
 import { resolveIllustration } from "@/lib/exercise-match";
-import { useExerciseHistory, useDayLogs, useLogSet } from "@/hooks/use-workout-log";
-import Sparkline from "@/components/coach/Sparkline";
+import { useDayLogs } from "@/hooks/use-workout-log";
 
 import type { ProgramBlock } from "@/hooks/use-coach-program";
 export type { ProgramBlock };
@@ -29,120 +17,41 @@ interface Props {
   dayIndex: number;
   /** When false, logging inputs are hidden (e.g. browsing a future week). */
   loggable?: boolean;
-  /** Hand edits, offered only while nothing is logged for this movement. */
-  onSwap?: () => void;
-  onRemove?: () => void;
-  /**
-   * Open the movement full size instead of expanding the row.
-   *
-   * The accordion answers "what does this row not tell me"; the sheet
-   * answers "what IS this". Where a parent can show the sheet it wins,
-   * because a 40 px thumbnail is not a demonstration.
-   */
-  onOpen?: () => void;
+  /** Open the movement full size. The row itself is only a row. */
+  onOpen: () => void;
 }
 
-// Whole local days between two day keys. `logged_on` is a date, and parsing
-// it as UTC midnight then rounding called a set logged this evening "1d ago".
-const daysAgo = (day: string) => {
-  const d = Math.round((Date.parse(`${localDateKey()}T00:00:00Z`) - Date.parse(`${day.slice(0, 10)}T00:00:00Z`)) / 86_400_000);
-  return d <= 0 ? "today" : d === 1 ? "1d ago" : `${d}d ago`;
-};
-
 /**
- * One exercise in a session: its drawing + name + target, expandable to
- * step-by-step instructions and an inline "log your set" row (weight × reps).
- * The logged result is what the AI coach reads to progress the next block.
+ * One exercise in a planned session: drawing, name, target, and whether it has
+ * been logged today.
+ *
+ * It used to be an accordion as well — the illustration again at hero size,
+ * the muscles, the coaching prose, the instructions, a progression chart and a
+ * logging form, all inline. That made it a second, divergent copy of what the
+ * exercise library already rendered, and it is now one: tapping opens
+ * ExercisePreviewSheet, which owns all of it.
  */
-const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap, onRemove, onOpen }: Props) => {
+const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen }: Props) => {
   const libReady = useExerciseLibrary();
   const ex = libReady ? resolveExercise(block.slug, block.name) : null;
-  const [open, setOpen] = useState(false);
 
   const dayLogs = useDayLogs(loggable ? programId : undefined, week, dayIndex);
   const existing = block.slug ? dayLogs.data?.[block.slug] : undefined;
-  const history = useExerciseHistory(open ? (block.slug ?? null) : null);
-  const logSet = useLogSet();
-
-  const [weight, setWeight] = useState("");
-  const [reps, setReps] = useState("");
-  const [rpe, setRpe] = useState("");
-  useEffect(() => {
-    if (existing) {
-      setWeight(existing.weight != null ? String(existing.weight) : "");
-      setReps(existing.reps != null ? String(existing.reps) : "");
-      // Only show a stored RPE the athlete could have given. Rows logged before
-      // this field existed hold the prescribed value, so echoing it back would
-      // present the program's number as the athlete's own.
-      const stored = (existing as { rpe?: number | null }).rpe;
-      setRpe(stored != null && stored !== block.rpe ? String(stored) : "");
-    }
-  }, [existing?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // The most recent PRIOR log for this exercise (skip today's own slot).
-  const last = (history.data ?? []).find((h) => h.id !== existing?.id && h.weight != null);
-
-  // Weight progression series, chronological (oldest → newest), for the chart.
-  const weightSeries = (history.data ?? [])
-    .filter((h) => h.weight != null)
-    .map((h) => Number(h.weight))
-    .reverse();
-  const trend = weightSeries.length >= 2 ? weightSeries[weightSeries.length - 1] - weightSeries[0] : 0;
-
-  const fill = (w: number | null, r: number | null) => {
-    hapticImpact("light");
-    if (w != null) setWeight(String(w));
-    if (r != null) setReps(String(r));
-  };
+  const logged = !!existing && (existing.weight != null || existing.reps != null);
 
   // The drawing, or the muscle-group glyph. There is no third option any
   // more: the duotone photo that used to sit between them was the one thing
   // in a session that looked like it came from somewhere else.
   const illustrated = resolveIllustration(block.slug, block.name) ?? (ex ? resolveIllustration(null, ex.name) : null);
   const group = resolveGroup(block.name, ex?.primary);
-  const hasMore = !!(ex || illustrated || block.notes || block.alt || block.rest_sec || block.tempo || onSwap || onRemove);
-
-  const save = async () => {
-    const w = parseDecimal(weight);
-    const rr = parseDecimal(reps);
-    const r = rr == null ? null : Math.trunc(rr);
-    if (w == null && r == null) { toast.error("Add a weight or reps first."); return; }
-    // Felt RPE beats prescribed RPE. This used to store `block.rpe` — the
-    // number the PROGRAM asked for — so workout_set_logs.rpe recorded what the
-    // session was supposed to feel like, never what it did. Progression reads
-    // this column, so the honest number is the one worth keeping; the
-    // prescription stays as the fallback when the athlete doesn't fill it in.
-    const feltRpe = rpe.trim() === "" ? null : parseInt(rpe, 10);
-    const rpeToLog = feltRpe != null && feltRpe >= 1 && feltRpe <= 10
-      ? feltRpe
-      : block.rpe ?? null;
-    hapticImpact("light");
-    try {
-      await logSet.mutateAsync({
-        programId, week, day: dayIndex, slug: block.slug ?? null,
-        name: block.name, weight: w, reps: r, rpe: rpeToLog,
-      });
-      hapticNotification("success");
-      toast.success(`${block.name}: logged`);
-    } catch {
-      toast.error("Couldn't save — check connection.");
-    }
-  };
-
-  const logged = !!existing && (existing.weight != null || existing.reps != null);
 
   return (
     <li className="border-b border-border/30 last:border-b-0 pb-1.5 last:pb-0">
       <button
         type="button"
-        onClick={() => onOpen ? (hapticImpact("light"), onOpen()) : hasMore && (hapticImpact("light"), setOpen((v) => !v))}
-        className="w-full flex items-center gap-2.5 py-1.5 text-left"
+        onClick={() => { hapticImpact("light"); onOpen(); }}
+        className="w-full min-h-11 flex items-center gap-2.5 py-1.5 text-left"
       >
-        {/* The drawing, or the muscle-group glyph. The stock photo that used to
-            sit between them is gone: one exercise rendered as a photograph in a
-            list of gold line art reads as a different product, and a member
-            noticed. The glyph is the same black-and-gold vocabulary at any
-            size, so a session looks like one thing whatever it prescribes. */}
         {illustrated ? (
           <IllustrationThumb ex={illustrated} size={40} className="rounded-lg" />
         ) : (
@@ -154,183 +63,17 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onSwap
           <span className="font-bold text-sm leading-snug text-foreground line-clamp-2">{block.name}</span>
           {logged && (
             <span className="text-label font-bold text-xp-green inline-flex items-center gap-1">
-              <Check aria-hidden size={12} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}{existing!.weight != null && existing!.reps != null ? " × " : ""}{existing!.reps != null ? `${existing!.reps}` : ""} logged
+              <Check aria-hidden size={12} /> {existing!.weight != null ? `${existing!.weight}kg` : ""}
+              {existing!.weight != null && existing!.reps != null ? " × " : ""}
+              {existing!.reps != null ? `${existing!.reps}` : ""} logged
             </span>
           )}
         </div>
         <span className="text-meta font-bold text-foreground/85 tabular-nums whitespace-nowrap inline-flex items-center gap-1">
           {block.sets}×{block.reps}{block.rpe ? ` · RPE ${block.rpe}` : ""}
-          {onOpen ? (
-            <ChevronRight aria-hidden size={11} className="text-muted-foreground/75" />
-          ) : hasMore && (
-            <ChevronDown aria-hidden size={11} className={cn("text-muted-foreground/75 transition-transform", open && "rotate-180")} />
-          )}
+          <ChevronRight aria-hidden size={11} className="text-muted-foreground/75" />
         </span>
       </button>
-
-      {open && (
-        <div className="pl-0 pb-2 space-y-2.5">
-          {/* The static Start/Finish pair here; the rep only plays in the
-              detail and the runner, so a list never carries a loop per row. */}
-          {/* No photo fallback. A movement with no drawing shows the glyph in
-              the same frame and leans on its written steps below — the
-              generator no longer prescribes undrawn lifts, so this is only
-              reached by programs built before that, and even there a session
-              should look like one product. */}
-          {illustrated ? (
-            <IllustrationHero ex={illustrated} />
-          ) : (
-            <div className="rounded-2xl border border-gold/20 bg-[hsl(258_16%_6%)] py-7 flex flex-col items-center gap-2">
-              <ExerciseTile group={group} size={56} />
-              <p className="text-label font-bold text-muted-foreground/75">Follow the steps below</p>
-            </div>
-          )}
-
-          {ex && (ex.primary.length > 0 || ex.equipment) && (
-            <p className="text-label font-bold text-muted-foreground">
-              {[ex.primary.join(", "), ex.equipment].filter(Boolean).join(" · ")}
-            </p>
-          )}
-
-          {/* Rhythm, the top cue and the worst mistake — the parts of the
-              coaching that are worth reading with a loaded bar nearby. The
-              full block lives in the library detail. */}
-          <Suspense fallback={null}>
-            <ExerciseCoachingCompact slug={illustrated?.slug} />
-          </Suspense>
-
-          {/* Instructions come from the 542-photo set, the illustration from the
-              269-illustrated set — and only 40 titles match exactly across the
-              two. So for most movements this row drew a beautiful illustration
-              and then rendered NOTHING underneath it, mid-workout, which is
-              precisely when an athlete needs the cue. The illustrated set has
-              its own `steps`; they were already loaded to draw the picture.
-              Whichever list has content wins, photo text first because it is
-              the longer of the two (avg 155 chars vs 76). */}
-          {(ex?.instructions?.length ? ex.instructions : illustrated?.steps ?? []).length > 0 && (
-            <ol className="space-y-1 list-none">
-              {(ex?.instructions?.length ? ex.instructions : illustrated!.steps).map((step, i) => (
-                <li key={i} className="flex gap-2 text-meta text-foreground/80 leading-snug">
-                  <span className="shrink-0 h-4 w-4 rounded-full bg-gold/15 text-gold text-label font-black flex items-center justify-center mt-px">{i + 1}</span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-          )}
-
-          {(block.rest_sec || block.tempo) && (
-            <p className="text-label text-muted-foreground/80">
-              {block.rest_sec ? `Rest ${block.rest_sec}s` : ""}{block.rest_sec && block.tempo ? " · " : ""}{block.tempo ? `Tempo ${block.tempo}` : ""}
-            </p>
-          )}
-          {block.notes && <p className="text-meta text-muted-foreground leading-snug">{block.notes}</p>}
-          {!logged && (onSwap || onRemove) && (
-            <div className="flex gap-2">
-              {onSwap && (
-                <Button type="button" variant="outline" size="sm" onClick={onSwap}>
-                  <ArrowLeftRight aria-hidden size={13} /> Swap
-                </Button>
-              )}
-              {onRemove && (
-                <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={onRemove}>
-                  Remove
-                </Button>
-              )}
-            </div>
-          )}
-          {block.alt && (
-            <p className="text-meta text-muted-foreground/85">
-              <span className="text-label font-bold text-muted-foreground mr-1">Swap</span>{block.alt}
-            </p>
-          )}
-
-          {/* Progression chart — weight over time from logged sets. */}
-          {weightSeries.length >= 2 && (
-            <div className="rounded-xl bg-background/40 border border-border/40 p-2.5">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-label font-bold text-muted-foreground">Progression</p>
-                <p className={cn(
-                  "text-label font-black tabular-nums",
-                  trend > 0 ? "text-xp-green" : trend < 0 ? "text-destructive" : "text-muted-foreground",
-                )}>
-                  {trend > 0 ? "+" : ""}{trend !== 0 ? `${Math.round(trend * 10) / 10}kg` : "flat"} · {weightSeries.length} logs
-                </p>
-              </div>
-              <Sparkline values={weightSeries} className="w-full h-8" />
-            </div>
-          )}
-
-          {/* Log your set — weight × reps. The AI reads this to progress you. */}
-          {loggable && (
-            <div className="rounded-xl bg-background/50 border border-border/50 p-2.5">
-              <div className="flex items-center justify-between mb-1.5">
-                <p className="text-label font-bold text-muted-foreground">Log your result</p>
-                {last && (
-                  <p className="text-label text-muted-foreground">
-                    Last: {last.weight != null ? `${last.weight}kg` : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}` : ""} · {daysAgo(last.logged_on)}
-                  </p>
-                )}
-              </div>
-              {/* Quick-fill from last session — tap to prefill, tweak if needed. */}
-              {last?.weight != null && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {[
-                    { label: `Same · ${last.weight}kg`, w: Number(last.weight) },
-                    { label: "+2.5 kg", w: Number(last.weight) + 2.5 },
-                    { label: "+5 kg", w: Number(last.weight) + 5 },
-                  ].map((c) => (
-                    <button
-                      key={c.label}
-                      type="button"
-                      onClick={() => fill(c.w, last.reps ?? null)}
-                      className="press relative before:absolute before:-inset-y-2.5 before:inset-x-0 before:content-[''] rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-label font-bold text-gold transition-transform"
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <input
-                    type="text" inputMode="decimal" value={weight} placeholder="kg" aria-label="Weight in kilograms"
-                    onChange={(e) => setWeight(decimalInput(e.target.value))}
-                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-copy text-center outline-none focus:border-gold/50"
-                  />
-                </div>
-                <span className="text-muted-foreground text-xs font-black">×</span>
-                <div className="flex-1">
-                  <input
-                    type="number" inputMode="numeric" value={reps} placeholder="reps"
-                    onChange={(e) => setReps(e.target.value)}
-                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-copy text-center outline-none focus:border-gold/50"
-                  />
-                </div>
-                {/* Felt RPE. Optional — leaving it blank falls back to the
-                    prescribed value, which is what every row stored before. */}
-                <div className="flex-1">
-                  <input
-                    type="number" inputMode="numeric" min={1} max={10} value={rpe}
-                    placeholder={block.rpe ? `RPE ${block.rpe}` : "RPE"}
-                    aria-label="Felt RPE, 1 to 10"
-                    onChange={(e) => setRpe(e.target.value)}
-                    className="w-full rounded-lg border border-border/50 bg-background/60 px-2.5 py-2 text-copy text-center outline-none focus:border-gold/50"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={save}
-                  disabled={logSet.isPending}
-                  className="press shrink-0 inline-flex items-center gap-1 rounded-lg bg-gold px-3 py-2 text-meta font-black text-primary-foreground disabled:opacity-60 transition-transform"
-                >
-                  {logSet.isPending ? <Loader2 aria-hidden size={13} className="animate-spin" /> : <Check aria-hidden size={13} />}
-                  {logged ? "Update" : "Save"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </li>
   );
 };

@@ -8,7 +8,7 @@ import { Flame, History, Swords } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
 import { DoorRow } from "@/components/coach/rows";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { hapticSelection } from "@/lib/haptics";
 import { backOr } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -286,7 +286,7 @@ const TribeBattles = () => {
                   role="tab"
                   aria-selected={shown === t.id}
                   onClick={() => { void hapticSelection(); setTab(t.id); }}
-                  className={cn("eyebrow flex-1 min-h-11 rounded-lg transition-colors", shown === t.id ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn("eyebrow", SEGMENT_BUTTON, shown === t.id ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {t.label}{rows[t.id].length > 0 && t.id !== "history" ? ` ${rows[t.id].length}` : ""}
                 </button>

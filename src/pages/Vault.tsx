@@ -238,7 +238,7 @@ const Vault = () => {
                       hapticImpact("light");
                       setOpenMaster(m);
                     }}
-                    className="w-full py-2.5 text-left"
+                    className="press-row w-full py-2.5 text-left"
                   >
                     <span className="block font-display text-dense font-black tracking-tight leading-tight truncate">{m.name}</span>
                     <span className="block text-label text-muted-foreground leading-snug truncate" style={done ? { color: WISDOM_ACCENT } : undefined}>
@@ -348,7 +348,7 @@ const VaultCategoryBlock = ({
         }}
         aria-expanded={expanded}
         aria-controls={panelId}
-        className="relative block w-full aspect-[16/7] rounded-2xl overflow-hidden text-left"
+        className="press-row relative block w-full aspect-[16/7] rounded-2xl overflow-hidden text-left"
       >
         <VaultCover id={category.id} accent={category.accent} />
         {articles.length > 0 && (
@@ -379,7 +379,7 @@ const VaultCategoryBlock = ({
           {/* Recipes category → the full meal-prep recipe collection (poster
               style + batch scaler). A quiet row leading the pieces. */}
           {category.id === "recipes" && (
-            <button type="button" onClick={() => navigate("/recipes")} className="w-full flex items-center gap-3 py-3.5 text-left">
+            <button type="button" onClick={() => navigate("/recipes")} className="press-row w-full flex items-center gap-3 py-3.5 text-left">
               <Utensils size={16} className="text-muted-foreground shrink-0" aria-hidden />
               <span className="flex-1 min-w-0">
                 <span className="block font-display text-dense font-black tracking-tight leading-tight">Meal-prep recipes</span>

@@ -66,7 +66,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
     <button
       type="button"
       onClick={() => navigate("/coach/profile")}
-      className={cn("w-full text-left surface-card surface-card-quiet p-4", className)}
+      className={cn("press-row w-full text-left surface-card surface-card-quiet p-4", className)}
       aria-label="Edit your AI Coach blueprint"
     >
       <div className="flex items-start gap-3">

@@ -12,7 +12,7 @@ import EmptyState from "@/components/ui/empty-state";
 import { FactRow } from "@/components/coach/rows";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import MacroRow from "@/components/nutrition/MacroRow";
 
@@ -90,7 +90,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                 onClick={() => { hapticSelection(); setBatch(b); setTouched(true); }}
                 aria-pressed={batch === b}
                 className={cn(
-                  "flex-1 h-11 rounded-lg text-dense font-black tabular-nums transition-colors",
+                  SEGMENT_BUTTON, "tabular-nums",
                   batch === b ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
@@ -253,7 +253,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
                   <button
                     type="button"
                     onClick={() => { hapticImpact("light"); onOpen(); navigate(`/recipes/${r.id}`); }}
-                    className="w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
+                    className="press-row w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
                   >
                     <RecipePhoto id={r.id} variant="tile" className="h-14 w-14 shrink-0 rounded-xl" />
                     <span className="min-w-0 flex-1">

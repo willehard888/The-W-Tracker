@@ -48,7 +48,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
             key={f.id}
             type="button"
             onClick={() => { hapticImpact("light"); onSelect(f); }}
-            className="press w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
+            className="press-row  w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
           >
             <p className="text-label text-muted-foreground mb-0.5">{f.category}</p>
             <p className="text-sm text-foreground">{f.question}</p>

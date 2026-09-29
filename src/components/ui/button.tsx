@@ -4,7 +4,6 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { hapticImpact } from "@/lib/haptics";
 
 // ─────────────────────────────────────────────────────────────────────
 // PRIMARY EMBER — the single, clean orange-amber CTA look used across the
@@ -45,19 +44,21 @@ const PRIMARY_EMBER = [
 // Variants whose ::before is free (no surface sheen) — these get the invisible
 // hit-area expansion for icon-sm / xs / icon via compoundVariants below.
 const HIT_AREA_VARIANTS = [
-  "obsidian", "destructive", "outline", "secondary", "ghost", "link",
-  "gold-outline", "glass", "tier", "success", "warning", "danger-outline", "gold-icon",
+  "destructive", "outline", "secondary", "ghost", "link",
+  "gold-outline", "tier", "danger-outline", "gold-icon",
 ] as const;
 
 const buttonVariants = cva(
   [
     "relative inline-flex items-center justify-center gap-2.5 whitespace-nowrap",
-    "rounded-md text-sm font-semibold select-none",
-    "ring-offset-background",
-    // Lighter transition: only transform + box-shadow + filter — avoids triggering repaints on color/background.
-    "transition-[transform,box-shadow,filter] duration-200 [transition-timing-function:var(--ease-spring)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-    "focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.18)]",
+    "rounded-xl text-sm font-semibold select-none",
+    // One press for the whole app: the same 140 ms iOS curve the global
+    // button rule in index.css uses, and every state the variants change
+    // (colour, border, shadow) rides the same curve instead of snapping.
+    "transition-[transform,background-color,border-color,color,box-shadow,filter,opacity] duration-[140ms] [transition-timing-function:var(--ease-ios)]",
+    // Focus is the one gold ring in index.css (button:focus-visible) — no
+    // second ring language here.
+    "focus-visible:outline-none",
     "disabled:pointer-events-none disabled:opacity-50 disabled:saturate-[0.6] disabled:cursor-not-allowed",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     // Inner content (text + icons) lifts ABOVE the gloss/glint overlays so it stays crisp,
@@ -71,41 +72,68 @@ const buttonVariants = cva(
         // Primary — the clean orange-amber CTA (shared PRIMARY_EMBER look).
         default: PRIMARY_EMBER,
 
-        // Obsidian — flat dark surface.
-        obsidian: "bg-[hsl(258_16%_13%)] text-primary-foreground border border-border/60 hover:bg-[hsl(258_16%_16%)]",
+        // The quiet surfaces. No ::before (the 44 pt halo lives there): depth
+        // is an inset top light and a bottom hairline in the box-shadow, a
+        // resting --shadow-1 where the surface is filled, and a pressed state
+        // that sinks — the same three moves the ember bezel makes, at whisper
+        // volume.
+        // Destructive — filled red.
+        destructive: [
+          "bg-destructive text-destructive-foreground",
+          "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.18),inset_0_-1px_0_hsl(0_0%_0%/0.35),var(--shadow-1)]",
+          "hover:brightness-110",
+          "active:brightness-95 active:shadow-[inset_0_2px_4px_hsl(0_0%_0%/0.45)]",
+        ].join(" "),
 
-        // Destructive — flat solid red.
-        destructive: "bg-destructive text-destructive-foreground hover:brightness-110",
+        // Outline — hairline, transparent; fills and sinks on press.
+        outline: [
+          "border border-border bg-transparent text-foreground",
+          "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]",
+          "hover:bg-secondary/40 hover:border-[hsl(var(--border-strong))]",
+          "active:bg-secondary/55 active:border-[hsl(var(--border-strong))] active:shadow-[inset_0_1px_3px_hsl(0_0%_0%/0.45)]",
+        ].join(" "),
 
-        // Outline — clean hairline, transparent (flat).
-        outline: "border border-border bg-transparent text-foreground hover:bg-secondary/40 hover:border-[hsl(var(--border-strong))]",
+        // Secondary — the filled neutral (Apple-style), with a real edge.
+        secondary: [
+          "bg-secondary text-secondary-foreground border border-border/60",
+          "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),inset_0_-1px_0_hsl(0_0%_0%/0.35),var(--shadow-1)]",
+          "hover:bg-secondary/80 hover:border-border",
+          "active:bg-[hsl(var(--secondary)/0.6)] active:shadow-[inset_0_2px_4px_hsl(0_0%_0%/0.45)]",
+        ].join(" "),
 
-        // Secondary — flat translucent surface (Whoop/Apple-style, no glass/glint).
-        secondary: "bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/80",
+        // Ghost — nothing at rest; a surface appears under the thumb.
+        ghost: [
+          "text-foreground",
+          "hover:bg-secondary/60",
+          "active:bg-secondary/75 active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.35)]",
+        ].join(" "),
 
-        // Ghost — transparent, subtle neutral hover.
-        ghost: "text-foreground hover:bg-secondary/60",
+        // Link — gold-soft → gold; the quiet text action.
+        link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline active:text-[hsl(var(--gold-light))] active:underline",
 
-        // Link — gold-soft → gold
-        link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline",
+        // Gold outline — hairline gold that fills on press.
+        "gold-outline": [
+          "border border-[hsl(var(--gold)/0.4)] text-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.04)] font-semibold",
+          "shadow-[inset_0_1px_0_hsl(var(--gold)/0.18),inset_0_-1px_0_hsl(0_0%_0%/0.35)]",
+          "hover:bg-[hsl(var(--gold)/0.1)] hover:border-[hsl(var(--gold)/0.6)]",
+          "active:bg-[hsl(var(--gold)/0.16)] active:border-[hsl(var(--gold)/0.7)] active:shadow-[inset_0_2px_4px_hsl(0_0%_0%/0.4)]",
+        ].join(" "),
 
-        // Gold outline — clean gold hairline, fills lightly on hover.
-        "gold-outline": "border border-[hsl(var(--gold)/0.4)] text-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.04)] font-semibold hover:bg-[hsl(var(--gold)/0.1)] hover:border-[hsl(var(--gold)/0.6)]",
+        // Tier — filled with the tier's colour (defaults to gold).
+        tier: [
+          "text-primary-foreground font-bold [--tier-color:var(--gold)] [background:hsl(var(--tier-color))]",
+          "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.35),inset_0_-1px_0_hsl(0_0%_0%/0.25),var(--shadow-1)]",
+          "hover:brightness-105",
+          "active:brightness-95 active:shadow-[inset_0_2px_4px_hsl(0_0%_0%/0.35)]",
+        ].join(" "),
 
-        // Glass — restrained frosted surface (no heavy glow).
-        glass: "text-foreground bg-white/[0.04] border border-white/10 backdrop-blur-md hover:bg-white/[0.07]",
-
-        // Tier — flat gold fill (uses --tier-color var; defaults to gold).
-        tier: "text-primary-foreground font-bold [--tier-color:var(--gold)] [background:hsl(var(--tier-color))] hover:brightness-105",
-
-        // Success — flat green.
-        success: "text-white font-semibold bg-[hsl(152_52%_36%)] hover:brightness-105",
-
-        // Warning — flat amber.
-        warning: "text-[hsl(24_80%_12%)] font-semibold bg-[hsl(38_86%_52%)] hover:brightness-105",
-
-        // Danger outline — clean destructive hairline, transparent base.
-        "danger-outline": "border border-[hsl(var(--destructive)/0.5)] text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.04)] font-semibold hover:bg-[hsl(var(--destructive)/0.1)] hover:border-[hsl(var(--destructive)/0.7)]",
+        // Danger outline — hairline red that fills on press.
+        "danger-outline": [
+          "border border-[hsl(var(--destructive)/0.5)] text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.04)] font-semibold",
+          "shadow-[inset_0_1px_0_hsl(var(--destructive)/0.16),inset_0_-1px_0_hsl(0_0%_0%/0.35)]",
+          "hover:bg-[hsl(var(--destructive)/0.1)] hover:border-[hsl(var(--destructive)/0.7)]",
+          "active:bg-[hsl(var(--destructive)/0.16)] active:shadow-[inset_0_2px_4px_hsl(0_0%_0%/0.4)]",
+        ].join(" "),
 
         // Ember — the tribes/fire signature CTA. Now the shared primary look.
         ember: PRIMARY_EMBER,
@@ -179,27 +207,7 @@ const buttonVariants = cva(
           "hover:bg-[hsl(var(--gold)/0.08)]",
           "hover:text-[hsl(var(--gold-light))]",
           "hover:shadow-[inset_0_1px_0_hsl(var(--gold)/0.20),inset_0_-1px_0_hsl(var(--gold-soft)/0.35),0_4px_14px_-4px_hsl(var(--gold)/0.30)]",
-          "active:bg-[hsl(var(--gold)/0.14)]",
-        ].join(" "),
-
-        // Coal outline — hairline coal for secondary actions matching `coal`
-        "coal-outline": [
-          "relative text-[hsl(40_100%_78%)] font-semibold",
-          "border border-[hsl(28_85%_42%/0.55)]",
-          "overflow-hidden isolate",
-          "[background:linear-gradient(180deg,hsl(20_45%_10%/0.55)_0%,hsl(20_55%_6%/0.65)_100%)]",
-          "shadow-[inset_0_1px_0_hsl(46_100%_88%/0.12),inset_0_-1px_0_hsl(20_85%_6%/0.6),inset_0_-8px_16px_-12px_hsl(20_95%_45%/0.32),0_1px_2px_hsl(0_0%_0%/0.4),0_4px_12px_-6px_hsl(28_85%_36%/0.22)]",
-          "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:pointer-events-none",
-          "before:[background:radial-gradient(120%_80%_at_50%_120%,hsl(20_98%_50%/0.18)_0%,transparent_60%)]",
-          "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none",
-          "after:[background:linear-gradient(110deg,transparent_30%,hsl(40_100%_82%/0.18)_50%,transparent_70%)]",
-          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
-          "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
-          "hover:text-[hsl(46_100%_84%)]",
-          "hover:border-[hsl(28_92%_52%/0.85)]",
-          "hover:[background:linear-gradient(180deg,hsl(20_55%_14%/0.65)_0%,hsl(20_60%_8%/0.75)_100%)]",
-          "hover:shadow-[inset_0_1px_0_hsl(46_100%_88%/0.18),inset_0_-1px_0_hsl(20_85%_6%/0.7),inset_0_-10px_18px_-12px_hsl(20_95%_45%/0.45),0_2px_3px_hsl(0_0%_0%/0.45),0_8px_20px_-4px_hsl(28_85%_36%/0.35)]",
-          "active:shadow-[inset_0_2px_4px_hsl(20_85%_6%/0.7)]",
+          "active:bg-[hsl(var(--gold)/0.14)] active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.35)]",
         ].join(" "),
 
         // (gold/coal/magma/bullion/aurum aliases removed — 7 names for one
@@ -207,8 +215,10 @@ const buttonVariants = cva(
         // `ember` and `default` are the two that remain.)
       },
       size: {
-        default: "h-10 min-h-10 px-4 py-2 rounded-md",
-        sm: "h-9 min-h-9 px-3 rounded-md text-xs",
+        // One radius scale by size, not by variant: 8 px under 40 pt,
+        // 12 px at 40–48 pt, 16 px for the hero size, full for pills.
+        default: "h-10 min-h-10 px-4 py-2 rounded-xl",
+        sm: "h-9 min-h-9 px-3 rounded-lg text-xs",
         /**
          * Inline micro-action inside a dense text row — a comment's
          * Reply/Edit/Delete beside its timestamp, a banner's Remove. Added
@@ -226,12 +236,12 @@ const buttonVariants = cva(
          * gap-1 (both hops: root for asChild, inner span otherwise) keeps a
          * Reply · Edit · Delete meta row at its hand-rolled 4px density.
          */
-        xs: "h-7 min-h-7 px-2 rounded-md text-label [&_svg]:size-3 gap-1 [&>span]:gap-1",
-        lg: "h-12 min-h-12 px-8 rounded-lg text-base",
-        xl: "h-14 min-h-14 px-10 rounded-lg text-lg tracking-[-0.01em] font-display",
-        icon: "h-10 w-10 min-h-10 rounded-md",
-        "icon-sm": "h-8 w-8 min-h-8 rounded-md [&_svg]:size-3.5",
-        "icon-lg": "h-12 w-12 min-h-12 rounded-md [&_svg]:size-5",
+        xs: "h-7 min-h-7 px-2 rounded-lg text-label [&_svg]:size-3 gap-1 [&>span]:gap-1",
+        lg: "h-12 min-h-12 px-8 rounded-xl text-base",
+        xl: "h-14 min-h-14 px-10 rounded-2xl text-lg tracking-[-0.01em] font-display",
+        icon: "h-10 w-10 min-h-10 rounded-xl",
+        "icon-sm": "h-8 w-8 min-h-8 rounded-lg [&_svg]:size-3.5",
+        "icon-lg": "h-12 w-12 min-h-12 rounded-xl [&_svg]:size-5",
         // Filter chips ran gap-1.5 when hand-rolled; keep that density here
         // rather than the base gap-2.5 (root hop for asChild, span otherwise).
         pill: "h-9 min-h-9 px-5 rounded-full text-xs gap-1.5 [&>span]:gap-1.5",
@@ -280,22 +290,28 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const Comp = asChild ? Slot : "button";
+    // The tap haptic is not here: native-bootstrap fires one for every
+    // button in the document, so a raw <button> and this feel the same.
     const handleClick = React.useCallback(
       (e: React.MouseEvent<HTMLButtonElement>) => {
         if (loading) return;
-        hapticImpact("light");
         onClick?.(e);
       },
       [onClick, loading],
     );
 
     // When asChild, Slot requires a single child — preserve children as-is.
+    // The spinner is a non-asChild feature (there is no label span to hide),
+    // but a loading Link still reads as busy and stops taking taps.
     if (asChild) {
       return (
         <Comp
           className={cn(buttonVariants({ variant, size, className }))}
           ref={ref}
           onClick={handleClick}
+          aria-busy={loading || undefined}
+          aria-disabled={disabled || loading || undefined}
+          data-loading={loading || undefined}
           {...props}
         >
           {children}

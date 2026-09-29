@@ -1,4 +1,5 @@
 import { isNativePlatform, getPlatform } from "@/lib/platform";
+import { installTapHaptics } from "@/lib/tap-haptics";
 
 /**
  * Native iOS/Android polish — applied once at app boot.
@@ -16,6 +17,8 @@ export const initNativeShell = async (): Promise<void> => {
   if (typeof document !== "undefined") {
     document.body.classList.toggle("is-native", isNativePlatform());
     document.body.classList.toggle("is-ios", getPlatform() === "ios");
+    // Every button taps the same (a no-op on the web).
+    installTapHaptics(document);
   }
 
   if (!isNativePlatform()) return;

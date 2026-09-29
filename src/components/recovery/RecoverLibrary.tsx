@@ -99,7 +99,7 @@ const RoutineRow = ({ r, onOpen }: { r: Routine; onOpen: () => void }) => {
   const art = routineArt(r);
   return (
     <li>
-      <button type="button" onClick={onOpen} className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
+      <button type="button" onClick={onOpen} className="press-row w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
         {art && <IllustrationThumb ex={{ idNum: art, title: r.name }} size={48} />}
         <span className="flex-1 min-w-0">
           <span className="block text-note font-semibold leading-tight truncate">{r.name}</span>
@@ -113,7 +113,7 @@ const RoutineRow = ({ r, onOpen }: { r: Routine; onOpen: () => void }) => {
 
 const ItemRow = ({ m, onOpen, lazy }: { m: RecoveryMovement; onOpen: () => void; lazy?: boolean }) => (
   <li style={lazy ? { contentVisibility: "auto", containIntrinsicSize: "auto 65px" } : undefined}>
-    <button type="button" onClick={onOpen} className="press w-full min-h-11 flex items-center gap-3 py-2 text-left">
+    <button type="button" onClick={onOpen} className="press-row w-full min-h-11 flex items-center gap-3 py-2 text-left">
       <ItemThumb m={m} />
       <span className="flex-1 min-w-0">
         <span className="block text-note font-semibold leading-tight truncate">{m.name}</span>
@@ -184,7 +184,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
       <button
         type="button"
         onClick={() => go("/recovery?src=manual")}
-        className="press w-full surface-card surface-card-quiet flex items-center gap-3 px-4 py-3.5 text-left mb-5"
+        className="press-row  w-full surface-card surface-card-quiet flex items-center gap-3 px-4 py-3.5 text-left mb-5"
       >
         <IllustrationThumb ex={BUILT_FOR_YOU_ART} size={44} />
         <span className="flex-1 min-w-0">
@@ -329,7 +329,7 @@ export function RecoverDetail({ m, onBack }: { m: RecoveryMovement; onBack: () =
                   <button
                     type="button"
                     onClick={() => { hapticSelection(); navigate(`/recovery?routine=${r.id}`); }}
-                    className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
+                    className="press-row  w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
                   >
                     <span className="flex-1 min-w-0 text-note font-semibold truncate">{r.name}</span>
                     <span className="text-label text-muted-foreground tabular-nums">{describeLength(routineSec(r))}</span>

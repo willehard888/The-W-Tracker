@@ -90,7 +90,7 @@ const NutritionRecipes = () => {
                       hapticSelection();
                       navigate(`/nutrition/recipes/${r.id}`);
                     }}
-                    className="w-full min-h-14 py-3 flex items-center gap-3 text-left active:opacity-70 transition-opacity"
+                    className="press-row w-full min-h-14 py-3 flex items-center gap-3 text-left active:opacity-70 transition-opacity"
                   >
                     <span className="flex-1 min-w-0">
                       <span className="block text-read font-bold leading-tight truncate">{r.name}</span>

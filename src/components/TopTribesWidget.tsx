@@ -97,7 +97,7 @@ const TopTribesWidget = () => {
               <button
                 key={r.tribe_id}
                 onClick={() => navigate(`/tribes/${r.tribe_id}`)}
-                className="press w-full text-left flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 p-2.5 hover:border-[hsl(var(--ember))]/30 transition-colors "
+                className="press-row  w-full text-left flex items-center gap-2.5 rounded-xl border border-border/50 bg-card/60 p-2.5 hover:border-[hsl(var(--ember))]/30 transition-colors "
               >
                 <div
                   className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border"

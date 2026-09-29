@@ -198,7 +198,7 @@
 
   /* === Premium tap feedback — universal ============================
      Every <button> gets a subtle scale-down on press unless it has
-     opted out via `.no-tap-scale`. iOS native apps feel responsive
+     opted out via `.press-row`. iOS native apps feel responsive
      because every tappable element confirms the touch visually within
      16ms. Matches Apple HIG spring curve.
 
@@ -216,20 +216,35 @@
      chain, and a desktop-only 200ms overshoot spring on every property) were
      removed 2026-09-03 — press feel was cascade luck, and the opt-outs below
      were silently dead because the unfiltered blocks re-applied the scale. */
-  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]),
-  [role="button"]:not(.no-tap-scale),
+  /* One press, one clock: 140 ms on the iOS curve, the same number the
+     shared <Button> uses for every state it changes. Rows opt into
+     .press-row (a highlight, no scale — a full-width row shrinking 3 % reads
+     as a chip, not a row); segments answer with a surface inside their
+     track (.segment, src/components/ui/segment.ts); tabs and menu items
+     keep their own. */
+  button:not(.press-row):not(.segment):not([data-state]):not([role="tab"]):not([role="menuitem"]),
+  [role="button"]:not(.press-row),
   .press {
     transition:
-      transform 110ms cubic-bezier(0.32, 0.72, 0, 1),
-      opacity   140ms cubic-bezier(0.32, 0.72, 0, 1);
+      transform 140ms var(--ease-ios),
+      opacity   140ms var(--ease-ios);
   }
-  button:not(.no-tap-scale):not([data-state]):not([role="tab"]):not([role="menuitem"]):active:not(:disabled),
-  [role="button"]:not(.no-tap-scale):active,
+  button:not(.press-row):not(.segment):not([data-state]):not([role="tab"]):not([role="menuitem"]):active:not(:disabled),
+  [role="button"]:not(.press-row):active,
   .press:active {
     transform: scale(0.97);
   }
-
-  
+  /* Full-width rows and cards: the surface answers, the shape holds. */
+  .press-row {
+    transition: background-color 140ms var(--ease-ios), opacity 140ms var(--ease-ios);
+  }
+  .press-row:active:not(:disabled) {
+    background-color: hsl(var(--secondary) / 0.45);
+  }
+  .press:disabled,
+  .press-row:disabled {
+    opacity: 0.5;
+  }
 
   /* Apple HIG: 44pt minimum tap target. Apply to inline-ish buttons
      that aren't full-width primary actions. Defensive — won't shrink
@@ -442,12 +457,6 @@
     background: linear-gradient(180deg, hsl(260 18% 5%), hsl(265 20% 3%));
   }
 
-  
-
-  
-
-  
-
   .text-teal {
     color: hsl(var(--teal));
   }
@@ -455,14 +464,6 @@
   .bg-teal {
     background-color: hsl(var(--teal));
   }
-
-  
-
-  
-
-  
-
-  
 
   /* ============================================================
      Premium material system — glass / metal / paper
@@ -499,15 +500,10 @@
     isolation: isolate;
   }
 
-  
-
   .surface-glass > * {
     position: relative;
     z-index: 1;
   }
-
-  
-  
 
   /* Brushed metallic surface — realistic gold with anisotropic streaks */
   .surface-metal {
@@ -574,9 +570,7 @@
       transparent 100%
     );
   }
-  
-  
-  
+
   .hairline-bottom {
     position: relative;
   }
@@ -629,16 +623,6 @@
 
   /* Realistic depth — physical card lifted off the page */
 
-  
-
-  
-
-  
-
-  
-
-  
-
   .card-depth {
     transform-style: preserve-3d;
     box-shadow:
@@ -649,12 +633,6 @@
       inset 0 -1px 0 hsl(0 0% 0% / 0.15);
     border-top: 1px solid hsl(0 0% 100% / 0.07);
   }
-
-  
-
-  
-
-  
 
   /* Inner light reflection for 3D effect */
   .inner-light {
@@ -991,14 +969,6 @@
     .page-aura-live { animation: none; }
   }
 
-  
-
-  
-
-  
-
-  
-
   .glass-card {
     /* PERF: dropped live backdrop-filter blur(20px) — over the app's uniformly
        dark canvas an opaque gradient is visually identical, but avoids the
@@ -1084,12 +1054,6 @@
     pointer-events: none;
   }
 
-  
-  
-
-  
-  
-
   /* Breathing glow for the hero CTA — a static halo on ::after whose OPACITY
      breathes (compositor-only). The old keyframe animated box-shadow itself:
      a full repaint of the hero every frame, forever. Put it on a wrapper that
@@ -1114,30 +1078,7 @@
      AURA & SATISFYING MOTION UTILITIES
      ───────────────────────────────────────────── */
 
-  
-  
-
-  
-
-  
-
-  
-
   /* Magnetic spring-press — applies a satisfying scale/lift on press */
-
-  
-
-  
-  
-
-  
-
-  
-  
-
-  
-
-  
 
   /* Edge sheen — kevyt valokaista reunan yli */
   .edge-sheen {
@@ -1211,30 +1152,7 @@
     }
   }
 
-  
-
-  
-
-  
-  
-  
-
-  
-  
-  
-
-  
-  
-  
-  
   /* (ember-rise keyframe defined once in the cinematic flame block below) */
-
-  
-
-  
-  
-  
-  
 
 }
 
@@ -2010,6 +1928,7 @@
 
   /* Unified focus-visible ring for ALL interactive elements */
   a:focus-visible,
+  button:focus-visible,
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible,
@@ -2027,6 +1946,10 @@
       0 0 0 2px hsl(var(--background)),
       0 0 0 4px hsl(var(--gold) / 0.55),
       0 0 18px hsl(var(--gold) / 0.25);
+  }
+  /* A control that has no radius of its own gets the button scale's smallest. */
+  a:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible {
     border-radius: 6px;
   }
 
@@ -2128,37 +2051,8 @@
     }
   }
 
-  
-  
-
-  
-  
 }
 
-@layer utilities {
-  /* Premium warm rim breathe — only on focus-visible secondary/gold-soft buttons */
-  @keyframes button-warm-rim-breathe {
-    0%, 100% {
-      box-shadow:
-        inset 0 1px 0 hsl(var(--gold) / 0.20),
-        inset 0 -1px 0 hsl(20 85% 6% / 0.55),
-        inset 0 -14px 30px -18px hsl(var(--gold-soft) / 0.25),
-        0 0 0 4px hsl(var(--ring) / 0.18),
-        0 1px 2px hsl(0 0% 0% / 0.30);
-    }
-    50% {
-      box-shadow:
-        inset 0 1px 0 hsl(var(--gold) / 0.36),
-        inset 0 -1px 0 hsl(20 85% 6% / 0.60),
-        inset 0 -14px 32px -18px hsl(var(--gold-soft) / 0.40),
-        0 0 0 4px hsl(var(--ring) / 0.30),
-        0 4px 14px -2px hsl(var(--gold) / 0.30);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    [class*="button-warm-rim-breathe"] { animation: none !important; }
-  }
-}
 
 /* ═════════════════════════════════════════════════════════════════
    STATUS FIRE SYSTEM — embers, amber rings, heat shimmers
@@ -2614,25 +2508,14 @@
    ============================================================ */
 
 @layer utilities {
-  
-  
-  
-  
-  
-  
 
   /* Buttery fade-in-up — premium page entry */
   .animate-fade-in-up {
     animation: fade-in-up 380ms cubic-bezier(0.16, 1.2, 0.32, 1) both;
   }
 
-  
-
   /* Lava text gradient — for fire/streak headings */
 
-  
-
-  
 }
 
 @keyframes fade-in-up {
@@ -2690,11 +2573,12 @@ html, body, #root {
    this file) — this block only carries the native-feel touch properties.
    The unfiltered transform/`:active` rules that used to sit here re-applied
    press-scale to everything the press system deliberately excludes (Radix
-   [data-state] widgets, tabs, .no-tap-scale) at a different 80ms timing. */
+   [data-state] widgets, tabs, .press-row) at a different 80ms timing. */
 button,
 [role="button"],
 a,
-.press {
+.press,
+.press-row {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;

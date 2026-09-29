@@ -29,7 +29,7 @@ const MealItemRow = ({ item, onPress }: { item: MealItemView; onPress: (item: Me
     type="button"
     onClick={() => onPress(item)}
     className={cn(
-      "w-full min-h-11 py-2.5 flex items-center gap-3 text-left active:opacity-70 transition-opacity",
+      "press-row w-full min-h-11 py-2.5 flex items-center gap-3 text-left active:opacity-70 transition-opacity",
       item.isNew && "commit-pop",
     )}
   >

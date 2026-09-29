@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
 import { Switch } from "@/components/ui/switch";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { track } from "@/lib/analytics";
@@ -527,7 +527,7 @@ const NutritionPhotoReview = () => {
                     hapticSelection();
                     setSlot(s.key);
                   }}
-                  className={cn("press flex-1 h-11 rounded-lg text-meta font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn(SEGMENT_BUTTON, slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>
@@ -570,7 +570,7 @@ const NutritionPhotoReview = () => {
                 type="button"
                 aria-pressed={plateCm === cm}
                 onClick={() => void choosePlate(cm)}
-                className={cn("press flex-1 h-11 rounded-lg text-meta font-black tabular-nums transition-[color,box-shadow] ", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn(SEGMENT_BUTTON, "tabular-nums", plateCm === cm ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {PLATE_LABEL[cm]} {cm}
               </button>

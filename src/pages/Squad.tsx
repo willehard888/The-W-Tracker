@@ -4,7 +4,7 @@ import { Flame, MessageCircle, Users } from "lucide-react";
 import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
 import { cn } from "@/lib/utils";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { useUnreadMessageCount } from "@/hooks/use-messages";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
@@ -63,7 +63,7 @@ const Squad = () => {
               aria-selected={tab === s.key}
               onClick={() => { hapticSelection(); setTab(s.key); }}
               className={cn(
-                "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-meta font-black transition-colors",
+                SEGMENT_BUTTON, "min-h-9 relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] inline-flex items-center justify-center gap-1.5",
                 tab === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
               )}
             >

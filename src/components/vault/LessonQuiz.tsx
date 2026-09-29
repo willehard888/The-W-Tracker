@@ -41,7 +41,7 @@ const LessonQuiz = ({ quiz, accent, onScore }: { quiz: VaultQuizQ[]; accent: str
                       aria-pressed={isPicked}
                       onClick={() => setAnswers((p) => ({ ...p, [qi]: ci }))}
                       className={cn(
-                        "press w-full min-h-11 text-left rounded-xl border px-3 py-2.5 text-dense flex items-start gap-2.5 transition-colors",
+                        "press-row w-full min-h-11 text-left rounded-xl border px-3 py-2.5 text-dense flex items-start gap-2.5 transition-colors",
                         marked
                           ? isCorrect
                             ? "border-xp-green/55 bg-xp-green/10"

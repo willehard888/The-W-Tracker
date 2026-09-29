@@ -109,7 +109,7 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                             aria-pressed={on}
                             disabled={h.core}
                             className={cn(
-                              "press flex items-center gap-3 w-full rounded-2xl border p-3.5 text-left transition-colors ",
+                              "press-row flex items-center gap-3 w-full rounded-2xl border p-3.5 text-left transition-colors ",
                               on ? "border-gold/40 bg-gold/[0.07]" : "border-border bg-card hover:bg-secondary/50",
                             )}
                           >

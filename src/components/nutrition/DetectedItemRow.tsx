@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, Minus, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { gramChips, liquidGrams, liquidMl } from "@/lib/nutrition/scan-review";
@@ -143,7 +143,7 @@ const DetectedItemRow = ({
                   hapticSelection();
                   onGramsChange(item.id, toGrams(q));
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-meta font-black tabular-nums transition-[color,box-shadow] ", shown === q ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn(SEGMENT_BUTTON, "tabular-nums", shown === q ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {q}
               </button>
@@ -199,7 +199,7 @@ const DetectedItemRow = ({
                   onPickCandidate(item.id, c.food_id);
                   setOpen(false);
                 }}
-                className={cn("w-full min-h-11 px-3 py-2 text-left flex items-center gap-3 active:opacity-70", active && "bg-gold/[0.06]")}
+                className={cn("press-row w-full min-h-11 px-3 py-2 text-left flex items-center gap-3 active:opacity-70", active && "bg-gold/[0.06]")}
               >
                 <span className="min-w-0 flex-1">
                   <span className={cn("block text-note font-bold leading-tight truncate", active && "text-gold")}>{c.name}</span>

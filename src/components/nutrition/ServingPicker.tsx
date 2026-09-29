@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { hapticSelection } from "@/lib/haptics";
 import { availableUnits, parseQty } from "@/lib/nutrition/resolve-grams";
 import { fmtQty } from "@/lib/nutrition/format";
@@ -123,7 +123,7 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
                   hapticSelection();
                   onChange({ ...value, qty: String(q) });
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-dense font-black tabular-nums transition-[color,box-shadow] ", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn(SEGMENT_BUTTON, "tabular-nums", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {massUnit ? q : fmtQty(q)}
                 {massUnit ? <span className="text-label font-bold ml-0.5">{value.unit}</span> : "×"}

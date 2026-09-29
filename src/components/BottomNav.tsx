@@ -115,6 +115,7 @@ const BottomNav = () => {
   return (
     <nav
       aria-label="Primary"
+      data-no-haptic
       className="shrink-0 relative isolate"
       style={{
         paddingBottom: "env(safe-area-inset-bottom, 0px)",

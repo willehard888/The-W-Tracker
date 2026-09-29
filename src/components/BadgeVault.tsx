@@ -243,7 +243,7 @@ const BadgeVault = ({
           type="button"
           onClick={() => onBadgeClick?.(nextDrop.badge)}
           className={cn(
-            "group w-full mb-4 p-3 rounded-2xl border relative overflow-hidden text-left glass-3d depth-realistic",
+            "press-row group w-full mb-4 p-3 rounded-2xl border relative overflow-hidden text-left glass-3d depth-realistic",
             "border-gold/25",
             "transition-[border-color,box-shadow] duration-300 hover:border-gold/45 "
           )}
@@ -328,7 +328,7 @@ const BadgeVault = ({
                 type="button"
                 onClick={() => onBadgeClick?.(badge)}
                 aria-label={`${badge.name}, ${earned ? "earned" : "not earned yet"}${isFeatured && earned ? ", your title" : ""}`}
-                className="block w-full text-left"
+                className="press-row block w-full text-left"
               >
                 <BadgeCard
                   name={badge.name}

@@ -134,7 +134,7 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
                     // here is optional, including one already given.
                     onClick={() => setChoice((c) => (c === o.v ? null : o.v))}
                     className={cn(
-                      "press w-full min-h-11 rounded-xl border px-3.5 py-2.5 text-left text-body transition-colors",
+                      "press-row w-full min-h-11 rounded-xl border px-3.5 py-2.5 text-left text-body transition-colors",
                       choice === o.v
                         ? "border-gold bg-gold/[0.08] text-foreground"
                         : "border-border/40 text-muted-foreground",

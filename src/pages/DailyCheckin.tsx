@@ -94,7 +94,7 @@ const HabitToggle = ({
     onClick={() => { hapticSelection(); onToggle(); }}
     aria-pressed={active}
     className={cn(
-      "group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200",
+      "press-row group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200",
       active ? LIT : "surface-card surface-card-quiet",
     )}
   >
@@ -951,7 +951,7 @@ const DailyCheckin = () => {
             type="button"
             onClick={() => { hapticSelection(); setSickToday((v) => !v); }}
             aria-pressed={sickToday}
-            className="w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
+            className="press-row w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
           >
             <Thermometer size={18} className={cn("shrink-0", sickToday ? "text-teal" : "text-muted-foreground")} aria-hidden />
             <span className="min-w-0 flex-1">
@@ -1129,7 +1129,7 @@ const DailyCheckin = () => {
                       aria-pressed={sportCategory === sport.id}
                       onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                       className={cn(
-                        "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                        "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
@@ -1178,7 +1178,7 @@ const DailyCheckin = () => {
                       aria-pressed={sportCategory === sport.id}
                       onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
                       className={cn(
-                        "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                        "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
@@ -1199,7 +1199,7 @@ const DailyCheckin = () => {
                     <div key={group}>
                       <button
                         onClick={() => setOpenGroup((g) => (g === group ? null : group))}
-                        className="flex items-center justify-between w-full min-h-11 px-4 pt-3 pb-1.5 text-left"
+                        className="press-row flex items-center justify-between w-full min-h-11 px-4 pt-3 pb-1.5 text-left"
                       >
                         <span className="text-label font-bold">{group} <span className="text-muted-foreground/75">({sports.length})</span></span>
                         {forYou.length > 0 && (
@@ -1212,7 +1212,7 @@ const DailyCheckin = () => {
                           aria-pressed={sportCategory === sport.id}
                           onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                           className={cn(
-                            "flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                            "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
                             sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                           )}
                         >
@@ -1228,7 +1228,7 @@ const DailyCheckin = () => {
               {sportCategory !== "none" && (
                 <button
                   onClick={() => { setSportCategory("none"); setSportOpen(false); }}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:bg-secondary/50 transition-colors"
+                  className="press-row flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:bg-secondary/50 transition-colors"
                 >
                   <span className="w-7 flex justify-center"><X aria-hidden size={16} /></span>
                   <span className="text-sm font-medium">Clear selection</span>
@@ -1281,7 +1281,7 @@ const DailyCheckin = () => {
           <button
             onClick={() => { hapticSelection(); setMoreOpen((o) => !o); }}
             aria-expanded={moreOpen}
-            className="w-full min-h-11 surface-card surface-card-quiet flex items-center justify-between gap-2 px-4 py-3 text-left"
+            className="press-row w-full min-h-11 surface-card surface-card-quiet flex items-center justify-between gap-2 px-4 py-3 text-left"
           >
             <span className="text-sm font-semibold flex items-center gap-2">
               <Plus aria-hidden size={16} className="text-muted-foreground" />

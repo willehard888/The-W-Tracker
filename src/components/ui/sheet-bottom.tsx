@@ -115,22 +115,31 @@ export const BottomSheet = ({
           role="dialog"
           aria-modal="true"
           aria-label={label}
-          className="fixed inset-x-0 z-[var(--z-celebration)] flex flex-col"
-          style={{ top: viewport.offsetTop, height: viewport.height }}
+          className="fixed inset-0 z-[var(--z-celebration)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Solid backdrop — no backdrop-filter, which iOS WKWebView mis-composites. */}
+          {/* Solid backdrop — no backdrop-filter, which iOS WKWebView mis-composites.
+              It covers the whole layout viewport, not the visual one: the web view
+              keeps painting the page behind the keyboard, and a backdrop that
+              stopped at the visual viewport left a band of live page above the
+              keyboard (the keyboard's glass accessory bar refracted it). */}
           <div className="absolute inset-0 bg-black/70" onClick={onClose} aria-hidden />
+          {/* The drawer's box is what is actually visible: with the keyboard up
+              that is the space above it. */}
+          <div className="absolute inset-x-0 flex flex-col pointer-events-none" style={{ top: viewport.offsetTop, height: viewport.height }}>
           <m.div
             className={cn(
-              "relative mt-auto flex flex-col w-full rounded-t-[28px] border-t border-white/10 bg-[hsl(255_14%_7%)] shadow-[0_-20px_60px_-12px_hsl(0_0%_0%/0.7)] overflow-hidden",
+              "pointer-events-auto relative mt-auto flex flex-col w-full rounded-t-[28px] border-t border-white/10 bg-[hsl(255_14%_7%)] shadow-[0_-20px_60px_-12px_hsl(0_0%_0%/0.7)] overflow-hidden",
             )}
             {...rise}
             style={{
-              paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+              // The home-indicator clearance is for the home indicator: with
+              // the keyboard up it sits behind the keyboard, and the sheet
+              // used to keep a 34 pt dead band between the input and the keys.
+              paddingBottom: viewport.height < window.innerHeight - 120 ? "0.75rem" : "max(1rem, env(safe-area-inset-bottom))",
               // 90 % / 93 % of what is actually visible — with the keyboard
               // up that is the space above it, not the whole screen.
               ...(height === "tall"
@@ -175,6 +184,7 @@ export const BottomSheet = ({
             </div>
             {footer && <div className="shrink-0 px-4 pt-3 border-t border-border/60">{footer}</div>}
           </m.div>
+          </div>
         </m.div>
       )}
     </AnimatePresence>,

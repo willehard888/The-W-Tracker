@@ -41,7 +41,7 @@ const Row = ({ e, surface, onPick }: { e: PoolItem; surface?: "picker"; onPick: 
   // Off-screen rows are skipped by the engine: each thumbnail carries a
   // five-stage CSS filter, the expensive part of this list in WKWebView.
   <li style={{ contentVisibility: "auto", containIntrinsicSize: "auto 64px" }}>
-    <button type="button" onClick={() => onPick(e, surface)} className="press w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
+    <button type="button" onClick={() => onPick(e, surface)} className="press-row  w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
       <Thumb slug={e.slug} name={e.name} />
       <span className="flex-1 min-w-0">
         <span className="block text-note font-bold leading-tight truncate">{e.name}</span>

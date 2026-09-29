@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
@@ -338,7 +338,7 @@ const NutritionRecipeEditor = () => {
                     hapticSelection();
                     setLogSlot(s.key);
                   }}
-                  className={cn("press flex-1 h-11 rounded-lg text-meta font-black transition-[color,box-shadow] ", logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                  className={cn(SEGMENT_BUTTON, logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}
                 </button>

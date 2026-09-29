@@ -50,7 +50,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorState } from "@/components/ui/error-state";
 import LiveRivals from "@/components/LiveRivals";
 import { useMyRank } from "@/hooks/use-my-rank";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
 // Pull-to-refresh removed temporarily — touch handlers on the page wrapper
 // were intercepting inner taps (e.g., logout button, share, badges). Will
 // re-add once the touch-area is properly isolated.
@@ -473,7 +473,7 @@ const Profile = () => {
             aria-selected={profileTab === t}
             onClick={() => { void hapticSelection(); setProfileTab(t); }}
             className={cn(
-              "flex-1 min-h-11 rounded-lg text-dense font-black capitalize transition-colors",
+              SEGMENT_BUTTON, "capitalize",
               profileTab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -512,7 +512,7 @@ const Profile = () => {
             <button
               type="button"
               onClick={() => navigate("/journey")}
-              className="w-full text-left surface-card surface-card-quiet p-4 flex items-center gap-4"
+              className="press-row w-full text-left surface-card surface-card-quiet p-4 flex items-center gap-4"
             >
               <div className="shrink-0">
                 <p className="font-display font-black text-3xl leading-none tabular-nums">{latest.overall}</p>

@@ -19,5 +19,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(HealthNight())
         bridge?.registerPluginInstance(BarcodeScan())
         bridge?.registerPluginInstance(RecoveryAudio())
+        // The keyboard's form accessory bar goes: see KeyboardAccessory.swift.
+        if let webView = bridge?.webView { KeyboardAccessory.hide(in: webView) }
     }
 }

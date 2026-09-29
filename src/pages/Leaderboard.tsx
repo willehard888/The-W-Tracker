@@ -23,7 +23,7 @@ import { useMyRank } from "@/hooks/use-my-rank";
 import { hapticSelection } from "@/lib/haptics";
 import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
 type Mode = "season" | "all_time";
@@ -340,7 +340,7 @@ const Leaderboard = () => {
               role="tab"
               aria-selected={mode === m}
               onClick={() => { void hapticSelection(); setMode(m); }}
-              className={cn("text-label font-bold text-muted-foreground flex-1 min-h-11 rounded-lg transition-colors", mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+              className={cn(SEGMENT_BUTTON, mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {m === "season" ? "Season" : "All time"}
             </button>
@@ -413,7 +413,7 @@ const Leaderboard = () => {
                 <button
                   type="button"
                   onClick={() => navigate(`/user/${user.user_id}`)}
-                  className="w-full min-h-11 flex items-center gap-3 py-3 text-left"
+                  className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
                   <span className={cn("w-6 shrink-0 font-display font-black text-sm tabular-nums", isMe ? "text-gold" : "text-muted-foreground")}>
                     {marks[i + 3]?.tied ? `=${marks[i + 3].position}` : i + 4}

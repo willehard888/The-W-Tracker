@@ -113,7 +113,7 @@ export const EquipmentContextSheet = ({
                   type="button"
                   onClick={() => toggle(v)}
                   aria-pressed={on}
-                  className="w-full min-h-12 flex items-center gap-2.5 py-2 text-left"
+                  className="press-row w-full min-h-12 flex items-center gap-2.5 py-2 text-left"
                 >
                   <span
                     className={cn(

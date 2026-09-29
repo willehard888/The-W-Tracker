@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import ServingPicker, { type PortionState } from "@/components/nutrition/ServingPicker";
@@ -99,7 +99,7 @@ const PortionPanel = ({
                 hapticSelection();
                 onSlotChange(s.key);
               }}
-              className={cn("press flex-1 h-11 rounded-lg text-meta font-black transition-[color,box-shadow] ", slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+              className={cn(SEGMENT_BUTTON, slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {s.label}
             </button>

@@ -26,8 +26,8 @@ export const DoorRow = ({
   onClick: () => void;
   className?: string;
 }) => (
-  <button type="button" onClick={onClick} className={cn("press w-full min-h-11 flex items-center gap-3 py-3 text-left", className)}>
-    {Icon && <Icon size={15} className="text-muted-foreground shrink-0" aria-hidden />}
+  <button type="button" onClick={onClick} className={cn("press-row w-full min-h-11 flex items-center gap-3 py-3 text-left", className)}>
+    {Icon && <Icon size={16} className="text-muted-foreground shrink-0" aria-hidden />}
     <span className="flex-1 min-w-0">
       <span className="block text-note font-semibold leading-tight truncate">{label}</span>
       {sub && <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{sub}</span>}

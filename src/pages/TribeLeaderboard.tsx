@@ -7,7 +7,7 @@ import { Crown, Users, Lock, Zap, Flame } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { backOr } from "@/lib/nav";
 import {
   collectiveAccent,
@@ -137,7 +137,7 @@ const TribeLeaderboard = () => {
             aria-selected={period === p}
             onClick={() => setPeriod(p)}
             className={cn(
-              "flex-1 min-h-11 rounded-lg text-meta font-bold transition-colors",
+              SEGMENT_BUTTON,
               period === p ? SEGMENT_ACTIVE : SEGMENT_IDLE,
             )}
           >
@@ -185,7 +185,7 @@ const TribeLeaderboard = () => {
                 key={r.tribe_id}
                 type="button"
                 onClick={() => navigate(`/tribes/${r.tribe_id}`)}
-                className="press w-full min-h-11 text-left py-3 flex items-center gap-3"
+                className="press-row  w-full min-h-11 text-left py-3 flex items-center gap-3"
               >
                 <span className={cn("relative w-8 shrink-0 text-right font-display font-black text-base tabular-nums", PODIUM[r.rank] ?? "text-muted-foreground")}>
                   {r.rank === 1 && (

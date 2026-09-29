@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Flame, Crown, Zap, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, Flame, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -13,22 +13,17 @@ import { Button } from "@/components/ui/button";
 type VariantId =
   | "default"
   | "ember"
-  | "obsidian"
   | "destructive"
   | "outline"
   | "secondary"
   | "ghost"
   | "link"
-  | "glass"
   | "tier"
-  | "success"
-  | "warning"
   | "gold-outline"
   | "gold-soft"
   | "gold-icon"
   | "ember-outline"
   | "ember-glass"
-  | "coal-outline"
   | "danger-outline";
 
 interface VariantSpec {
@@ -50,22 +45,17 @@ const VARIANTS: VariantSpec[] = [
   { id: "tier", label: "Tier", group: "Premium", description: "Uses --tier-color CSS vars (defaults to gold).", icon: <Sparkles aria-hidden /> },
 
   // Identity / system
-  { id: "obsidian", label: "Obsidian", group: "Identity", description: "Dark metal escape hatch when gold is too loud.", icon: <Zap aria-hidden /> },
-  { id: "destructive", label: "Destructive", group: "Identity", description: "Red metal with vignette — irreversible actions.", icon: <Zap aria-hidden /> },
-  { id: "success", label: "Success", group: "Identity", description: "Green metal — confirmations & completions.", icon: <Check aria-hidden /> },
-  { id: "warning", label: "Warning", group: "Identity", description: "Amber metal for risky-but-not-destructive.", icon: <Zap aria-hidden /> },
+  { id: "destructive", label: "Destructive", group: "Identity", description: "Filled red with an inset rim — irreversible actions.", icon: <Zap aria-hidden /> },
 
-  // Outlines & glass
-  { id: "outline", label: "Outline", group: "Outline & Glass", description: "Premium ember-tinted glass with warm hairline." },
-  { id: "secondary", label: "Secondary", group: "Outline & Glass", description: "Premium gold-glass panel — most used." },
-  { id: "ghost", label: "Ghost", group: "Outline & Glass", description: "Transparent with gold lift on hover." },
-  { id: "glass", label: "Glass", group: "Outline & Glass", description: "Surface glass with saturate filter." },
-  { id: "gold-outline", label: "Gold Outline", group: "Outline & Glass", description: "Hairline gold-soft, fills on hover." },
-  { id: "gold-soft", label: "Gold Soft", group: "Outline & Glass", description: "Stronger gold crown than secondary." },
-  { id: "ember-outline", label: "Ember Outline", group: "Outline & Glass", description: "Premium hairline ember for tribe actions." },
-  { id: "ember-glass", label: "Ember Glass", group: "Outline & Glass", description: "Stronger ember vibe than inherited outline." },
-  { id: "coal-outline", label: "Coal Outline", group: "Outline & Glass", description: "Hairline coal matching the coal variant." },
-  { id: "danger-outline", label: "Danger Outline", group: "Outline & Glass", description: "Hairline destructive, transparent base." },
+  // The quiet surfaces — no sheen, real edges, a pressed state that sinks.
+  { id: "outline", label: "Outline", group: "Outline & Glass", description: "Hairline, transparent; fills and sinks on press." },
+  { id: "secondary", label: "Secondary", group: "Outline & Glass", description: "Filled neutral with an inset rim and a resting shadow." },
+  { id: "ghost", label: "Ghost", group: "Outline & Glass", description: "Nothing at rest; a surface appears under the thumb." },
+  { id: "gold-outline", label: "Gold Outline", group: "Outline & Glass", description: "Hairline gold that fills on press." },
+  { id: "gold-soft", label: "Gold Soft", group: "Outline & Glass", description: "Gold crown and glint — the luxury cancel." },
+  { id: "ember-outline", label: "Ember Outline", group: "Outline & Glass", description: "Hairline ember with inner heat — tribe actions." },
+  { id: "ember-glass", label: "Ember Glass", group: "Outline & Glass", description: "Ember-tinted glass, stronger than ember-outline." },
+  { id: "danger-outline", label: "Danger Outline", group: "Outline & Glass", description: "Hairline red that fills on press." },
 
   // Utility
   { id: "link", label: "Link", group: "Utility", description: "Gold-soft → gold underline." },

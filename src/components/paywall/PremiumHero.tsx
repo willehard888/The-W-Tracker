@@ -64,7 +64,7 @@ const PlanRow = ({
       disabled={disabled}
       onClick={onSelect}
       className={cn(
-        "w-full min-h-11 flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors",
+        "press-row w-full min-h-11 flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors",
         selected ? "border-gold/70 bg-gold/[0.06]" : "border-border/50",
       )}
     >

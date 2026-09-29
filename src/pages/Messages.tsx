@@ -234,7 +234,7 @@ const PersonRow = ({ profile, subtitle, onClick }: {
   subtitle: string;
   onClick: () => void;
 }) => (
-  <button type="button" onClick={onClick} className="w-full flex items-center gap-3 py-3 text-left">
+  <button type="button" onClick={onClick} className="press-row w-full flex items-center gap-3 py-3 text-left">
     <StatusAvatar src={profile.avatar_url} name={profile.username} tier={profile.status_tier || "recruit"} size="sm" animated={false} />
     <div className="flex-1 min-w-0">
       <TierUsername as="p" username={profile.username} tier={profile.status_tier || "recruit"} className="text-sm font-semibold truncate" />
@@ -247,7 +247,7 @@ const PersonRow = ({ profile, subtitle, onClick }: {
 const ConversationRow = ({ conv, userId, navigate }: { conv: Thread; userId?: string; navigate: NavigateFunction; isFriend?: boolean }) => {
   const unread = conv.unread > 0;
   return (
-    <button type="button" onClick={() => navigate(`/chat/${conv.partnerId}`)} className="w-full flex items-center gap-3 py-3 text-left">
+    <button type="button" onClick={() => navigate(`/chat/${conv.partnerId}`)} className="press-row w-full flex items-center gap-3 py-3 text-left">
       <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} size="sm" animated={false} />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">

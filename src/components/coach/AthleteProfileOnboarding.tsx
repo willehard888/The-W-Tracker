@@ -507,7 +507,7 @@ const OptionRow = ({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "w-full min-h-11 flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors",
+        "press-row w-full min-h-11 flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors",
         active ? "border-gold/70 bg-gold/[0.06]" : "border-transparent",
       )}
     >

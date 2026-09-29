@@ -27,7 +27,7 @@ const InsightQuote = () => {
         hapticImpact("light");
         navigate(`/vault?lesson=${insight.lessonSlug}`);
       }}
-      className="group relative w-full text-left px-1.5 active:opacity-80 transition-opacity"
+      className="press-row group relative w-full text-left px-1.5 active:opacity-80 transition-opacity"
     >
       {/* Oversized quote watermark — an editorial premium device, faint gold,
           behind the text. Purely typographic; hidden from screen readers. */}

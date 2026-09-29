@@ -81,7 +81,7 @@ const BattleChallengeModal = ({
                 onAnimationEnd={() => setPicked(null)}
                 aria-pressed={selected}
                 className={cn(
-                  "press flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 min-h-[52px] text-left transition-[background-color,border-color]",
+                  "press-row flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 min-h-[52px] text-left transition-[background-color,border-color]",
                   selected ? "border-transparent bg-gold text-background" : "border-border/60 bg-card/30",
                   selected && picked === bt.id && "commit-pop",
                 )}

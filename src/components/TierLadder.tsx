@@ -68,7 +68,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
       <button
         type="button"
         onClick={() => { setExpanded(nextKey ?? null); setOpen(true); }}
-        className="w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
+        className="press-row w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
       >
         <TierMark rank={currentRank} className="h-10 w-10 text-label">{current.shortLabel}</TierMark>
         <span className="flex-1 min-w-0">
@@ -130,7 +130,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
                   type="button"
                   aria-expanded={isOpen}
                   onClick={() => setExpanded(isOpen ? null : key)}
-                  className="w-full min-h-11 flex items-center gap-3 py-3 text-left"
+                  className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
                   <TierMark rank={cfg.rank} className={cn("h-9 w-9 text-label", !held && !isCurrent && "opacity-70")}>
                     {held ? <Check size={15} strokeWidth={3} aria-hidden /> : isLegend && !isCurrent ? <Crown size={14} aria-hidden /> : cfg.shortLabel}

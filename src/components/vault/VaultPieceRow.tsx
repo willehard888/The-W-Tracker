@@ -44,7 +44,7 @@ const VaultPieceRow = ({
     type="button"
     disabled={disabled}
     onClick={onClick}
-    className={cn("w-full flex items-start gap-3 py-3.5 text-left disabled:opacity-50", className)}
+    className={cn("press-row w-full flex items-start gap-3 py-3.5 text-left disabled:opacity-50", className)}
   >
     {lead}
     <span className="flex-1 min-w-0">

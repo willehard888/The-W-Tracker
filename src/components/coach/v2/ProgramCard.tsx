@@ -28,7 +28,7 @@ const ProgramCard = () => {
       <button
         type="button"
         onClick={() => setPickOpen(true)}
-        className="press mt-2 w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
+        className="press-row  mt-2 w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
       >
         <Crosshair size={16} className="text-muted-foreground shrink-0" aria-hidden />
         <span className="flex-1 min-w-0 text-note font-bold leading-tight">Pick today's focus</span>
@@ -47,7 +47,7 @@ const ProgramCard = () => {
         <button
           type="button"
           onClick={() => navigate(`/coach/session/1/${todayDayIndex}?p=${session.program.id}`)}
-          className="press w-full text-left surface-card surface-card-quiet px-4 py-3.5 flex items-center gap-3"
+          className="press-row  w-full text-left surface-card surface-card-quiet px-4 py-3.5 flex items-center gap-3"
         >
           <Dumbbell size={16} className="text-muted-foreground shrink-0" aria-hidden />
           <span className="flex-1 min-w-0">
@@ -63,7 +63,7 @@ const ProgramCard = () => {
           <button
             type="button"
             onClick={() => navigate("/coach/program")}
-            className="press mt-2 w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
+            className="press-row  mt-2 w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
           >
             <CalendarDays size={16} className="text-muted-foreground shrink-0" aria-hidden />
             <span className="flex-1 min-w-0">
@@ -119,7 +119,7 @@ const ProgramCard = () => {
     <button
       type="button"
       onClick={() => navigate("/coach/program")}
-      className="press w-full text-left surface-card surface-card-quiet px-4 py-3.5 flex items-center gap-3"
+      className="press-row  w-full text-left surface-card surface-card-quiet px-4 py-3.5 flex items-center gap-3"
     >
       <Dumbbell size={16} className="text-muted-foreground shrink-0" aria-hidden />
       <span className="flex-1 min-w-0">

@@ -113,7 +113,7 @@ const EveningReflectionCard = () => {
       <button
         type="button"
         onClick={() => { hapticImpact("light"); setOpen((v) => !v); }}
-        className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left"
+        className="press-row w-full px-4 py-3 flex items-center justify-between gap-3 text-left"
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className={cn(

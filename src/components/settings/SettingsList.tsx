@@ -31,7 +31,7 @@ export const SettingsRow = ({
   <button
     type="button"
     onClick={() => { void hapticSelection(); onClick(); }}
-    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors "
+    className="press-row w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors "
   >
     <Icon aria-hidden size={14} className="text-muted-foreground shrink-0" />
     <span className="flex-1 min-w-0">
@@ -43,6 +43,6 @@ export const SettingsRow = ({
         {badge}
       </span>
     )}
-    <ChevronRight aria-hidden size={14} className="text-muted-foreground/75 shrink-0" />
+    <ChevronRight aria-hidden size={16} className="text-muted-foreground/75 shrink-0" />
   </button>
 );

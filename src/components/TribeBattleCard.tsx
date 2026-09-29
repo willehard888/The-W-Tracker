@@ -263,7 +263,7 @@ export const TribeBattleRow = ({
   );
 
   return onClick ? (
-    <button type="button" onClick={onClick} className="press w-full min-h-11 flex items-center gap-3 py-3 text-left">
+    <button type="button" onClick={onClick} className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left">
       {body}
     </button>
   ) : (

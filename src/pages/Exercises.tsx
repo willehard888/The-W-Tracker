@@ -22,7 +22,7 @@ import { ExerciseCoachingBlock } from "@/components/coach/ExerciseCoachingBlock"
 import { coachingFor } from "@/data/exercise-coaching";
 import { LIBRARY_BY_ID } from "@/data/recovery-routines";
 import { RecoverDetail, RecoverList } from "@/components/recovery/RecoverLibrary";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 
 /** Quiet pill under the gold segment: one gold fill per screen, not two rows of it. */
 const FILTER_PILL_ACTIVE = "bg-gold/[0.12] text-gold border-gold/50";
@@ -239,7 +239,7 @@ const Exercises = () => {
                 aria-pressed={tab === key}
                 onClick={() => setTab(key)}
                 className={cn(
-                  "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 inline-flex items-center justify-center gap-1.5 rounded-lg text-meta font-black transition-colors",
+                  SEGMENT_BUTTON, "min-h-9 relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] inline-flex items-center justify-center gap-1.5",
                   tab === key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
@@ -305,7 +305,7 @@ const Exercises = () => {
                 <button
                   type="button"
                   onClick={() => open(ex)}
-                  className="press w-full min-h-11 flex items-center gap-3 py-2 text-left"
+                  className="press-row  w-full min-h-11 flex items-center gap-3 py-2 text-left"
                 >
                   <IllustrationThumb ex={ex} size={48} eager={i < 6} />
                   <span className="flex-1 min-w-0">

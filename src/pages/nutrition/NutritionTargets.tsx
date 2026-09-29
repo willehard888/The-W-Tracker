@@ -6,7 +6,7 @@ import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK } from "@/components/ui/segment";
+import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
@@ -205,7 +205,7 @@ const NutritionTargets = () => {
                   hapticSelection();
                   setActivityChoice(a.key);
                 }}
-                className={cn("press flex-1 h-11 rounded-lg text-label font-black transition-[color,box-shadow] ", activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
+                className={cn(SEGMENT_BUTTON, activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {a.label}
               </button>
@@ -271,7 +271,7 @@ const NutritionTargets = () => {
           <button
             type="button"
             onClick={() => setInfoOpen(true)}
-            className="press w-full flex items-center gap-3 px-4 py-3 min-h-11 text-left hover:bg-card/60 transition-colors "
+            className="press-row  w-full flex items-center gap-3 px-4 py-3 min-h-11 text-left hover:bg-card/60 transition-colors "
           >
             <Info aria-hidden size={14} className="text-muted-foreground shrink-0" />
             <span className="flex-1 min-w-0">

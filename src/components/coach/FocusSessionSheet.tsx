@@ -4,7 +4,7 @@ import { ArrowLeftRight, Loader2, Shuffle } from "lucide-react";
 import { toast } from "sonner";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
-import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE } from "@/components/ui/segment";
+import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
 import { friendlyError } from "@/lib/error-copy";
@@ -232,7 +232,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
                 aria-pressed={minutes === m}
                 onClick={() => { hapticSelection(); setPreview(null); setMinutes(m); }}
                 className={cn(
-                  "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 rounded-lg text-meta font-black transition-colors tabular-nums",
+                  SEGMENT_BUTTON, "min-h-9 relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] tabular-nums",
                   minutes === m ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >
@@ -253,7 +253,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
                 disabled={f.key === "hard" && novice}
                 onClick={() => { hapticSelection(); setPreview(null); setFeel(f.key); }}
                 className={cn(
-                  "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 min-h-9 rounded-lg text-meta font-black transition-colors disabled:opacity-40",
+                  SEGMENT_BUTTON, "min-h-9 relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] disabled:opacity-40",
                   feel === f.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
                 )}
               >

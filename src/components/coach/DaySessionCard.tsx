@@ -441,7 +441,7 @@ const CollapseRow = ({
   <button
     type="button"
     onClick={onToggle}
-    className="w-full min-h-11 text-left flex items-start gap-2 px-0 py-2"
+    className="press-row w-full min-h-11 text-left flex items-start gap-2 px-0 py-2"
   >
     <span className={cn(LABEL, "mt-0.5 shrink-0")}>{label}</span>
     <span className={cn(

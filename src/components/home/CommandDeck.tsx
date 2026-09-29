@@ -141,6 +141,7 @@ const CommandDeck = ({
     >
       <button
         type="button"
+        data-no-haptic
         // Spotlight target only while checking in is actually possible —
         // the locked "come back tomorrow" deck must never get the intro
         // (the chain checks target presence, not the trigger condition).
@@ -156,7 +157,7 @@ const CommandDeck = ({
           lockTimer.current = setTimeout(() => navigate("/checkin"), 150);
         }}
         className={cn(
-          "group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-transform duration-200 ",
+          "press-row group relative w-full text-left rounded-3xl p-4 overflow-hidden transition-transform duration-200 ",
           locking && "cta-locking",
         )}
         style={{

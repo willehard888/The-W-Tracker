@@ -20,7 +20,7 @@ const ProgressionSummaryCard = () => {
     <button
       type="button"
       onClick={() => navigate("/coach/program")}
-      className="w-full text-left surface-card surface-card-quiet p-4"
+      className="press-row w-full text-left surface-card surface-card-quiet p-4"
     >
       <div className="flex items-center gap-2 mb-2">
         <TrendingUp aria-hidden size={13} className="text-muted-foreground" />

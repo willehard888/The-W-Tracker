@@ -56,7 +56,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen
       <button
         type="button"
         onClick={() => { hapticImpact("light"); onOpen(); }}
-        className="w-full min-h-11 flex items-center gap-2.5 py-1.5 text-left"
+        className="press-row w-full min-h-11 flex items-center gap-2.5 py-1.5 text-left"
       >
         {illustrated ? (
           <IllustrationThumb ex={illustrated} size={40} className="rounded-lg" />

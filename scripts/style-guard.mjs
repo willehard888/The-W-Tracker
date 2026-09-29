@@ -44,6 +44,12 @@ const RULES = [
   { re: /(flex-1|h-full)[^"'`]*overflow-y-auto|overflow-y-auto[^"'`]*(flex-1|h-full)/, msg: "page-level scroller — only the shell scrolls", only: PAGES, exempt: ["src/pages/Chat.tsx"] },
   // Motion
   { re: /(?<!group-)active:scale-/, msg: "per-element press scale — press depth is global (.press for non-buttons)", exempt: ["src/components/ui/button.tsx"] },
+  // A full-width text-left row is a row: it highlights (.press-row), it does
+  // not shrink. `press` on one reads as a chip the size of the screen.
+  { re: /<button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`](?=[^"'`]*\bw-full\b)(?=[^"'`]*\btext-left\b)(?:[^"'`]*\s)?press(?=\s|["'`])/, msg: "full-width row with `press` — rows use .press-row (highlight, no scale)" },
+  // A segmented control opts out of the global press scale through
+  // SEGMENT_BUTTON; a hand-written one shrinks inside its track.
+  { re: /^(?![\s\S]*SEGMENT_BUTTON)[\s\S]*?SEGMENT_(?:ACTIVE|IDLE)/, msg: "segment without SEGMENT_BUTTON — the prefix carries the size and the press opt-out", exempt: ["src/components/ui/segment.ts"] },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

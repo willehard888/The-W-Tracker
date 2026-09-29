@@ -311,7 +311,7 @@ const Notifications = () => {
           <button
             type="button"
             onClick={() => navigate("/friends")}
-            className="w-full surface-card surface-card-quiet px-4 py-3 flex items-center gap-3 text-left"
+            className="press-row w-full surface-card surface-card-quiet px-4 py-3 flex items-center gap-3 text-left"
           >
             <UserPlus size={16} className="text-muted-foreground shrink-0" aria-hidden />
             <span className="flex-1 min-w-0 text-dense font-bold">Find friends</span>

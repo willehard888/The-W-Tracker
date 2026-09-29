@@ -131,6 +131,13 @@ export const FUNNEL = {
   // linear day is what people actually want. Never a slug, never a name.
   exerciseSwitched: "exercise_switched",
 
+  // "Today I am at home with dumbbells." The profile says where somebody
+  // usually trains; this says where they are now, and `saved_default` says
+  // whether that turned out to be the same thing. If most changes are saved
+  // as the default, onboarding asked the wrong question. `context` is preset
+  // ids and counts — no movement names.
+  equipmentContextChanged: "equipment_context_changed",
+
   // "+30 s" during rest. `overdue` says whether the clock had already run out
   // when they reached for it — which is the interesting half, because that is
   // the case that used to hand back less than thirty seconds, and it tells us

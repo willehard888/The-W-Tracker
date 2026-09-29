@@ -1,5 +1,5 @@
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
-import { Suspense, lazy, useMemo, useState, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Loader2, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import ExerciseRow from "@/components/coach/ExerciseRow";
+import { useEditProgram } from "@/hooks/use-coach-program";
+import { useAthleteProfile } from "@/hooks/use-athlete-profile";
+import { useEquipmentContext } from "@/hooks/use-equipment-context";
+import { useDayLogs } from "@/hooks/use-workout-log";
+import { setTraining } from "@/lib/training/plan-edit";
+import { track, FUNNEL } from "@/lib/analytics";
+import {
+  defaultContext,
+  contextLabel,
+  substituteForEquipment,
+  type EquipmentValue,
+  type Engine,
+} from "@/lib/training/equipment-context";
+const EquipmentContextSheet = lazy(() =>
+  import("@/components/coach/EquipmentContextSheet").then((m) => ({ default: m.EquipmentContextSheet })),
+);
 // The preview pulls the coaching prose (130 KB) and the illustrated
 // catalogue. A day card that nobody taps should pay for neither.
 const ExercisePreviewSheet = lazy(() =>
@@ -56,6 +72,31 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
   // The movement being read about. Held after close so the sheet still has
   // something to draw while it animates out.
   const [preview, setPreview] = useState<ProgramBlock | null>(null);
+
+  // Today's room. The profile stays the profile: it is written only if the
+  // athlete explicitly asks for this to become their usual.
+  const [equipOpen, setEquipOpen] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const { profile, upsert: saveProfile } = useAthleteProfile();
+  const equip = useEquipmentContext(program.id, currentWeek, todayDayIndex);
+  const dayLogs = useDayLogs(program.id, currentWeek, todayDayIndex);
+  const editProgram = useEditProgram(program);
+  const [engine, setEngine] = useState<Engine | null>(null);
+  // The builder is 540 lines under supabase/functions, and boot-graph.test.ts
+  // keeps it out of the app's static import graph. Loaded only if somebody
+  // opens the sheet.
+  useEffect(() => {
+    if (!equipOpen || engine) return;
+    let alive = true;
+    void import("../../../supabase/functions/_shared/session-builder").then((m) => {
+      if (!alive) return;
+      setEngine({
+        poolFor: m.poolFor, swapCandidates: m.swapCandidates, prescribe: m.prescribe,
+        loadClassOf: m.loadClassOf, pool: m.SESSION_POOL, focuses: m.FOCUSES,
+      } as unknown as Engine);
+    });
+    return () => { alive = false; };
+  }, [equipOpen, engine]);
 
   const week = program.plan_json.weeks.find((w) => w.week === currentWeek);
   const day = week?.days[todayDayIndex];
@@ -122,6 +163,57 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
   // Asked AFTER the session is already logged, never before: completion stays a
   // single tap, and skipping this costs nothing because coach-daily-plan now
   // falls back to the evening reflection's RPE.
+  const usual = defaultContext(profile?.equipment);
+  const todaysContext: EquipmentValue[] = equip.record?.context ?? usual;
+  // A movement with sets already logged is never traded away: the sets would
+  // be left pointing at a slug that is no longer in the day.
+  const locked = new Set(Object.keys(dayLogs.data ?? {}));
+
+  const substitute = (values: EquipmentValue[]) => {
+    if (!engine || !day) return null;
+    const source = equip.record?.snapshot ?? day.blocks;
+    return substituteForEquipment(source, values, engine, {
+      experience: profile?.training_experience ?? null,
+      goal: profile?.primary_goal ?? null,
+      minutes: profile?.preferred_session_length_min ?? 45,
+      seed: `${program.id}:${currentWeek}:${todayDayIndex}`,
+    }, locked);
+  };
+
+  const applyEquipment = async (values: EquipmentValue[], saveAsDefault: boolean) => {
+    if (!day) return;
+    setApplying(true);
+    try {
+      const result = substitute(values);
+      if (result) {
+        // The snapshot is written once, against the day as it was first seen,
+        // so returning to the usual room restores the original movements
+        // rather than whatever swapping back happens to land on.
+        const snapshot = equip.record?.snapshot ?? day.blocks;
+        await editProgram.mutateAsync((plan) =>
+          setTraining(plan, { week: currentWeek, day: todayDayIndex, scope: "week" }, {
+            focus: day.focus,
+            blocks: result.blocks,
+          }),
+        );
+        equip.save({ context: values, snapshot });
+        void track(FUNNEL.equipmentContextChanged, {
+          context: values,
+          replaced: result.replaced.length,
+          dropped: result.dropped.length,
+          saved_default: saveAsDefault,
+        });
+      }
+      if (saveAsDefault) await saveProfile({ equipment: values });
+      setEquipOpen(false);
+      onLogged();
+    } catch {
+      toast.error("Couldn't change today's setup.");
+    } finally {
+      setApplying(false);
+    }
+  };
+
   const saveRpe = async (value: number) => {
     if (!user || !todayLog) return;
     setRpeSaving(value);
@@ -146,6 +238,21 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
       <p className="mt-1 text-dense text-muted-foreground">
         {nextUp ? `Next up: ${dayFocus(nextUp)} · ${nextUp.day}` : daySummary(day)}
       </p>
+
+      {/* Where today is being trained. Deliberately a line, not a step: a
+          normal gym workout stays one tap from here to Start, and the friction
+          only arrives on the day the room is actually different. */}
+      {!isRest && isCurrentWeek && (
+        <button
+          type="button"
+          onClick={() => { hapticImpact("light"); setEquipOpen(true); }}
+          className="mt-2 min-h-11 flex items-center gap-1.5 text-left"
+        >
+          <span className="text-meta text-muted-foreground/80">Training at:</span>
+          <span className="text-meta font-bold text-foreground/85">{contextLabel(todaysContext)}</span>
+          <ChevronDown aria-hidden size={12} className="text-muted-foreground/75" />
+        </button>
+      )}
 
       {/* The primary action on this card is starting, not reading. The list
           below stays for anyone who wants to see the session first. */}
@@ -292,6 +399,22 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
               : undefined}
             onSwap={onSwap && preview.slug ? () => onSwap(preview) : undefined}
             onRemove={onRemove && preview.slug ? () => onRemove(preview.slug!) : undefined}
+          />
+        </Suspense>
+      )}
+
+      {equipOpen && (
+        <Suspense fallback={null}>
+          <EquipmentContextSheet
+            open={equipOpen}
+            onClose={() => setEquipOpen(false)}
+            value={todaysContext}
+            preview={(values) => {
+              const r = substitute(values);
+              return { replaced: r?.replaced.length ?? 0, dropped: r?.dropped.length ?? 0 };
+            }}
+            onApply={applyEquipment}
+            applying={applying || !engine}
           />
         </Suspense>
       )}

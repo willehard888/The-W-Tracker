@@ -356,6 +356,10 @@
   :where(.surface-card, .surface-tint-gold, .surface-tint-ember, .surface-tint-danger) {
     border-radius: 1rem;
   }
+  /* A tint's rim, likewise: a chosen plan row says border-gold/70 on top. */
+  :where(.surface-tint-gold) { border-color: hsl(var(--gold) / 0.3); }
+  :where(.surface-tint-ember) { border-color: hsl(var(--ember) / 0.3); }
+  :where(.surface-tint-danger) { border-color: hsl(var(--destructive) / 0.35); }
   .surface-card {
     position: relative;
     @apply border border-border/50;
@@ -397,17 +401,14 @@
   }
   .surface-tint-gold {
     background-color: hsl(var(--gold) / 0.06);
-    border-color: hsl(var(--gold) / 0.3);
     box-shadow: inset 0 1px 0 hsl(var(--gold) / 0.12);
   }
   .surface-tint-ember {
     background-color: hsl(var(--ember) / 0.06);
-    border-color: hsl(var(--ember) / 0.3);
     box-shadow: inset 0 1px 0 hsl(var(--ember) / 0.12);
   }
   .surface-tint-danger {
     background-color: hsl(var(--destructive) / 0.1);
-    border-color: hsl(var(--destructive) / 0.35);
     box-shadow: inset 0 1px 0 hsl(var(--destructive) / 0.12);
   }
   /* Loading placeholder — the premium gold shimmer (replaces flat animate-pulse) */

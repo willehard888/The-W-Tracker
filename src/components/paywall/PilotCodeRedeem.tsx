@@ -94,14 +94,10 @@ const PilotCodeRedeem = () => {
   if (!open) {
     return (
       <div className="text-center">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="press inline-flex items-center gap-1.5 min-h-11 px-3 text-meta text-muted-foreground hover:text-gold transition-colors"
-        >
+        <Button variant="link" size="sm" onClick={() => setOpen(true)}>
           <Ticket size={12} aria-hidden strokeWidth={2.5} />
           Have a pilot code?
-        </button>
+        </Button>
       </div>
     );
   }
@@ -128,13 +124,9 @@ const PilotCodeRedeem = () => {
           {busy ? <Loader2 aria-hidden size={16} className="animate-spin" /> : "Redeem"}
         </Button>
       </div>
-      <button
-        type="button"
-        onClick={() => { setOpen(false); setCode(""); }}
-        className="press block mx-auto mt-1 min-h-11 px-3 text-meta text-muted-foreground hover:text-foreground transition-colors"
-      >
+      <Button variant="link" size="sm" className="mx-auto mt-1 flex" onClick={() => { setOpen(false); setCode(""); }}>
         Cancel
-      </button>
+      </Button>
     </form>
   );
 };

@@ -181,13 +181,15 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
                 }
           }
         >
-          <button
-            onClick={() => onSkip()}
+          <Button
+            variant="ghost"
+            size="icon-sm"
             aria-label="Skip"
-            className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/75 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
+            className="absolute right-1.5 top-1.5 rounded-full text-muted-foreground/75"
+            onClick={() => onSkip()}
           >
             <X size={16} aria-hidden />
-          </button>
+          </Button>
           <div className="flex items-start gap-3 pr-6">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold/12 text-gold">
               <Icon size={18} strokeWidth={2.5} />

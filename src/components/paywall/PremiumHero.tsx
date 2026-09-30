@@ -64,8 +64,8 @@ const PlanRow = ({
       disabled={disabled}
       onClick={onSelect}
       className={cn(
-        "press-row w-full min-h-11 flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors",
-        selected ? "border-gold/70 bg-gold/[0.06]" : "border-border/50",
+        "press-row w-full min-h-11 flex items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-[border-color,background-color,box-shadow]",
+        selected ? "surface-tint-gold border-gold/70" : "surface-card surface-card-quiet",
       )}
     >
       <span
@@ -174,13 +174,7 @@ const PremiumHero = ({
               you don't need to buy again.
             </p>
             {onDismissError && (
-              <button
-                type="button"
-                onClick={onDismissError}
-                className="min-h-11 text-meta font-bold underline underline-offset-2"
-              >
-                Got it
-              </button>
+              <Button variant="link" size="sm" className="-ml-3 text-foreground" onClick={onDismissError}>Got it</Button>
             )}
           </div>
         )}
@@ -190,13 +184,7 @@ const PremiumHero = ({
             <p className="text-dense font-bold text-destructive">Purchase failed</p>
             <p className="text-meta text-foreground leading-snug mt-0.5">{errorMessage}</p>
             {onDismissError && (
-              <button
-                type="button"
-                onClick={onDismissError}
-                className="min-h-11 text-meta font-bold text-destructive underline underline-offset-2"
-              >
-                Dismiss
-              </button>
+              <Button variant="link" size="sm" className="-ml-3 text-destructive hover:text-destructive active:text-destructive" onClick={onDismissError}>Dismiss</Button>
             )}
           </div>
         )}
@@ -204,7 +192,7 @@ const PremiumHero = ({
         <Button
           size="xl"
           variant="ember"
-          className="mt-3 w-full font-black text-copy tracking-wide"
+          className="mt-3 w-full"
           disabled={busy}
           onClick={() => onCta(plan)}
         >

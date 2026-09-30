@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { hapticSelection } from "@/lib/haptics";
 import type { OnboardingOption } from "@/lib/onboarding";
 
 interface SingleProps {
@@ -46,7 +45,6 @@ const OnboardingQuestion = (props: Props) => {
 
   const pickSingle = (v: string) => {
     if (props.mode !== "single" || advanced.current) return;
-    hapticSelection();
     setPicked(v);
     advanced.current = true;
     setTimeout(() => props.onAnswer(v), 250);
@@ -54,7 +52,6 @@ const OnboardingQuestion = (props: Props) => {
 
   const toggleMulti = (v: string) => {
     if (props.mode !== "multi") return;
-    hapticSelection();
     setMulti((cur) => (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]));
   };
 
@@ -70,24 +67,32 @@ const OnboardingQuestion = (props: Props) => {
       {!sub && <div className="mb-5" />}
 
       <div
+        role={props.mode === "single" ? "radiogroup" : "group"}
+        aria-label={title}
         className={cn(
           "min-h-0 overflow-y-auto pb-2",
           dense ? "flex flex-wrap justify-center gap-2 content-start" : "space-y-2.5",
         )}
       >
+        {/* Rows are rows (a highlight); chips are chips (the press). Both sit
+            on the surface vocabulary: the quiet card at rest, the gold tint
+            when chosen — and say so to a screen reader. */}
         {options.map((o) => (
           <button
             key={o.v}
             type="button"
+            role={props.mode === "single" ? "radio" : undefined}
+            aria-checked={props.mode === "single" ? selected(o.v) : undefined}
+            aria-pressed={props.mode === "multi" ? selected(o.v) : undefined}
             onClick={() => (props.mode === "single" ? pickSingle(o.v) : toggleMulti(o.v))}
             className={cn(
-              "press-row text-left transition-[border-color,background-color,box-shadow] ",
+              "text-left transition-[border-color,background-color,box-shadow]",
               dense
-                ? "rounded-full px-3.5 py-2 text-dense font-bold border inline-flex items-center gap-1.5"
-                : "w-full rounded-2xl border p-4 flex items-start gap-3",
+                ? "min-h-11 rounded-full px-3.5 py-2 text-dense font-bold inline-flex items-center gap-1.5"
+                : "press-row w-full rounded-2xl p-4 flex items-start gap-3",
               selected(o.v)
-                ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)] shadow-[0_0_24px_-8px_hsl(var(--gold)/0.6)]"
-                : "border-border/40 bg-card/40",
+                ? "surface-tint-gold border-gold/70 shadow-[0_0_24px_-8px_hsl(var(--gold)/0.6)]"
+                : "surface-card surface-card-quiet",
             )}
           >
             {o.emoji && <span aria-hidden className={dense ? "text-note" : "text-head leading-none mt-0.5"}>{o.emoji}</span>}
@@ -105,7 +110,7 @@ const OnboardingQuestion = (props: Props) => {
                 className={cn(
                   "ml-auto mt-1 h-[18px] w-[18px] shrink-0 rounded-full border-2 transition-colors",
                   selected(o.v)
-                    ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold))] shadow-[0_0_8px_hsl(var(--gold)/0.6)]"
+                    ? "border-gold bg-gold shadow-[0_0_8px_hsl(var(--gold)/0.6)]"
                     : "border-border",
                 )}
               />

@@ -58,7 +58,7 @@ const VARIANTS: VariantSpec[] = [
   { id: "danger-outline", label: "Danger Outline", group: "Outline & Glass", description: "Hairline red that fills on press." },
 
   // Utility
-  { id: "link", label: "Link", group: "Utility", description: "Gold-soft → gold underline." },
+  { id: "link", label: "Link", group: "Utility", description: "The quiet text action — muted, meta size, underlines on press." },
   { id: "gold-icon", label: "Gold Icon", group: "Utility", description: "For icon-only buttons (back/close/clear)." },
 ];
 

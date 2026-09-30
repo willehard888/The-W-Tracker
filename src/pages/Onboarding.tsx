@@ -201,8 +201,8 @@ const Onboarding = () => {
                 <div
                   key={q}
                   className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
-                    i < progress || qIndex === -1 ? "bg-[hsl(var(--gold))]"
-                    : i === progress ? "bg-[hsl(var(--gold))]/45"
+                    i < progress || qIndex === -1 ? "bg-gold"
+                    : i === progress ? "bg-gold/45"
                     : "bg-border/40"
                   }`}
                 />
@@ -229,7 +229,7 @@ const Onboarding = () => {
           initial={{ opacity: 0, x: 18 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -18 }}
-          transition={MOTION.fade}
+          transition={MOTION.slide}
           className="flex-1 flex flex-col pt-5 min-h-0"
         >
           {step === "welcome" && <WelcomeSlide onNext={() => advance("welcome")} />}

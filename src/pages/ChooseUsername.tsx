@@ -185,13 +185,9 @@ const ChooseUsername = () => {
           {/* The only door out. Every other route redirects back here while the
               handle is unset, so without this a member who opened the wrong
               account had no way to leave it but deleting the app. */}
-          <button
-            type="button"
-            onClick={() => { void signOut(); }}
-            className="press mx-auto block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
-          >
+          <Button variant="link" size="sm" className="mx-auto flex" onClick={() => { void signOut(); }}>
             Sign out
-          </button>
+          </Button>
         </form>
       </div>
     </div>

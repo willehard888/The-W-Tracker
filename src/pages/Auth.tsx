@@ -357,17 +357,18 @@ const Auth = () => {
                 <p className="text-label text-muted-foreground mt-1.5">Links you to the friend who sent it. They hear when you join.</p>
               </div>
             ) : (
-              <button type="button" className="text-note text-muted-foreground underline-offset-4 hover:underline" onClick={() => setInviteOpen(true)}>
+              <Button variant="link" size="sm" onClick={() => setInviteOpen(true)}>
                 Have an invite code?
-              </button>
+              </Button>
             )}
           </div>
         )}
 
         <div className="home-rise home-rise-3 mt-4 flex flex-col items-center">
           {mode === "login" && showEmailForm && (
-            <button
-              type="button"
+            <Button
+              variant="link"
+              size="sm"
               onClick={async () => {
                 if (!email) { toast.error("Enter your email first"); return; }
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -378,21 +379,21 @@ const Auth = () => {
                 if (error) toast.error(friendlyError(error, "Couldn't send the reset link. Try again in a minute."));
                 else toast.success("Reset link sent. Check your email.");
               }}
-              className="px-3 text-meta text-muted-foreground hover:text-foreground transition-colors"
             >
               Forgot password?
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
+          <Button
+            variant="link"
+            size="sm"
+            className="text-note font-normal"
             onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setShowEmailForm(true); }}
-            className="px-3 text-note text-muted-foreground hover:text-foreground transition-colors"
           >
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <span className="text-foreground font-semibold">
               {mode === "login" ? "Create account" : "Sign in"}
             </span>
-          </button>
+          </Button>
           {/* Said before the account exists, for both Apple and email. */}
           <p className="mt-3 px-6 text-label text-muted-foreground/75 leading-snug">
             By continuing you agree to our{" "}

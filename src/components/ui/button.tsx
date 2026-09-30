@@ -108,8 +108,10 @@ const buttonVariants = cva(
           "active:bg-secondary/75 active:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.35)]",
         ].join(" "),
 
-        // Link — gold-soft → gold; the quiet text action.
-        link: "text-[hsl(var(--gold-soft))] underline-offset-4 hover:text-[hsl(var(--gold))] hover:underline active:text-[hsl(var(--gold-light))] active:underline",
+        // Link — THE quiet text action: a muted line at the meta size that
+        // reads as a link (the paywall's legal links, "Not now", "Skip for
+        // now"). 44 pt through the halo; add text-gold for a warm one.
+        link: "px-3 text-meta font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline active:text-foreground active:underline",
 
         // Gold outline — hairline gold that fills on press.
         "gold-outline": [

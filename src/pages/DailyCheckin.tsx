@@ -11,7 +11,7 @@ import PageBar from "@/components/ui/page-bar";
 import { cn } from "@/lib/utils";
 import { fmtDate, fmtInt, fmtUnit } from "@/lib/format";
 import {
-  Moon, Dumbbell, Droplets, Camera, Flame,
+  Moon, Dumbbell, Droplets, Camera,
   ChevronDown, Check, Plus, Search, X,
   SlidersHorizontal, ShieldCheck, Sparkles, Thermometer,
 } from "lucide-react";
@@ -62,6 +62,7 @@ import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
 import type { DaySnapshot, DayWorkout } from "@/lib/health/healthkit";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FieldError } from "@/components/ui/label";
+import StreakFlameInline from "@/components/StreakFlameInline";
 
 /** "Tennis 62 min · Gym 45 min · Polar Flow" — what Health recorded today, by sport. */
 const healthSessionsLine = (sessions: DayWorkout[]): string => {
@@ -1371,7 +1372,12 @@ const DailyCheckin = () => {
           {/* The label carries the in-flight state ("Locking…") rather than a
               spinner, and the flame pops the instant the save starts. */}
           <Button variant="ember" size="xl" className="w-full mt-4" onClick={handleSubmit} aria-busy={submitting} disabled={submitting || honest !== true}>
-            <Flame aria-hidden size={20} className={cn(lockPop && "commit-pop")} />
+            {/* The real fire, not the outline glyph — the same flame the
+                streak burns with, at the heat of the streak being defended
+                (tomorrow's day counts: the lock is what lights it). */}
+            <span aria-hidden className={cn("inline-flex", lockPop && "commit-pop")}>
+              <StreakFlameInline streak={Math.max(streak + 1, 3)} size={22} showCount={false} />
+            </span>
             {submitting ? "Locking…" : (
               // The number every tick feeds — it counts instead of teleporting,
               // closing the tick → total chain at its endpoint.

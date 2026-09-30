@@ -32,7 +32,6 @@ const PREMIUM_MONTHLY_FALLBACK = "8,99 €";
 type PurchaseStatus = "idle" | "purchasing" | "verifying" | "pending" | "error";
 
 /** The quiet 44 pt text button the footer is made of. */
-const quiet = "press min-h-11 px-3 text-meta text-muted-foreground";
 
 const Paywall = () => {
   const { user, isElite, isPremium, checkSubscription, profile, subscriptionLoading, signOut } = useAuth();
@@ -357,9 +356,9 @@ const Paywall = () => {
           {/* Wraps: on a 375 pt phone the three links are wider than the
               screen, and App Review reads the last two. */}
           <div className="flex flex-wrap items-center justify-center">
-            <button type="button" onClick={handleRestore} className={quiet}>Restore purchases</button>
-            <button type="button" onClick={() => navigate("/terms")} className={quiet}>Terms of Use</button>
-            <button type="button" onClick={() => navigate("/privacy")} className={quiet}>Privacy Policy</button>
+            <Button variant="link" size="sm" onClick={handleRestore}>Restore purchases</Button>
+            <Button variant="link" size="sm" onClick={() => navigate("/terms")}>Terms of Use</Button>
+            <Button variant="link" size="sm" onClick={() => navigate("/privacy")}>Privacy Policy</Button>
           </div>
           {/* Pilot testers redeem free access here instead of purchasing, so the
               paywall and the real store flow stay live during the pilot. */}
@@ -369,23 +368,15 @@ const Paywall = () => {
               member who signed in to the wrong account could only delete the app. */}
           {!isPremium && !forced && (
             <div className="mt-2 flex flex-wrap items-center justify-center">
-              <button
-                type="button"
-                onClick={() => { void signOut(); }}
-                className="press block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
-              >
+              <Button variant="link" size="sm" onClick={() => { void signOut(); }}>
                 Not now — sign out
-              </button>
+              </Button>
               {/* Every route redirects here until the trial starts, so this is
                   the only place a signed-up non-subscriber can delete the
                   account (App Review 5.1.1(v)). Same dialog as Profile → Settings. */}
-              <button
-                type="button"
-                onClick={() => setDeleteOpen(true)}
-                className="press block min-h-11 px-3 text-meta text-muted-foreground/75 underline underline-offset-2"
-              >
+              <Button variant="link" size="sm" onClick={() => setDeleteOpen(true)}>
                 Delete account
-              </button>
+              </Button>
               <DeleteAccountDialog open={deleteOpen} onOpenChange={setDeleteOpen} username={profile?.username} />
             </div>
           )}

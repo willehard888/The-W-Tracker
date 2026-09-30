@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import type { CoachProgram, ProgramBlock, ProgramLog } from "@/hooks/use-coach-program";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import ExerciseRow from "@/components/coach/ExerciseRow";
 import { useEditProgram } from "@/hooks/use-coach-program";
@@ -159,7 +159,6 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
     );
     setSaving(false);
     if (error) { toast.error("Couldn't log session."); return; }
-    hapticNotification("success");
     toast.success(isRest ? "Rest logged." : "Session done.");
     onLogged();
   };
@@ -256,7 +255,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
       {!isRest && isCurrentWeek && (
         <button
           type="button"
-          onClick={() => { hapticImpact("light"); setEquipOpen(true); }}
+          onClick={() => setEquipOpen(true)}
           className="mt-2 min-h-11 flex items-center gap-1.5 text-left"
         >
           <span className="text-meta text-muted-foreground">Training at:</span>
@@ -335,7 +334,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
               variant="outline"
               size="sm"
               className="mt-3 min-h-11"
-              onClick={() => { hapticImpact("light"); navigate("/recovery?src=rest_day"); }}
+              onClick={() => navigate("/recovery?src=rest_day")}
             >
               Recover now
             </Button>
@@ -376,7 +375,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
                 key={value}
                 type="button"
                 disabled={rpeSaving != null}
-                onClick={() => { hapticImpact("light"); saveRpe(value); }}
+                onClick={() => saveRpe(value)}
                 aria-label={`Rate effort ${value} out of 10`}
                 className={cn(
                   "h-11 rounded-lg border text-dense font-black tabular-nums",

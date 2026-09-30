@@ -4,7 +4,7 @@ import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check, Search, Swords, Users } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";

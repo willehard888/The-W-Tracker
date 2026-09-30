@@ -16,12 +16,11 @@ import { format } from "date-fns";
 import type { LucideIcon } from "lucide-react";
 import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/img";
 import AppImage from "@/components/ui/app-image";
-import { hapticNotification, hapticSelection } from "@/lib/haptics";
 import TribeSearchBar from "@/components/TribeSearchBar";
 import TribeFireLite from "@/components/TribeFireLite";
 import TribeEmberSeed from "@/components/TribeEmberSeed";
@@ -236,12 +235,10 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
     // haptic is exempt from the tap-coalescing window in haptics.ts on
     // purpose — tap, then commit, felt as two separate things.
     if (data === "pending") {
-      hapticNotification("success");
       toast.success("Request sent — awaiting approval");
     } else if (data === "already_member") {
       toast.info("Already a member");
     } else {
-      hapticNotification("success");
       toast.success("Joined the tribe");
     }
     reloadTribes();
@@ -258,8 +255,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       toast.error(friendlyError(error));
       return;
     }
-    if (accept) hapticNotification("success");
-    toast.success(accept ? `Joined ${invite.tribe?.name ?? "tribe"}!` : "Invite declined");
+    if (accept) toast.success(accept ? `Joined ${invite.tribe?.name ?? "tribe"}!` : "Invite declined");
     reloadInvites();
     reloadTribes();
     if (accept && invite.tribe_id) navigate(`/tribes/${invite.tribe_id}`);
@@ -619,7 +615,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             return (
               <button
                 key={t}
-                onClick={() => { tabTouched.current = true; void hapticSelection(); setTab(t); }}
+                onClick={() => { tabTouched.current = true;setTab(t); }}
                 aria-pressed={active}
                 className={cn(
                   "eyebrow relative min-h-11 inline-flex items-end pb-2 transition-colors",
@@ -655,7 +651,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 variant={!openGroup && !activityFilter ? "gold-outline" : "outline"}
                 size="pill"
                 className="shrink-0"
-                onClick={() => { void hapticSelection(); setOpenGroup(null); setActivityFilter(null); }}
+                onClick={() => { setOpenGroup(null); setActivityFilter(null); }}
               >
                 All
               </Button>
@@ -669,7 +665,6 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                     size="pill"
                     className="shrink-0"
                     onClick={() => {
-                      void hapticSelection();
                       if (active) { setOpenGroup(null); setActivityFilter(null); }
                       else { setOpenGroup(g.label); setActivityFilter(null); }
                     }}
@@ -692,7 +687,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                       variant={active ? "gold-outline" : "outline"}
                       size="pill"
                       className="shrink-0"
-                      onClick={() => { void hapticSelection(); setActivityFilter(active ? null : a.name); }}
+                      onClick={() => setActivityFilter(active ? null : a.name)}
                     >
                       <AIcon aria-hidden size={12} strokeWidth={2.5} /> {a.name}
                     </Button>

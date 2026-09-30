@@ -2,7 +2,7 @@ import { backOr } from "@/lib/nav";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Plus, Trash2, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
@@ -10,7 +10,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
-import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import PageBar from "@/components/ui/page-bar";
 import NumField from "@/components/nutrition/NumField";
@@ -335,10 +334,7 @@ const NutritionRecipeEditor = () => {
                   key={s.key}
                   type="button"
                   aria-pressed={logSlot === s.key}
-                  onClick={() => {
-                    hapticSelection();
-                    setLogSlot(s.key);
-                  }}
+                  onClick={() => setLogSlot(s.key)}
                   className={cn(SEGMENT_BUTTON, logSlot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}

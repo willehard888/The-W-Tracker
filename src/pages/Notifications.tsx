@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriendRequests, useFriendActions } from "@/hooks/use-friends";
 import { useNotifications, markNotificationRead, type AppNotification } from "@/hooks/use-notifications";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { battleTypeInfo } from "@/components/battles/battle-types";

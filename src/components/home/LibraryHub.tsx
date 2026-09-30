@@ -3,7 +3,6 @@ import { ChevronRight, Utensils } from "lucide-react";
 import VaultThumb from "@/components/vault/VaultThumb";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { RECIPE_COUNT } from "@/data/library-counts";
-import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 /**
@@ -111,7 +110,7 @@ const LibraryHub = () => {
         <button
           key={row.key}
           type="button"
-          onClick={() => { hapticImpact("light"); navigate(row.path); }}
+          onClick={() => navigate(row.path)}
           className="press-row w-full min-h-14 flex items-center gap-3 py-3 text-left"
         >
           <RowThumb id={row.key} />

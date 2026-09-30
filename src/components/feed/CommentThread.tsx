@@ -3,7 +3,7 @@ import { fmtRelative } from "@/lib/format";
 import { memo, useState } from "react";
 import { Reply, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import { MAX_VISUAL_DEPTH, type CommentNode } from "@/lib/comment-tree";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -124,7 +124,7 @@ const CommentThread = memo(function CommentThread({
                   </button>
                   <button
                     type="button"
-                    onClick={() => { hapticImpact("light"); saveEdit(); }}
+                    onClick={() => saveEdit()}
                     disabled={saving || !draft.trim()}
                     className="text-label font-bold gradient-gold text-primary-foreground min-h-11 px-3 rounded-md disabled:opacity-50"
                   >
@@ -146,10 +146,7 @@ const CommentThread = memo(function CommentThread({
               {currentUserId && (
                 <button
                   type="button"
-                  onClick={() => {
-                    hapticSelection();
-                    onReply(node.id, username, node.content || "");
-                  }}
+                  onClick={() => onReply(node.id, username, node.content || "")}
                   className="relative before:absolute before:-inset-2 before:content-[''] text-label font-bold flex items-center gap-1 px-2 -mx-1 text-muted-foreground/75 hover:text-gold transition-colors"
                 >
                   <Reply aria-hidden size={12} />
@@ -170,7 +167,6 @@ const CommentThread = memo(function CommentThread({
                   <button
                     type="button"
                     onClick={() => {
-                      hapticSelection();
                       setDraft(node.content || "");
                       setEditingId(node.id);
                     }}

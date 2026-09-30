@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { usePerformanceSnapshots, useLatestWeeklyReview } from "@/hooks/use-performance-snapshots";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useState } from "react";
 import { friendlyError, readEdgeError } from "@/lib/error-copy";
 

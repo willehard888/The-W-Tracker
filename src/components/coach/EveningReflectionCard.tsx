@@ -3,7 +3,6 @@ import { m, AnimatePresence } from "framer-motion";
 import { Moon, Check, Sparkles, ChevronDown } from "lucide-react";
 import { useTodayReflection } from "@/hooks/use-coach-reflection";
 import { Button } from "@/components/ui/button";
-import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { MOTION } from "@/lib/motion";
@@ -33,7 +32,7 @@ const Scale = ({
           <button
             key={n}
             type="button"
-            onClick={() => { hapticImpact("light"); onChange(n); }}
+            onClick={() => onChange(n)}
             className={cn(
               "relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] flex-1 h-9 rounded-lg text-meta font-black transition-[background-color,border-color,color] border",
               active
@@ -114,7 +113,7 @@ const EveningReflectionCard = () => {
     >
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); setOpen((v) => !v); }}
+        onClick={() => setOpen((v) => !v)}
         className="press-row w-full px-4 py-3 flex items-center justify-between gap-3 text-left"
       >
         <div className="flex items-center gap-3 min-w-0">

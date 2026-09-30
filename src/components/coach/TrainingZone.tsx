@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "re
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { dayFocus, daySummary, isRestDay, isTrainingDay } from "@/lib/training/session";
@@ -80,7 +80,7 @@ const FocusDoor = ({ label = "Pick a different focus", aside }: { label?: string
       <div className="flex items-center">
         <button
           type="button"
-          onClick={() => { hapticSelection(); setOpen(true); }}
+          onClick={() => setOpen(true)}
           className="press flex-1 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
         >
           {label} <ChevronRight aria-hidden size={14} />
@@ -103,7 +103,7 @@ const RecoveryDoor = ({ to = "/recovery?src=manual" }: { to?: string }) => {
   return (
     <button
       type="button"
-      onClick={() => { hapticImpact("light"); navigate(to); }}
+      onClick={() => navigate(to)}
       className="press w-full min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
     >
       Recovery session <ChevronRight aria-hidden size={14} />
@@ -162,7 +162,7 @@ const TrainingZone = () => {
           aside={program ? (
             <button
               type="button"
-              onClick={() => { hapticImpact("light"); navigate("/coach/program"); }}
+              onClick={() => navigate("/coach/program")}
               className="press shrink-0 min-h-11 flex items-center gap-1 pl-4 text-meta font-bold text-muted-foreground"
             >
               Your program <ChevronRight aria-hidden size={14} />

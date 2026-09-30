@@ -3,7 +3,6 @@ import { Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { cn } from "@/lib/utils";
-import { hapticSelection } from "@/lib/haptics";
 import ServingPicker, { type PortionState } from "@/components/nutrition/ServingPicker";
 import NutrientPreview from "@/components/nutrition/NutrientPreview";
 import { MEAL_SLOTS } from "@/lib/nutrition/slots";
@@ -95,10 +94,7 @@ const PortionPanel = ({
               key={s.key}
               type="button"
               aria-pressed={slot === s.key}
-              onClick={() => {
-                hapticSelection();
-                onSlotChange(s.key);
-              }}
+              onClick={() => onSlotChange(s.key)}
               className={cn(SEGMENT_BUTTON, slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {s.label}

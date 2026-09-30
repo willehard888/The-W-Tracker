@@ -27,10 +27,10 @@ import FeedPostCard from "@/components/feed/FeedPostCard";
 import { buildCommentTree } from "@/lib/comment-tree";
 import { downscaleImage } from "@/lib/downscale-image";
 import { fetchFeedPosts } from "@/lib/feed-query";
-import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
+import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import MediaPreview from "@/components/media/MediaPreview";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import {
   DropdownMenu,
@@ -267,7 +267,6 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       setVideoFile(null);
       setVideoPreview(null);
       setComposerOpen(false);
-      hapticNotification("success");
       queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
       toast.success("Posted");
     },
@@ -924,7 +923,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => { hapticSelection(); setComposerOpen(false); }}
+                    onClick={() => setComposerOpen(false)}
                     aria-label="Close composer"
                     className="self-start -mr-1.5 -mt-1.5 rounded-full text-muted-foreground/75 shrink-0"
                   >
@@ -985,7 +984,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
           ) : (
             <button
               type="button"
-              onClick={() => { hapticSelection(); setComposerOpen(true); }}
+              onClick={() => setComposerOpen(true)}
               className="press-row w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform "
             >
               <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-label font-black text-primary-foreground shrink-0">
@@ -1008,7 +1007,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
         <div className="home-rise home-rise-1 mb-6">
           <button
             type="button"
-            onClick={() => { hapticSelection(); navigate("/paywall"); }}
+            onClick={() => navigate("/paywall")}
             className="press-row w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
           >
             <span className="h-8 w-8 rounded-full bg-secondary/60 flex items-center justify-center shrink-0">
@@ -1058,7 +1057,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             action={
               <div className="flex flex-wrap justify-center gap-2">
                 {canPost && (
-                  <Button size="sm" variant="ember" onClick={() => { hapticSelection(); setComposerOpen(true); }}>
+                  <Button size="sm" variant="ember" onClick={() => setComposerOpen(true)}>
                     Post your first W
                   </Button>
                 )}

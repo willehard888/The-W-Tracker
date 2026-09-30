@@ -37,7 +37,7 @@ import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import { backOr } from "@/lib/nav";
 import { cn } from "@/lib/utils";
-import { hapticImpact, hapticNotification, hapticSelection } from "@/lib/haptics";
+import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { useOnboardingTrigger } from "@/components/onboarding/onboarding-context";
@@ -425,7 +425,7 @@ export default function Recovery() {
           {routine.vault && (
             <button
               type="button"
-              onClick={() => { hapticSelection(); navigate(`/vault?lesson=${routine.vault}`); }}
+              onClick={() => { navigate(`/vault?lesson=${routine.vault}`); }}
               className="press home-rise home-rise-2 mt-3 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
             >
               Why it works, in the Vault <ChevronRight aria-hidden size={14} />
@@ -436,7 +436,7 @@ export default function Recovery() {
             // the toggle sticks — somebody who wants the room quiet says so once.
             <button
               type="button"
-              onClick={() => { hapticSelection(); setVoice((on) => { setVoiceOn(!on); return !on; }); }}
+              onClick={() => { setVoice((on) => { setVoiceOn(!on); return !on; }); }}
               aria-pressed={voice}
               className="press-row home-rise home-rise-2 mt-4 w-full min-h-11 flex items-center justify-between gap-3 surface-card surface-card-quiet rounded-xl px-4"
             >
@@ -505,7 +505,7 @@ export default function Recovery() {
                 <button
                   key={l.id}
                   type="button"
-                  onClick={() => { hapticSelection(); setLength(l.id); }}
+                  onClick={() => setLength(l.id)}
                   aria-pressed={length === l.id}
                   className={cn(
                     "min-h-14 rounded-xl border px-2 py-2 text-center transition-colors",
@@ -532,10 +532,7 @@ export default function Recovery() {
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => {
-                    hapticSelection();
-                    setSoreness((cur) => (cur === s.id ? null : s.id));
-                  }}
+                  onClick={() => setSoreness((cur) => (cur === s.id ? null : s.id))}
                   aria-pressed={soreness === s.id}
                   className={cn(
                     "min-h-11 rounded-xl border px-2 text-note font-bold transition-colors",
@@ -743,7 +740,6 @@ export default function Recovery() {
             type="button"
             className="press mt-4 min-h-11 text-meta font-bold text-muted-foreground"
             onClick={() => {
-              hapticSelection();
               void track(FUNNEL.recoverySwapped, {
                 source,
                 from: movement.id,
@@ -768,7 +764,7 @@ export default function Recovery() {
               className="shrink-0 px-4"
               aria-label="Previous movement"
               disabled={index === 0 && side === 0}
-              onClick={() => { hapticImpact("light"); back(); }}
+              onClick={() => back()}
             >
               <ChevronLeft size={18} aria-hidden />
             </Button>
@@ -778,7 +774,6 @@ export default function Recovery() {
             size="lg"
             className="flex-1"
             onClick={() => {
-              hapticImpact("light");
               if (running) {
                 setHeldLeft(left);
                 setDeadline(null);
@@ -794,7 +789,7 @@ export default function Recovery() {
             variant="ember"
             size="lg"
             className="flex-1"
-            onClick={() => { hapticImpact("light"); advance(); }}
+            onClick={() => advance()}
           >
             {isLast ? (
               <>

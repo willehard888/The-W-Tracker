@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { flushPendingCheckin, getPendingCheckin } from "@/lib/offline-checkin";
 import { track, FUNNEL } from "@/lib/analytics";

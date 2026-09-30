@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import ConfettiBurst from "@/components/ConfettiBurst";
 
 const StoryShareModal = lazy(() => import("@/components/StoryShareModal"));
-import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { hapticNotification } from "@/lib/haptics";
 import { readLocal, writeLocal } from "@/lib/storage";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
 
@@ -170,10 +170,7 @@ const TierPromotionCelebration = () => {
                   variant="ember"
                   size="lg"
                   className="w-full"
-                  onClick={() => {
-                    setShareOpen(true);
-                    hapticImpact("light");
-                  }}
+                  onClick={() => setShareOpen(true)}
                 >
                   <Share2 aria-hidden size={16} />
                   Share to Stories

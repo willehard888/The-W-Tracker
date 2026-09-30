@@ -6,7 +6,7 @@ import { Download, Share2, X, Flame, Zap, Trophy, Crown, Sparkles, Shield } from
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import BrandLogo, { LOGO_DATA_URI } from "@/components/BrandLogo";
 import { shareImage, saveImage, shareText } from "@/lib/share-image";
 import { isNativePlatform } from "@/lib/platform";

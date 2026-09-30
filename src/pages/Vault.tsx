@@ -200,10 +200,7 @@ const Vault = () => {
                 <button
                   key={p.slug}
                   type="button"
-                  onClick={() => {
-                    hapticImpact("light");
-                    setOpenPath(p);
-                  }}
+                  onClick={() => setOpenPath(p)}
                   className="press snap-start shrink-0 w-[152px] surface-card surface-card-quiet p-3.5 text-left"
                   style={{ borderColor: pp.complete ? `${accent}66` : undefined }}
                 >
@@ -234,10 +231,7 @@ const Vault = () => {
                 <li key={m.slug} className="border-b border-border/35">
                   <button
                     type="button"
-                    onClick={() => {
-                      hapticImpact("light");
-                      setOpenMaster(m);
-                    }}
+                    onClick={() => setOpenMaster(m)}
                     className="press-row w-full py-2.5 text-left"
                   >
                     <span className="block font-display text-dense font-black tracking-tight leading-tight truncate">{m.name}</span>
@@ -342,10 +336,7 @@ const VaultCategoryBlock = ({
       {/* The cover IS the category: art, name, a read count. Tap to open the shelf. */}
       <button
         type="button"
-        onClick={() => {
-          hapticImpact("light");
-          setExpanded((v) => !v);
-        }}
+        onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         aria-controls={panelId}
         className="press-row relative block w-full aspect-[16/7] rounded-2xl overflow-hidden text-left"

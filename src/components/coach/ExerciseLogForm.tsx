@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import { localDateKey } from "@/lib/date";
 import { formatRest, parseDecimal, setRowSeed, suggestedLoad, type SetSeed } from "@/lib/training/runner";
 import { prescriptionGloss } from "@/lib/training/prescription";
@@ -100,7 +100,6 @@ export const ExerciseLogForm = ({
         name: block.name, weight: w, reps: r, rpe: rpeToLog, setIndex: n,
       });
       setDrafts((d) => { const next = { ...d }; delete next[n]; return next; });
-      hapticNotification("success");
       toast.success(`${block.name}: set ${n} locked`);
     } catch {
       toast.error("Couldn't save — check connection.");

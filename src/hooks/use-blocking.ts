@@ -3,8 +3,7 @@ import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { hapticNotification } from "@/lib/haptics";
+import { toast } from "@/lib/toast";
 
 /**
  * Block-user + report-content (App Store 1.2 safety). Blocking is one-way; the
@@ -38,7 +37,6 @@ export function useBlockActions() {
     if (!user || targetId === user.id) return;
     const { error } = await supabase.rpc("block_user", { p_target: targetId });
     if (error) { toast.error("Couldn't block — try again."); return; }
-    hapticNotification("success");
     toast.success(username ? `@${username} blocked` : "User blocked", {
       description: "They can't message or friend you, and you won't see each other's content.",
     });
@@ -65,7 +63,6 @@ export function useBlockActions() {
       p_reason: reason,
     });
     if (error) { toast.error("Couldn't send report — try again."); return; }
-    hapticNotification("success");
     // The reporter should not keep looking at what they just flagged: hide it
     // for this session and refetch the lists, so the report visibly did
     // something (App Review 1.2 checks exactly this).

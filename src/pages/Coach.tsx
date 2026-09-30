@@ -18,7 +18,7 @@ import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { withNetworkRetry } from "@/lib/retry";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { dayFocus } from "@/lib/training/session";
 import { useTodayFocusSession } from "@/hooks/use-focus-session";
 import { useCoachProgram, todaySessionOf, type CoachProgram } from "@/hooks/use-coach-program";
@@ -746,7 +746,7 @@ const ChatSheet = ({
             ))}
             <button
               type="button"
-              onClick={() => { hapticImpact("light"); setShowBrowser(true); }}
+              onClick={() => setShowBrowser(true)}
               className="press mt-1 min-h-11 inline-flex items-center justify-center gap-1.5 text-meta font-semibold text-muted-foreground"
             >
               <BookOpen size={12} aria-hidden /> Browse the playbook

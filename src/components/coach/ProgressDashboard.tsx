@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Sparkline from "@/components/coach/Sparkline";
 import { localDateKey } from "@/lib/date";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError, readEdgeError } from "@/lib/error-copy";
 
 interface Props {

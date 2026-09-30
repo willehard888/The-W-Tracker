@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import TopInvitersWidget from "@/components/TopInvitersWidget";
 import StoryShareModal from "@/components/StoryShareModal";
 import { useReferralStats } from "@/hooks/use-referral-stats";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeftRight, Loader2, Shuffle } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
@@ -100,7 +100,6 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
   const preset = (fs: Focus[]) => { hapticSelection(); setPreview(null); setFocus(fs); };
 
   const fail = (e: unknown) => {
-    hapticNotification("error");
     const status = (e as { status?: number })?.status ?? 0;
     const msg = e instanceof Error ? e.message : "";
     if (status === 403 || /membership/i.test(msg)) {
@@ -230,7 +229,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
                 key={m}
                 type="button"
                 aria-pressed={minutes === m}
-                onClick={() => { hapticSelection(); setPreview(null); setMinutes(m); }}
+                onClick={() => { setPreview(null); setMinutes(m); }}
                 className={cn(
                   SEGMENT_BUTTON, "min-h-9 relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] tabular-nums",
                   minutes === m ? SEGMENT_ACTIVE : SEGMENT_IDLE,
@@ -251,7 +250,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
                 type="button"
                 aria-pressed={feel === f.key}
                 disabled={f.key === "hard" && novice}
-                onClick={() => { hapticSelection(); setPreview(null); setFeel(f.key); }}
+                onClick={() => { setPreview(null); setFeel(f.key); }}
                 className={cn(
                   SEGMENT_BUTTON, "min-h-9 relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] disabled:opacity-40",
                   feel === f.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,

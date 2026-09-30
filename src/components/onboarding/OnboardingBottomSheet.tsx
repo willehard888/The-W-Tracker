@@ -76,10 +76,7 @@ export default function OnboardingBottomSheet({ def, onComplete, onSkip }: Onboa
             variant="ember"
             size="xl"
             className="w-full"
-            onClick={() => {
-              hapticSelection();
-              onComplete();
-            }}
+            onClick={() => onComplete()}
           >
             {def.cta}
           </Button>

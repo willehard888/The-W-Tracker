@@ -7,7 +7,6 @@ import { fmtKcal } from "@/lib/nutrition/format";
 import { beatFor, kcalLeft, kcalProgress, subFor } from "@/lib/nutrition/day-copy";
 import { fmtInt } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { hapticImpact } from "@/lib/haptics";
 import { recipeImageIds, recipeSquare } from "@/lib/recipe-images";
 import { localDayIndex } from "@/lib/daily-rotation";
 import type { MacroSummary } from "@/components/nutrition/MacroRow";
@@ -121,7 +120,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
           without ever nesting a button inside a button. */}
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); act.run(); }}
+        onClick={() => act.run()}
         aria-label={act.label}
         className="absolute inset-0 rounded-xl active:opacity-70 transition-opacity"
       />
@@ -166,7 +165,6 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
               aria-label="Scan a meal photo"
               className="min-h-11 min-w-11"
               onClick={() => {
-                hapticImpact("light");
                 if (!tipSeen()) {
                   setTipOpen(true);
                   return;

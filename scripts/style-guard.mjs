@@ -91,6 +91,12 @@ const RULES = [
   // One empty, one loading: "No … yet" copy is an <EmptyState>, a placeholder is .skeleton-block.
   { re: /<p className="[^"]*text-muted-foreground[^"]*">\s*(?:No |Nothing |None |No one )[^<]{0,60}(?:yet|found|match)/, msg: "hand-rolled empty — <EmptyState size=\"compact\" title=… />", exempt: ["src/pages/IosDebug.tsx"] },
   { re: /\b(?:skeleton-shimmer|shimmer-bg)\b|animate-pulse"[^>]*\/>\s*(?:<div[^>]*animate-pulse)/, msg: "another shimmer — .skeleton-block is the loading placeholder" },
+  // One haptic vocabulary. The document delegate taps for every button
+  // (src/lib/tap-haptics.ts); the app's toast carries the outcome haptic
+  // (src/lib/toast.ts); a destructive ConfirmDialog warns as it opens.
+  { re: /onClick=\{[^}]{0,160}haptic(?:Impact\("light"\)|Selection\(\))/, msg: "a light tap in onClick — the document delegate taps for every button", exempt: ["src/components/home/CommandDeck.tsx", "src/components/BottomNav.tsx"] },
+  { re: /import \{[^}]*\btoast\b[^}]*\} from "sonner"/, msg: "toast from sonner — import { toast } from \"@/lib/toast\" (it carries the outcome haptic)", exempt: ["src/lib/toast.ts", "src/components/ui/sonner.tsx"] },
+  { re: /hapticNotification\("(success|error)"\);?[^\n]*\n[^\n]*toast\.\1\(|toast\.(success|error)\([^\n]*\n[^\n]*hapticNotification\("\2"\)/, msg: "outcome haptic next to its toast — the toast already carries it" },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

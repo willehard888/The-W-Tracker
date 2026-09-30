@@ -15,7 +15,6 @@
 // stretch, and the first version could not tell the difference.
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { hapticImpact } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
 import { listAreas } from "@/lib/recovery/explain";
 import { IllustrationThumb } from "@/components/coach/ExerciseIllustration";
@@ -75,10 +74,7 @@ export default function RecoveryOffer({
         <Button variant="outline" size="sm" className="flex-1 min-h-11" asChild>
           <Link
             to={href}
-            onClick={() => {
-              hapticImpact("light");
-              void track(FUNNEL.recoveryOpened, { source, areas, minutes, from: "offer" });
-            }}
+            onClick={() => void track(FUNNEL.recoveryOpened, { source, areas, minutes, from: "offer" })}
           >
             Start recovery
           </Link>

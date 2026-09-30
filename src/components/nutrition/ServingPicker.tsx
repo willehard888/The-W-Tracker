@@ -118,7 +118,6 @@ const ServingPicker = ({ food, value, onChange }: { food: Food; value: PortionSt
                 type="button"
                 aria-pressed={active}
                 onClick={() => {
-                  hapticSelection();
                   onChange({ ...value, qty: String(q) });
                 }}
                 className={cn(SEGMENT_BUTTON, "tabular-nums", active ? SEGMENT_ACTIVE : SEGMENT_IDLE)}

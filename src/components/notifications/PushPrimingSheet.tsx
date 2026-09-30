@@ -51,7 +51,7 @@ export default function PushPrimingSheet({ open, context = "home", onEnable, onD
         ))}
       </ul>
 
-      <Button variant="ember" size="xl" className="w-full" onClick={() => { hapticSelection(); onEnable(); }}>
+      <Button variant="ember" size="xl" className="w-full" onClick={() => onEnable()}>
         <Bell size={18} aria-hidden /> Turn on reminders
       </Button>
       <Button variant="ghost" size="lg" className="w-full mt-1 text-muted-foreground" onClick={dismiss}>

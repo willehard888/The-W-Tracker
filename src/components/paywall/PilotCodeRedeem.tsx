@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { hapticNotification } from "@/lib/haptics";
 import { captureException } from "@/lib/observability";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 /**
  * Pilot testers get free access through a code rather than a purchase, so the

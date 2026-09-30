@@ -1,16 +1,16 @@
 import * as React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 import { cn } from "@/lib/utils";
-import { hapticSelection } from "@/lib/haptics";
 
 /**
  * House switch — gold when on, inset track when off (surface-inset family).
- * Fires the selection haptic itself so callers don't have to remember to.
+ * The tap haptic comes from the document delegate (it is a role="switch"
+ * button), so callers and the switch itself fire nothing.
  */
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
->(({ className, onCheckedChange, ...props }, ref) => (
+>(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
       "peer inline-flex h-[26px] w-[46px] shrink-0 cursor-pointer items-center rounded-full",
@@ -22,10 +22,6 @@ const Switch = React.forwardRef<
       "data-[state=unchecked]:shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]",
       className,
     )}
-    onCheckedChange={(checked) => {
-      void hapticSelection();
-      onCheckedChange?.(checked);
-    }}
     {...props}
     ref={ref}
   >

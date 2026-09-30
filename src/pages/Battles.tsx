@@ -14,7 +14,7 @@ import { backOr } from "@/lib/nav";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useBattleScores } from "@/hooks/use-battle-scores";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useNavigate } from "react-router-dom";
 import FriendPickerSheet from "@/components/social/FriendPickerSheet";
 import MyTribeBattles from "@/components/MyTribeBattles";

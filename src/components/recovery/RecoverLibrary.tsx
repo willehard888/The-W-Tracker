@@ -10,7 +10,7 @@ import { ChevronRight, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import { describeLength } from "@/lib/recovery/build-session";
 import { movementSeconds, type RecoveryMovement } from "@/data/recovery";
 import {
@@ -142,7 +142,7 @@ const ShelfSection = ({ section, onOpen }: { section: Section; onOpen: (id: stri
           <button
             type="button"
             aria-expanded={open}
-            onClick={() => { hapticSelection(); setOpen((o) => !o); }}
+            onClick={() => setOpen((o) => !o)}
             className="press mt-2 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
           >
             {open ? "Hide" : "All"} {items.length} {section.noun}

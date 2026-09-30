@@ -1,6 +1,5 @@
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hapticSelection } from "@/lib/haptics";
 
 export interface FoodResultView {
   id: string;
@@ -64,10 +63,7 @@ const FoodResultRow = ({
           type="button"
           aria-label={food.isFavorite ? "Remove from favorites" : "Add to favorites"}
           aria-pressed={!!food.isFavorite}
-          onClick={() => {
-            hapticSelection();
-            onToggleFavorite(food);
-          }}
+          onClick={() => onToggleFavorite(food)}
           className={cn(
             "press shrink-0 min-h-11 min-w-11 flex items-center justify-center transition-transform",
             food.isFavorite ? "text-gold" : "text-muted-foreground/75",

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { backOr } from "@/lib/nav";
 import { Camera, ImagePlus, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
@@ -523,10 +523,7 @@ const NutritionPhotoReview = () => {
                   key={s.key}
                   type="button"
                   aria-pressed={slot === s.key}
-                  onClick={() => {
-                    hapticSelection();
-                    setSlot(s.key);
-                  }}
+                  onClick={() => setSlot(s.key)}
                   className={cn(SEGMENT_BUTTON, slot === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {s.label}

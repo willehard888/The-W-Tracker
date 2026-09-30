@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
 import { format, isToday, isTomorrow } from "date-fns";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useTribeEvents, useTribeEventActions, type TribeEvent, type RsvpStatus } from "@/hooks/use-tribe-events";
 import { cn } from "@/lib/utils";
-import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { safeHttpUrl } from "@/lib/safe-url";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon, activityDefaults } from "@/lib/tribe-activities";
@@ -101,7 +101,6 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
     hapticImpact("light");
     try {
       await rsvp(ev.id, ev.my_status === status ? "declined" : status);
-      hapticNotification("success");
     } catch (e) { toast.error(errMsg(e)); } finally { setBusy(null); }
   };
 
@@ -119,7 +118,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
           <Button
             variant="gold-outline"
             size="pill"
-            onClick={() => { hapticImpact("light"); setShowCreate(true); }}
+            onClick={() => setShowCreate(true)}
           >
             <Plus aria-hidden size={14} /> Host
           </Button>
@@ -187,7 +186,6 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
           onCreate={async (e) => {
             try {
               await createEvent(e);
-              hapticNotification("success");
               toast.success("Meetup posted");
               setShowCreate(false);
             } catch (err) { toast.error(errMsg(err)); }
@@ -195,7 +193,6 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
           onCreateSeries={async (s) => {
             try {
               await createSeries(s);
-              hapticNotification("success");
               toast.success(`${s.sessions.length}-session series posted`);
               setShowCreate(false);
             } catch (err) { toast.error(errMsg(err)); }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 // SECURITY: this page previously had a "native handoff" branch that forwarded
 // the OAuth access + refresh tokens to a custom URL scheme

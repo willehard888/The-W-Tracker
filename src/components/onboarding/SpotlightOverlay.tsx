@@ -182,10 +182,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
           }
         >
           <button
-            onClick={() => {
-              hapticSelection();
-              onSkip();
-            }}
+            onClick={() => onSkip()}
             aria-label="Skip"
             className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/75 hover:text-foreground transition-colors before:absolute before:-inset-2 before:content-['']"
           >
@@ -207,10 +204,7 @@ export default function SpotlightOverlay({ def, target, onComplete, onSkip }: Sp
           <Button
             variant="ember"
             className="mt-3.5 w-full"
-            onClick={() => {
-              hapticSelection();
-              onComplete();
-            }}
+            onClick={() => onComplete()}
           >
             {def.cta}
           </Button>

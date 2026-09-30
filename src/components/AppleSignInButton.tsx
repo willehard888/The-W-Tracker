@@ -1,6 +1,6 @@
 import { useState, forwardRef } from "react";
 import { m } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { nativeAppleSignIn } from "@/lib/native-auth";
 import { cn } from "@/lib/utils";
 

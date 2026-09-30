@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Users, Lock, Globe, Check, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { backOr } from "@/lib/nav";

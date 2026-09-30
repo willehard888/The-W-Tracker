@@ -1,7 +1,6 @@
 import { ReactNode, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hapticImpact } from "@/lib/haptics";
 
 interface MoreSectionProps {
   /** Header label, e.g. "More". */
@@ -23,7 +22,7 @@ export const MoreSection = ({ label = "More", defaultOpen = false, children, cla
     <div className={cn("relative", className)}>
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); setOpen((o) => !o); }}
+        onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className="w-full flex items-center justify-center gap-1.5 py-2.5 eyebrow text-muted-foreground/75 active:text-foreground transition-colors"
       >

@@ -7,7 +7,7 @@ import type { useDailyPlan, Mission, MissionKind } from "@/hooks/use-daily-plan"
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 

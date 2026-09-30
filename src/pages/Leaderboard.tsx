@@ -339,7 +339,7 @@ const Leaderboard = () => {
               key={m}
               role="tab"
               aria-selected={mode === m}
-              onClick={() => { void hapticSelection(); setMode(m); }}
+              onClick={() => setMode(m)}
               className={cn(SEGMENT_BUTTON, mode === m ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
             >
               {m === "season" ? "Season" : "All time"}

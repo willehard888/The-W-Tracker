@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
@@ -132,7 +132,7 @@ const CommentThread = ({
                     size="sm"
                     loading={saving}
                     disabled={!draft.trim()}
-                    onClick={() => { hapticImpact("light"); saveEdit(); }}
+                    onClick={() => saveEdit()}
                   >
                     Save
                   </Button>
@@ -158,7 +158,7 @@ const CommentThread = ({
                   variant="ghost"
                   size="xs"
                   className={COMMENT_ACTION}
-                  onClick={() => { hapticSelection(); onReply(node.id, username, node.content || ""); }}
+                  onClick={() => onReply(node.id, username, node.content || "")}
                 >
                   <Reply aria-hidden size={12} /> Reply
                 </Button>
@@ -172,7 +172,7 @@ const CommentThread = ({
                   variant="ghost"
                   size="xs"
                   className={COMMENT_ACTION}
-                  onClick={() => { hapticSelection(); onReport(node.id, node.user_id); }}
+                  onClick={() => onReport(node.id, node.user_id)}
                 >
                   <Flag aria-hidden size={12} /> Report
                 </Button>
@@ -183,7 +183,7 @@ const CommentThread = ({
                   variant="ghost"
                   size="xs"
                   className={COMMENT_ACTION}
-                  onClick={() => { hapticSelection(); setDraft(node.content || ""); setEditingId(node.id); }}
+                  onClick={() => { setDraft(node.content || ""); setEditingId(node.id); }}
                 >
                   Edit
                 </Button>
@@ -576,7 +576,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
             </button>
           )}
-          <button onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(!showComments); }}
+          <button onClick={() => { setReplyTo(null); setShowComments(!showComments); }}
             aria-label="Toggle comments"
             className={cn(
               "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-meta font-bold transition-[background-color,color,border-color,box-shadow]",
@@ -674,7 +674,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                       size="icon-sm"
                       aria-label="Cancel reply"
                       className="self-start h-6 w-6 rounded-full shrink-0 relative text-muted-foreground before:absolute before:-inset-2 before:content-['']"
-                      onClick={() => { hapticSelection(); setReplyTo(null); }}
+                      onClick={() => setReplyTo(null)}
                     >
                       <X aria-hidden size={12} />
                     </Button>
@@ -719,7 +719,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                     className="rounded-full shrink-0"
                     disabled={!commentText.trim() || addComment.isPending}
                     aria-label={replyTo ? "Send reply" : "Send comment"}
-                    onClick={() => { hapticImpact("light"); addComment.mutate(); }}
+                    onClick={() => addComment.mutate()}
                   >
                     <Send aria-hidden size={14} />
                   </Button>

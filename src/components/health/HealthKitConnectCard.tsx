@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Heart, RefreshCw, ShieldCheck, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useHealthKit } from "@/hooks/use-healthkit";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";

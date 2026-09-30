@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTrialAccess } from "@/hooks/use-trial-access";
 import { backOr } from "@/lib/nav";
 import { CalendarDays, Crown, Dumbbell, PencilLine, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
@@ -155,7 +155,7 @@ const CoachProgramDetail = () => {
             a week of your own are the two quieter doors under it. */}
         {!isLoading && !failed && !program && hasAccess && !showRegen && (
           <div className="home-rise home-rise-1 mt-5">
-            <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticImpact("light"); setTrainToday(true); }}>
+            <Button variant="ember" size="lg" className="w-full" onClick={() => setTrainToday(true)}>
               <Dumbbell aria-hidden size={16} /> Train today
             </Button>
             <div className="mt-4 border-t border-border/35 divide-y divide-border/35">

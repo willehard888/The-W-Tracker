@@ -3,7 +3,7 @@ import { Loader2, Search } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import { Input, SEARCH_FIELD } from "@/components/ui/input";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import { Thumb } from "@/components/coach/FocusSessionSheet";
 import { useEngine, useMuscleBalance, type Engine, type Focus, type SessionBlock } from "@/hooks/use-focus-session";
 import { track, FUNNEL } from "@/lib/analytics";
@@ -130,11 +130,11 @@ const ExercisePickerSheet = ({ open, onClose, title, current, exclude, onPick }:
             />
           </div>
           <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4">
-            <Button type="button" size="pill" variant={focus === null ? "gold-outline" : "outline"} aria-pressed={focus === null} onClick={() => { hapticSelection(); setFocus(null); }}>
+            <Button type="button" size="pill" variant={focus === null ? "gold-outline" : "outline"} aria-pressed={focus === null} onClick={() => setFocus(null)}>
               All
             </Button>
             {BIG_FIRST.map((f) => (
-              <Button key={f} type="button" size="pill" variant={focus === f ? "gold-outline" : "outline"} aria-pressed={focus === f} onClick={() => { hapticSelection(); setFocus(focus === f ? null : f); }}>
+              <Button key={f} type="button" size="pill" variant={focus === f ? "gold-outline" : "outline"} aria-pressed={focus === f} onClick={() => setFocus(focus === f ? null : f)}>
                 {FOCUS_LABEL[f]}
               </Button>
             ))}

@@ -10,7 +10,7 @@ import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { useCoachMemory } from "@/hooks/use-coach-memory";
 import { m as fm, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { hapticImpact } from "@/lib/haptics";
 import { friendlyError } from "@/lib/error-copy";
 
@@ -104,7 +104,7 @@ const CoachMemoryScreen = () => {
                       variant="ghost"
                       size="icon-sm"
                       className="-mr-2 -mt-1 shrink-0"
-                      onClick={async () => { await remove(m.id); hapticImpact("light"); }}
+                      onClick={async () => { await remove(m.id);}}
                       aria-label="Forget"
                     >
                       <Trash2 aria-hidden size={14} className="text-muted-foreground" />

@@ -1,4 +1,3 @@
-import { hapticImpact } from "@/lib/haptics";
 import { Check, ChevronRight } from "lucide-react";
 import { useExerciseLibrary, resolveExercise } from "@/lib/exercise-library";
 import { resolveGroup } from "@/lib/exercise-group";
@@ -55,7 +54,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen
     <li className="border-b border-border/35 last:border-b-0 pb-1.5 last:pb-0">
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); onOpen(); }}
+        onClick={() => onOpen()}
         className="press-row w-full min-h-11 flex items-center gap-2.5 py-1.5 text-left"
       >
         {illustrated ? (

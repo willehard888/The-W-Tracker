@@ -18,7 +18,6 @@ import AppImage from "@/components/ui/app-image";
 import { downscaleImage } from "@/lib/downscale-image";
 import { withNetworkRetry, isTransientNetworkError } from "@/lib/retry";
 import { friendlyError } from "@/lib/error-copy";
-import { hapticSelection, hapticImpact } from "@/lib/haptics";
 import BadgeVault from "@/components/BadgeVault";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,7 @@ import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import BadgeUnlockModal from "@/components/BadgeUnlockModal";
 import StoryShareModal from "@/components/StoryShareModal";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { subDays, format } from "date-fns";
 import { getBadgeProgress, awardEarnedBadges } from "@/lib/badge-awards";
@@ -419,10 +418,10 @@ const Profile = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuItem onClick={() => { hapticSelection(); setProfileTab("settings"); }}>
+            <DropdownMenuItem onClick={() => setProfileTab("settings")}>
               <SettingsIcon aria-hidden size={14} className="mr-2 text-muted-foreground" /> Open settings
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { hapticSelection(); signOut(); }}>
+            <DropdownMenuItem onClick={() => signOut()}>
               <LogOut aria-hidden size={14} className="mr-2 text-muted-foreground" /> Sign out
             </DropdownMenuItem>
             {/* Delete Account lives ONLY in Settings behind the
@@ -471,7 +470,7 @@ const Profile = () => {
             key={t}
             role="tab"
             aria-selected={profileTab === t}
-            onClick={() => { void hapticSelection(); setProfileTab(t); }}
+            onClick={() => setProfileTab(t)}
             className={cn(
               SEGMENT_BUTTON, "capitalize",
               profileTab === t ? SEGMENT_ACTIVE : SEGMENT_IDLE,
@@ -596,7 +595,7 @@ const Profile = () => {
                   <button
                     type="button"
                     key={post.id}
-                    onClick={() => { hapticImpact("light"); setLightbox({ url: src, post }); }}
+                    onClick={() => { setLightbox({ url: src, post }); }}
                     aria-label={post.content || (isVideo ? "Open video post" : "Open photo post")}
                     className="group relative aspect-square overflow-hidden bg-secondary"
                   >

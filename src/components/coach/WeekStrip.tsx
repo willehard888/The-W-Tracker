@@ -1,7 +1,6 @@
 import { Check } from "lucide-react";
 import { dayFocus, isRestDay } from "@/lib/training/session";
 import { cn } from "@/lib/utils";
-import { hapticSelection } from "@/lib/haptics";
 import type { ProgramLog, ProgramWeek } from "@/hooks/use-coach-program";
 
 interface Props {
@@ -37,7 +36,7 @@ const WeekStrip = ({ week, selected, today, logs, onSelect }: Props) => (
           type="button"
           aria-pressed={active}
           aria-label={`${NAMES[i]}${isToday ? ", today" : ""}, ${done ? "done" : isRest ? "rest" : dayFocus(d) || "session"}`}
-          onClick={() => { if (!active) { hapticSelection(); onSelect(i); } }}
+          onClick={() => { if (!active) {onSelect(i); } }}
           className={cn(
             "press min-h-12 rounded-xl py-2 text-center border transition-colors",
             active ? "border-foreground/40 bg-secondary/60" : "border-border/30 bg-background/30",

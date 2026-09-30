@@ -5,7 +5,6 @@ import EliteFeed from "./EliteFeed";
 import Tribes from "./Tribes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { useUnreadMessageCount } from "@/hooks/use-messages";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
 
@@ -61,7 +60,7 @@ const Squad = () => {
               key={s.key}
               role="tab"
               aria-selected={tab === s.key}
-              onClick={() => { hapticSelection(); setTab(s.key); }}
+              onClick={() => setTab(s.key)}
               className={cn(
                 SEGMENT_BUTTON, "min-h-9 relative before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] inline-flex items-center justify-center gap-1.5",
                 tab === s.key ? SEGMENT_ACTIVE : SEGMENT_IDLE,
@@ -76,7 +75,7 @@ const Squad = () => {
         <button
           type="button"
           aria-label={unread > 0 ? `Messages — ${unread} unread` : "Messages"}
-          onClick={() => { hapticImpact("light"); navigate("/messages"); }}
+          onClick={() => navigate("/messages")}
           className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         >
           <MessageCircle aria-hidden size={18} />

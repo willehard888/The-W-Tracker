@@ -5,6 +5,7 @@ import { ChevronLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
 import { cn } from "@/lib/utils";
+import { hapticImpact } from "@/lib/haptics";
 import { MOTION } from "@/lib/motion";
 
 /**
@@ -122,7 +123,9 @@ export const BottomSheet = ({
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, 320], [1, 0.15]);
   const onDragEnd = (_: unknown, info: PanInfo) => {
-    if (dismissesOnRelease(info.offset.y, info.velocity.y)) onClose();
+    if (!dismissesOnRelease(info.offset.y, info.velocity.y)) return;
+    void hapticImpact("light");
+    onClose();
   };
 
   // Focus lands in the dialog when it opens (screen readers and the keyboard

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Search, UserPlus, UserCheck, Clock, Check, X, MessageCircle, Users, UserMinus,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { useUserSearch } from "@/hooks/use-user-search";
 import {
@@ -20,7 +20,7 @@ import StatusAvatar from "@/components/StatusAvatar";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
 import { backOr } from "@/lib/nav";
-import { hapticImpact, hapticNotification } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 
 /** One person, one hairline row: avatar · name + line · trailing slot. */
 const PersonRow = ({
@@ -73,7 +73,7 @@ const Friends = () => {
     hapticImpact("light");
     try {
       await fn();
-      if (ok) { hapticNotification("success"); toast.success(ok); }
+      if (ok) { toast.success(ok); }
     } catch (e) {
       const raw = e instanceof Error ? e.message : String(e ?? "");
       toast.error(raw.includes("duplicate") ? "Request already exists" : friendlyError(e));

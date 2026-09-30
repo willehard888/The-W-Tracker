@@ -12,7 +12,6 @@ import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import TierUsername from "@/components/TierUsername";
 import { cn } from "@/lib/utils";
-import { hapticImpact } from "@/lib/haptics";
 import { useFriends, usePendingFriendCount } from "@/hooks/use-friends";
 import { useUserSearch } from "@/hooks/use-user-search";
 import { useUnreadMessageCount } from "@/hooks/use-messages";
@@ -129,7 +128,7 @@ const Messages = () => {
           <button
             type="button"
             aria-label={pending > 0 ? `Friends — ${pending} pending` : "Friends"}
-            onClick={() => { hapticImpact("light"); navigate("/friends"); }}
+            onClick={() => navigate("/friends")}
             className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <Users aria-hidden size={18} />

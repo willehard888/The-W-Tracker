@@ -1,6 +1,5 @@
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hapticImpact } from "@/lib/haptics";
 import { setsDoneFor, type SessionExercise, type LoggedSet } from "@/lib/training/runner";
 
 /**
@@ -39,7 +38,7 @@ export const SessionOverview = ({
     <div>
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); onToggle(); }}
+        onClick={() => onToggle()}
         aria-expanded={open}
         className="press-row min-h-11 w-full flex items-center gap-1.5 text-left"
       >
@@ -64,7 +63,7 @@ export const SessionOverview = ({
               <li key={ex.slug}>
                 <button
                   type="button"
-                  onClick={() => { hapticImpact("light"); onPick(ex.slug); }}
+                  onClick={() => onPick(ex.slug)}
                   aria-current={isOnStage ? "true" : undefined}
                   className="press-row w-full min-h-12 flex items-center gap-2.5 py-2 text-left"
                 >

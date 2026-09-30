@@ -9,11 +9,10 @@ import PageBar from "@/components/ui/page-bar";
 import EmptyState from "@/components/ui/empty-state";
 import { DoorRow } from "@/components/coach/rows";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
-import { hapticSelection } from "@/lib/haptics";
 import { backOr } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import TribeBattleCard, { TribeBattleRow, type TribeBattle } from "@/components/TribeBattleCard";
 import TribeChallengeModal from "@/components/TribeChallengeModal";
@@ -285,7 +284,7 @@ const TribeBattles = () => {
                   key={t.id}
                   role="tab"
                   aria-selected={shown === t.id}
-                  onClick={() => { void hapticSelection(); setTab(t.id); }}
+                  onClick={() => setTab(t.id)}
                   className={cn("eyebrow", SEGMENT_BUTTON, shown === t.id ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
                 >
                   {t.label}{rows[t.id].length > 0 && t.id !== "history" ? ` ${rows[t.id].length}` : ""}

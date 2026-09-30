@@ -74,7 +74,7 @@ export const EquipmentContextSheet = ({
           </Button>
           <button
             type="button"
-            onClick={() => { hapticImpact("light"); setSaveDefault((v) => !v); }}
+            onClick={() => setSaveDefault((v) => !v)}
             className="min-h-11 w-full flex items-center justify-center gap-2 text-meta font-bold text-muted-foreground"
           >
             <span
@@ -96,7 +96,7 @@ export const EquipmentContextSheet = ({
             <button
               key={p.id}
               type="button"
-              onClick={() => { hapticImpact("light"); setPicked([...p.values]); }}
+              onClick={() => setPicked([...p.values])}
               className="press min-h-11 rounded-full border border-gold/30 bg-gold/12 px-3 text-label font-bold text-gold"
             >
               {p.label}

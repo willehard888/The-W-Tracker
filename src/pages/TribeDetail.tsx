@@ -26,7 +26,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import TribeInviteModal from "@/components/TribeInviteModal";
 import TribePendingRequestsDialog from "@/components/TribePendingRequestsDialog";
@@ -45,7 +45,7 @@ import MemberContributionStrip from "@/components/MemberContributionStrip";
 import FeedTheFireCTA from "@/components/FeedTheFireCTA";
 import TribeAmbientFireField from "@/components/TribeAmbientFireField";
 import { useTribeFireReactor } from "@/hooks/use-tribe-fire-reactor";
-import { hapticImpact, hapticSelection, hapticNotification } from "@/lib/haptics";
+import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import { backOr } from "@/lib/nav";
 import { collectivePalette, collectiveStreakTier, collectiveTierName, tierName, withAlpha } from "@/lib/tribe-streak";
 import { captureException } from "@/lib/observability";
@@ -549,7 +549,6 @@ const TribeDetail = () => {
       setComposer("");
       setImageFile(null); setImagePreview(null);
       setVideoFile(null); setVideoPreview(null);
-      hapticNotification("success");
       toast.success("Posted");
       invalidateTribe();
     } catch (e: any) {

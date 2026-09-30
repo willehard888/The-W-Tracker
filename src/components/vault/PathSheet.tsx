@@ -1,7 +1,6 @@
 import { Check } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { cn } from "@/lib/utils";
-import { hapticImpact } from "@/lib/haptics";
 import { pathProgress } from "@/lib/vault-loop";
 import { DIMENSION_LABEL, type VaultPath } from "@/data/vault-paths";
 import { MASTER_BY_SLUG } from "@/data/vault-masters";
@@ -80,10 +79,7 @@ const PathSheet = ({
                 accent={accent}
                 dimmed={!done && !next}
                 disabled={!a}
-                onClick={() => {
-                  hapticImpact("light");
-                  onOpenSlug(slug);
-                }}
+                onClick={() => onOpenSlug(slug)}
               />
             </li>
           );

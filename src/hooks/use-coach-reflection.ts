@@ -3,7 +3,7 @@ import { track, FUNNEL } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { localDateKey } from "@/lib/date";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { errorCategory, friendlyError, isOurFault } from "@/lib/error-copy";
 import { captureException } from "@/lib/observability";
 

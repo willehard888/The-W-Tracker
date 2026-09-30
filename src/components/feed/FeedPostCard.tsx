@@ -5,9 +5,9 @@ import {
   Flame, MessageCircle, Send, Crown, MoreHorizontal,
   AlertTriangle, Trash2, ShieldCheck, Award, Reply, X,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
+import { hapticImpact } from "@/lib/haptics";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import StreakFlameInline from "@/components/StreakFlameInline";
@@ -400,7 +400,7 @@ const FeedPostCard = memo(function FeedPostCard({
                   </div>
                   <button
                     type="button"
-                    onClick={() => { hapticSelection(); setReplyTo(null); }}
+                    onClick={() => setReplyTo(null)}
                     aria-label="Cancel reply"
                     className="relative self-start h-6 w-6 rounded-full bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors shrink-0 before:absolute before:-inset-2.5 before:content-['']"
                   >

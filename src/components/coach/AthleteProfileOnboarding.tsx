@@ -15,7 +15,7 @@ import { hapticImpact } from "@/lib/haptics";
 import { useCommitPop } from "@/hooks/use-commit-pop";
 import { useAthleteProfile, type ToneId, type GoalId, type TrainingExperience } from "@/hooks/use-athlete-profile";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { track, FUNNEL } from "@/lib/analytics";
 import { Textarea } from "@/components/ui/textarea";
@@ -234,7 +234,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
             <Field label="What do you train? Pick any.">
               <div className="flex flex-wrap gap-1.5">
                 {SPORTS.map((sp) => (
-                  <Chip key={sp.id} active={(draft.sports ?? []).includes(sp.id)} onClick={() => { hapticImpact("light"); toggle("sports", sp.id); }}>
+                  <Chip key={sp.id} active={(draft.sports ?? []).includes(sp.id)} onClick={() => toggle("sports", sp.id)}>
                     {sp.label}
                   </Chip>
                 ))}
@@ -351,7 +351,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
           <Field label="Where do you train? Pick any.">
             <div className="space-y-1">
               {EQUIPMENT_PRESETS.map((p) => (
-                <OptionRow key={p.id} {...p} active={draft.equipment.includes(p.id)} onClick={() => { hapticImpact("light"); toggle("equipment", p.id); }} />
+                <OptionRow key={p.id} {...p} active={draft.equipment.includes(p.id)} onClick={() => toggle("equipment", p.id)} />
               ))}
             </div>
           </Field>
@@ -481,7 +481,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
 
       <div className="flex gap-2 mt-7 sticky bottom-0 pt-2 pb-2 bg-gradient-to-t from-background via-background/95 to-transparent">
         {step > 0 && (
-          <Button variant="ghost" size="lg" onClick={() => { hapticImpact("light"); setStep(s => s - 1); }}>
+          <Button variant="ghost" size="lg" onClick={() => setStep(s => s - 1)}>
             <ChevronLeft aria-hidden size={16} /> Back
           </Button>
         )}

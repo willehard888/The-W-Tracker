@@ -10,7 +10,7 @@ import { uniqueChannelName } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, ShieldAlert, Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import AppImage from "@/components/ui/app-image";

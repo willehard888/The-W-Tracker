@@ -7,7 +7,7 @@ import { Capacitor } from "@capacitor/core";
 import { applySessionFromUrl } from "@/lib/oauth-session";
 import { syncHealthIfStale } from "@/lib/health/background-sync";
 import { pushIosDebugLog, updateOauthDebug } from "@/lib/ios-debug";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { initNativeShell } from "@/lib/native-bootstrap";
 import { initObservability, captureException } from "@/lib/observability";

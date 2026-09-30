@@ -1,5 +1,4 @@
 import { BottomSheet } from "@/components/ui/sheet-bottom";
-import { hapticImpact } from "@/lib/haptics";
 import { MASTER_KIND_LABEL, type VaultMaster } from "@/data/vault-masters";
 import { pathOfArticle } from "@/data/vault-paths";
 import type { VaultArticleSummary } from "@/hooks/use-vault-articles";
@@ -53,10 +52,7 @@ const MasterSheet = ({
                 meta={pieceMeta(a, done, path?.title)}
                 done={done}
                 accent={accent}
-                onClick={() => {
-                  hapticImpact("light");
-                  onOpenSlug(a.slug);
-                }}
+                onClick={() => onOpenSlug(a.slug)}
               />
             </li>
           );

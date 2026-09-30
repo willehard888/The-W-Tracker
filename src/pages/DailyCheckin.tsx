@@ -4,7 +4,7 @@ import { useSessionDoneToday } from "@/hooks/use-session-done-today";
 import { useLastCheckin } from "@/hooks/use-last-checkin";
 import { getEffectiveStreak } from "@/lib/streak";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
@@ -92,7 +92,7 @@ const HabitToggle = ({
 
   return (
   <button
-    onClick={() => { hapticSelection(); onToggle(); }}
+    onClick={() => onToggle()}
     aria-pressed={active}
     className={cn(
       "press-row group relative flex items-center gap-3 w-full rounded-2xl border p-3 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-200",
@@ -611,7 +611,6 @@ const DailyCheckin = () => {
           } else {
             toast.error("You've already checked in today. Come back tomorrow.");
             queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
-            hapticNotification("error");
             setSubmitting(false);
           }
           return;
@@ -649,7 +648,6 @@ const DailyCheckin = () => {
           description: friendlyError(rpcError, "Nothing was lost from the form. Fix the connection and press Lock it in again."),
           duration: 6000,
         });
-        hapticNotification("error");
         setSubmitting(false);
         return;
       }
@@ -825,7 +823,6 @@ const DailyCheckin = () => {
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong saving your check-in. Please try again.", { duration: 5000 });
-      hapticNotification("error");
     }
     setSubmitting(false);
   };
@@ -907,7 +904,7 @@ const DailyCheckin = () => {
         onBack={() => backOr(navigate, "/")}
         title={<p className="eyebrow text-muted-foreground/75 truncate">{dateLine}</p>}
         action={
-          <Button variant="ghost" size="icon" aria-label="Customize habits" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
+          <Button variant="ghost" size="icon" aria-label="Customize habits" onClick={() => setPickerOpen(true)}>
             <SlidersHorizontal aria-hidden size={18} />
           </Button>
         }
@@ -950,7 +947,7 @@ const DailyCheckin = () => {
           {/* Sick today — recovery mode. Logging still banks the day. */}
           <button
             type="button"
-            onClick={() => { hapticSelection(); setSickToday((v) => !v); }}
+            onClick={() => setSickToday((v) => !v)}
             aria-pressed={sickToday}
             className="press-row w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
           >
@@ -991,7 +988,7 @@ const DailyCheckin = () => {
               Pick the habits you'll actually track every day. Sleep, workout, water &amp; meditation
               stay in — add whatever matters to you.
             </p>
-            <Button variant="outline" size="lg" className="w-full" onClick={() => { hapticSelection(); setPickerOpen(true); }}>
+            <Button variant="outline" size="lg" className="w-full" onClick={() => setPickerOpen(true)}>
               <SlidersHorizontal aria-hidden size={16} /> Choose my habits
             </Button>
             <button onClick={dismissOnboard} className="mt-1 min-h-11 w-full text-meta font-semibold text-muted-foreground">
@@ -1094,7 +1091,7 @@ const DailyCheckin = () => {
               <button
                 type="button"
                 aria-pressed={Boolean(workout) && !isRestDay}
-                onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
+                onClick={() => { sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
                 className={cn(
                   "min-h-11 rounded-xl border px-3 text-note font-bold transition-[transform,background-color,border-color,box-shadow,color] inline-flex items-center justify-center gap-1.5",
                   workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/85",
@@ -1105,7 +1102,7 @@ const DailyCheckin = () => {
               <button
                 type="button"
                 aria-pressed={isRestDay}
-                onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
+                onClick={() => { sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
                 className={cn(
                   "min-h-11 rounded-xl border px-3 text-note font-bold transition-[transform,background-color,border-color,box-shadow,color]",
                   isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/85",
@@ -1280,7 +1277,7 @@ const DailyCheckin = () => {
             photo is the feed's proof of the day; it carries no points. */}
         <div className="home-rise home-rise-5 mt-5">
           <button
-            onClick={() => { hapticSelection(); setMoreOpen((o) => !o); }}
+            onClick={() => setMoreOpen((o) => !o)}
             aria-expanded={moreOpen}
             className="press-row w-full min-h-11 surface-card surface-card-quiet flex items-center justify-between gap-2 px-4 py-3 text-left"
           >
@@ -1333,7 +1330,7 @@ const DailyCheckin = () => {
             <button
               role="radio"
               aria-checked={honest === true}
-              onClick={() => { hapticSelection(); setHonest(true); }}
+              onClick={() => setHonest(true)}
               className={cn(
                 "min-h-11 rounded-xl border px-3 text-note font-black transition-[transform,background-color,border-color,box-shadow,color]",
                 honest === true
@@ -1345,7 +1342,7 @@ const DailyCheckin = () => {
             <button
               role="radio"
               aria-checked={honest === false}
-              onClick={() => { hapticSelection(); setHonest(false); }}
+              onClick={() => setHonest(false)}
               className={cn(
                 "min-h-11 rounded-xl border px-3 text-note font-black transition-[transform,background-color,border-color,box-shadow,color]",
                 honest === false

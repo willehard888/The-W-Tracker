@@ -1,6 +1,5 @@
 import { ChevronRight } from "lucide-react";
 import { useTodaysPractice } from "@/hooks/use-todays-practice";
-import { hapticImpact } from "@/lib/haptics";
 import { practiceLength, PRACTICE_XP } from "@/lib/vault-loop";
 import { DIMENSION_LABEL } from "@/data/vault-paths";
 import { cn } from "@/lib/utils";
@@ -32,10 +31,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
   return (
     <button
       type="button"
-      onClick={() => {
-        hapticImpact("light");
-        onOpen(article.slug);
-      }}
+      onClick={() => onOpen(article.slug)}
       className={cn("press-row group relative block w-full text-left", className)}
     >
       <span aria-hidden className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />

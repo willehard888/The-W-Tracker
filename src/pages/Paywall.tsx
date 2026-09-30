@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import { FlaskConical, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatform } from "@/lib/platform";
 import { backOr } from "@/lib/nav";
@@ -207,7 +207,6 @@ const Paywall = () => {
       const ok = await pollVerification(8000);
       if (ok) {
         track(FUNNEL.purchaseCompleted, { plan, platform: "native", sandbox: outcome?.sandbox ?? null });
-        hapticNotification("success");
         // The effect above navigates home when isPremium flips true. Under
         // the harness it does not, so the button must not stay on
         // "Confirming access…" — say it landed and return to the offer.
@@ -283,10 +282,8 @@ const Paywall = () => {
       }
       track(FUNNEL.purchaseRestored);
       toast.success("Purchases restored.");
-      hapticNotification("success");
     } catch {
       toast.error("Couldn't restore purchases.");
-      hapticNotification("error");
     }
   };
 

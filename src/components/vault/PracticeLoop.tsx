@@ -7,7 +7,7 @@ import LessonQuiz from "./LessonQuiz";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import type { VaultArticle } from "@/hooks/use-vault-articles";
 import type { VaultProgressRow } from "@/hooks/use-vault-progress";
 import { useCompleteLesson } from "@/hooks/use-vault-progress";
@@ -78,7 +78,6 @@ const PracticeLoop = ({
     try {
       const r = await record.mutateAsync({ articleId: article.id, ...props });
       if (r.xp_awarded > 0) {
-        hapticNotification("success");
         toast.success(`Practice recorded · +${r.xp_awarded} XP`, {
           description: r.newBadge ? `Badge unlocked: ${r.newBadge.name}` : undefined,
         });
@@ -333,7 +332,6 @@ const AnswerBox = ({
           className="min-h-11 px-5"
           disabled={!dirty || saving || !text.trim()}
           onClick={async () => {
-            hapticImpact("light");
             try {
               await onSave(text);
             } catch (e: unknown) {

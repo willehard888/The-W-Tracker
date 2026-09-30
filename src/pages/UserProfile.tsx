@@ -27,7 +27,7 @@ import { useMyRank } from "@/hooks/use-my-rank";
 import { getTierConfig, getTierHeroSurface, formatTier, type StatusTier } from "@/lib/status-tiers";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 
 /**

@@ -13,7 +13,6 @@ import { FactRow } from "@/components/coach/rows";
 import { RECIPES, type Recipe } from "@/data/recipes";
 import { cn } from "@/lib/utils";
 import { SEGMENT_TRACK, SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON } from "@/components/ui/segment";
-import { hapticImpact, hapticSelection } from "@/lib/haptics";
 import MacroRow from "@/components/nutrition/MacroRow";
 
 const BATCH_OPTIONS = [1, 2, 3, 4, 5] as const;
@@ -87,7 +86,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
             {BATCH_OPTIONS.map((b) => (
               <button
                 key={b}
-                onClick={() => { hapticSelection(); setBatch(b); setTouched(true); }}
+                onClick={() => { setBatch(b); setTouched(true); }}
                 aria-pressed={batch === b}
                 className={cn(
                   SEGMENT_BUTTON, "tabular-nums",
@@ -224,7 +223,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
                 key={t}
                 size="pill"
                 variant={tag === t ? "gold-outline" : "outline"}
-                onClick={() => { hapticSelection(); setTag(tag === t ? null : t); }}
+                onClick={() => setTag(tag === t ? null : t)}
                 aria-pressed={tag === t}
                 className="shrink-0"
               >
@@ -252,7 +251,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
                 <li key={r.id} className={cn(i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${120 + i * 30}ms` } : undefined}>
                   <button
                     type="button"
-                    onClick={() => { hapticImpact("light"); onOpen(); navigate(`/recipes/${r.id}`); }}
+                    onClick={() => { onOpen(); navigate(`/recipes/${r.id}`); }}
                     className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left"
                   >
                     <RecipePhoto id={r.id} variant="tile" className="h-14 w-14 shrink-0 rounded-xl" />

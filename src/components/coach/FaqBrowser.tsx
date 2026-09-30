@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COACH_FAQ, FaqEntry, FaqCategory } from "@/lib/coach-faq";
-import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES: FaqCategory[] = ["Training", "Recovery", "Nutrition", "Mindset", "Program"];
@@ -20,7 +19,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
   return (
     <div className="absolute inset-0 z-50 bg-background flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="shrink-0 px-2 pt-2 pb-1 flex items-center gap-1 border-b border-border/35">
-        <Button variant="ghost" size="icon" aria-label="Back" onClick={() => { hapticImpact("light"); onClose(); }}>
+        <Button variant="ghost" size="icon" aria-label="Back" onClick={() => onClose()}>
           <ChevronLeft aria-hidden size={18} />
         </Button>
         <p className="font-display text-read font-black tracking-tight">Coach playbook</p>
@@ -47,7 +46,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
           <button
             key={f.id}
             type="button"
-            onClick={() => { hapticImpact("light"); onSelect(f); }}
+            onClick={() => onSelect(f)}
             className="press-row w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
           >
             <p className="text-label text-muted-foreground mb-0.5">{f.category}</p>

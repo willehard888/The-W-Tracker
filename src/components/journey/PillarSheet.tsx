@@ -1,7 +1,6 @@
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { useNavigate } from "react-router-dom";
 import { DoorRow } from "@/components/coach/rows";
-import { hapticImpact } from "@/lib/haptics";
 import { pickLevers } from "@/lib/whealth-levers";
 import type { PillarPart, PillarScores } from "@/lib/whealth-index";
 
@@ -70,7 +69,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
               key={l.partKey + l.title}
               label={l.title}
               sub={l.detail}
-              onClick={() => { hapticImpact("light"); onClose(); navigate(l.action.path); }}
+              onClick={() => { onClose(); navigate(l.action.path); }}
             />
           ))}
         </div>

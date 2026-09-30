@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { readLocal, removeLocal, writeLocal } from "@/lib/storage";
 import { ArrowLeftRight, ChevronRight, HeartPulse, Loader2, TrendingUp } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
@@ -514,7 +514,6 @@ const CoachSession = () => {
                 size="lg"
                 className="w-full mt-2 text-muted-foreground"
                 onClick={() => {
-                  hapticImpact("light");
                   autoFinished.current = false;
                   persistSkipped(new Set());
                   setShowSummary(false);
@@ -641,7 +640,7 @@ const CoachSession = () => {
                     variant="ghost"
                     size="sm"
                     className="shrink-0 mt-1 text-muted-foreground"
-                    onClick={() => { hapticImpact("light"); setSwapOpen(true); }}
+                    onClick={() => setSwapOpen(true)}
                   >
                     <ArrowLeftRight aria-hidden size={14} />
                     Swap
@@ -725,7 +724,6 @@ const CoachSession = () => {
               size="lg"
               className="w-full"
               onClick={() => {
-                hapticImpact("light");
                 void track(FUNNEL.exerciseSwitched, {
                   via: "next",
                   back: false,

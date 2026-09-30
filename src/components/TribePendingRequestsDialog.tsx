@@ -5,7 +5,7 @@ import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { ActionRow } from "@/components/ActionRow";
 import EmptyState from "@/components/ui/empty-state";
 import { UserCheck } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import TierUsername from "@/components/TierUsername";
 import { friendlyError } from "@/lib/error-copy";
 

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input, SEARCH_FIELD } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Lock, Loader2, Users, Check, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/error-copy";
 import { EmptyState } from "@/components/ui/empty-state";

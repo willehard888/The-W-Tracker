@@ -58,7 +58,7 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
         <p className="text-dense font-bold">Ten-second check-in</p>
         <button
           type="button"
-          onClick={() => { hapticImpact("light"); onSkip(); }}
+          onClick={() => onSkip()}
           className="press min-h-11 -mr-2 px-2 text-meta font-semibold text-muted-foreground"
           aria-label="Skip mood snapshot"
         >
@@ -96,7 +96,7 @@ const EmojiRow = ({
         <button
           key={v}
           type="button"
-          onClick={() => { hapticImpact("light"); onChange(v); }}
+          onClick={() => onChange(v)}
           className={`press flex-1 h-11 rounded-xl text-subhead transition-colors border ${
             active ? "bg-gold/15 border-gold/60" : "surface-inset border-border/40"
           }`}

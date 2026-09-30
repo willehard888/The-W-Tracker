@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { hapticNotification, hapticImpact } from "@/lib/haptics";
+import { hapticNotification } from "@/lib/haptics";
 import { formatRest } from "@/lib/training/runner";
 import { cancelRestDone, scheduleRestDone } from "@/lib/rest-notification";
 
@@ -128,7 +128,7 @@ const RestTimer = ({
 
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); onExtend(30_000); }}
+        onClick={() => onExtend(30_000)}
         aria-label="Add 30 seconds"
         className="min-h-11 min-w-11 rounded-xl border border-border/50 inline-flex items-center justify-center text-meta font-bold text-foreground/85"
       >
@@ -136,7 +136,7 @@ const RestTimer = ({
       </button>
       <button
         type="button"
-        onClick={() => { hapticImpact("light"); onDismiss(); }}
+        onClick={() => onDismiss()}
         aria-label="Skip rest"
         className="min-h-11 min-w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground"
       >

@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { avatarUrl } from "@/lib/img";
 import { useSignedMediaUrl } from "@/lib/signed-url";
 import { downscaleImage } from "@/lib/downscale-image";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Crown, Shield, ShieldOff, UserMinus, Lock, Globe, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModeration } from "@/hooks/use-moderation";

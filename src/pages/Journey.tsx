@@ -19,7 +19,6 @@ import ErrorState from "@/components/ui/error-state";
 import { DoorRow } from "@/components/coach/rows";
 import { Button } from "@/components/ui/button";
 import { backOr } from "@/lib/nav";
-import { hapticSelection } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 const MOOD_WORD = ["Rough", "Low", "Flat", "Good", "Great"];
@@ -168,7 +167,7 @@ const Journey = () => {
                       ? "Not enough data yet"
                       : `${v} of 100${d ? ` · ${d > 0 ? "up" : "down"} ${Math.abs(d)} since ${priorDate}` : ""}`
                   }
-                  onClick={() => { hapticSelection(); setOpenPillar(key); }}
+                  onClick={() => setOpenPillar(key)}
                 />
               );
             })}

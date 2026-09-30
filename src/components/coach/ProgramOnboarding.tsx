@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
@@ -85,7 +85,6 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
             equipment: profile.equipment,
             injuries: profile.injuries,
           });
-          hapticNotification("success");
           toast.success(block === 1 ? "Your first block is ready." : "Block two is ready.");
           onGenerated();
           return;
@@ -97,7 +96,6 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       hapticNotification("success");
       onGenerated();
     } catch (e) {
-      hapticNotification("error");
       const msg = e instanceof Error ? e.message : "";
       // The INSERT policy is has_active_access: a lapsed trial lands here.
       if (/row-level security|premium/i.test(msg)) {
@@ -133,7 +131,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           Your goal, the days you train, what you lift with, anything that hurts. Two minutes, once. Every week after
           that is built from it.
         </p>
-        <Button variant="ember" size="lg" className="w-full" onClick={() => { hapticImpact("light"); navigate("/coach/profile"); }}>
+        <Button variant="ember" size="lg" className="w-full" onClick={() => navigate("/coach/profile")}>
           Set up my athlete profile
         </Button>
       </div>

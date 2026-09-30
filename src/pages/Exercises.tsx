@@ -285,7 +285,7 @@ const Exercises = () => {
                     key={g ?? "all"}
                     type="button"
                     aria-pressed={active}
-                    onClick={() => { hapticImpact("light"); setGroup(g); }}
+                    onClick={() => setGroup(g)}
                     className={cn(
                       // A 32 px pill; the invisible ::before lifts its target to the 44 pt floor.
                       "press relative shrink-0 rounded-full px-3 py-1.5 text-meta font-black border transition-colors",

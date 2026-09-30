@@ -3,13 +3,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, HeartPulse, Info } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
-import { hapticSelection } from "@/lib/haptics";
 import { getPlatform } from "@/lib/platform";
 import { disableMealWrite, enableMealWrite, hasMealWriteConsent } from "@/lib/health/meal-write";
 import PageBar from "@/components/ui/page-bar";
@@ -202,10 +201,7 @@ const NutritionTargets = () => {
                 key={a.key}
                 type="button"
                 aria-pressed={activity === a.key}
-                onClick={() => {
-                  hapticSelection();
-                  setActivityChoice(a.key);
-                }}
+                onClick={() => setActivityChoice(a.key)}
                 className={cn(SEGMENT_BUTTON, activity === a.key ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {a.label}

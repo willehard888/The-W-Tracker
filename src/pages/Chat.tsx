@@ -9,7 +9,7 @@ import { uniqueChannelName } from "@/lib/realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { Send, MoreVertical, Ban, Flag } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import StatusAvatar from "@/components/StatusAvatar";
 import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";

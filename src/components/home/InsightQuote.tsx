@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { localDayIndex, pickDaily } from "@/lib/daily-rotation";
 import { DAILY_INSIGHTS } from "@/data/daily-insights";
-import { hapticImpact } from "@/lib/haptics";
 
 /**
  * The non-member face of the Vault on Home: an editorial pull-quote that
@@ -24,7 +23,6 @@ const InsightQuote = () => {
     <button
       type="button"
       onClick={() => {
-        hapticImpact("light");
         navigate(`/vault?lesson=${insight.lessonSlug}`);
       }}
       className="press-row group relative w-full text-left px-1.5"

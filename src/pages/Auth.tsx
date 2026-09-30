@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ArrowRight, Check, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAnon } from "@/lib/analytics";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { nativeAppleSignIn } from "@/lib/native-auth";
 import BrandLogo from "@/components/BrandLogo";
 import AppleSignInButton from "@/components/AppleSignInButton";

@@ -140,10 +140,7 @@ const DetectedItemRow = ({
                 key={q}
                 type="button"
                 aria-pressed={shown === q}
-                onClick={() => {
-                  hapticSelection();
-                  onGramsChange(item.id, toGrams(q));
-                }}
+                onClick={() => onGramsChange(item.id, toGrams(q))}
                 className={cn(SEGMENT_BUTTON, "tabular-nums", shown === q ? SEGMENT_ACTIVE : SEGMENT_IDLE)}
               >
                 {q}
@@ -196,7 +193,6 @@ const DetectedItemRow = ({
                 role="radio"
                 aria-checked={active}
                 onClick={() => {
-                  hapticSelection();
                   onPickCandidate(item.id, c.food_id);
                   setOpen(false);
                 }}

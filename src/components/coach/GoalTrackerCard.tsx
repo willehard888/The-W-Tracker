@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useCoachGoals } from "@/hooks/use-coach-goals";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { hapticImpact } from "@/lib/haptics";
 import { friendlyError } from "@/lib/error-copy";
 import { parseQty } from "@/lib/nutrition/resolve-grams";

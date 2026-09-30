@@ -9,7 +9,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import MoreSection from "@/components/ui/more-section";
 import { Block } from "@/components/skeletons/PageSkeleton";
 import { cn } from "@/lib/utils";
-import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import PageBar from "@/components/ui/page-bar";
@@ -316,7 +315,6 @@ const UserFoodEditor = () => {
                       aria-label={s.is_default ? "Default serving" : "Make default serving"}
                       aria-pressed={s.is_default}
                       onClick={() => {
-                        hapticSelection();
                         updateServing(s.key, { is_default: !s.is_default });
                       }}
                       className={cn("press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-transform", s.is_default ? "text-gold" : "text-muted-foreground/75")}

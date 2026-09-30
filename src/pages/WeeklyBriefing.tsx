@@ -13,7 +13,7 @@ import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { FactRow } from "@/components/coach/rows";
 import { hapticImpact } from "@/lib/haptics";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { shareImage } from "@/lib/share-image";
 import BriefingShareCard from "@/components/BriefingShareCard";
 import { captureException } from "@/lib/observability";

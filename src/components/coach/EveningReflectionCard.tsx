@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { MOTION } from "@/lib/motion";
 
 const Scale = ({
   label,
@@ -141,7 +142,7 @@ const EveningReflectionCard = () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+            transition={MOTION.slide}
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 pt-1 space-y-4 border-t border-border/30">

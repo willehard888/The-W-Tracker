@@ -160,7 +160,7 @@ const BottomNav = () => {
           className={cn(
             "pointer-events-none absolute inset-y-0 left-1.5 w-[calc((100%-0.75rem)/4)]",
             "motion-safe:transition-[transform,opacity] motion-safe:duration-300",
-            "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
+            "ease-spring",
           )}
           style={{ transform: `translateX(${Math.max(activeIdx, 0) * 100}%)`, opacity: activeIdx < 0 ? 0 : 1 }}
         >
@@ -191,8 +191,8 @@ const BottomNav = () => {
               onFocus={() => prefetchRoute(path)}
               className={cn(
                 "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl min-w-[44px] justify-self-center",
-                "transition-[transform,color,opacity] duration-150 will-change-transform",
-                "[transition-timing-function:cubic-bezier(0.16,1.2,0.32,1)]",
+                "transition-[transform,color,opacity] will-change-transform",
+                "ease-spring",
                 active ? c.text : "text-muted-foreground/80",
               )}
               style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}

@@ -30,7 +30,7 @@ const PRIMARY_EMBER = [
   // ::after — slow glass glint sweep on hover (the luxury tell)
   "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
   "after:[background:linear-gradient(110deg,transparent_30%,hsl(50_100%_95%/0.45)_50%,transparent_70%)]",
-  "after:opacity-0 after:transition-[transform,opacity] after:duration-[900ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+  "after:opacity-0 after:transition-[transform,opacity] after:duration-700 after:ease-soft",
   "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
   "hover:brightness-[1.04]",
   "hover:shadow-[0_0_0_1px_hsl(42_85%_74%/0.5),inset_0_1px_0_hsl(48_100%_92%/0.8),inset_0_-2px_6px_hsl(16_80%_24%/0.55),0_3px_8px_hsl(20_60%_8%/0.55),0_16px_36px_-12px_hsl(20_70%_10%/0.85),0_10px_24px_-8px_hsl(30_90%_48%/0.45)]",
@@ -55,7 +55,7 @@ const buttonVariants = cva(
     // One press for the whole app: the same 140 ms iOS curve the global
     // button rule in index.css uses, and every state the variants change
     // (colour, border, shadow) rides the same curve instead of snapping.
-    "transition-[transform,background-color,border-color,color,box-shadow,filter,opacity] duration-[140ms] [transition-timing-function:var(--ease-ios)]",
+    "transition-[transform,background-color,border-color,color,box-shadow,filter,opacity]",
     // Focus is the one gold ring in index.css (button:focus-visible) — no
     // second ring language here.
     "focus-visible:outline-none",
@@ -64,7 +64,7 @@ const buttonVariants = cva(
     // Inner content (text + icons) lifts ABOVE the gloss/glint overlays so it stays crisp,
     // and settles down 0.5px on press for tactile feel
     "[&>*]:relative [&>*]:z-[3]",
-    "[&>span]:transition-transform [&>span]:duration-150 [&:active>span]:translate-y-[0.5px]",
+    "[&>span]:transition-transform [&>span]: [&:active>span]:translate-y-[0.5px]",
   ].join(" "),
   {
     variants: {
@@ -151,7 +151,7 @@ const buttonVariants = cva(
           // ::after — hover heat shimmer
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none",
           "after:[background:linear-gradient(110deg,transparent_30%,hsl(22_98%_70%/0.18)_50%,transparent_70%)]",
-          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-700 after:ease-soft",
           "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
           "hover:text-[hsl(28_100%_74%)]",
           "hover:border-[hsl(var(--ember)/0.85)]",
@@ -172,7 +172,7 @@ const buttonVariants = cva(
           "before:[background:radial-gradient(120%_100%_at_50%_-30%,hsl(var(--gold-light)/0.22)_0%,transparent_70%)]",
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
           "after:[background:linear-gradient(110deg,transparent_30%,hsl(var(--gold-light)/0.30)_50%,transparent_70%)]",
-          "after:opacity-0 after:transition-[transform,opacity] after:duration-[750ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-700 after:ease-soft",
           "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
           "hover:text-[hsl(46_100%_84%)]",
           "hover:border-[hsl(var(--gold)/0.55)]",
@@ -192,7 +192,7 @@ const buttonVariants = cva(
           "before:[background:radial-gradient(120%_80%_at_50%_120%,hsl(18_98%_58%/0.22)_0%,transparent_60%)]",
           "after:content-[''] after:absolute after:inset-y-0 after:-left-1/3 after:w-1/2 after:rounded-[inherit] after:pointer-events-none after:z-[2]",
           "after:[background:linear-gradient(110deg,transparent_30%,hsl(22_98%_72%/0.24)_50%,transparent_70%)]",
-          "after:opacity-0 after:transition-[transform,opacity] after:duration-[700ms] after:ease-[cubic-bezier(0.22,0.61,0.36,1)]",
+          "after:opacity-0 after:transition-[transform,opacity] after:duration-700 after:ease-soft",
           "hover:after:opacity-100 hover:after:[transform:translate3d(260%,0,0)]",
           "hover:text-[hsl(28_100%_78%)]",
           "hover:border-[hsl(var(--ember)/0.85)]",

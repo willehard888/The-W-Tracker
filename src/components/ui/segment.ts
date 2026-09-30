@@ -10,7 +10,7 @@ export const SEGMENT_TRACK =
  *  and a tab answers the thumb with a surface, not a shrink (a segment that
  *  scales inside its track reads as a chip). */
 const SEGMENT_STATES =
-  "transition-[color,background-color,box-shadow,filter] duration-[140ms] [transition-timing-function:var(--ease-ios)]";
+  "transition-[color,background-color,box-shadow,filter]";
 
 /** Active segment: machined metallic gold (matches the primary CTA bezel). */
 export const SEGMENT_ACTIVE =

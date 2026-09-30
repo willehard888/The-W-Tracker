@@ -70,6 +70,14 @@ const RULES = [
   // stroke: 2 (the default), 2.5 or 3 (0 for a filled mark).
   { re: /\bsize=\{?(?:11|13|15|17|19|21|23)\}?/, msg: "icon size between the steps — 12 · 14 · 16 · 18 · 20 · 24", exempt: ["src/components/home/CommandDeck.tsx"] },
   { re: /\bstrokeWidth=\{?(?:1\.[0-9]|2\.[1-46-9]|3\.[1-9])\b/, msg: "off-scale stroke — 2.5 or 3 (2 is the default: drop the prop; 0 fills)", exempt: ["src/components/home/CommandDeck.tsx"] },
+  // One clock. transition-* rides the default (140 ms, iOS curve); the ladder
+  // above it is 200 · 300 · 500 · 700. A curve is ease-soft / ease-spring or
+  // nothing; Tailwind's ease-out/in/in-out are weaker than the default.
+  { re: /\bduration-(?:75|100|150|1000|\[[^\]]+\])/, msg: "duration off the ladder — 200 · 300 · 500 · 700 (or none: 140 ms is the default)", exempt: ["src/components/home/CommandDeck.tsx"] },
+  { re: /\[transition-timing-function:[^\]]+\]|\bease-\[cubic-bezier[^\]]*\]/, msg: "arbitrary curve — ease-soft, ease-spring, or nothing (the iOS curve is the default)", exempt: ["src/components/home/CommandDeck.tsx"] },
+  { re: /["'`][^"'`]*\btransition(?:-[\w\[\],-]+)?\b[^"'`]*\bease-(?:in|out|in-out|linear)\b[^"'`]*["'`]/, msg: "Tailwind's ease-* on a transition — drop it (the default curve) or ease-soft", exempt: ["src/components/home/CommandDeck.tsx"] },
+  // Framer utility moves come from src/lib/motion.ts; a literal duration is a fourth fade.
+  { re: /transition=\{\{\s*duration:\s*0\.(?:1[0-9]|2[0-9]|3[0-9])\b[^}]*\}\}/, msg: "literal framer duration — MOTION.fade / .slide / .reveal (src/lib/motion.ts)", exempt: ["src/components/home/CommandDeck.tsx"] },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

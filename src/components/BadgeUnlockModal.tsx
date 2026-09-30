@@ -160,10 +160,10 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action, track }: Badg
         {/* Badge Icon */}
         <div
           className={cn(
-            "transition-[transform,opacity] ease-out",
+            "transition-[transform,opacity]",
             phase === "enter" && "scale-0 opacity-0 duration-300",
             phase === "burst" && "scale-[2] opacity-80 duration-500",
-            phase === "reveal" && "scale-110 opacity-100 duration-600",
+            phase === "reveal" && "scale-110 opacity-100 duration-500",
             phase === "details" && "scale-100 opacity-100 duration-500"
           )}
         >
@@ -198,7 +198,7 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action, track }: Badg
         {/* Title */}
         <div
           className={cn(
-            "text-center transition-[transform,opacity] duration-600",
+            "text-center transition-[transform,opacity] duration-500",
             phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           )}
         >

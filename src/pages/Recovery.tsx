@@ -93,7 +93,7 @@ const clock = (sec: number) =>
 const HoldBar = ({ ring, left }: { ring: number; left: number }) => (
   <div className="mt-3 flex items-center gap-3">
     <div className="h-1 flex-1 rounded-full bg-border overflow-hidden">
-      <div className="h-full bg-gold transition-[width] duration-300 ease-out" style={{ width: `${ring}%` }} />
+      <div className="h-full bg-gold transition-[width] duration-300" style={{ width: `${ring}%` }} />
     </div>
     <span className="font-display font-black text-read tabular-nums">{clock(left)}</span>
   </div>

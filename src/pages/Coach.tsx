@@ -37,6 +37,7 @@ import HealthKitConnectCard from "@/components/health/HealthKitConnectCard";
 import { useOnboardingTrigger } from "@/components/onboarding/onboarding-context";
 import { track, FUNNEL } from "@/lib/analytics";
 import AnswerRating from "@/components/coach/AnswerRating";
+import { MOTION } from "@/lib/motion";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -759,7 +760,7 @@ const ChatSheet = ({
             key={i}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.18 }}
+            transition={MOTION.fade}
             className={m.role === "user" ? "flex justify-end" : "flex flex-col items-start"}
           >
             <div

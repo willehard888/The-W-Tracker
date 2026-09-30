@@ -40,6 +40,20 @@ export default {
        * share-image sizes that should stay arbitrary. The ladder stops there,
        * and style-guard rule 19 polices only 0–27px for the same reason.
        */
+      // One clock. Every transition-* utility without its own duration or
+      // curve rides the press clock: 140 ms on the iOS curve — the number the
+      // buttons, fields, segments and rows already used by hand. The ladder
+      // above it is 200 (a state) · 300 (a move) · 500 (a fill) · 700 (a
+      // reveal). tailwindcss-animate mirrors these for animate-in/out.
+      transitionDuration: {
+        DEFAULT: "140ms",
+      },
+      transitionTimingFunction: {
+        DEFAULT: "var(--ease-ios)",
+        ios: "var(--ease-ios)",
+        soft: "var(--ease-soft)",
+        spring: "var(--ease-spring)",
+      },
       // Display leading: the page and card titles sit at 1.04 (51 sites used
       // to write leading-[1.04] by hand, five wrote 1.06).
       lineHeight: {

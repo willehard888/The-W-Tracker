@@ -47,7 +47,7 @@ const Frames = ({ ex, running }: { ex: Drawn; running: boolean }) => {
     if (loaded.current.size >= STATES.length) setReady(true);
   };
   return (
-    <div className={cn("absolute inset-0 transition-opacity duration-300 ease-out", ready ? "opacity-100" : "opacity-0")}>
+    <div className={cn("absolute inset-0 transition-opacity duration-300", ready ? "opacity-100" : "opacity-0")}>
       {STATES.map((state) => (
         <img
           key={state}

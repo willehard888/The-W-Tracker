@@ -16,6 +16,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { LINE_LABEL, type DayScore } from "@/lib/checkin-xp";
 import { ShieldCheck } from "lucide-react";
+import { MOTION } from "@/lib/motion";
 
 interface CheckinTierSummaryProps {
   tier: string;
@@ -457,7 +458,7 @@ const PostCheckinCoachLine = ({
   return (
     <div className="space-y-1">
       {/* key={text} cross-fades the template → AI upgrade instead of a hard swap */}
-      <m.div key={text} initial={{ opacity: 0.55 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+      <m.div key={text} initial={{ opacity: 0.55 }} animate={{ opacity: 1 }} transition={MOTION.fade}>
         <CoachLine
           text={text}
           tone="celebration"

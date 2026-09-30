@@ -229,7 +229,7 @@ const BadgeVault = ({
               style={{ flex }}
             >
               <div
-                className={cn("h-full transition-[width] duration-700 ease-out", RARITY_META[r].bar)}
+                className={cn("h-full transition-[width] duration-700", RARITY_META[r].bar)}
                 style={{ width: `${segPct * 100}%` }}
               />
             </div>

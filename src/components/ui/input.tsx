@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 export const FIELD = [
   "surface-inset flex w-full min-h-11 rounded-xl px-3.5 text-copy text-foreground",
   "placeholder:text-fg-faint",
-  "transition-[border-color,box-shadow,background-color,opacity] duration-[140ms] [transition-timing-function:var(--ease-ios)]",
+  "transition-[border-color,box-shadow,background-color,opacity]",
   "focus-visible:outline-none focus-visible:border-[hsl(var(--gold)/0.55)]",
   "focus-visible:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.45),0_0_0_1px_hsl(var(--gold)/0.28),0_0_16px_-4px_hsl(var(--gold)/0.35)]",
   "aria-[invalid=true]:border-[hsl(var(--destructive)/0.7)] aria-[invalid=true]:focus-visible:shadow-[inset_0_1px_2px_hsl(0_0%_0%/0.45),0_0_0_1px_hsl(var(--destructive)/0.3)]",

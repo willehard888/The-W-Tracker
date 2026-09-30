@@ -1753,7 +1753,7 @@
 }
 
 .apex-tribe-card-hover {
-  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  transition: transform 200ms var(--ease-ios), box-shadow 200ms var(--ease-ios), border-color 200ms var(--ease-ios);
 }
 /* hover:hover gate: on iOS a tap "sticks" the hover state onto the card until
    the next tap elsewhere — a lifted, glowing card the user already left. */

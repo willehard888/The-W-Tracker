@@ -3,6 +3,7 @@ import { m } from "framer-motion";
 import { Crown, Flame, Sparkles, Zap, Star, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTierConfig, topShareLabel, type StatusTier } from "@/lib/status-tiers";
+import { MOTION } from "@/lib/motion";
 
 interface StatusNameplateProps {
   tier: string;
@@ -135,7 +136,7 @@ const StatusNameplate = ({
     <m.div
       initial={{ opacity: 0, scale: 0.92, y: 6 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.55, ease: "easeOut" }}
+      transition={MOTION.reveal}
       className={cn(
         "relative w-full max-w-[420px] mx-auto rounded-2xl border bg-background/70 overflow-hidden",
         padding,

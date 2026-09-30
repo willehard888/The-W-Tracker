@@ -3,6 +3,7 @@ import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
 import type { ModerationState } from "@/hooks/use-moderation";
+import { MOTION } from "@/lib/motion";
 
 interface Props {
   state: ModerationState;
@@ -45,14 +46,14 @@ export default function ModerationGate({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
+          transition={MOTION.fade}
           className="fixed inset-0 z-[80] flex items-center justify-center bg-background/95 p-6"
         >
           <m.div
             initial={{ scale: 0.96, y: 8 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
+            transition={MOTION.fade}
             className="w-full max-w-sm surface-glass rounded-2xl p-6"
           >
             {thumbnailUrl && (

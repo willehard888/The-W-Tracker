@@ -20,7 +20,8 @@ describe("the text field", () => {
       expect(cls, name).toContain(name === "a" ? "min-h-11" : "min-h-24");
       expect(cls, name).toContain("rounded-xl");
       expect(cls, name).toContain("text-copy");
-      expect(cls, name).toContain("duration-[140ms]");
+      expect(cls, name).toContain("transition-[border-color,box-shadow,background-color,opacity]");
+      expect(cls, name).not.toMatch(/duration-|ease-|timing-function/); // the default clock
       expect(cls, name).toContain("focus-visible:border-[hsl(var(--gold)/0.55)]");
       expect(cls, name).toContain("aria-[invalid=true]:border-");
       expect(cls, name).not.toMatch(/ring-2|focus-visible:ring/);

@@ -116,6 +116,7 @@ import { fetchActiveSeason, fetchAllTimeLeaders, fetchSeasonBoard } from "@/lib/
 import { fetchMyTribeMembership, fetchTribesPage } from "@/lib/tribes-query";
 import { fetchVaultArticleSummaries, vaultArticlesKey } from "@/hooks/use-vault-articles";
 import { afterIdle, onIdle } from "@/lib/idle";
+import { MOTION } from "@/lib/motion";
 
 // Paths reachable WITHOUT membership — the paywall itself and the legal
 // pages — so a gated member can subscribe (or start the store trial), redeem a
@@ -638,7 +639,7 @@ const App = () => {
           system instead of framer's stock tween. Components with their own
           transition still override. */}
       <LazyMotion features={loadMotionFeatures} strict>
-      <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 320, damping: 30 }}>
+      <MotionConfig reducedMotion="user" transition={MOTION.spring}>
       <QueryClientProvider client={queryClient}>
         <Sonner />
           <BrowserRouter>

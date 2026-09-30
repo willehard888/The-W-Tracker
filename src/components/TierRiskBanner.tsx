@@ -3,6 +3,7 @@ import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import type { TierRiskState } from "@/hooks/use-tier-risk";
+import { MOTION } from "@/lib/motion";
 
 interface TierRiskBannerProps {
   risk: TierRiskState;
@@ -35,7 +36,7 @@ const TierRiskBanner = ({ risk, className }: TierRiskBannerProps) => {
       onClick={() => navigate("/checkin")}
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      transition={MOTION.slide}
       className={cn(
         // Sized for one line. With two, the 40px icon and p-3.5 were the right
         // frame; with one, they held a 69px box open around a single sentence

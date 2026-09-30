@@ -30,6 +30,7 @@ import { SPORTS } from "@/lib/sports";
 import { readLocal, writeLocal, removeLocal } from "@/lib/storage";
 import type { GoalId } from "@/hooks/use-athlete-profile";
 import { captureException } from "@/lib/observability";
+import { MOTION } from "@/lib/motion";
 
 /**
  * "Initiation" — the new-user onboarding.
@@ -228,7 +229,7 @@ const Onboarding = () => {
           initial={{ opacity: 0, x: 18 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -18 }}
-          transition={{ duration: 0.2 }}
+          transition={MOTION.fade}
           className="flex-1 flex flex-col pt-5 min-h-0"
         >
           {step === "welcome" && <WelcomeSlide onNext={() => advance("welcome")} />}

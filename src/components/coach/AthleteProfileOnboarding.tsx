@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { track, FUNNEL } from "@/lib/analytics";
 import { Textarea } from "@/components/ui/textarea";
+import { MOTION } from "@/lib/motion";
 
 const DRAFT_KEY = "w_coach_onboarding_draft_v2";
 const STEP_KEY = "w_coach_onboarding_step_v2";
@@ -471,7 +472,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
             initial={{ opacity: 0, x: 18 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -18 }}
-            transition={{ duration: 0.2 }}
+            transition={MOTION.fade}
           >
             {cur.content}
           </m.div>

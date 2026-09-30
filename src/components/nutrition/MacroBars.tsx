@@ -48,7 +48,7 @@ const MacroBars = ({
               className="mt-1 h-1.5 rounded-full surface-inset overflow-hidden"
             >
               <div
-                className={cn("h-full rounded-full transition-[width] duration-500 ease-out", r.gold ? "bg-gold" : "bg-foreground/45")}
+                className={cn("h-full rounded-full transition-[width] duration-500", r.gold ? "bg-gold" : "bg-foreground/45")}
                 style={{ width: `${pct}%` }}
               />
             </div>

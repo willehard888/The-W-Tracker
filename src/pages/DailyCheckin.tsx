@@ -973,7 +973,7 @@ const DailyCheckin = () => {
                   interpolate. Track 44px − thumb 18px − 2×2px inset = 22px. */}
               <span
                 className={cn(
-                  "absolute top-0.5 left-0.5 h-[18px] w-[18px] rounded-full bg-foreground/90 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                  "absolute top-0.5 left-0.5 h-[18px] w-[18px] rounded-full bg-foreground/90 transition-transform duration-200",
                   sickToday && "translate-x-[22px]",
                 )}
               />

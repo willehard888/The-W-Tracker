@@ -5,10 +5,11 @@ import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_BUTTON, SEGMENT_TRACK } from "@/c
 // segment answers a press with a surface, and the button itself opts out of
 // the global press scale (a segment shrinking inside its track reads as a chip).
 describe("segment constants", () => {
-  it("both states carry the shared transition", () => {
-    const clock = "duration-[140ms] [transition-timing-function:var(--ease-ios)]";
-    expect(SEGMENT_ACTIVE).toContain(clock);
-    expect(SEGMENT_IDLE).toContain(clock);
+  it("both states name what moves and ride the default clock (no duration or curve of their own)", () => {
+    for (const s of [SEGMENT_ACTIVE, SEGMENT_IDLE]) {
+      expect(s).toContain("transition-[color,background-color,box-shadow,filter]");
+      expect(s).not.toMatch(/duration-|ease-|timing-function/);
+    }
   });
   it("a press answers with a surface, not a scale", () => {
     expect(SEGMENT_IDLE).toMatch(/active:bg-/);

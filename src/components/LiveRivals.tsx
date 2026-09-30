@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import StatusAvatar from "@/components/StatusAvatar";
 import TierUsername from "@/components/TierUsername";
 import { useLiveRivals } from "@/hooks/use-live-rivals";
+import { MOTION } from "@/lib/motion";
 
 interface LiveRivalsProps {
   userId: string;
@@ -27,7 +28,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
     <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
+      transition={MOTION.slide}
       className={cn("rounded-2xl glass-card p-4 relative overflow-hidden", className)}
     >
       <div className="flex items-center justify-between mb-3">

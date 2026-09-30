@@ -5,6 +5,7 @@ import { ChevronLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useScrollLock } from "@/contexts/ScrollContainerContext";
 import { cn } from "@/lib/utils";
+import { MOTION } from "@/lib/motion";
 
 /**
  * THE bottom sheet. A fixed overlay portalled to <body> with a solid backdrop
@@ -112,8 +113,8 @@ export const BottomSheet = ({
   const reduced = useReducedMotion();
   const viewport = useVisualViewport(open);
   const rise = reduced
-    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.18 } }
-    : { initial: { y: "100%" }, animate: { y: 0 }, exit: { y: "100%" }, transition: { type: "spring" as const, stiffness: 380, damping: 38 } };
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: MOTION.fade }
+    : { initial: { y: "100%" }, animate: { y: 0 }, exit: { y: "100%" }, transition: MOTION.drawer };
 
   // Drag to dismiss. The gesture starts on the handle/header only, so the
   // body keeps its native scroll; the sheet's own `y` drives the backdrop.
@@ -149,7 +150,7 @@ export const BottomSheet = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={MOTION.fade}
         >
           {/* Solid backdrop — no backdrop-filter, which iOS WKWebView mis-composites.
               It covers the whole layout viewport, not the visual one: the web view

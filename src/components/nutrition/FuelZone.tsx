@@ -192,7 +192,7 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
           >
             <div
               className={cn(
-                "h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 ease-out",
+                "h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500",
                 left?.over ? "bg-destructive/70" : "bg-foreground/45",
               )}
               style={{ width: `${Math.round(progress * 100)}%` }}

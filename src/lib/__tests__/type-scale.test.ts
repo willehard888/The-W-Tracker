@@ -13,6 +13,10 @@ describe("type scale", () => {
     }
     expect(config).toMatch(/display: "1\.04"/);
   });
+  it("one clock: the default transition is 140 ms on the iOS curve", () => {
+    expect(config).toMatch(/transitionDuration: \{\s*DEFAULT: "140ms"/);
+    expect(config).toMatch(/transitionTimingFunction: \{\s*DEFAULT: "var\(--ease-ios\)"/);
+  });
   it("the two title voices exist as classes", () => {
     expect(css).toMatch(/\.h-page \{\s*@apply font-display text-beat font-black tracking-tight leading-display;/);
     expect(css).toMatch(/\.h-card \{\s*@apply font-display text-lead font-black tracking-tight leading-tight;/);

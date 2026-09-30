@@ -27,8 +27,10 @@ describe("Button — one press, one focus, one depth", () => {
     render(<>{VARIANTS.map((v) => <Button key={v} variant={v}>{v}</Button>)}</>);
     for (const v of VARIANTS) {
       const cls = screen.getByRole("button", { name: v }).className;
-      expect(cls, v).toContain("duration-[140ms]");
       expect(cls, v).toContain("transition-[transform,background-color,border-color,color,box-shadow,filter,opacity]");
+      // The default clock (140 ms, iOS curve): no duration of its own. The
+      // ember sheen's after:duration-700 is the glint, not the press.
+      expect(cls, v).not.toMatch(/(?<!after:)duration-|timing-function/);
       expect(cls, v).not.toMatch(/ring-2|focus-visible:ring/);
     }
   });

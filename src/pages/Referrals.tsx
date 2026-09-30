@@ -95,8 +95,8 @@ const Referrals = () => {
             the first line of the screen. */}
         {statsLoading ? (
           <div className="home-rise space-y-2" aria-hidden>
-            <div className="h-7 w-4/5 rounded skeleton-block bg-secondary/30" />
-            <div className="h-7 w-2/5 rounded skeleton-block bg-secondary/30" />
+            <div className="h-7 w-4/5 rounded skeleton-block" />
+            <div className="h-7 w-2/5 rounded skeleton-block" />
           </div>
         ) : (
           <h2 className="h-page home-rise">
@@ -150,12 +150,12 @@ const Referrals = () => {
         {/* Recruits — who came, and how far they got. */}
         {recruitsLoading && (
           <section className="home-rise home-rise-3 mt-7" aria-hidden>
-            <div className="h-4 w-28 rounded skeleton-block bg-secondary/30" />
+            <div className="h-4 w-28 rounded skeleton-block" />
             <div className="divide-y divide-border/35 mt-1">
               {[0, 1].map((i) => (
                 <div key={i} className="flex items-center gap-3 py-2.5">
-                  <div className="h-9 w-9 rounded-full skeleton-block bg-secondary/30 shrink-0" />
-                  <div className="h-3.5 flex-1 rounded skeleton-block bg-secondary/30" />
+                  <div className="h-9 w-9 rounded-full skeleton-block shrink-0" />
+                  <div className="h-3.5 flex-1 rounded skeleton-block" />
                 </div>
               ))}
             </div>

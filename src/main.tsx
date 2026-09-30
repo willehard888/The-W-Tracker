@@ -110,7 +110,7 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
 
     if (!didApplySession) {
       pushIosDebugLog("DeepLink", "No session from callback", { source });
-      toast.error("Connection error. Try again.");
+      toast.error("Connection hiccup. Try again.");
       oauthHandled = false;
       return;
     }
@@ -124,7 +124,7 @@ async function handleOAuthUrl(url: string, source: "launch" | "appUrlOpen") {
     // Don't reload — AuthContext will pick up the session change automatically
   } catch (e) {
     console.error("[DeepLink] Error:", e);
-    const message = "Connection error. Try again.";
+    const message = "Connection hiccup. Try again.";
     toast.error(message);
     updateOauthDebug({ error: message });
     oauthHandled = false;

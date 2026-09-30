@@ -82,7 +82,7 @@ const Chat = () => {
   // Blocking closes a thread in both directions (the RLS on direct_messages
   // carries NOT is_blocked on SELECT and INSERT). Without asking, the screen
   // showed an empty thread under "Start the conversation" and a live composer
-  // whose every send failed with "Message didn't send — try again."
+  // whose every send failed with "Couldn't send. Try again."
   const { data: blocked } = useQuery({
     queryKey: ["chat-blocked", user?.id, partnerId],
     queryFn: async () => {
@@ -174,7 +174,7 @@ const Chat = () => {
       const { data: sent, error } = await supabase.from("direct_messages")
         .insert({ sender_id: user.id, receiver_id: partnerId, content: messageContent }).select("id").single();
       if (error) {
-        toast.error("Message didn't send — try again.");
+        toast.error("Couldn't send. Try again.");
         return; // keep the text in the input so nothing is lost
       }
 
@@ -210,7 +210,7 @@ const Chat = () => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       queryClient.invalidateQueries({ queryKey: ["direct-messages"] });
     } catch {
-      toast.error("Message didn't send — try again.");
+      toast.error("Couldn't send. Try again.");
     } finally {
       // Without finally, a network throw left the send button spinning forever.
       setSending(false);
@@ -299,7 +299,7 @@ const Chat = () => {
             {[72, 56, 84, 48].map((w, i) => (
               <div key={i} className={cn("flex", i % 2 ? "justify-end" : "justify-start")}>
                 <div
-                  className="h-9 rounded-2xl skeleton-block bg-secondary/30"
+                  className="h-9 rounded-2xl skeleton-block"
                   style={{ width: `${w}%` }}
                 />
               </div>

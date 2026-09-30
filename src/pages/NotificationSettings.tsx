@@ -177,9 +177,9 @@ const NotificationSettings = () => {
             every Switch below rendered at its default and visibly snapped. */}
         {profilePrefs === undefined ? (
           <header className="home-rise space-y-2" aria-hidden>
-            <div className="h-7 w-3/5 rounded skeleton-block bg-secondary/30" />
-            <div className="h-4 w-full rounded skeleton-block bg-secondary/30" />
-            <div className="h-4 w-2/3 rounded skeleton-block bg-secondary/30" />
+            <div className="h-7 w-3/5 rounded skeleton-block" />
+            <div className="h-4 w-full rounded skeleton-block" />
+            <div className="h-4 w-2/3 rounded skeleton-block" />
           </header>
         ) : (
           <header className="home-rise">

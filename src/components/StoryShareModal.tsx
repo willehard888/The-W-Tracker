@@ -628,7 +628,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
             <Download aria-hidden size={16} />
             {downloading ? "Saving…" : "Save Image"}
           </Button>
-          <Button variant="gold-outline" size="default" className="flex-1" onClick={handleShare} disabled={sharing}>
+          <Button variant="gold-outline" size="default" className="flex-1" onClick={handleShare} loading={sharing}>
             <Share2 aria-hidden size={16} />
             {sharing ? "Opening…" : "Share"}
           </Button>

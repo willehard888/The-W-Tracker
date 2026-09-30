@@ -16,7 +16,7 @@ const KNOWN: Array<{ pattern: RegExp; copy: string }> = [
   // the literal string `ai_consent_required` before this line existed.
   { pattern: /^ai_consent_required$/, copy: "AI features are off. Turn them on in Profile, or open the coach and say yes." },
   { pattern: /rate limit/i, copy: "Slow down a moment and try again." },
-  { pattern: /load failed|failed to fetch|network|timeout/i, copy: "Connection hiccup — try again." },
+  { pattern: /load failed|failed to fetch|network|timeout/i, copy: "Connection hiccup. Try again." },
   { pattern: /ALREADY_CHECKED_IN_TODAY/, copy: "Today is already locked in. Come back tomorrow." },
 ];
 
@@ -68,7 +68,7 @@ export async function readEdgeError(err: unknown, fallback?: string): Promise<Ed
 /**
  * What KIND of failure this was.
  *
- * "Connection hiccup — try again." is honest only for a transport failure, and
+ * "Connection hiccup. Try again." is honest only for a transport failure, and
  * an evening reflection that failed to save showed exactly that with no way to
  * tell whether the phone was offline, the session had expired, or a constraint
  * had rejected the row. The copy is the same sentence either way; the category

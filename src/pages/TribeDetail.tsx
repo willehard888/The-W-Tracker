@@ -471,7 +471,7 @@ const TribeDetail = () => {
     if (!file) return;
     const lowerName = file.name.toLowerCase();
     const isImage = file.type.startsWith("image/") || SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
-    if (!isImage) { toast.error("Please select an image."); e.target.value = ""; return; }
+    if (!isImage) { toast.error("Pick an image."); e.target.value = ""; return; }
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) { toast.error(`Max ${MAX_IMAGE_SIZE_MB}MB.`); e.target.value = ""; return; }
     hapticSelection();
     setVideoFile(null); setVideoPreview(null);
@@ -485,7 +485,7 @@ const TribeDetail = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     const isVideo = file.type.startsWith("video/") || SUPPORTED_VIDEO_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
-    if (!isVideo) { toast.error("Please select a video."); e.target.value = ""; return; }
+    if (!isVideo) { toast.error("Pick a video."); e.target.value = ""; return; }
     if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) { toast.error(`Max ${MAX_VIDEO_SIZE_MB}MB.`); e.target.value = ""; return; }
     hapticSelection();
     setImageFile(null); setImagePreview(null);

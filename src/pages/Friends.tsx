@@ -142,7 +142,7 @@ const Friends = () => {
 
           {isSearching && (
             searching && !results ? (
-              <div className="mt-2 h-14 rounded-xl bg-card/60 skeleton-block" />
+              <div className="mt-2 h-14 rounded-xl skeleton-block" />
             ) : (results ?? []).length === 0 ? (
               <EmptyState size="compact" title={`No one matches “${q.trim()}”`} />
             ) : (
@@ -185,7 +185,7 @@ const Friends = () => {
         <div className="home-rise home-rise-3 mt-5">
           {friendsLoading ? (
             <div className="space-y-1">
-              {[0, 1, 2].map((i) => <div key={i} className="h-14 rounded-xl bg-card/40 skeleton-block" />)}
+              {[0, 1, 2].map((i) => <div key={i} className="h-14 rounded-xl skeleton-block" />)}
             </div>
           ) : friendsFailed ? (
             <ErrorState title="Couldn't load your circle" onRetry={refetch} />

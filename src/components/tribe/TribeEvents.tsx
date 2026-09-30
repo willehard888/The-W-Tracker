@@ -15,6 +15,7 @@ import { safeHttpUrl } from "@/lib/safe-url";
 import { TRIBE_ACTIVITY_GROUPS, activityIcon, activityDefaults } from "@/lib/tribe-activities";
 import { FIELD_LABEL as LABEL } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { friendlyError } from "@/lib/error-copy";
 
 const ERR: Record<string, string> = {
   not_member: "Join the tribe to do that.",
@@ -24,7 +25,7 @@ const ERR: Record<string, string> = {
   forbidden: "Only the host can do that.",
 };
 const errMsg = (e: any) =>
-  ERR[e?.message?.match(/not_member|event_full|title_required|unauthorized|forbidden/)?.[0] ?? ""] ?? e?.message ?? "Something went wrong";
+  ERR[e?.message?.match(/not_member|event_full|title_required|unauthorized|forbidden/)?.[0] ?? ""] ?? friendlyError(e);
 
 
 // Native datetime-local under house type: the picker stays the platform's,

@@ -92,7 +92,7 @@ const TribePendingRequestsDialog = ({ tribeId, open, onOpenChange, onChanged }: 
       {loading ? (
         <div className="divide-y divide-border/35 px-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="py-2"><div className="h-10 rounded-lg skeleton-block bg-secondary/30" /></div>
+            <div key={i} className="py-2"><div className="h-10 rounded-lg skeleton-block" /></div>
           ))}
         </div>
       ) : pending.length === 0 ? (

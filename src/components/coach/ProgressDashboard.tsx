@@ -123,7 +123,7 @@ const ProgressDashboard = ({ program }: Props) => {
           <p className="text-label font-bold text-gold">
             Coach's read
           </p>
-          <Button variant="ghost" size="sm" aria-label="Refresh the coach's read" onClick={fetchRead} disabled={loading} className="h-7 px-2 before:absolute before:-inset-2 before:content-['']">
+          <Button variant="ghost" size="sm" aria-label="Refresh the coach's read" onClick={fetchRead} loading={loading} className="h-7 px-2 before:absolute before:-inset-2 before:content-['']">
             {loading ? <Loader2 aria-hidden size={12} className="animate-spin" /> : <RefreshCw aria-hidden size={12} />}
           </Button>
         </div>

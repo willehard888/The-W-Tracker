@@ -61,6 +61,7 @@ import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
 import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
 import type { DaySnapshot, DayWorkout } from "@/lib/health/healthkit";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FieldError } from "@/components/ui/label";
 
 /** "Tennis 62 min · Gym 45 min · Polar Flow" — what Health recorded today, by sport. */
 const healthSessionsLine = (sessions: DayWorkout[]): string => {
@@ -822,7 +823,7 @@ const DailyCheckin = () => {
       return;
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong saving your check-in. Please try again.", { duration: 5000 });
+      toast.error("Couldn't save your check-in. Try again.", { duration: 5000 });
     }
     setSubmitting(false);
   };
@@ -1353,7 +1354,7 @@ const DailyCheckin = () => {
             >No</button>
           </div>
           {honest === false && (
-            <p role="alert" className="text-meta text-destructive mt-2.5 font-semibold">Be honest with yourself. Go back and fix your answers.</p>
+            <FieldError className="mt-2.5">Be honest with yourself. Go back and fix your answers.</FieldError>
           )}
 
           {/* How today scores, line by line — the same lines the server writes. */}

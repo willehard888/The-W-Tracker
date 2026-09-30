@@ -78,7 +78,7 @@ const GoalTrackerCard = () => {
 
   // Not knowing is not "no goal": while loading, or after a failed load, the
   // card used to invite a member who HAS a goal to set one (a second row).
-  if (isLoading) return <div className="h-[132px] rounded-2xl bg-card/40 skeleton-block" aria-hidden />;
+  if (isLoading) return <div className="h-[132px] rounded-2xl skeleton-block" aria-hidden />;
   if (isError) return <ErrorState size="compact" title="Couldn't load your goal" onRetry={refetch} />;
 
   if (!activeGoal && !adding) {

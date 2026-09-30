@@ -97,6 +97,14 @@ const RULES = [
   { re: /onClick=\{[^}]{0,160}haptic(?:Impact\("light"\)|Selection\(\))/, msg: "a light tap in onClick — the document delegate taps for every button", exempt: ["src/components/home/CommandDeck.tsx", "src/components/BottomNav.tsx"] },
   { re: /import \{[^}]*\btoast\b[^}]*\} from "sonner"/, msg: "toast from sonner — import { toast } from \"@/lib/toast\" (it carries the outcome haptic)", exempt: ["src/lib/toast.ts", "src/components/ui/sonner.tsx"] },
   { re: /hapticNotification\("(success|error)"\);?[^\n]*\n[^\n]*toast\.\1\(|toast\.(success|error)\([^\n]*\n[^\n]*hapticNotification\("\2"\)/, msg: "outcome haptic next to its toast — the toast already carries it" },
+  // Errors and loading. One field-error line (FieldError), no raw machine
+  // message in a toast, no "Please", one connection line; the loading
+  // placeholder is .skeleton-block with its own fill, a busy trigger spins.
+  { re: /<(?:p|span) role="alert" className="[^"]*text-(?:destructive|\[hsl\(var\(--ember\)\)\])[^"]*text-label[^"]*"|<(?:p|span) role="alert" className="[^"]*text-label[^"]*text-(?:destructive|\[hsl\(var\(--ember\)\)\])[^"]*"/, msg: "hand-rolled field error — <FieldError> (src/components/ui/label.tsx)", exempt: [UI] },
+  { re: /toast\.error\([^)\n]*\b(?:e|err|error)\.message\b/, msg: "raw error message in a toast — friendlyError(e) (src/lib/error-copy.ts)" },
+  { re: /toast\.error\(\s*"Please\b/, msg: "\"Please …\" in an error — say what to do (\"Pick an image.\")" },
+  { re: /"Connection (?:error|hiccup)(?!\. Try again\.")[^"]*"/, msg: "another connection line — \"Connection hiccup. Try again.\"", exempt: ["src/lib/error-copy.ts", "src/components/ui/error-state.tsx"] },
+  { re: /["'`][^"'`]*\bskeleton-block\b[^"'`]*\bbg-(?:secondary|card)\b/, msg: "skeleton with its own fill — .skeleton-block carries it" },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

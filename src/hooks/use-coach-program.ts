@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { dayFocus, blockCount, isRestDay } from "@/lib/training/session";
 import { programWeekState } from "@/lib/training/program-week";
+import { friendlyError } from "@/lib/error-copy";
 
 // Type aliases, not interfaces: plan_json is a `Json` column, and only aliases
 // get the implicit index signature that writing it back requires. One block
@@ -231,7 +232,7 @@ export const useEditProgram = (program: CoachProgram | null) => {
     },
     onError: (e: unknown) => {
       void qc.invalidateQueries({ queryKey: ["coach-program"] });
-      toast.error("Couldn't save the change", { description: e instanceof Error ? e.message : undefined });
+      toast.error("Couldn't save the change", { description: friendlyError(e) });
     },
     onSettled: () => void qc.invalidateQueries({ queryKey: ["focus-session"] }),
   });

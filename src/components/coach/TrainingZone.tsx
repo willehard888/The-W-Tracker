@@ -181,8 +181,8 @@ const TrainingZone = () => {
       <div className={ROW}>
         <div className={BODY}>
           <p className={LABEL}>Training</p>
-          <div className="skeleton-block h-4 w-2/5 rounded bg-card/40" />
-          <div className="skeleton-block h-3 w-1/2 rounded bg-card/40 mt-1.5" />
+          <div className="skeleton-block h-4 w-2/5 rounded" />
+          <div className="skeleton-block h-3 w-1/2 rounded mt-1.5" />
         </div>
       </div>
     );

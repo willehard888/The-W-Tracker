@@ -583,7 +583,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
     
     if (!isImage) {
-      toast.error("Please select an image file.");
+      toast.error("Pick an image file.");
       e.target.value = "";
       return;
     }
@@ -609,7 +609,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
       SUPPORTED_VIDEO_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
     
     if (!isVideo) {
-      toast.error("Please select a video file.");
+      toast.error("Pick a video file.");
       e.target.value = "";
       return;
     }

@@ -70,8 +70,8 @@ const CoachMemoryScreen = () => {
             <div className="divide-y divide-border/35 border-t border-border/35" aria-hidden>
               {[3, 2, 4].map((w, i) => (
                 <div key={i} className="py-3 space-y-1.5">
-                  <div className="h-3.5 rounded skeleton-block bg-secondary/30" style={{ width: `${45 + w * 10}%` }} />
-                  <div className="h-3 w-1/3 rounded skeleton-block bg-secondary/30" />
+                  <div className="h-3.5 rounded skeleton-block" style={{ width: `${45 + w * 10}%` }} />
+                  <div className="h-3 w-1/3 rounded skeleton-block" />
                 </div>
               ))}
             </div>

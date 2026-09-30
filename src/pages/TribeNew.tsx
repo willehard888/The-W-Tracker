@@ -13,6 +13,7 @@ import { backOr } from "@/lib/nav";
 import TribeFireCanvas from "@/components/tribe/TribeFireCanvas";
 import { tierPalette } from "@/lib/tribe-streak";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
+import { FieldError } from "@/components/ui/label";
 
 // Field labels are the house micro-label (`.eyebrow`); a local copy was a
 // fourth spelling of it in the app.
@@ -174,7 +175,7 @@ const TribeNew = () => {
               <p className="text-label font-bold text-xp-green">Available</p>
             )}
             {nameStatus === "taken" && (
-              <p className="text-label font-bold text-destructive">Already taken</p>
+              <FieldError>Already taken</FieldError>
             )}
             {nameStatus === "invalid" && name.trim().length > 0 && (
               <p className="text-label font-bold text-muted-foreground">3–40 chars</p>

@@ -97,7 +97,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
     const lower = file.name.toLowerCase();
     const isImage = file.type.startsWith("image/") || SUPPORTED_IMAGE_EXTENSIONS.some((ext) => lower.endsWith(ext));
     if (!isImage) {
-      toast.error("Please select an image (JPG, PNG, WEBP).");
+      toast.error("Pick an image (JPG, PNG or WEBP).");
       e.target.value = "";
       return;
     }
@@ -262,7 +262,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
               {displayCover && <img loading="lazy" decoding="async" src={displayCover} alt="Cover preview" className="absolute inset-0 h-full w-full object-cover" />}
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
               <div className="absolute bottom-2 right-2 flex gap-1.5">
-                <Button type="button" variant="secondary" size="sm" className="min-h-11 bg-[hsl(var(--background)/0.9)]" disabled={busy} onClick={() => fileRef.current?.click()}>
+                <Button type="button" variant="secondary" size="sm" className="min-h-11 bg-[hsl(var(--background)/0.9)]" loading={busy} onClick={() => fileRef.current?.click()}>
                   <Upload aria-hidden size={12} /> Change
                 </Button>
                 <Button type="button" variant="secondary" size="icon" className="bg-[hsl(var(--background)/0.9)] text-destructive" disabled={busy} onClick={handleRemoveCover} aria-label="Remove cover">

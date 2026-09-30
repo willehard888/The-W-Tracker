@@ -24,6 +24,7 @@ import { parseQty } from "@/lib/nutrition/resolve-grams";
 import { BASE_KEYS } from "@/lib/nutrition/scale";
 import type { NutrientKey } from "@/lib/nutrition/types";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/label";
 
 const REQUIRED: readonly NutrientKey[] = ["kcal", "protein_g", "carbs_g", "fat_g"];
 const SECONDARY: readonly { key: NutrientKey; label: string; unit: string }[] = [
@@ -238,9 +239,7 @@ const UserFoodEditor = () => {
               )}
             />
             {errors.name && (
-              <span role="alert" className="block text-label text-[hsl(var(--ember))] mt-1">
-                {errors.name}
-              </span>
+              <FieldError>{errors.name}</FieldError>
             )}
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -331,9 +330,7 @@ const UserFoodEditor = () => {
                     </button>
                   </div>
                   {errors.servings[s.key] && (
-                    <p role="alert" className="text-label text-[hsl(var(--ember))] mt-1">
-                      {errors.servings[s.key]}
-                    </p>
+                    <FieldError>{errors.servings[s.key]}</FieldError>
                   )}
                 </div>
               ))}

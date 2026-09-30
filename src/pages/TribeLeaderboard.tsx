@@ -153,13 +153,13 @@ const TribeLeaderboard = () => {
         <div className="divide-y divide-border/35 border-t border-border/35">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="py-3 flex items-center gap-3">
-              <div className="h-4 w-4 rounded skeleton-block bg-secondary/30 shrink-0" />
-              <div className="h-9 w-9 rounded-full skeleton-block bg-secondary/30 shrink-0" />
+              <div className="h-4 w-4 rounded skeleton-block shrink-0" />
+              <div className="h-9 w-9 rounded-full skeleton-block shrink-0" />
               <div className="flex-1 min-w-0 space-y-1.5">
-                <div className="h-3.5 w-2/5 rounded skeleton-block bg-secondary/30" />
-                <div className="h-3 w-1/4 rounded skeleton-block bg-secondary/30" />
+                <div className="h-3.5 w-2/5 rounded skeleton-block" />
+                <div className="h-3 w-1/4 rounded skeleton-block" />
               </div>
-              <div className="h-4 w-12 rounded skeleton-block bg-secondary/30 shrink-0" />
+              <div className="h-4 w-12 rounded skeleton-block shrink-0" />
             </div>
           ))}
         </div>

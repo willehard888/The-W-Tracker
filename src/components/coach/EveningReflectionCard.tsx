@@ -100,7 +100,7 @@ const EveningReflectionCard = () => {
       // Close only once it has actually saved. This used to run unconditionally
       // on the line after `mutate`, so a failed save collapsed the form: the
       // answers survived in state, but the panel was shut and the member was
-      // left looking at "Connection hiccup — try again" with nothing to try.
+      // left looking at the connection line with nothing to try.
       { onSuccess: () => setOpen(false) },
     );
   };

@@ -18,4 +18,15 @@ const Label = React.forwardRef<
 ));
 Label.displayName = LabelPrimitive.Root.displayName;
 
+/**
+ * The line under a field that failed: one voice (destructive, the label
+ * size, bold), announced to screen readers. Nine forms wrote it in ember or
+ * destructive, label or meta, bold or not.
+ */
+export const FieldError = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <p role="alert" className={cn("mt-1.5 text-label font-bold text-destructive leading-snug", className)}>
+    {children}
+  </p>
+);
+
 export { Label };

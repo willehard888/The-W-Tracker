@@ -18,8 +18,8 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
     return (
       <div className={className} aria-hidden>
         <span className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />
-        <div className="h-6 w-4/5 rounded-lg bg-card/40 skeleton-block" />
-        <div className="h-4 w-3/5 rounded-lg bg-card/40 skeleton-block mt-2" />
+        <div className="h-6 w-4/5 rounded-lg skeleton-block" />
+        <div className="h-4 w-3/5 rounded-lg skeleton-block mt-2" />
       </div>
     );
   }

@@ -163,7 +163,7 @@ const BadgeCompare = () => {
               <ErrorState title="Couldn't load the badges" onRetry={failed.refetch} />
             ) : !ready ? (
               <div className="space-y-1">
-                {[0, 1, 2, 3].map((i) => <div key={i} className="h-12 rounded-xl bg-card/40 skeleton-block" />)}
+                {[0, 1, 2, 3].map((i) => <div key={i} className="h-12 rounded-xl skeleton-block" />)}
               </div>
             ) : even ? (
               <EmptyState

@@ -257,7 +257,7 @@ const Battles = () => {
     const fileAge = Date.now() - file.lastModified;
     const MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
     if (fileAge > MAX_AGE_MS) {
-      toast.error("Please take a fresh photo right now. Gallery photos are not allowed.");
+      toast.error("Take a fresh photo now — gallery photos don't count as proof.");
       return;
     }
 

@@ -66,7 +66,7 @@ export const useTodayReflection = () => {
       toast.success("Reflection logged");
     },
     onError: (e: unknown) => {
-      // The toast used to be the only trace: "Connection hiccup — try again."
+      // The toast used to be the only trace: "Connection hiccup. Try again."
       // on a phone, and a console line nobody was holding. A transport failure
       // on a train is not a defect, but a constraint violation or a missing
       // function is ours and was invisible.

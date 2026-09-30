@@ -203,7 +203,7 @@ const Journey = () => {
         {(isLoading || isError || hasTrend || !hasAnyData) && (
         <div className="home-rise home-rise-4 mt-5">
           {isLoading ? (
-            <div className="h-24 rounded-xl bg-card/40 skeleton-block" />
+            <div className="h-24 rounded-xl skeleton-block" />
           ) : isError ? (
             <ErrorState title="Couldn't load your journey" onRetry={refetch} />
           ) : !hasAnyData && !hasTrend ? (

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label, FieldError } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -157,7 +157,7 @@ const ChooseUsername = () => {
               />
             </div>
             {validationMessage ? (
-              <p className="text-label text-destructive mt-1.5 font-bold">{validationMessage}</p>
+              <FieldError>{validationMessage}</FieldError>
             ) : availability === "checking" ? (
               <p className="text-label text-muted-foreground mt-1.5">Checking availability…</p>
             ) : availability === "available" ? (

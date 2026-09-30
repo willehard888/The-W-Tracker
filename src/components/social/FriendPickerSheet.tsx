@@ -48,7 +48,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
 
         <div className="space-y-1.5">
           {isLoading ? (
-            <div className="h-16 rounded-xl bg-secondary/60 skeleton-block" />
+            <div className="h-16 rounded-xl skeleton-block" />
           ) : list.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-dense font-bold text-foreground">

@@ -177,7 +177,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         </p>
       )}
 
-      <Button variant="ember" size="lg" className="w-full mt-6" disabled={building} onClick={generate}>
+      <Button variant="ember" size="lg" className="w-full mt-6" loading={building} onClick={generate}>
         {building && <Loader2 aria-hidden size={16} className="animate-spin" />}
         Build my week
       </Button>

@@ -149,7 +149,7 @@ const Vault = () => {
         {/* Opening beat — the reader's own count, then one whisper of type. */}
         <header className="home-rise">
           {isLoading ? (
-            <div className="h-7 w-3/4 rounded-lg bg-card/40 skeleton-block" />
+            <div className="h-7 w-3/4 rounded-lg skeleton-block" />
           ) : (
             <h2 className="h-page">
               {practicedCount > 0 ? (
@@ -385,7 +385,7 @@ const VaultCategoryBlock = ({
           {loading &&
             [0, 1, 2].map((i) => (
               <div key={i} className="py-3.5">
-                <div className="h-9 rounded-lg bg-card/40 skeleton-block" />
+                <div className="h-9 rounded-lg skeleton-block" />
               </div>
             ))}
 

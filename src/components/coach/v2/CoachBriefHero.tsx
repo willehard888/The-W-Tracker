@@ -38,11 +38,11 @@ const CoachBriefHero = ({
   if (isLoading) {
     return (
       <div className="surface-card p-5">
-        <div className="h-9 w-24 rounded-lg bg-secondary/60 skeleton-block" />
+        <div className="h-9 w-24 rounded-lg skeleton-block" />
         <div className="mt-4 space-y-2">
-          <div className="h-3.5 w-full rounded bg-secondary/60 skeleton-block" />
-          <div className="h-3.5 w-[85%] rounded bg-secondary/60 skeleton-block" />
-          <div className="h-3.5 w-[60%] rounded bg-secondary/60 skeleton-block" />
+          <div className="h-3.5 w-full rounded skeleton-block" />
+          <div className="h-3.5 w-[85%] rounded skeleton-block" />
+          <div className="h-3.5 w-[60%] rounded skeleton-block" />
         </div>
         <p className="text-meta text-muted-foreground mt-3">Coach is reading your week…</p>
       </div>

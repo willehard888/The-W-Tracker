@@ -1,6 +1,6 @@
 import { authRedirectOrigin } from "@/lib/universal-link";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label, FieldError } from "@/components/ui/label";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -247,7 +247,7 @@ const Auth = () => {
                 />
               </div>
               {nameStatus === "taken" ? (
-                <p className="text-label text-destructive mt-1.5 font-bold">@{username} is taken — pick another.</p>
+                <FieldError>@{username} is taken — pick another.</FieldError>
               ) : nameStatus === "available" ? (
                 <p className="commit-pop origin-left text-label text-xp-green mt-1.5 font-bold inline-flex items-center gap-1">
                   <Check aria-hidden size={12} strokeWidth={3} /> @{username} is yours

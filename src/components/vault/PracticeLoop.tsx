@@ -16,6 +16,7 @@ import { useMarkIntegrated, useRecordPractice, type PracticeResult } from "@/hoo
 import { loopState, practiceLength, PRACTICE_XP, type LoopStage } from "@/lib/vault-loop";
 import { pathOfArticle } from "@/data/vault-paths";
 import { MASTER_BY_SLUG } from "@/data/vault-masters";
+import { friendlyError } from "@/lib/error-copy";
 
 /**
  * The loop under an idea: Understand → Reflect → Practise → Integrate.
@@ -69,7 +70,7 @@ const PracticeLoop = ({
       await complete.mutateAsync({ articleId: article.id, quizScore });
       void track(FUNNEL.lessonCompleted, { ...props, quiz: quizScore });
     } catch (e: unknown) {
-      toast.error("Couldn't save progress", { description: e instanceof Error ? e.message : undefined });
+      toast.error("Couldn't save progress", { description: friendlyError(e) });
     }
   };
 
@@ -86,7 +87,7 @@ const PracticeLoop = ({
       }
       onPracticed?.(r);
     } catch (e: unknown) {
-      toast.error("Couldn't record the practice", { description: e instanceof Error ? e.message : undefined });
+      toast.error("Couldn't record the practice", { description: friendlyError(e) });
     }
   };
 
@@ -335,7 +336,7 @@ const AnswerBox = ({
             try {
               await onSave(text);
             } catch (e: unknown) {
-              toast.error("Couldn't save", { description: e instanceof Error ? e.message : undefined });
+              toast.error("Couldn't save", { description: friendlyError(e) });
             }
           }}
         >
@@ -427,7 +428,7 @@ const PracticeBox = ({
         </div>
       )}
 
-      <Button variant="ember" size="lg" className="mt-4 w-full" onClick={onDone} disabled={pending}>
+      <Button variant="ember" size="lg" className="mt-4 w-full" onClick={onDone} loading={pending}>
         {pending ? "Recording…" : `I ran the practice · +${PRACTICE_XP} XP`}
       </Button>
     </div>

@@ -143,9 +143,9 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
         <div className="mt-3 divide-y divide-border/35" aria-hidden>
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="py-3.5">
-              <div className="h-4 w-2/5 rounded bg-card/40 skeleton-block" />
-              <div className="h-3 w-4/5 rounded bg-card/40 skeleton-block mt-2" />
-              <div className="h-3 w-3/5 rounded bg-card/40 skeleton-block mt-1.5" />
+              <div className="h-4 w-2/5 rounded skeleton-block" />
+              <div className="h-3 w-4/5 rounded skeleton-block mt-2" />
+              <div className="h-3 w-3/5 rounded skeleton-block mt-1.5" />
             </div>
           ))}
         </div>

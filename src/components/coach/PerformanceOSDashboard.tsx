@@ -39,7 +39,7 @@ const PerformanceOSDashboard = () => {
 
   if (isLoading) {
     // The height of what usually follows (the button), not of the card that left.
-    return <div className="h-9 rounded-md bg-card/40 skeleton-block" aria-hidden />;
+    return <div className="h-9 rounded-md skeleton-block" aria-hidden />;
   }
 
   // Average components over last 7 days

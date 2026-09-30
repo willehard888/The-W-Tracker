@@ -102,7 +102,7 @@ export const ExerciseLogForm = ({
       setDrafts((d) => { const next = { ...d }; delete next[n]; return next; });
       toast.success(`${block.name}: set ${n} locked`);
     } catch {
-      toast.error("Couldn't save — check connection.");
+      toast.error("Couldn't save. Connection hiccup. Try again.");
     } finally {
       setSaving(null);
     }

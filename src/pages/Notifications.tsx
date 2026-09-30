@@ -253,7 +253,7 @@ const Notifications = () => {
         <div className="mt-5">
           {isLoading ? (
             <div className="divide-y divide-border/35">
-              {[0, 1, 2].map((i) => <div key={i} className="h-10 my-3 rounded-lg bg-card/40 skeleton-block" />)}
+              {[0, 1, 2].map((i) => <div key={i} className="h-10 my-3 rounded-lg skeleton-block" />)}
             </div>
           ) : isError && !notifications ? (
             <ErrorState title="Couldn't load your inbox" onRetry={refetch} />

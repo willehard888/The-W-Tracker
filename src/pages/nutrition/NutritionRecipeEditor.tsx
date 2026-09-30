@@ -26,6 +26,7 @@ import { MEAL_SLOTS, defaultSlotForHour } from "@/lib/nutrition/slots";
 import { macroSummary } from "@/lib/nutrition/totals";
 import type { Food, MealSlot } from "@/lib/nutrition/types";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/label";
 
 type Ingredient = { key: number; food_id: string; name: string; grams: string };
 let seq = 0;
@@ -232,9 +233,7 @@ const NutritionRecipeEditor = () => {
               )}
             />
             {errors.name && (
-              <span role="alert" className="block text-label text-[hsl(var(--ember))] mt-1">
-                {errors.name}
-              </span>
+              <FieldError>{errors.name}</FieldError>
             )}
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -293,9 +292,7 @@ const NutritionRecipeEditor = () => {
             </div>
           )}
           {errors.items && (
-            <p role="alert" className="text-label text-[hsl(var(--ember))] mt-1">
-              {errors.items}
-            </p>
+            <FieldError>{errors.items}</FieldError>
           )}
         </div>
 

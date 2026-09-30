@@ -177,7 +177,7 @@ const VaultArticleSheet = ({
               ) : bodyLoading && !article.body_md ? (
                 <div className="space-y-2.5" aria-hidden>
                   {[92, 100, 84, 96, 60].map((w, i) => (
-                    <div key={i} className="h-4 rounded skeleton-block bg-card/40" style={{ width: `${w}%` }} />
+                    <div key={i} className="h-4 rounded skeleton-block" style={{ width: `${w}%` }} />
                   ))}
                 </div>
               ) : (

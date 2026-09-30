@@ -66,12 +66,12 @@ const OAuthCallback = () => {
         }
 
         if (!sessionApplied && !oauthError) {
-          toast.error("Connection error. Try again.");
+          toast.error("Connection hiccup. Try again.");
         }
       } catch (e) {
         console.error("[OAuthCB] Unexpected:", e);
-        toast.error("Connection error. Try again.");
-        updateOauthDebug({ error: "Connection error. Try again." });
+        toast.error("Connection hiccup. Try again.");
+        updateOauthDebug({ error: "Connection hiccup. Try again." });
       }
       setProcessing(false);
     })();

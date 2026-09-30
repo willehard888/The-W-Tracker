@@ -212,7 +212,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
       {loading ? (
         <div className="divide-y divide-border/35">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="py-4"><div className="h-20 rounded-xl skeleton-block bg-secondary/30" /></div>
+            <div key={i} className="py-4"><div className="h-20 rounded-xl skeleton-block" /></div>
           ))}
         </div>
       ) : loadError ? (

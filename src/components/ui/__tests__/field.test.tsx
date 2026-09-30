@@ -43,3 +43,13 @@ describe("the text field", () => {
     expect(screen.getByText("Name").className).toContain(FIELD_LABEL);
   });
 });
+
+describe("FieldError", () => {
+  it("is announced, in the destructive voice, at the label size", async () => {
+    const { FieldError } = await import("../label");
+    render(<FieldError>Already taken</FieldError>);
+    const el = screen.getByRole("alert");
+    expect(el).toHaveTextContent("Already taken");
+    for (const c of ["text-destructive", "text-label", "font-bold"]) expect(el.className.split(" ")).toContain(c);
+  });
+});

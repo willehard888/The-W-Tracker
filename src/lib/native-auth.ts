@@ -99,7 +99,7 @@ function getFriendlyAppleError(err: unknown): Error {
     lower.includes("offline") ||
     lower.includes("timed out")
   ) {
-    return new Error("Connection error. Try again.");
+    return new Error("Connection hiccup. Try again.");
   }
   return new Error("Sign in with Apple failed. Please try again.");
 }

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { FieldError } from "@/components/ui/label";
 
 /**
  * One labelled numeric field for the nutrition forms. Text input with the
@@ -47,9 +48,7 @@ const NumField = ({
       className="mt-1 px-3 font-bold tabular-nums"
     />
     {error && (
-      <span role="alert" className="block text-label text-[hsl(var(--ember))] mt-1 leading-snug">
-        {error}
-      </span>
+      <FieldError>{error}</FieldError>
     )}
   </label>
 );

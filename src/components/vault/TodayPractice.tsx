@@ -36,7 +36,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
         hapticImpact("light");
         onOpen(article.slug);
       }}
-      className={cn("press-row group relative block w-full text-left active:opacity-80 transition-opacity", className)}
+      className={cn("press-row group relative block w-full text-left", className)}
     >
       <span aria-hidden className="block h-px w-8 bg-gradient-to-r from-gold/70 to-transparent mb-3" />
       <p className="text-label font-bold text-muted-foreground">

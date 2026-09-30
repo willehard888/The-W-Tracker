@@ -42,7 +42,7 @@ const FocusSessionSheet = lazy(() => import("@/components/coach/FocusSessionShee
 // nothing on this screen led.
 const ROW = "flex items-center";
 const BODY = "flex-1 min-w-0 min-h-14 pr-3 text-left active:opacity-70 transition-opacity";
-const LABEL = "text-label font-bold text-muted-foreground/75 mb-0.5";
+const LABEL = "text-label font-bold text-muted-foreground mb-0.5";
 
 /**
  * The drawing of the first movement in today's session, resolved AFTER paint.

@@ -339,9 +339,15 @@
      win cascade roulette), and the body tint is background-color + a
      near-transparent shading overlay (NOT an opaque gradient — a bg-* utility
      override must be able to take the surface). */
+  /* The default radius sits in :where() (zero specificity) so a site's own
+     rounded-xl / rounded-lg wins regardless of where this rule lands in the
+     sheet — with the radius inside the class, every override lost. */
+  :where(.surface-card, .surface-tint-gold, .surface-tint-ember, .surface-tint-danger) {
+    border-radius: 1rem;
+  }
   .surface-card {
     position: relative;
-    @apply rounded-2xl border border-border/50;
+    @apply border border-border/50;
     background-color: hsl(var(--card) / 0.85);
     background-image: linear-gradient(180deg,
       hsl(0 0% 100% / 0.03) 0%, transparent 30%, hsl(0 0% 0% / 0.12) 100%);
@@ -369,6 +375,29 @@
   }
   .surface-card-quiet::before {
     content: none;
+  }
+  /* Tinted cards — one tint per accent (a note, a warning, a tribe's ember
+     corner). The card's radius and rim; the accent at one strength, so five
+     gold alphas and three ember ones read as one surface. */
+  .surface-tint-gold,
+  .surface-tint-ember,
+  .surface-tint-danger {
+    @apply border;
+  }
+  .surface-tint-gold {
+    background-color: hsl(var(--gold) / 0.06);
+    border-color: hsl(var(--gold) / 0.3);
+    box-shadow: inset 0 1px 0 hsl(var(--gold) / 0.12);
+  }
+  .surface-tint-ember {
+    background-color: hsl(var(--ember) / 0.06);
+    border-color: hsl(var(--ember) / 0.3);
+    box-shadow: inset 0 1px 0 hsl(var(--ember) / 0.12);
+  }
+  .surface-tint-danger {
+    background-color: hsl(var(--destructive) / 0.1);
+    border-color: hsl(var(--destructive) / 0.35);
+    box-shadow: inset 0 1px 0 hsl(var(--destructive) / 0.12);
   }
   /* Loading placeholder — the premium gold shimmer (replaces flat animate-pulse) */
   .skeleton-block {

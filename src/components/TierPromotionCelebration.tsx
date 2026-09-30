@@ -181,7 +181,7 @@ const TierPromotionCelebration = () => {
                 </Button>
                 <button
                   onClick={() => setShowCelebration(false)}
-                  className="text-label font-bold text-muted-foreground/75 hover:text-foreground transition-colors py-2 w-full"
+                  className="text-label font-bold text-muted-foreground hover:text-foreground transition-colors py-2 w-full"
                 >
                   Continue
                 </button>

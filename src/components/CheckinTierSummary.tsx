@@ -351,7 +351,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           animate={{ opacity: 1 }}
           transition={{ delay: 0.36 }}
           className={cn(
-            "rounded-xl border bg-card/60 p-3 mb-4 flex items-center justify-between",
+            "surface-card surface-card-quiet rounded-xl p-3 mb-4 flex items-center justify-between",
             cfg.rank >= 5 ? "border-gold/30" : "border-border",
           )}
         >

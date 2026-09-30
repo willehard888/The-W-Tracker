@@ -167,7 +167,7 @@ const PremiumHero = ({
         {/* Ask to Buy: the purchase is real and waiting on the account holder,
             so this is a neutral notice, not the destructive failure block. */}
         {status === "pending" && (
-          <div role="status" className="mt-3 rounded-xl border border-border/60 bg-muted/40 px-3.5 py-2.5">
+          <div role="status" className="mt-3 surface-panel rounded-xl px-3.5 py-2.5">
             <p className="text-dense font-bold">Waiting for approval</p>
             <p className="text-meta text-muted-foreground leading-snug mt-0.5">
               The request was sent to the account holder. Your membership starts as soon as they approve it —
@@ -186,7 +186,7 @@ const PremiumHero = ({
         )}
 
         {status === "error" && errorMessage && (
-          <div role="alert" className="mt-3 rounded-xl border border-destructive/50 bg-destructive/10 px-3.5 py-2.5">
+          <div role="alert" className="mt-3 surface-tint-danger rounded-xl px-3.5 py-2.5">
             <p className="text-dense font-bold text-destructive">Purchase failed</p>
             <p className="text-meta text-foreground/90 leading-snug mt-0.5">{errorMessage}</p>
             {onDismissError && (

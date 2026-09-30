@@ -115,7 +115,7 @@ export default function AdminLegendInvites() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 via-card to-card p-4 mb-6 space-y-3">
+      <div className="surface-tint-gold p-4 mb-6 space-y-3">
         <div className="flex items-center gap-2">
           <Sparkles aria-hidden className="h-4 w-4 text-gold" />
           <h2 className="font-display font-bold text-sm tracking-tight">Create new invite</h2>

@@ -1,22 +1,21 @@
-import { ChevronRight } from "lucide-react";
-import { hapticSelection } from "@/lib/haptics";
+import { DoorRow } from "@/components/coach/rows";
 
 /**
  * The settings-list vocabulary (lifted from Profile.tsx so every settings
  * surface — Profile tab, /settings/notifications — renders the same rows).
  */
 
-/** Settings section: eyebrow + surface-card list of rows. */
+/** Settings section: label + surface-card list of rows. */
 export const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="home-rise home-rise-1">
     <p className="text-label font-bold text-muted-foreground px-1 mb-1.5">{title}</p>
-    <div className="surface-card overflow-hidden divide-y divide-border/30">{children}</div>
+    <div className="surface-card overflow-hidden divide-y divide-border/35">{children}</div>
   </div>
 );
 
-/** One tappable settings row — icon · label/sub · optional badge · chevron. */
+/** One settings row: the DoorRow inside a card — icon · label/sub · optional badge · chevron. */
 export const SettingsRow = ({
-  icon: Icon,
+  icon,
   label,
   sub,
   badge,
@@ -27,22 +26,20 @@ export const SettingsRow = ({
   sub?: string;
   badge?: number;
   onClick: () => void;
-}) => (
-  <button
-    type="button"
-    onClick={() => { void hapticSelection(); onClick(); }}
-    className="press-row w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-card/60 transition-colors "
-  >
-    <Icon aria-hidden size={14} className="text-muted-foreground shrink-0" />
-    <span className="flex-1 min-w-0">
-      <span className="block text-dense font-semibold truncate">{label}</span>
-      {sub && <span className="block text-label text-muted-foreground truncate mt-0.5">{sub}</span>}
-    </span>
-    {badge != null && badge > 0 && (
-      <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-label font-black tabular-nums">
-        {badge}
-      </span>
-    )}
-    <ChevronRight aria-hidden size={16} className="text-muted-foreground/75 shrink-0" />
-  </button>
-);
+}) => {
+  const Icon = icon;
+  return (
+    <DoorRow
+      leading={<Icon aria-hidden size={16} className="text-muted-foreground shrink-0" />}
+      label={label}
+      sub={sub}
+      onClick={onClick}
+      className="px-4"
+      trailing={badge != null && badge > 0 ? (
+        <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-label font-black tabular-nums">
+          {badge}
+        </span>
+      ) : undefined}
+    />
+  );
+};

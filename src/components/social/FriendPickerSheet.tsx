@@ -74,7 +74,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                 key={f.user_id}
                 disabled={busyId === f.user_id}
                 onClick={() => onPick(f)}
-                className="press-row  w-full flex items-center gap-3 surface-card p-2.5 text-left transition-transform disabled:opacity-50"
+                className="press-row w-full flex items-center gap-3 surface-card p-2.5 text-left transition-transform disabled:opacity-50"
               >
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-gold/40 to-card flex items-center justify-center text-dense font-black text-gold shrink-0">
                   {f.avatar_url ? (

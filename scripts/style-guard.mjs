@@ -55,6 +55,11 @@ const RULES = [
   { re: /<(?:input|textarea)\b(?:[^>]|=>)*?className=(?:[^>]|=>)*?(?:surface-inset|focus(?:-visible)?:ring-|focus(?:-visible)?:border-gold)/, msg: "raw field with its own surface or focus — use <Input>/<Textarea> (one field, one focus)",
     // The two editors' title line is a transparent underline field by design.
     exempt: [UI, "src/pages/nutrition/NutritionRecipeEditor.tsx", "src/pages/nutrition/UserFoodEditor.tsx"] },
+  // One card: a container that re-declares the card shell (a radius, a
+  // border and the card ground in one class list) is a copy of .surface-card.
+  { re: /["'`][^"'`]*\brounded-(?:xl|2xl)\b[^"'`]*\bborder\b[^"'`]*\bbg-card(?:\/\d+)?\b[^"'`]*["'`]|["'`][^"'`]*\bbg-card(?:\/\d+)?\b[^"'`]*\bborder\b[^"'`]*\brounded-(?:xl|2xl)\b[^"'`]*["'`]/, msg: "hand-rolled card shell — use surface-card (surface-card-quiet for nested, surface-panel inside a card, surface-tint-* for an accent)", exempt: [UI, "src/components/skeletons/PageSkeleton.tsx"] },
+  // One list: rows divide at /35 everywhere.
+  { re: /\bdivide-border\/(?!35\b)\d+/, msg: "list divider off the scale — divide-border/35" },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

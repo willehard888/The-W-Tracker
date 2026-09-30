@@ -52,7 +52,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen
   const group = resolveGroup(block.name, ex?.primary);
 
   return (
-    <li className="border-b border-border/30 last:border-b-0 pb-1.5 last:pb-0">
+    <li className="border-b border-border/35 last:border-b-0 pb-1.5 last:pb-0">
       <button
         type="button"
         onClick={() => { hapticImpact("light"); onOpen(); }}

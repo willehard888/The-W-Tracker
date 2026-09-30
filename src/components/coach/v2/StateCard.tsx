@@ -107,7 +107,7 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
       <button
         type="button"
         onClick={() => onAsk ? onAsk(`Help me improve my ${pillarMeta.name.toLowerCase()} this week — one concrete change.`) : navigate("/coach")}
-        className="press-row  mt-3 pt-3 w-full min-h-11 border-t border-border/35 flex items-center gap-3 text-left"
+        className="press-row mt-3 pt-3 w-full min-h-11 border-t border-border/35 flex items-center gap-3 text-left"
       >
         <span className="text-lg shrink-0" aria-hidden>{pillarMeta.emoji}</span>
         <span className="flex-1 min-w-0">

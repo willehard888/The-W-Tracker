@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,22 +17,38 @@ export const FactRow = ({ k, v }: { k: string; v: string }) => (
   </div>
 );
 
-/** A door: one 44 pt row that leads somewhere. */
+/**
+ * A door: one 44 pt row that leads somewhere. THE list row — icon or any
+ * leading visual · label / sub · an optional trailing value or badge · the
+ * chevron. Settings rows, the Coach's doors and the library rows are all
+ * this silhouette (SettingsRow is this with a card's side padding).
+ */
 export const DoorRow = ({
-  icon: Icon, label, sub, onClick, className,
+  icon: Icon, leading, label, sub, trailing, onClick, className, disabled,
 }: {
   icon?: LucideIcon;
-  label: string;
-  sub?: string;
+  /** Replaces the icon slot (an avatar, a thumbnail, an emoji). */
+  leading?: ReactNode;
+  label: ReactNode;
+  sub?: ReactNode;
+  /** A value or badge before the chevron. */
+  trailing?: ReactNode;
   onClick: () => void;
   className?: string;
+  disabled?: boolean;
 }) => (
-  <button type="button" onClick={onClick} className={cn("press-row w-full min-h-11 flex items-center gap-3 py-3 text-left", className)}>
-    {Icon && <Icon size={16} className="text-muted-foreground shrink-0" aria-hidden />}
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    className={cn("press-row w-full min-h-11 flex items-center gap-3 py-3 text-left disabled:opacity-50", className)}
+  >
+    {leading ?? (Icon && <Icon size={16} className="text-muted-foreground shrink-0" aria-hidden />)}
     <span className="flex-1 min-w-0">
       <span className="block text-note font-semibold leading-tight truncate">{label}</span>
-      {sub && <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{sub}</span>}
+      {sub && <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{sub}</span>}
     </span>
+    {trailing}
     <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
   </button>
 );

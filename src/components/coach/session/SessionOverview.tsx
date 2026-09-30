@@ -54,7 +54,7 @@ export const SessionOverview = ({
       </button>
 
       {open && (
-        <ul className="mb-1 divide-y divide-border/30 border-y border-border/30">
+        <ul className="mb-1 divide-y divide-border/35 border-y border-border/30">
           {plan.map((ex) => {
             const done = setsDoneFor(ex, logged[ex.slug]);
             const complete = done >= ex.sets;
@@ -77,7 +77,7 @@ export const SessionOverview = ({
                     {ex.name}
                   </span>
                   {isSkipped && !complete && (
-                    <span className="text-label font-bold text-muted-foreground/75 shrink-0">Skipped</span>
+                    <span className="text-label font-bold text-muted-foreground shrink-0">Skipped</span>
                   )}
                   <span
                     className={cn(

@@ -127,7 +127,7 @@ const FoodSearchPanel = ({
 
       {localResults.length > 0 && (
         <section aria-label={searching ? "From your foods" : "Recent and favorites"}>
-          {!searching && <p className="text-label font-bold text-muted-foreground/80 mb-1">Recent · favorites</p>}
+          {!searching && <p className="text-label font-bold text-muted-foreground mb-1">Recent · favorites</p>}
           <div className="divide-y divide-border/35">
             {localResults.map((f) => (
               <FoodResultRow key={f.id} food={f} onPick={onPick} onToggleFavorite={onToggleFavorite} />
@@ -140,7 +140,7 @@ const FoodSearchPanel = ({
         <section aria-label="Search results" aria-busy={loading}>
           <div className="flex items-center gap-2 mt-1 mb-1">
             <span className="h-px flex-1 bg-border/50" aria-hidden />
-            <span className="text-label font-bold text-muted-foreground/75">
+            <span className="text-label font-bold text-muted-foreground">
               {loading ? "Searching" : `${serverOnly.length} result${serverOnly.length === 1 ? "" : "s"}`}
             </span>
             {loading && <Loader2 size={12} className="animate-spin text-muted-foreground" aria-hidden />}

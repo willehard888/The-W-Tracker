@@ -438,7 +438,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
   return (
     <>
       <div className={cn(
-        "rounded-2xl border bg-card overflow-hidden",
+        "surface-card overflow-hidden",
         isApexAuthor
           ? "border-[hsl(var(--ember))]/40 shadow-[0_0_18px_hsl(var(--ember)/0.18)]"
           : "border-border",
@@ -659,7 +659,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             {isMember ? (
               <div className="pt-2 border-t border-border/30">
                 {replyTo && (
-                  <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-[hsl(var(--ember))]/30 bg-[hsl(var(--ember))]/[0.06] p-2 animate-fade-in">
+                  <div className="mb-2 flex items-stretch gap-2 surface-tint-ember rounded-xl p-2 animate-fade-in">
                     <div className="w-0.5 rounded-full bg-[hsl(var(--ember))] shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="text-label font-bold flex items-center gap-1 text-[hsl(var(--ember))]">

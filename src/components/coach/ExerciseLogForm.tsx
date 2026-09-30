@@ -111,7 +111,7 @@ export const ExerciseLogForm = ({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl bg-background/50 border border-border/50 p-2.5">
+      <div className="surface-panel rounded-xl p-2.5">
         <div className="flex items-center justify-between gap-2 mb-1">
           <p className="text-label font-bold text-muted-foreground">
             Lock your sets{doneCount > 0 && <span className="text-xp-green"> · {doneCount}/{sets}</span>}
@@ -183,7 +183,7 @@ export const ExerciseLogForm = ({
 
       {/* Progression — weight over time from locked sets. */}
       {weightSeries.length >= 2 && (
-        <div className="rounded-xl bg-background/40 border border-border/40 p-2.5">
+        <div className="surface-panel rounded-xl p-2.5">
           <div className="flex items-center justify-between mb-1">
             <p className="text-label font-bold text-muted-foreground">Progression</p>
             <p className={cn(

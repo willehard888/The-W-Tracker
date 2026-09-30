@@ -596,7 +596,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                   </div>
                   <p className="font-extrabold text-foreground text-2xl">Train with me.</p>
                   <p className="text-muted-foreground/60 text-xs mb-5">@{profile.username} on Whealth Factory</p>
-                  <div className="w-full rounded-xl border border-gold/50 bg-gradient-to-br from-gold/[0.14] to-gold/[0.05] px-4 py-3 mb-4 shadow-[0_0_24px_-8px_hsl(var(--gold)/0.4)]">
+                  <div className="w-full surface-tint-gold rounded-xl px-4 py-3 mb-4">
                     <p className="text-label font-bold tracking-[0.22em] text-gold/60 mb-1">YOUR INVITE CODE</p>
                     <p
                       className="font-display font-black text-gold tracking-wide leading-none whitespace-nowrap drop-shadow-[0_0_10px_hsl(var(--gold)/0.35)]"

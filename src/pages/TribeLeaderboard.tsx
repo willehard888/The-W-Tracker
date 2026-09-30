@@ -185,7 +185,7 @@ const TribeLeaderboard = () => {
                 key={r.tribe_id}
                 type="button"
                 onClick={() => navigate(`/tribes/${r.tribe_id}`)}
-                className="press-row  w-full min-h-11 text-left py-3 flex items-center gap-3"
+                className="press-row w-full min-h-11 text-left py-3 flex items-center gap-3"
               >
                 <span className={cn("relative w-8 shrink-0 text-right font-display font-black text-base tabular-nums", PODIUM[r.rank] ?? "text-muted-foreground")}>
                   {r.rank === 1 && (
@@ -230,7 +230,7 @@ const TribeLeaderboard = () => {
               onClick={() => navigate(`/tribes/${myBest.tribe_id}`)}
               className="w-full min-h-11 rounded-xl px-3 py-2.5 border border-gold/40 bg-background shadow-[var(--shadow-3)] flex items-center gap-3"
             >
-              <span className={"text-label font-bold text-muted-foreground/75 shrink-0"}>Your tribe</span>
+              <span className={"text-label font-bold text-muted-foreground shrink-0"}>Your tribe</span>
               <span className="font-bold text-sm truncate flex-1 text-left tabular-nums">
                 #{myBest.rank} · {myBest.name}
               </span>

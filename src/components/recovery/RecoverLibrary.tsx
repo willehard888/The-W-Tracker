@@ -25,6 +25,7 @@ import {
 } from "@/data/recovery-routines";
 import { IllustrationPlayer, IllustrationThumb } from "@/components/coach/ExerciseIllustration";
 import { BreathFigure, BreathPacer, ORB_PACE } from "@/components/recovery/StepVisual";
+import { DoorRow } from "@/components/coach/rows";
 
 /**
  * The four shelves the founder asked for, by name: stretches, rolling,
@@ -99,7 +100,7 @@ const RoutineRow = ({ r, onOpen }: { r: Routine; onOpen: () => void }) => {
   const art = routineArt(r);
   return (
     <li>
-      <button type="button" onClick={onOpen} className="press-row w-full min-h-11 flex items-center gap-3 py-2.5 text-left">
+      <button type="button" onClick={onOpen} className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left">
         {art && <IllustrationThumb ex={{ idNum: art, title: r.name }} size={48} />}
         <span className="flex-1 min-w-0">
           <span className="block text-note font-semibold leading-tight truncate">{r.name}</span>
@@ -113,14 +114,7 @@ const RoutineRow = ({ r, onOpen }: { r: Routine; onOpen: () => void }) => {
 
 const ItemRow = ({ m, onOpen, lazy }: { m: RecoveryMovement; onOpen: () => void; lazy?: boolean }) => (
   <li style={lazy ? { contentVisibility: "auto", containIntrinsicSize: "auto 65px" } : undefined}>
-    <button type="button" onClick={onOpen} className="press-row w-full min-h-11 flex items-center gap-3 py-2 text-left">
-      <ItemThumb m={m} />
-      <span className="flex-1 min-w-0">
-        <span className="block text-note font-semibold leading-tight truncate">{m.name}</span>
-        <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate"><ItemMeta m={m} /></span>
-      </span>
-      <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
-    </button>
+    <DoorRow onClick={onOpen} leading={<ItemThumb m={m} />} label={m.name} sub={<ItemMeta m={m} />} />
   </li>
 );
 
@@ -184,7 +178,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
       <button
         type="button"
         onClick={() => go("/recovery?src=manual")}
-        className="press-row  w-full surface-card surface-card-quiet flex items-center gap-3 px-4 py-3.5 text-left mb-5"
+        className="press-row w-full surface-card surface-card-quiet flex items-center gap-3 px-4 py-3 text-left mb-5"
       >
         <IllustrationThumb ex={BUILT_FOR_YOU_ART} size={44} />
         <span className="flex-1 min-w-0">
@@ -326,15 +320,11 @@ export function RecoverDetail({ m, onBack }: { m: RecoveryMovement; onBack: () =
             <ul className="divide-y divide-border/35 border-y border-border/35">
               {inRoutines.map((r) => (
                 <li key={r.id}>
-                  <button
-                    type="button"
-                    onClick={() => { hapticSelection(); navigate(`/recovery?routine=${r.id}`); }}
-                    className="press-row  w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
-                  >
-                    <span className="flex-1 min-w-0 text-note font-semibold truncate">{r.name}</span>
-                    <span className="text-label text-muted-foreground tabular-nums">{describeLength(routineSec(r))}</span>
-                    <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
-                  </button>
+                  <DoorRow
+                    onClick={() => navigate(`/recovery?routine=${r.id}`)}
+                    label={r.name}
+                    trailing={<span className="text-label text-muted-foreground tabular-nums shrink-0">{describeLength(routineSec(r))}</span>}
+                  />
                 </li>
               ))}
             </ul>

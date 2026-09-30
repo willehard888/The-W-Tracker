@@ -79,7 +79,7 @@ const CoachBriefHero = ({
           {brief.suggested_questions?.length > 0 && (
             <div className="mt-4 divide-y divide-border/35 border-t border-border/35">
               {brief.suggested_questions.slice(0, 3).map((q, i) => (
-                <button key={i} type="button" onClick={() => onAsk(q)} className="press-row  w-full min-h-11 flex items-center gap-2.5 py-2.5 text-left">
+                <button key={i} type="button" onClick={() => onAsk(q)} className="press-row w-full min-h-11 flex items-center gap-2.5 py-2.5 text-left">
                   <MessageCircle size={13} className="text-muted-foreground shrink-0" aria-hidden />
                   <span className="text-dense font-semibold text-foreground/90 leading-snug">{q}</span>
                 </button>

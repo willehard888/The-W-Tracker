@@ -438,7 +438,7 @@ export default function Recovery() {
               type="button"
               onClick={() => { hapticSelection(); setVoice((on) => { setVoiceOn(!on); return !on; }); }}
               aria-pressed={voice}
-              className="press home-rise home-rise-2 mt-4 w-full min-h-11 flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-card/40 px-4"
+              className="press-row home-rise home-rise-2 mt-4 w-full min-h-11 flex items-center justify-between gap-3 surface-card surface-card-quiet rounded-xl px-4"
             >
               <span className="text-note font-bold">Voice guidance</span>
               <span className={cn("text-meta font-black", voice ? "text-gold" : "text-muted-foreground")}>
@@ -499,7 +499,7 @@ export default function Recovery() {
           </div>
 
           <div className="home-rise home-rise-1 mt-7">
-            <p className="text-label font-bold text-muted-foreground/75 mb-2">How long</p>
+            <p className="text-label font-bold text-muted-foreground mb-2">How long</p>
             <div className="grid grid-cols-3 gap-2">
               {LENGTHS.map((l) => (
                 <button
@@ -526,7 +526,7 @@ export default function Recovery() {
           {/* Optional, and phrased as an offer rather than a question, so the
               default path is one tap on Start and nothing else. */}
           <div className="home-rise home-rise-2 mt-5">
-            <p className="text-label font-bold text-muted-foreground/75 mb-2">Feeling sore? (optional)</p>
+            <p className="text-label font-bold text-muted-foreground mb-2">Feeling sore? (optional)</p>
             <div className="grid grid-cols-3 gap-2">
               {SORENESS.map((s) => (
                 <button

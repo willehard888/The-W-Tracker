@@ -185,7 +185,7 @@ export default function AdminModeration() {
         {queue?.map((item) => (
           <div
             key={item.id}
-            className="rounded-2xl border border-border bg-card p-4"
+            className="surface-card p-4"
           >
             <div className="flex items-start gap-3">
               {item.image_url ? (

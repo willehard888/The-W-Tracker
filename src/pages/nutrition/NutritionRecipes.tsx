@@ -1,17 +1,17 @@
 import { backOr } from "@/lib/nav";
 import { useNavigate } from "react-router-dom";
 import { useQueries } from "@tanstack/react-query";
-import { ChefHat, ChevronRight, Plus } from "lucide-react";
+import { ChefHat, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Block } from "@/components/skeletons/PageSkeleton";
-import { hapticSelection } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import PageBar from "@/components/ui/page-bar";
 import { useUserRecipes } from "@/hooks/use-user-recipes";
 import { fmtQty } from "@/lib/nutrition/format";
 import { recipePerServing } from "@/lib/nutrition/queries";
+import { DoorRow } from "@/components/coach/rows";
 
 /**
  * Foods made of foods. One hairline row per recipe — name, servings, and
@@ -83,23 +83,12 @@ const NutritionRecipes = () => {
                     ? "nutrition unavailable"
                     : "…";
                 return (
-                  <button
+                  <DoorRow
                     key={r.id}
-                    type="button"
-                    onClick={() => {
-                      hapticSelection();
-                      navigate(`/nutrition/recipes/${r.id}`);
-                    }}
-                    className="press-row w-full min-h-14 py-3 flex items-center gap-3 text-left active:opacity-70 transition-opacity"
-                  >
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-read font-bold leading-tight truncate">{r.name}</span>
-                      <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums truncate">
-                        {fmtQty(r.servings)} {r.servings === 1 ? "serving" : "servings"} · per serving {stats}
-                      </span>
-                    </span>
-                    <ChevronRight aria-hidden size={14} className="text-muted-foreground/75 shrink-0" />
-                  </button>
+                    onClick={() => navigate(`/nutrition/recipes/${r.id}`)}
+                    label={r.name}
+                    sub={<span className="tabular-nums">{fmtQty(r.servings)} {r.servings === 1 ? "serving" : "servings"} · per serving {stats}</span>}
+                  />
                 );
               })}
             </div>

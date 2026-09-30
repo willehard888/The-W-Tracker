@@ -19,7 +19,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
 
   return (
     <div className="absolute inset-0 z-50 bg-background flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-      <div className="shrink-0 px-2 pt-2 pb-1 flex items-center gap-1 border-b border-border/30">
+      <div className="shrink-0 px-2 pt-2 pb-1 flex items-center gap-1 border-b border-border/35">
         <Button variant="ghost" size="icon" aria-label="Back" onClick={() => { hapticImpact("light"); onClose(); }}>
           <ChevronLeft aria-hidden size={18} />
         </Button>
@@ -48,7 +48,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
             key={f.id}
             type="button"
             onClick={() => { hapticImpact("light"); onSelect(f); }}
-            className="press-row  w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
+            className="press-row w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
           >
             <p className="text-label text-muted-foreground mb-0.5">{f.category}</p>
             <p className="text-sm text-foreground">{f.question}</p>

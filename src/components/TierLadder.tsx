@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, ChevronDown, ChevronRight, Crown, Lock } from "lucide-react";
+import { Check, ChevronDown, Crown, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig, tierRequirementLines, type StatusTier } from "@/lib/status-tiers";
 import { RedeemLegendInviteDialog } from "@/components/RedeemLegendInviteDialog";
+import { DoorRow } from "@/components/coach/rows";
 
 interface TierLadderProps {
   currentTier: string;
@@ -65,20 +66,13 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
 
   return (
     <div id="tier-ladder-anchor" className={cn(!bare && "surface-card surface-card-quiet overflow-hidden", "scroll-mt-20", className)}>
-      <button
-        type="button"
+      <DoorRow
         onClick={() => { setExpanded(nextKey ?? null); setOpen(true); }}
-        className="press-row w-full min-h-11 flex items-center gap-3 px-4 py-3 text-left"
-      >
-        <TierMark rank={currentRank} className="h-10 w-10 text-label">{current.shortLabel}</TierMark>
-        <span className="flex-1 min-w-0">
-          <span className="block text-dense font-semibold truncate">Ladder</span>
-          <span className="block text-label text-muted-foreground truncate mt-0.5">
-            {next ? `${current.label}. Next rung ${next.label}, ${next.percentile.toLowerCase()}.` : `${current.label}. The top of the ladder.`}
-          </span>
-        </span>
-        <ChevronRight aria-hidden size={14} className="text-muted-foreground/75 shrink-0" />
-      </button>
+        className="px-4"
+        leading={<TierMark rank={currentRank} className="h-10 w-10 text-label">{current.shortLabel}</TierMark>}
+        label="Ladder"
+        sub={next ? `${current.label}. Next rung ${next.label}, ${next.percentile.toLowerCase()}.` : `${current.label}. The top of the ladder.`}
+      />
 
       {/* Radix dialogs stack under the sheet, so the redeem trigger lives out
           here and the sheet's Legend rung hands off to it. */}

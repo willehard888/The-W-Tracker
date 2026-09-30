@@ -149,9 +149,9 @@ const FuelZone = ({ loading, totals, targets, state, mealCount = 0, unavailable,
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-label font-bold text-muted-foreground/75">Fuel</p>
+          <p className="text-label font-bold text-muted-foreground">Fuel</p>
           {mealCount > 0 && (
-            <span className="ml-auto text-label font-bold text-muted-foreground/75 tabular-nums">
+            <span className="ml-auto text-label font-bold text-muted-foreground tabular-nums">
               {fmtInt(mealCount)} {mealCount === 1 ? "meal" : "meals"}
             </span>
           )}

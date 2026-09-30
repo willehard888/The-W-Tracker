@@ -5,7 +5,7 @@ import { useLayoutEffect, useMemo, useRef, useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useScrollContainer } from "@/contexts/ScrollContainerContext";
 import { backOr } from "@/lib/nav";
-import { Activity, BookOpen, ChevronRight, Dumbbell, Search, X } from "lucide-react";
+import { Activity, BookOpen, Dumbbell, Search, X } from "lucide-react";
 import PageBar from "@/components/ui/page-bar";
 import { Button } from "@/components/ui/button";
 import { Input, SEARCH_FIELD } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { coachingFor } from "@/data/exercise-coaching";
 import { LIBRARY_BY_ID } from "@/data/recovery-routines";
 import { RecoverDetail, RecoverList } from "@/components/recovery/RecoverLibrary";
 import { SEGMENT_ACTIVE, SEGMENT_IDLE, SEGMENT_TRACK, SEGMENT_BUTTON } from "@/components/ui/segment";
+import { DoorRow } from "@/components/coach/rows";
 
 /** Quiet pill under the gold segment: one gold fill per screen, not two rows of it. */
 const FILTER_PILL_ACTIVE = "bg-gold/[0.12] text-gold border-gold/50";
@@ -302,20 +303,12 @@ const Exercises = () => {
           <ul className="divide-y divide-border/35 border-t border-border/35">
             {filtered.slice(0, limit).map((ex, i) => (
               <li key={ex.slug} style={i < 6 ? undefined : { contentVisibility: "auto", containIntrinsicSize: "auto 65px" }}>
-                <button
-                  type="button"
+                <DoorRow
                   onClick={() => open(ex)}
-                  className="press-row  w-full min-h-11 flex items-center gap-3 py-2 text-left"
-                >
-                  <IllustrationThumb ex={ex} size={48} eager={i < 6} />
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-note font-semibold leading-tight truncate">{ex.title}</span>
-                    <span className="block text-meta text-muted-foreground leading-snug mt-0.5 capitalize truncate">
-                      {ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.map(equipLabel).join(", ")}` : ""}
-                    </span>
-                  </span>
-                  <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
-                </button>
+                  leading={<IllustrationThumb ex={ex} size={48} eager={i < 6} />}
+                  label={ex.title}
+                  sub={<span className="capitalize">{ex.primary.join(", ")}{ex.equipment.length ? ` · ${ex.equipment.map(equipLabel).join(", ")}` : ""}</span>}
+                />
               </li>
             ))}
           </ul>
@@ -323,7 +316,7 @@ const Exercises = () => {
             <button
               type="button"
               onClick={() => setLimit((n) => n + PAGE)}
-              className="press mt-3 w-full min-h-11 rounded-xl border border-border/60 bg-card/40 text-dense font-bold text-muted-foreground"
+              className="press mt-3 w-full min-h-11 surface-card surface-card-quiet rounded-xl text-dense font-bold text-muted-foreground"
             >
               Show {Math.min(PAGE, filtered.length - limit)} more · {filtered.length - limit} left
             </button>

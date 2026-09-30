@@ -228,7 +228,7 @@ const NutritionRecipeEditor = () => {
                 if (errors.name) setErrors((er) => ({ ...er, name: undefined }));
               }}
               className={cn(
-                "w-full bg-transparent border-b border-border/60 py-2 font-display text-major font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
+                "w-full bg-transparent border-b border-border/35 py-2 font-display text-major font-black tracking-tight leading-tight outline-none focus:border-gold/50 transition-colors placeholder:text-muted-foreground/75",
                 errors.name && "border-destructive/60",
               )}
             />

@@ -56,7 +56,7 @@ const PillarSheet = ({ pillar, score, parts, onClose }: PillarSheetProps) => {
               </div>
               <p className="w-14 shrink-0 text-right text-meta font-black tabular-nums">
                 {p.score == null
-                  ? <span className="text-label font-bold text-muted-foreground/75">no data yet</span>
+                  ? <span className="text-label font-bold text-muted-foreground">no data yet</span>
                   : p.score}
               </p>
             </div>

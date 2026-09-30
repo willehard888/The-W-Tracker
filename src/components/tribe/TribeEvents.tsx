@@ -345,7 +345,7 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
         )}
       </div>
 
-      <div className="mt-2 ml-14 divide-y divide-border/25">
+      <div className="mt-2 ml-14 divide-y divide-border/35">
         {shown.map((s, idx) => {
           const start = new Date(s.starts_at);
           const rel = isToday(start) ? "Today" : isTomorrow(start) ? "Tomorrow" : null;

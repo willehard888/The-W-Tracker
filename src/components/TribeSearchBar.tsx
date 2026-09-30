@@ -158,7 +158,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
       </div>
 
       {query.trim() && (
-        <div className="mt-3 rounded-xl border border-border bg-card/60 overflow-hidden">
+        <div className="mt-3 surface-glass rounded-xl overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-6">
               <Loader2 aria-hidden size={16} className="animate-spin text-muted-foreground" />
@@ -166,7 +166,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
           ) : results.length === 0 ? (
             <p className="text-center text-xs text-muted-foreground py-6">No tribes found.</p>
           ) : (
-            <div className="divide-y divide-border/50">
+            <div className="divide-y divide-border/35">
               {results.map((r) => (
                 <div
                   key={r.id}

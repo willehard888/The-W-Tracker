@@ -135,7 +135,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
                 type="button"
                 onClick={() => setSelected(r)}
                 aria-pressed={on}
-                className="press-row  w-full min-h-11 text-left py-2.5 flex items-center gap-3"
+                className="press-row w-full min-h-11 text-left py-3 flex items-center gap-3"
               >
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-sm font-bold truncate", on && "text-gold")}>{r.name}</p>

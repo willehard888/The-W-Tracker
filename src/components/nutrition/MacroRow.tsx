@@ -19,7 +19,7 @@ const fmt = (n: number) => fmtInt(n);
 
 const MacroRow = ({ nutrition, className }: { nutrition: MacroSummary; className?: string }) => (
   <div className={["flex items-stretch gap-3", className].filter(Boolean).join(" ")}>
-    <div className="rounded-2xl border border-gold/30 bg-gold/[0.07] px-4 py-3 shrink-0">
+    <div className="surface-tint-gold px-4 py-3 shrink-0">
       <p className="font-display text-[30px] font-black leading-none text-gold tabular-nums">
         {fmt(nutrition.protein)}<span className="text-lead">g</span>
       </p>

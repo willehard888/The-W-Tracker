@@ -253,7 +253,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
                   <button
                     type="button"
                     onClick={() => { hapticImpact("light"); onOpen(); navigate(`/recipes/${r.id}`); }}
-                    className="press-row w-full min-h-11 flex items-center gap-3 py-2.5 text-left"
+                    className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left"
                   >
                     <RecipePhoto id={r.id} variant="tile" className="h-14 w-14 shrink-0 rounded-xl" />
                     <span className="min-w-0 flex-1">

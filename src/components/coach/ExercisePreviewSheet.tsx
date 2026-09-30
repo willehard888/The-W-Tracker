@@ -122,7 +122,7 @@ export const ExercisePreviewSheet = ({
               the engine's numbers with no way to change them. */}
           {onEditDose && (
             editing ? (
-              <div className="rounded-xl border border-gold/35 bg-gold/[0.05] p-2.5 space-y-2">
+              <div className="surface-tint-gold rounded-xl p-2.5 space-y-2">
                 <p className="text-label font-bold text-muted-foreground">Your dose</p>
                 <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                   <Stepper value={dose.sets} unit="sets" inputMode="numeric" label="Sets" stepLabel="1 set"
@@ -196,7 +196,7 @@ export const ExercisePreviewSheet = ({
                   its name was never a catalog slug — and then the sheet said
                   "follow the steps below" above nothing at all. Say which of
                   the two this is. */}
-              <p className="text-label font-bold text-muted-foreground/75">
+              <p className="text-label font-bold text-muted-foreground">
                 {steps.length > 0 ? "Follow the steps below" : "No demonstration for this movement"}
               </p>
             </div>

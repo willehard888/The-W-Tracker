@@ -42,7 +42,7 @@ const TribeComposer = ({
   onPost,
   progressLabel,
 }: TribeComposerProps) => (
-  <div className="mb-4 rounded-2xl p-3 border border-[hsl(var(--ember))]/25 bg-card/70">
+  <div className="mb-4 surface-tint-ember p-3">
     <Textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}

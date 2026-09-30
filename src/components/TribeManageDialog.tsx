@@ -255,7 +255,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
       {/* Cover photo uploader */}
       <div>
         <p className={cn(LABEL, "mb-1.5")}>Cover photo</p>
-        <div className="relative rounded-xl overflow-hidden border border-border bg-card/40 aspect-[16/9]">
+        <div className="surface-card surface-card-quiet rounded-xl overflow-hidden aspect-[16/9]">
           {coverPreview ? (
             <>
               {displayCover && <img loading="lazy" decoding="async" src={displayCover} alt="Cover preview" className="absolute inset-0 h-full w-full object-cover" />}

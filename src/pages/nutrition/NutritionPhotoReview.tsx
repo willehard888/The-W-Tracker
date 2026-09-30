@@ -342,7 +342,7 @@ const NutritionPhotoReview = () => {
     </label>
   );
   const photo = (overlay?: ReactNode) => (
-    <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/40 aspect-[4/3]">
+    <div className="surface-card surface-card-quiet overflow-hidden aspect-[4/3]">
       {preview && <img src={preview} alt="" className="absolute inset-0 h-full w-full object-cover" />}
       {overlay}
     </div>

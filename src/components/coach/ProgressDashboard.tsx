@@ -82,7 +82,7 @@ const ProgressDashboard = ({ program }: Props) => {
       <div>
       {/* Named, because the summary above counts the program's week: "2" here
           under "1 of 1 sessions" read as a disagreement. */}
-      <p className="text-label font-bold text-muted-foreground/75 mb-2">Last 7 days</p>
+      <p className="text-label font-bold text-muted-foreground mb-2">Last 7 days</p>
       <div className="grid grid-cols-3 gap-2">
         <Tile
           label="Training days"
@@ -104,7 +104,7 @@ const ProgressDashboard = ({ program }: Props) => {
       )}
 
       {/* XP trend */}
-      <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
+      <div className="surface-card p-4">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp aria-hidden size={14} className="text-gold" />
           <p className="text-label font-bold text-muted-foreground">
@@ -118,7 +118,7 @@ const ProgressDashboard = ({ program }: Props) => {
       </div>
 
       {/* Coach read */}
-      <div className="rounded-2xl border border-gold/25 bg-gradient-to-b from-gold/[0.06] to-card p-4">
+      <div className="surface-tint-gold p-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-label font-bold text-gold">
             Coach's read
@@ -148,7 +148,7 @@ const ProgressDashboard = ({ program }: Props) => {
 };
 
 const Tile = ({ label, value, target }: { label: string; value: string; target: string }) => (
-  <div className="rounded-xl border border-border/60 bg-card/60 p-3 text-center">
+  <div className="surface-card surface-card-quiet rounded-xl p-3 text-center">
     <p className="font-display text-xl font-black text-gold leading-none">
       {value}
       <span className="text-label font-bold text-muted-foreground">{target}</span>

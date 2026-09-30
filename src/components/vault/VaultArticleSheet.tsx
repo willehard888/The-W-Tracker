@@ -117,7 +117,7 @@ const VaultArticleSheet = ({
         <>
           {/* Hero */}
           <header
-            className="relative -mx-4 px-4 pt-3 pb-5 border-b border-border/40"
+            className="relative -mx-4 px-4 pt-3 pb-5 border-b border-border/35"
             style={{ background: `linear-gradient(180deg, ${accent}22 0%, transparent 100%)` }}
           >
             <div className="flex items-center gap-1.5 flex-wrap mb-2.5 pr-10">
@@ -159,7 +159,7 @@ const VaultArticleSheet = ({
 
             {/* The dose: the one card on the sheet. */}
             {hasProtocol && protocol && (
-              <section className="rounded-2xl border border-border/50 bg-card/40 p-4">
+              <section className="surface-card p-4">
                 <SectionHeader Icon={Target} label="Protocol" color={accent} />
                 <dl className="space-y-2.5">
                   {protocol.duration && <ProtocolRow label="Duration" value={protocol.duration} />}

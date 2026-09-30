@@ -276,7 +276,7 @@ const PublicProfile = () => {
             <p className="text-label font-bold text-muted-foreground mb-2">Badges · {badges.length}</p>
             <div className="grid grid-cols-4 gap-2">
               {badges.map((b) => (
-                <div key={b.badge_id} className="aspect-square rounded-xl border border-border/50 bg-card/40 flex flex-col items-center justify-center">
+                <div key={b.badge_id} className="aspect-square surface-card surface-card-quiet rounded-xl flex flex-col items-center justify-center">
                   <span className="text-2xl" aria-hidden>{b.badges?.icon}</span>
                   <span className="text-label font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
                     {b.badges?.name}

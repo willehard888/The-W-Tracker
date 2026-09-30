@@ -204,7 +204,7 @@ const Vault = () => {
                     hapticImpact("light");
                     setOpenPath(p);
                   }}
-                  className="press snap-start shrink-0 w-[152px] rounded-2xl border border-border/50 bg-card/40 p-3.5 text-left"
+                  className="press snap-start shrink-0 w-[152px] surface-card surface-card-quiet p-3.5 text-left"
                   style={{ borderColor: pp.complete ? `${accent}66` : undefined }}
                 >
                   <span className="block text-label font-bold" style={{ color: accent }}>
@@ -379,7 +379,7 @@ const VaultCategoryBlock = ({
           {/* Recipes category → the full meal-prep recipe collection (poster
               style + batch scaler). A quiet row leading the pieces. */}
           {category.id === "recipes" && (
-            <button type="button" onClick={() => navigate("/recipes")} className="press-row w-full flex items-center gap-3 py-3.5 text-left">
+            <button type="button" onClick={() => navigate("/recipes")} className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left">
               <Utensils size={16} className="text-muted-foreground shrink-0" aria-hidden />
               <span className="flex-1 min-w-0">
                 <span className="block font-display text-dense font-black tracking-tight leading-tight">Meal-prep recipes</span>

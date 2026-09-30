@@ -156,7 +156,7 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
   // Membership-gated — show the value + route to the paywall, never a dead CTA.
   if (!plan && needsMembership) {
     return (
-      <button type="button" onClick={() => navigate("/paywall")} className="press-row  w-full min-h-11 text-left surface-card surface-card-quiet p-4">
+      <button type="button" onClick={() => navigate("/paywall")} className="press-row w-full min-h-11 text-left surface-card surface-card-quiet p-4">
         <p className="text-dense font-bold">The coach's daily read is a member feature</p>
         <p className="text-meta text-muted-foreground leading-snug mt-0.5">
           A readiness score and 3–5 reminders fitted to how you're actually recovering,

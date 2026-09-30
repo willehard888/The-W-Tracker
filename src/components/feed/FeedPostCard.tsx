@@ -145,7 +145,7 @@ const FeedPostCard = memo(function FeedPostCard({
     >
       {/* Reported — admin triage row */}
       {post.reported && isAdmin && (
-        <div className="flex items-center justify-between mb-3 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/20">
+        <div className="flex items-center justify-between mb-3 px-3 py-1.5 surface-tint-danger rounded-xl">
           <div className="flex items-center gap-1.5">
             <AlertTriangle aria-hidden size={12} className="text-destructive" />
             <span className="text-label font-bold text-destructive">Reported</span>
@@ -388,7 +388,7 @@ const FeedPostCard = memo(function FeedPostCard({
             <div className="pt-2 border-t border-border/30">
               {/* Reply quote preview */}
               {replyTo && (
-                <div className="mb-2 flex items-stretch gap-2 rounded-xl border border-gold/30 bg-gold/[0.06] p-2 animate-fade-in">
+                <div className="mb-2 flex items-stretch gap-2 surface-tint-gold rounded-xl p-2 animate-fade-in">
                   <div className="w-0.5 rounded-full bg-gold shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-label font-bold flex items-center gap-1 text-gold">

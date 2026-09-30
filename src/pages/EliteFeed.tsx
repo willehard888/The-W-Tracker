@@ -841,7 +841,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {reports?.map((report: any) => (
-                <div key={report.id} className="rounded-xl border border-border bg-secondary/30 p-3">
+                <div key={report.id} className="surface-panel rounded-xl p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-label text-muted-foreground">
@@ -851,7 +851,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">{report.reason}</p>
                       {report.post && (
-                        <div className="mt-2 rounded-lg border border-border/50 bg-card p-2">
+                        <div className="mt-2 surface-card surface-card-quiet rounded-lg p-2">
                           <p className="text-xs text-foreground/80 line-clamp-2">{report.post.content || "(image only)"}</p>
                           {report.post.image_url && (
                             <AppImage src={report.post.image_url} width={96} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
@@ -986,7 +986,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             <button
               type="button"
               onClick={() => { hapticSelection(); setComposerOpen(true); }}
-              className="press-row  w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform "
+              className="press-row w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left transition-transform "
             >
               <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-label font-black text-primary-foreground shrink-0">
                 {composerInitial}
@@ -1009,7 +1009,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
           <button
             type="button"
             onClick={() => { hapticSelection(); navigate("/paywall"); }}
-            className="press-row  w-full flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
+            className="press-row w-full min-h-11 flex items-center gap-3 surface-card surface-card-quiet px-4 py-3 text-left"
           >
             <span className="h-8 w-8 rounded-full bg-secondary/60 flex items-center justify-center shrink-0">
               <Lock aria-hidden size={14} className="text-muted-foreground" />

@@ -112,7 +112,7 @@ const LibraryHub = () => {
           key={row.key}
           type="button"
           onClick={() => { hapticImpact("light"); navigate(row.path); }}
-          className="press-row w-full min-h-14 flex items-center gap-3 py-2.5 text-left active:opacity-70 transition-opacity"
+          className="press-row w-full min-h-14 flex items-center gap-3 py-3 text-left"
         >
           <RowThumb id={row.key} />
           <p className="flex-1 min-w-0 text-note font-bold leading-tight truncate">{row.title}</p>

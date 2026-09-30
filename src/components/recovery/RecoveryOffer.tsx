@@ -54,7 +54,7 @@ export default function RecoveryOffer({
         {/* The session's own first movement, so the card shows what it offers. */}
         {art && <IllustrationThumb ex={{ idNum: art, title: "Recovery" }} size={40} />}
         <div className="flex-1 min-w-0">
-          <p className="text-label font-bold text-muted-foreground/75 mb-0.5">
+          <p className="text-label font-bold text-muted-foreground mb-0.5">
             {source === "rest_day" ? "Rest day" : "One more thing"}
           </p>
           <p className="text-note font-bold leading-tight">

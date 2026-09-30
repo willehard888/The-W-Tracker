@@ -89,7 +89,7 @@ const CoachProgress = () => {
             <button
               type="button"
               onClick={() => navigate("/journey")}
-              className="press-row  w-full min-h-11 flex items-center gap-3 py-3.5 text-left"
+              className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left"
             >
               <span className="flex-1 min-w-0">
                 <span className="block text-label font-bold text-muted-foreground">

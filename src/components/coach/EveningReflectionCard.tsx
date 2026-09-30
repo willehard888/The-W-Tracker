@@ -109,7 +109,7 @@ const EveningReflectionCard = () => {
     <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-border/40 bg-gradient-to-b from-[hsl(255_15%_8%)] to-[hsl(255_18%_5%)] overflow-hidden shadow-[0_8px_24px_-12px_hsl(0_0%_0%/0.6)]"
+      className="surface-card overflow-hidden"
     >
       <button
         type="button"

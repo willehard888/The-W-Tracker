@@ -941,7 +941,7 @@ const DailyCheckin = () => {
                row; neither is a card of its own. ── */}
         <div className="home-rise home-rise-1 mt-4 surface-card surface-card-quiet overflow-hidden">
           {why && (
-            <div className="px-4 pt-3 pb-2.5 border-b border-border/40">
+            <div className="px-4 pt-3 pb-2.5 border-b border-border/35">
               <p className="text-meta text-muted-foreground leading-snug">Today's discipline is for</p>
               <p className="text-dense font-bold leading-snug text-foreground/90 mt-0.5">{why}</p>
             </div>
@@ -1129,7 +1129,7 @@ const DailyCheckin = () => {
                       aria-pressed={sportCategory === sport.id}
                       onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                       className={cn(
-                        "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                        "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/35 last:border-0",
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
@@ -1178,7 +1178,7 @@ const DailyCheckin = () => {
                       aria-pressed={sportCategory === sport.id}
                       onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); setSportQuery(""); }}
                       className={cn(
-                        "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                        "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/35 last:border-0",
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
@@ -1212,7 +1212,7 @@ const DailyCheckin = () => {
                           aria-pressed={sportCategory === sport.id}
                           onClick={() => { sportTouched.current = true; setSportCategory(sport.id); setSportOpen(false); }}
                           className={cn(
-                            "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/50 last:border-0",
+                            "press-row flex items-center gap-3 w-full px-4 py-3 text-left transition-colors border-b border-border/35 last:border-0",
                             sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                           )}
                         >

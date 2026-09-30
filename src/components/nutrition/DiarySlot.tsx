@@ -81,7 +81,7 @@ const DiarySlot = ({
       <button
         type="button"
         onClick={onAdd}
-        className="press-row w-full min-h-11 text-left text-dense text-muted-foreground/80 active:opacity-70"
+        className="press-row w-full min-h-11 text-left text-dense text-muted-foreground"
       >
         Nothing logged
       </button>

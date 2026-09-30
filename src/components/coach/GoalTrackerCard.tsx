@@ -145,7 +145,7 @@ const GoalTrackerCard = () => {
     <m.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-gradient-to-br from-[hsl(var(--gold)/0.08)] to-card/50 p-4"
+      className="surface-tint-gold p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">

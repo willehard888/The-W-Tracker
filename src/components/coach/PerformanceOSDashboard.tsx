@@ -89,7 +89,7 @@ const PerformanceOSDashboard = () => {
         <m.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-border/40 bg-card/30 p-4"
+          className="surface-card p-4"
         >
           <div className="flex items-center gap-2 mb-2">
             <Calendar aria-hidden size={12} className="text-gold" />
@@ -110,7 +110,7 @@ const PerformanceOSDashboard = () => {
             </div>
           )}
           {review.program_tweak && (
-            <div className="rounded-lg border border-gold/20 bg-gold/5 px-2.5 py-1.5 mt-2">
+            <div className="surface-tint-gold rounded-lg px-2.5 py-1.5 mt-2">
               <p className="text-label font-bold text-gold/80">Program tweak</p>
               <p className="text-meta mt-0.5">{review.program_tweak}</p>
             </div>

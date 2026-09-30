@@ -321,7 +321,7 @@ const StatusNameplate = ({
 
       <div className="relative flex flex-col items-center text-center gap-1.5">
         {/* Tiny label */}
-        <p className="text-label font-bold text-muted-foreground/75">
+        <p className="text-label font-bold text-muted-foreground">
           Status
         </p>
 
@@ -374,7 +374,7 @@ const StatusNameplate = ({
             {percentLabel}
           </span>
           {showRank && (
-            <span className="text-label font-bold text-muted-foreground/80">
+            <span className="text-label font-bold text-muted-foreground">
               #{fmtInt(rank!)}
               <span className="text-muted-foreground/75 font-bold">
                 {" / "}

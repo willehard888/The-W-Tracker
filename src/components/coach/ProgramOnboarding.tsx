@@ -147,7 +147,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
         One session for each of your training days. The week repeats, and the loads follow what you log.
       </p>
 
-      <div className="rounded-2xl border border-[hsl(var(--gold)/0.3)] bg-gradient-to-b from-[hsl(var(--gold)/0.06)] to-card/40 p-4 mb-5">
+      <div className="surface-tint-gold p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
           <p className="text-label font-bold text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
@@ -174,7 +174,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       </Field>
 
       {lastError && (
-        <p role="alert" className="mt-5 rounded-2xl border border-destructive/50 bg-destructive/10 p-3.5 text-dense text-foreground/90 leading-snug">
+        <p role="alert" className="mt-5 surface-tint-danger p-3.5 text-dense text-foreground/90 leading-snug">
           {lastError}
         </p>
       )}

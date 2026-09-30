@@ -24,6 +24,7 @@ import { fmtKcal } from "@/lib/nutrition/format";
 import { parseQty } from "@/lib/nutrition/resolve-grams";
 import { computeTargets, type Sex } from "@/lib/nutrition/targets";
 import type { ActivityLevel } from "@/lib/nutrition/types";
+import { DoorRow } from "@/components/coach/rows";
 
 const ACTIVITY: readonly { key: ActivityLevel; label: string }[] = [
   { key: "sedentary", label: "Desk" },
@@ -257,7 +258,7 @@ const NutritionTargets = () => {
           </div>
         )}
 
-        <div className="home-rise home-rise-4 surface-card surface-card-quiet overflow-hidden divide-y divide-border/30">
+        <div className="home-rise home-rise-4 surface-card surface-card-quiet overflow-hidden divide-y divide-border/35">
           {getPlatform() === "ios" && (
             <div className="flex items-center gap-3 px-4 py-3 min-h-11">
               <HeartPulse aria-hidden size={14} className="text-muted-foreground shrink-0" />
@@ -268,18 +269,13 @@ const NutritionTargets = () => {
               <Switch checked={healthOn} onCheckedChange={(v) => void toggleHealth(v)} aria-label="Save meals to Apple Health" />
             </div>
           )}
-          <button
-            type="button"
+          <DoorRow
             onClick={() => setInfoOpen(true)}
-            className="press-row  w-full flex items-center gap-3 px-4 py-3 min-h-11 text-left hover:bg-card/60 transition-colors "
-          >
-            <Info aria-hidden size={14} className="text-muted-foreground shrink-0" />
-            <span className="flex-1 min-w-0">
-              <span className="block text-dense font-semibold">How estimates work · Data sources</span>
-              <span className="block text-label text-muted-foreground mt-0.5">What the numbers can and cannot tell you</span>
-            </span>
-            <ChevronRight aria-hidden size={14} className="text-muted-foreground/75 shrink-0" />
-          </button>
+            className="px-4"
+            icon={Info}
+            label="How estimates work · Data sources"
+            sub="What the numbers can and cannot tell you"
+          />
         </div>
       </div>
 

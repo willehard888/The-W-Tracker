@@ -125,7 +125,7 @@ const ImageLightbox = ({
         className="relative z-10 shrink-0 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]"
         style={{ opacity: chromeOpacity }}
       >
-        <div className="rounded-2xl border border-gold/15 bg-card/95 p-3 shadow-[0_4px_24px_hsl(0_0%_0%/0.4)]">
+        <div className="surface-glass rounded-2xl border-gold/15 p-3">
           {caption && (
             <p className="text-xs text-foreground/90 leading-relaxed line-clamp-3 mb-2">
               {caption}
@@ -148,7 +148,7 @@ const ImageLightbox = ({
               </span>
             )}
             {!showMetric(likes) && !showMetric(comments) && !showMetric(kudos) && (
-              <span className="text-label font-bold text-muted-foreground/75">
+              <span className="text-label font-bold text-muted-foreground">
                 Be the first to react
               </span>
             )}

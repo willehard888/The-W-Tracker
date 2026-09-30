@@ -158,7 +158,7 @@ const IdentityCore = ({
       </div>
 
       {/* Tri-stat strip — streak (+shields), best streak, level: same on every hero */}
-      <div className="mt-6 w-full grid grid-cols-3 divide-x divide-border/40 rounded-2xl border border-border/40 bg-background/60 py-3">
+      <div className="mt-6 w-full grid grid-cols-3 divide-x divide-border/35 surface-panel rounded-2xl py-3">
         <div className="flex flex-col items-center gap-0.5 px-1">
           <StreakFlameInline streak={profile.streak ?? 0} suffix="d" className="text-read" />
           <span className="text-label font-bold text-muted-foreground inline-flex items-center gap-1">

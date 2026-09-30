@@ -40,7 +40,7 @@ const RecoveryCard = () => {
       >
         <div className="flex items-center gap-2 mb-1">
           <HeartPulse aria-hidden size={13} className="text-[hsl(var(--ember))]" />
-          <p className="text-label font-bold text-muted-foreground/80">Recovery</p>
+          <p className="text-label font-bold text-muted-foreground">Recovery</p>
         </div>
         <p className="text-meta text-muted-foreground leading-snug">
           Allow Apple Health (sleep, heart rate) to see last night's recovery and let the coach explain why you slept the way you did.
@@ -119,7 +119,7 @@ const RecoveryCard = () => {
     <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-center gap-2 mb-2.5">
         <HeartPulse aria-hidden size={13} className={statusColor} />
-        <p className="text-label font-bold text-muted-foreground/80">Recovery · last night</p>
+        <p className="text-label font-bold text-muted-foreground">Recovery · last night</p>
         <span className={cn("text-label font-bold ml-auto", statusColor)}>{status}</span>
       </div>
 
@@ -171,7 +171,7 @@ const RecoveryCard = () => {
       {rhrTrend.length >= 5 && (
         <div className="mb-3 surface-inset rounded-xl px-3 py-2">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-label font-bold text-muted-foreground/75">
+            <p className="text-label font-bold text-muted-foreground">
               Resting HR · {rhrTrend.length} nights
             </p>
             {trendDelta != null && Math.abs(trendDelta) >= 1 && (
@@ -193,7 +193,7 @@ const RecoveryCard = () => {
           coach to explain: the card stops at the sentence above. */}
       {!blank && (
       <>
-      <p className="text-label font-bold text-muted-foreground/75 mb-1.5">What happened last night?</p>
+      <p className="text-label font-bold text-muted-foreground mb-1.5">What happened last night?</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {NIGHT_FACTORS.map((f) => {
           const on = active.has(f);

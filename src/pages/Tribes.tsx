@@ -45,7 +45,7 @@ const TribeSkeleton = forwardRef<HTMLDivElement, { hero?: boolean }>(({ hero }, 
   <div
     ref={ref}
     className={cn(
-      "rounded-2xl border border-border bg-card/40 overflow-hidden relative",
+      "surface-card surface-card-quiet overflow-hidden",
       hero ? "p-5" : "p-4",
     )}
   >
@@ -569,7 +569,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             {invites.map((inv) => (
               <div
                 key={inv.id}
-                className="rounded-2xl p-3 border border-[hsl(var(--ember))]/35 bg-gradient-to-br from-[hsl(var(--ember))]/8 via-card/70 to-gold/5"
+                className="surface-tint-ember p-3"
               >
                 <div className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(var(--ember))]/30 to-gold/15 border border-[hsl(var(--ember))]/40 flex items-center justify-center shrink-0">
@@ -612,7 +612,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
       {/* One row: underline sub-tabs left, Leaderboard right. The old extra
           "MY TRIBES" eyebrow under the "MY TRIBES" tab said the same thing
           twice within 140px. */}
-      <div className="home-rise flex items-end justify-between mb-3 border-b border-border/40">
+      <div className="home-rise flex items-end justify-between mb-3 border-b border-border/35">
         <div className="flex gap-6">
           {(["mine", "browse"] as const).map((t) => {
             const active = tab === t;

@@ -324,7 +324,7 @@ export default function AdminMetrics() {
         <div className="surface-card overflow-hidden">
           <table className="w-full text-meta">
             <thead>
-              <tr className="text-label font-bold border-b border-border/60 text-muted-foreground">
+              <tr className="text-label font-bold border-b border-border/35 text-muted-foreground">
                 <th className="text-left font-semibold px-3 py-2">Week</th>
                 <th className="text-right font-semibold px-2 py-2">Users</th>
                 <th className="text-right font-semibold px-2 py-2">D1</th>
@@ -334,7 +334,7 @@ export default function AdminMetrics() {
             </thead>
             <tbody>
               {cohorts.map((c) => (
-                <tr key={c.cohort_week} className="border-b border-border/30 last:border-0">
+                <tr key={c.cohort_week} className="border-b border-border/35 last:border-0">
                   <td className="px-3 py-2 font-semibold">{format(new Date(c.cohort_week), "MMM d")}</td>
                   <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">{c.cohort_size}</td>
                   <td className={cn("px-2 py-2 text-right tabular-nums", retentionHeat(c.d1_pct))}>

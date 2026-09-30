@@ -164,7 +164,7 @@ const ResetPassword = () => {
           </div>
 
           {error && (
-            <p role="alert" className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <p role="alert" className="text-sm text-destructive surface-tint-danger rounded-lg p-3">
               {error}
             </p>
           )}

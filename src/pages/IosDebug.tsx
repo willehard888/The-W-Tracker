@@ -57,13 +57,13 @@ const IosDebug = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4">
+      <div className="surface-card surface-card-quiet rounded-xl p-4">
         <p className="text-xs text-muted-foreground">
           Platform: <span className="font-semibold text-foreground">{platform}</span> • Updated: {state.updatedAt}
         </p>
       </div>
 
-      <section className="rounded-xl border border-border bg-card p-4 space-y-2">
+      <section className="surface-card surface-card-quiet rounded-xl p-4 space-y-2">
         <h2 className="font-display text-sm font-bold">Apple OAuth callback</h2>
         <Field label="callbackAt" value={stringify(state.oauth.callbackAt)} />
         <Field label="redirectUri" value={stringify(state.oauth.redirectUri)} />
@@ -77,7 +77,7 @@ const IosDebug = () => {
         <Field label="errorDescription" value={stringify(state.oauth.errorDescription)} />
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-4 space-y-2">
+      <section className="surface-card surface-card-quiet rounded-xl p-4 space-y-2">
         <h2 className="font-display text-sm font-bold">RevenueCat products & purchase errors</h2>
         <Field label="appUserId" value={stringify(state.revenuecat.appUserId)} />
         <Field label="entitlement" value={stringify(state.revenuecat.entitlement)} />
@@ -94,7 +94,7 @@ const IosDebug = () => {
         <Field label="updatedAt" value={stringify(state.revenuecat.lastUpdatedAt)} />
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-4 space-y-3">
+      <section className="surface-card surface-card-quiet rounded-xl p-4 space-y-3">
         <h2 className="font-display text-sm font-bold">Recent debug logs</h2>
         {logs.length === 0 ? (
           <p className="text-xs text-muted-foreground">No logs yet.</p>

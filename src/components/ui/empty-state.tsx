@@ -46,7 +46,7 @@ export const EmptyState = ({
         "flex flex-col items-center justify-center text-center",
         isCompact
           ? "py-6 px-4 gap-1.5"
-          : "rounded-2xl border border-dashed border-border/50 bg-card/40 px-6 py-8 gap-2",
+          : "surface-card surface-card-quiet border-dashed px-6 py-8 gap-2",
         className,
       )}
     >
@@ -59,16 +59,12 @@ export const EmptyState = ({
               : "h-11 w-11 mb-2 bg-gradient-to-br from-gold/15 to-gold/5 border border-gold/20",
           )}
         >
-          <Icon
-            className={cn("text-gold/80", isCompact ? "h-4 w-4" : "h-5 w-5")}
-            strokeWidth={2}
-            aria-hidden
-          />
+          <Icon className="text-gold" size={isCompact ? 16 : 20} aria-hidden />
         </div>
       )}
       <p
         className={cn(
-          "font-semibold text-foreground/90 tracking-tight",
+          "font-semibold text-foreground tracking-tight",
           isCompact ? "text-dense" : "text-note",
         )}
       >

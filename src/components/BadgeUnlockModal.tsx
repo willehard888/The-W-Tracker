@@ -222,7 +222,7 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action, track }: Badg
             <p className="text-note text-muted-foreground mt-3 max-w-[260px] leading-relaxed">{badge.description}</p>
           )}
           {track && (
-            <p className="text-label text-muted-foreground/80 mt-2 tabular-nums">
+            <p className="text-label text-muted-foreground mt-2 tabular-nums">
               {track.label} · rung {track.rung} of {track.of}
               {track.next ? ` · next ${track.next.name} at ${track.next.value.toLocaleString("en-US")}` : " · the top of the ladder"}
             </p>

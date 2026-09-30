@@ -71,7 +71,7 @@ export const SessionOverview = ({
                   <span
                     className={cn(
                       "flex-1 min-w-0 text-meta font-bold leading-snug line-clamp-2",
-                      isOnStage ? "text-gold" : complete ? "text-foreground/85" : "text-foreground/75",
+                      isOnStage ? "text-gold" : complete ? "text-foreground/85" : "text-foreground/85",
                     )}
                   >
                     {ex.name}

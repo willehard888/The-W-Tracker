@@ -898,7 +898,7 @@ const TribeDetail = () => {
             return (
               <div key={ms.id} className="flex items-center gap-2.5 px-1 py-1.5">
                 <Icon size={14} className="text-muted-foreground shrink-0" aria-hidden />
-                <p className="text-meta font-semibold text-foreground/80 flex-1 min-w-0 truncate">{text}</p>
+                <p className="text-meta font-semibold text-foreground/85 flex-1 min-w-0 truncate">{text}</p>
                 <span className="text-label text-muted-foreground tabular-nums shrink-0">{fmtDate(ms.created_at)}</span>
               </div>
             );

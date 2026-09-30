@@ -46,7 +46,7 @@ export default function PushPrimingSheet({ open, context = "home", onEnable, onD
         {ROWS.map(({ icon: Icon, text }, i) => (
           <li key={i} className="flex items-center gap-3 py-3">
             <Icon size={18} className="text-gold shrink-0" aria-hidden />
-            <p className="text-note text-foreground/90 leading-snug">{text}</p>
+            <p className="text-note text-foreground leading-snug">{text}</p>
           </li>
         ))}
       </ul>

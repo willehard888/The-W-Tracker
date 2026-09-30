@@ -153,7 +153,7 @@ const VaultArticleSheet = ({
             {article.why_it_matters && (
               <section>
                 <SectionHeader Icon={Lightbulb} label="Why it matters" color={accent} />
-                <p className="text-note text-foreground/90 leading-relaxed">{article.why_it_matters}</p>
+                <p className="text-note text-foreground leading-relaxed">{article.why_it_matters}</p>
               </section>
             )}
 
@@ -181,7 +181,7 @@ const VaultArticleSheet = ({
                   ))}
                 </div>
               ) : (
-                <article className="vault-body text-read leading-relaxed text-foreground/90">
+                <article className="vault-body text-read leading-relaxed text-foreground">
                   <ReactMarkdown components={{ p: BodyParagraph }}>{article.body_md}</ReactMarkdown>
                 </article>
               )}
@@ -194,7 +194,7 @@ const VaultArticleSheet = ({
                   {article.key_takeaways.map((k, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-dense">
                       <span aria-hidden className="mt-2 h-1.5 w-1.5 rounded-full shrink-0" style={{ background: accent }} />
-                      <span className="text-foreground/90 leading-snug">{k}</span>
+                      <span className="text-foreground leading-snug">{k}</span>
                     </li>
                   ))}
                 </ul>
@@ -208,7 +208,7 @@ const VaultArticleSheet = ({
                   {article.benefits.map((b, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-dense">
                       <CheckCircle2 aria-hidden size={14} className="mt-0.5 shrink-0 text-xp-green" strokeWidth={2.5} />
-                      <span className="text-foreground/90 leading-snug">{b}</span>
+                      <span className="text-foreground leading-snug">{b}</span>
                     </li>
                   ))}
                 </ul>
@@ -222,7 +222,7 @@ const VaultArticleSheet = ({
                   {article.risks.map((r, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-dense">
                       <AlertTriangle aria-hidden size={14} className="mt-0.5 shrink-0 text-amber-light" strokeWidth={2.5} />
-                      <span className="text-foreground/90 leading-snug">{r}</span>
+                      <span className="text-foreground leading-snug">{r}</span>
                     </li>
                   ))}
                 </ul>
@@ -275,7 +275,7 @@ const VaultArticleSheet = ({
 const ProtocolRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col gap-0.5">
     <dt className="text-label font-bold text-muted-foreground">{label}</dt>
-    <dd className="text-dense text-foreground/95 leading-snug">{value}</dd>
+    <dd className="text-dense text-foreground leading-snug">{value}</dd>
   </div>
 );
 

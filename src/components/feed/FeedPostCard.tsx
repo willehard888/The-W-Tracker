@@ -15,6 +15,7 @@ import PostMedia from "@/components/feed/PostMedia";
 import CommentThread from "@/components/feed/CommentThread";
 import type { CommentNode } from "@/lib/comment-tree";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -196,7 +197,7 @@ const FeedPostCard = memo(function FeedPostCard({
             {/* Author-only: server moderation hasn't approved yet (others can't
                 see the post until it does — usually seconds). */}
             {post.moderation_status === "pending" && (
-              <span className="inline-flex items-center px-1.5 py-px rounded-full border border-amber-400/40 bg-amber-400/10 text-amber-400 font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center px-1.5 py-px rounded-full border border-amber/40 bg-amber/10 text-amber font-bold uppercase tracking-wider">
                 Reviewing…
               </span>
             )}
@@ -364,9 +365,7 @@ const FeedPostCard = memo(function FeedPostCard({
 
           <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
             {commentTree.length === 0 && (
-              <p className="text-meta text-muted-foreground/75 text-center py-3">
-                No comments yet — start the conversation
-              </p>
+              <EmptyState size="compact" title="No comments yet" description="Start the conversation." />
             )}
             {commentTree.map((node) => (
               <CommentThread

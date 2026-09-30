@@ -790,7 +790,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                   "press relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full flex items-center justify-center transition-colors",
                   showReported
                     ? "bg-destructive/15 text-destructive"
-                    : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary",
                 )}
               >
                 {showReported ? <EyeOff aria-hidden size={16} /> : <Eye aria-hidden size={16} />}
@@ -803,7 +803,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                   "press relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full flex items-center justify-center transition-colors",
                   showReportsPanel
                     ? "bg-[hsl(var(--purple))]/15 text-[hsl(var(--purple))]"
-                    : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary",
                 )}
               >
                 <ShieldCheck aria-hidden size={16} />
@@ -821,7 +821,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             ? "In the last 24 hours. Add your proof."
             : "Discipline proof from the top. Be the first today."}
           {user && (
-            <span className="ml-2 inline-flex items-center gap-1 font-bold tabular-nums text-gold/85">
+            <span className="ml-2 inline-flex items-center gap-1 font-bold tabular-nums text-gold">
               <Award aria-hidden size={12} /> {kudosRemaining}/{KUDOS_PER_MONTH} kudos left
             </span>
           )}
@@ -837,7 +837,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             <span className="text-label text-muted-foreground">({unresolvedReportsCount})</span>
           </div>
           {unresolvedReportsCount === 0 ? (
-            <p className="text-meta text-muted-foreground text-center py-4">No pending reports</p>
+            <EmptyState size="compact" title="No pending reports" />
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {reports?.map((report: any) => (
@@ -852,7 +852,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                       <p className="text-meta text-muted-foreground mt-0.5">{report.reason}</p>
                       {report.post && (
                         <div className="mt-2 surface-card surface-card-quiet rounded-lg p-2">
-                          <p className="text-meta text-foreground/80 line-clamp-2">{report.post.content || "(image only)"}</p>
+                          <p className="text-meta text-foreground/85 line-clamp-2">{report.post.content || "(image only)"}</p>
                           {report.post.image_url && (
                             <AppImage src={report.post.image_url} width={96} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
                           )}
@@ -991,7 +991,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
               <span className="h-8 w-8 rounded-full gradient-gold flex items-center justify-center text-label font-black text-primary-foreground shrink-0">
                 {composerInitial}
               </span>
-              <span className="flex-1 text-note text-muted-foreground/80">Share your W today…</span>
+              <span className="flex-1 text-note text-muted-foreground">Share your W today…</span>
               <span className="flex items-center gap-2.5 text-muted-foreground/75 shrink-0">
                 <Image aria-hidden size={16} />
                 <Video aria-hidden size={16} />
@@ -1016,7 +1016,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
             </span>
             <span className="flex-1 min-w-0">
               <span className="block text-note font-bold leading-tight">Posting is for members</span>
-              <span className="block text-meta text-muted-foreground/80 leading-snug mt-0.5">
+              <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
                 Read, react and give kudos while you are on trial.
               </span>
             </span>

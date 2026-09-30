@@ -26,8 +26,8 @@ import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboardin
 const ADJUST: Record<string, { label: string; tone: string }> = {
   push:   { label: "Push today",      tone: "text-xp-green" },
   hold:   { label: "Hold steady",     tone: "text-foreground" },
-  deload: { label: "Deload · recover", tone: "text-amber-400" },
-  swap:   { label: "Recovery swap",   tone: "text-rose-400" },
+  deload: { label: "Deload · recover", tone: "text-amber" },
+  swap:   { label: "Recovery swap",   tone: "text-rose" },
 };
 
 const KIND_ICON: Record<MissionKind, React.ElementType> = {

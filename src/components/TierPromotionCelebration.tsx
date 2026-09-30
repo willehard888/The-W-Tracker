@@ -97,7 +97,7 @@ const TierPromotionCelebration = () => {
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-label font-bold text-gold/80 mb-3"
+                className="text-label font-bold text-gold mb-3"
               >
                 Status promotion
               </m.p>
@@ -146,7 +146,7 @@ const TierPromotionCelebration = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="text-note text-foreground/80 mb-1"
+                className="text-note text-foreground/85 mb-1"
               >
                 {config.message}
               </m.p>

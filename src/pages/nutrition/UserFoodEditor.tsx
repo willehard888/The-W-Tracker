@@ -281,7 +281,7 @@ const UserFoodEditor = () => {
                 return <NumField key={k} label={def?.name_en ?? titleCase(k)} unit={unitOf(k, def?.unit)} value={nutrients[k] ?? ""} onChange={(v) => setNutrient(k, v)} error={errors.nutrients[k]} />;
               })}
             </div>
-            <p className="text-label text-muted-foreground/80 mt-3 leading-snug">Blank means unknown. The diary shows a dash, never a zero.</p>
+            <p className="text-label text-muted-foreground mt-3 leading-snug">Blank means unknown. The diary shows a dash, never a zero.</p>
           </MoreSection>
         </div>
 

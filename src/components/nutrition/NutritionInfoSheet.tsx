@@ -29,9 +29,9 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
   return (
     <div className="space-y-7 pb-6">
       <section>
-        <p className="text-label font-bold text-gold/85 mb-2">How estimates work</p>
+        <p className="text-label font-bold text-gold mb-2">How estimates work</p>
         <h2 className="font-display text-title font-black tracking-tight leading-tight">Every number here is a measurement of a guess.</h2>
-        <ul className="mt-3 space-y-2.5 text-note leading-snug text-foreground/90">
+        <ul className="mt-3 space-y-2.5 text-note leading-snug text-foreground">
           <li>
             <b>Nutrition always comes from a database record</b> — Fineli, USDA or Open Food Facts — never from the camera. The photo
             scanner only names what it sees and guesses how much.
@@ -55,7 +55,7 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
       </section>
 
       <section>
-        <p className="text-label font-bold text-gold/85 mb-2">Data sources</p>
+        <p className="text-label font-bold text-gold mb-2">Data sources</p>
         <div className="divide-y divide-border/35">
           {list.map((s) => (
             <div key={s.code} className="py-3">
@@ -79,7 +79,7 @@ const NutritionInfoSheet = ({ sources }: { sources?: FoodSourceInfo[] }) => {
             </div>
           ))}
         </div>
-        <p className="text-meta text-muted-foreground/80 leading-snug mt-3">
+        <p className="text-meta text-muted-foreground leading-snug mt-3">
           Open Food Facts records are kept separate from Fineli and USDA records and are never merged, so their share-alike
           licence stays honoured. Product photos from Open Food Facts are not shown.
         </p>

@@ -24,11 +24,11 @@ export const BATTLE_TYPES: readonly BattleType[] = [
   { id: "xp", label: "Total XP", description: "Most XP earned", icon: Zap, color: "text-gold", unit: "XP", verified: false },
   { id: "workout", label: "Workouts", description: "Most days trained", icon: Dumbbell, color: "text-[hsl(var(--streak-orange))]", unit: "workouts", verified: false },
   { id: "steps", label: "Steps", description: "Most steps, from Apple Health", icon: Footprints, color: "text-[hsl(var(--xp-green))]", unit: "steps", verified: true },
-  { id: "sleep", label: "Sleep", description: "Most hours slept, from Apple Health", icon: Moon, color: "text-blue-400", unit: "h", verified: true },
+  { id: "sleep", label: "Sleep", description: "Most hours slept, from Apple Health", icon: Moon, color: "text-ice", unit: "h", verified: true },
   { id: "active_kcal", label: "Active calories", description: "Most active kcal, from Apple Health", icon: Activity, color: "text-[hsl(var(--ember))]", unit: "kcal", verified: true },
-  { id: "cold_shower", label: "Cold showers", description: "Most cold-shower days", icon: Snowflake, color: "text-blue-400", unit: "showers", verified: false },
+  { id: "cold_shower", label: "Cold showers", description: "Most cold-shower days", icon: Snowflake, color: "text-ice", unit: "showers", verified: false },
   { id: "meditation", label: "Meditation", description: "Most days meditated", icon: Brain, color: "text-ember-light", unit: "days", verified: false },
-  { id: "hydration", label: "Hydration", description: "Most litres logged", icon: Droplets, color: "text-cyan-400", unit: "L", verified: false },
+  { id: "hydration", label: "Hydration", description: "Most litres logged", icon: Droplets, color: "text-ice", unit: "L", verified: false },
   { id: "streak", label: "Days checked in", description: "Most check-ins in the window", icon: Flame, color: "text-[hsl(var(--streak-orange))]", unit: "days", verified: false },
 ];
 

@@ -93,7 +93,7 @@ const PerformanceOSDashboard = () => {
         >
           <div className="flex items-center gap-2 mb-2">
             <Calendar aria-hidden size={12} className="text-gold" />
-            <p className="text-label font-bold text-gold/80">
+            <p className="text-label font-bold text-gold">
               Week of {fmtDate(review.week_starts_on)}
             </p>
           </div>
@@ -111,7 +111,7 @@ const PerformanceOSDashboard = () => {
           )}
           {review.program_tweak && (
             <div className="surface-tint-gold rounded-lg px-2.5 py-1.5 mt-2">
-              <p className="text-label font-bold text-gold/80">Program tweak</p>
+              <p className="text-label font-bold text-gold">Program tweak</p>
               <p className="text-meta mt-0.5">{review.program_tweak}</p>
             </div>
           )}

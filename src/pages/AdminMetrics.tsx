@@ -11,6 +11,7 @@ import { BarChart3, Loader2, Users, Flame, CreditCard, Share2, TrendingUp, Mail 
 import { format } from "date-fns";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
 
 /**
  * Founder Command Center — the four growth dashboards over the admin RPCs
@@ -105,7 +106,7 @@ const retentionHeat = (pct: number | null) =>
       : pct >= 20
         ? "text-gold font-bold"
         : pct > 0
-          ? "text-foreground/80"
+          ? "text-foreground/85"
           : "text-muted-foreground/75";
 
 const StatTile = ({
@@ -319,7 +320,7 @@ export default function AdminMetrics() {
       {!cohorts ? (
         <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/70" /></div>
       ) : cohorts.length === 0 ? (
-        <p className="text-meta text-muted-foreground py-4 text-center">No cohorts yet.</p>
+        <EmptyState size="compact" title="No cohorts yet" />
       ) : (
         <div className="surface-card overflow-hidden">
           <table className="w-full text-meta">
@@ -471,7 +472,7 @@ export default function AdminMetrics() {
           {/* Per-signup cards — the WHOLE quiz answer set, not just a 4-column
               table that dropped struggle + training. */}
           {(waitlist.rows ?? []).length === 0 ? (
-            <p className="text-meta text-muted-foreground py-4 text-center">No signups yet.</p>
+            <EmptyState size="compact" title="No signups yet" />
           ) : (
             <div className="space-y-2">
               {waitlist.rows.map((r) => {

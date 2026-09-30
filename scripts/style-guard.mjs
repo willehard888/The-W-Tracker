@@ -78,6 +78,19 @@ const RULES = [
   { re: /["'`][^"'`]*\btransition(?:-[\w\[\],-]+)?\b[^"'`]*\bease-(?:in|out|in-out|linear)\b[^"'`]*["'`]/, msg: "Tailwind's ease-* on a transition — drop it (the default curve) or ease-soft", exempt: ["src/components/home/CommandDeck.tsx"] },
   // Framer utility moves come from src/lib/motion.ts; a literal duration is a fourth fade.
   { re: /transition=\{\{\s*duration:\s*0\.(?:1[0-9]|2[0-9]|3[0-9])\b[^}]*\}\}/, msg: "literal framer duration — MOTION.fade / .slide / .reveal (src/lib/motion.ts)", exempt: ["src/components/home/CommandDeck.tsx"] },
+  // One palette: the tokens (gold · ember · amber · rose · teal · purple ·
+  // xp-green · destructive). Tailwind's own swatches bypass them. The share
+  // cards rasterise to a canvas and keep literal colour on purpose.
+  { re: /\b(?:text|bg|border|from|via|to|ring|fill|stroke|divide|outline|shadow)-(?:red|green|blue|amber|yellow|emerald|purple|violet|pink|rose|orange|zinc|slate|gray|neutral|stone|sky|cyan|indigo|lime|fuchsia)-[0-9]{2,3}\b/, msg: "Tailwind swatch — use the tokens (amber, rose, xp-green, destructive, gold, ember…)", exempt: ["src/components/StoryShareModal.tsx", "src/components/BriefingShareCard.tsx"] },
+  // Three text tones per colour: foreground · foreground/85 · muted-foreground
+  // (/75 is the floor) · gold (/70 for the quiet gold). Anything else is a
+  // fourth grey.
+  { re: /\btext-foreground\/(?!85\b)\d+/, msg: "off-ladder foreground alpha — text-foreground or text-foreground/85", exempt: ["src/components/StoryShareModal.tsx", "src/components/BriefingShareCard.tsx", "src/components/home/CommandDeck.tsx"] },
+  { re: /\btext-muted-foreground\/(?!75\b)\d+/, msg: "off-ladder muted alpha — text-muted-foreground or /75 (the floor)", exempt: ["src/components/StoryShareModal.tsx", "src/components/BriefingShareCard.tsx", "src/components/home/CommandDeck.tsx"] },
+  { re: /\btext-gold\/(?!70\b)\d+/, msg: "off-ladder gold alpha — text-gold or text-gold/70", exempt: ["src/components/StoryShareModal.tsx", "src/components/BriefingShareCard.tsx", "src/components/home/CommandDeck.tsx"] },
+  // One empty, one loading: "No … yet" copy is an <EmptyState>, a placeholder is .skeleton-block.
+  { re: /<p className="[^"]*text-muted-foreground[^"]*">\s*(?:No |Nothing |None |No one )[^<]{0,60}(?:yet|found|match)/, msg: "hand-rolled empty — <EmptyState size=\"compact\" title=… />", exempt: ["src/pages/IosDebug.tsx"] },
+  { re: /\b(?:skeleton-shimmer|shimmer-bg)\b|animate-pulse"[^>]*\/>\s*(?:<div[^>]*animate-pulse)/, msg: "another shimmer — .skeleton-block is the loading placeholder" },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

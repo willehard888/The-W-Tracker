@@ -60,6 +60,7 @@ import { useRecentSports } from "@/hooks/use-recent-sports";
 import { useNutritionTotals } from "@/hooks/use-nutrition-totals";
 import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
 import type { DaySnapshot, DayWorkout } from "@/lib/health/healthkit";
+import { EmptyState } from "@/components/ui/empty-state";
 
 /** "Tennis 62 min · Gym 45 min · Polar Flow" — what Health recorded today, by sport. */
 const healthSessionsLine = (sessions: DayWorkout[]): string => {
@@ -943,7 +944,7 @@ const DailyCheckin = () => {
           {why && (
             <div className="px-4 pt-3 pb-2.5 border-b border-border/35">
               <p className="text-meta text-muted-foreground leading-snug">Today's discipline is for</p>
-              <p className="text-dense font-bold leading-snug text-foreground/90 mt-0.5">{why}</p>
+              <p className="text-dense font-bold leading-snug text-foreground mt-0.5">{why}</p>
             </div>
           )}
           {/* Sick today — recovery mode. Logging still banks the day. */}
@@ -1004,7 +1005,7 @@ const DailyCheckin = () => {
         {(healthLines.length > 0 || trainingLine.manual || sessionLogged || detected.nutrition) && (
           <div className="home-rise home-rise-2 mt-3 rounded-xl border border-teal/30 bg-teal/5 p-3 flex items-start gap-2.5">
             <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
-            <div className="text-meta text-foreground/90 leading-snug min-w-0">
+            <div className="text-meta text-foreground leading-snug min-w-0">
               <p className="font-semibold text-teal">
                 {healthLines.length > 0 ? "Today from Apple Health" : sessionLogged ? "Your session is logged." : "Detected."}
               </p>
@@ -1096,7 +1097,7 @@ const DailyCheckin = () => {
                 onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
                 className={cn(
                   "min-h-11 rounded-xl border px-3 text-note font-bold transition-[transform,background-color,border-color,box-shadow,color] inline-flex items-center justify-center gap-1.5",
-                  workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
+                  workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/85",
                 )}
               >
                 Trained <ChevronDown aria-hidden size={14} className={cn("transition-transform", sportOpen && "rotate-180")} />
@@ -1107,7 +1108,7 @@ const DailyCheckin = () => {
                 onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
                 className={cn(
                   "min-h-11 rounded-xl border px-3 text-note font-bold transition-[transform,background-color,border-color,box-shadow,color]",
-                  isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
+                  isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/85",
                 )}
               >
                 Rest day
@@ -1187,7 +1188,7 @@ const DailyCheckin = () => {
                       {sportCategory === sport.id && <Check aria-hidden size={16} strokeWidth={3} className="text-gold shrink-0" />}
                     </button>
                   )) : (
-                    <p className="px-4 py-4 text-meta text-muted-foreground">No sports match "{sportQuery.trim()}"</p>
+                    <EmptyState size="compact" title={`No sports match “${sportQuery.trim()}”`} />
                   );
                 })()
               ) : (
@@ -1326,7 +1327,7 @@ const DailyCheckin = () => {
         <div className="home-rise home-rise-5 mt-6 surface-card p-4">
           <p className="font-bold text-read">Were you honest?</p>
           <p className="text-meta text-muted-foreground mt-1 mb-3">
-            Answer truthfully — <span className="text-foreground/80 font-semibold">you can't grind with lies.</span>
+            Answer truthfully — <span className="text-foreground/85 font-semibold">you can't grind with lies.</span>
           </p>
           <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Were you honest today?">
             <button
@@ -1363,7 +1364,7 @@ const DailyCheckin = () => {
             {score.lines.map((l, i) => (
               <span key={l.k}>
                 {i > 0 && " · "}
-                <span className={cn(l.pts > 0 && "text-foreground/80 font-semibold")}>{LINE_LABEL[l.k]} {l.pts}</span>
+                <span className={cn(l.pts > 0 && "text-foreground/85 font-semibold")}>{LINE_LABEL[l.k]} {l.pts}</span>
               </span>
             ))}
             <span className="text-muted-foreground/75"> · of {score.max}</span>

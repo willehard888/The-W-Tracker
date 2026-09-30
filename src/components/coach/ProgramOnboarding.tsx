@@ -174,7 +174,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
       </Field>
 
       {lastError && (
-        <p role="alert" className="mt-5 surface-tint-danger p-3.5 text-dense text-foreground/90 leading-snug">
+        <p role="alert" className="mt-5 surface-tint-danger p-3.5 text-dense text-foreground leading-snug">
           {lastError}
         </p>
       )}
@@ -193,7 +193,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 const Row = ({ k, v, wide, extra }: { k: string; v: string; wide?: boolean; extra?: React.ReactNode }) => (
   <div className={cn("flex flex-col gap-0.5", wide && "col-span-2")}>
     <dt className="text-label font-bold text-muted-foreground">{k}</dt>
-    <dd className="text-foreground/90 font-semibold flex items-center gap-2">{v}{extra}</dd>
+    <dd className="text-foreground font-semibold flex items-center gap-2">{v}{extra}</dd>
   </div>
 );
 

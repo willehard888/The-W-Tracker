@@ -71,7 +71,7 @@ const BattleActiveCard = ({
   const score = (n: number, felt: boolean) => (
     <p className={cn(
       "font-display font-black text-major tabular-nums leading-none shrink-0",
-      felt ? "text-gold glow-gold-text" : "text-foreground/75",
+      felt ? "text-gold glow-gold-text" : "text-foreground/85",
     )}>
       {fmtScore(n)}
     </p>

@@ -35,8 +35,8 @@ const ProgressionSummaryCard = () => {
       ) : (
         <>
           <div className="flex items-center gap-4 mb-2">
-            <Stat icon={<Dumbbell aria-hidden size={14} className="text-foreground/75" />} value={data!.liftsThisWeek} label={data!.liftsThisWeek === 1 ? "lift" : "lifts"} />
-            <Stat icon={<TrendingUp aria-hidden size={14} className="text-foreground/75" />} value={data!.setsThisWeek} label="sets" />
+            <Stat icon={<Dumbbell aria-hidden size={14} className="text-foreground/85" />} value={data!.liftsThisWeek} label={data!.liftsThisWeek === 1 ? "lift" : "lifts"} />
+            <Stat icon={<TrendingUp aria-hidden size={14} className="text-foreground/85" />} value={data!.setsThisWeek} label="sets" />
             <Stat icon={<Trophy aria-hidden size={14} className="text-xp-green" />} value={data!.prCount} label={data!.prCount === 1 ? "PR" : "PRs"} highlight={data!.prCount > 0} />
           </div>
 
@@ -44,7 +44,7 @@ const ProgressionSummaryCard = () => {
             <div className="space-y-1">
               {data!.movers.map((m) => (
                 <div key={m.name} className="flex items-center gap-2 text-meta">
-                  <span className="flex-1 truncate font-bold text-foreground/90">{m.name}</span>
+                  <span className="flex-1 truncate font-bold text-foreground">{m.name}</span>
                   <span className="tabular-nums text-muted-foreground">{m.latestWeight}kg</span>
                   <span className="tabular-nums font-black text-xp-green">+{Math.round(m.deltaKg * 10) / 10}kg</span>
                   {m.isPR ? <Trophy aria-hidden size={12} className="text-xp-green" /> : <TrendingUp aria-hidden size={12} className="text-xp-green" />}

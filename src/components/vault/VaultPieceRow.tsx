@@ -49,7 +49,7 @@ const VaultPieceRow = ({
     {lead}
     <span className="flex-1 min-w-0">
       {kicker}
-      <span className={cn("block font-display text-dense font-black tracking-tight leading-tight", kicker && "mt-0.5", dimmed && "text-foreground/80")}>
+      <span className={cn("block font-display text-dense font-black tracking-tight leading-tight", kicker && "mt-0.5", dimmed && "text-foreground/85")}>
         {title}
       </span>
       {subtitle && <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{subtitle}</span>}

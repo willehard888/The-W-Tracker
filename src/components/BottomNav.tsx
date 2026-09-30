@@ -193,7 +193,7 @@ const BottomNav = () => {
                 "group relative flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 rounded-xl min-w-[44px] justify-self-center",
                 "transition-[transform,color,opacity] will-change-transform",
                 "ease-spring",
-                active ? c.text : "text-muted-foreground/80",
+                active ? c.text : "text-muted-foreground",
               )}
               style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
             >

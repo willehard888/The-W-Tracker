@@ -399,7 +399,7 @@ const PracticeBox = ({
             >
               {i + 1}
             </span>
-            <span className="text-foreground/95 leading-snug">{step}</span>
+            <span className="text-foreground leading-snug">{step}</span>
           </li>
         ))}
       </ol>

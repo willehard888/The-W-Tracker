@@ -97,9 +97,9 @@ const StateCard = ({ onAsk }: { onAsk?: (prompt: string) => void }) => {
       {/* Signals inline: one quiet line, no tiles. */}
       {(signal.sleepAvg !== null || signal.hydrationAvg !== null) && (
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-meta text-muted-foreground tabular-nums">
-          <span>Sleep <b className={cn("font-black", signal.sleepAvg !== null && signal.sleepAvg >= 7.5 ? "text-foreground" : "text-foreground/75")}>{signal.sleepAvg !== null ? `${signal.sleepAvg.toFixed(1)}h` : "—"}</b></span>
-          <span>Water <b className={cn("font-black", signal.hydrationAvg !== null && signal.hydrationAvg >= 2.5 ? "text-foreground" : "text-foreground/75")}>{signal.hydrationAvg !== null ? `${signal.hydrationAvg.toFixed(1)}L` : "—"}</b></span>
-          <span>Reflection <b className={cn("font-black", reflection ? "text-foreground" : "text-foreground/75")}>{reflection ? "logged" : "not yet"}</b></span>
+          <span>Sleep <b className={cn("font-black", signal.sleepAvg !== null && signal.sleepAvg >= 7.5 ? "text-foreground" : "text-foreground/85")}>{signal.sleepAvg !== null ? `${signal.sleepAvg.toFixed(1)}h` : "—"}</b></span>
+          <span>Water <b className={cn("font-black", signal.hydrationAvg !== null && signal.hydrationAvg >= 2.5 ? "text-foreground" : "text-foreground/85")}>{signal.hydrationAvg !== null ? `${signal.hydrationAvg.toFixed(1)}L` : "—"}</b></span>
+          <span>Reflection <b className={cn("font-black", reflection ? "text-foreground" : "text-foreground/85")}>{reflection ? "logged" : "not yet"}</b></span>
         </p>
       )}
 

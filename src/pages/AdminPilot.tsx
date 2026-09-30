@@ -235,7 +235,7 @@ const AdminPilot = () => {
                 {choiceLabel(r) && <span className="text-dense">{choiceLabel(r)}</span>}
               </div>
 
-              {r.comment && <p className="mt-1 text-body text-foreground/90 whitespace-pre-wrap">{r.comment}</p>}
+              {r.comment && <p className="mt-1 text-body text-foreground whitespace-pre-wrap">{r.comment}</p>}
 
               <p className="mt-1 text-label text-muted-foreground">
                 {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}

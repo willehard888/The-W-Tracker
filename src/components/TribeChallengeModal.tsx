@@ -7,6 +7,7 @@ import { Check, Search, Swords, Users } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Props {
   open: boolean;
@@ -124,7 +125,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
       {searching ? (
         <p className="text-meta text-muted-foreground text-center py-6">Searching…</p>
       ) : query.trim().length >= 2 && results.length === 0 ? (
-        <p className="text-meta text-muted-foreground text-center py-6">No tribes found.</p>
+        <EmptyState size="compact" title="No tribes found" />
       ) : (
         <div className="divide-y divide-border/35">
           {results.map((r) => {

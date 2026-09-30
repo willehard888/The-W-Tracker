@@ -188,7 +188,7 @@ const PublicProfile = () => {
               </span>
             )}
           </div>
-          <p className="text-dense text-muted-foreground/80 italic mt-3 max-w-[280px] leading-snug">{tier.message}</p>
+          <p className="text-dense text-muted-foreground italic mt-3 max-w-[280px] leading-snug">{tier.message}</p>
           {/* The title badge — the same chip their own profile shows. */}
           {profile.featured_badge && (
             <div className="mt-4 flex justify-center">

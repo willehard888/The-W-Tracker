@@ -122,7 +122,7 @@ export const ExerciseLogForm = ({
             </p>
           )}
         </div>
-        <p className="text-meta text-muted-foreground/85 mb-2">
+        <p className="text-meta text-muted-foreground mb-2">
           {prescriptionGloss(block)}{block.rest_sec ? ` Rest ${formatRest(block.rest_sec)} between sets.` : ""}
         </p>
 

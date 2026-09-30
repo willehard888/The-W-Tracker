@@ -140,7 +140,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
 
       {/* The library carries beginner technique guidance, so it carries the
           same line the rest of the app uses for it. */}
-      <p className="mt-7 text-meta text-muted-foreground/80 leading-snug">
+      <p className="mt-7 text-meta text-muted-foreground leading-snug">
         Educational guidance &mdash; not medical advice. Start lighter than you think you need to,
         and stop if a movement causes pain.
       </p>
@@ -322,7 +322,7 @@ const Exercises = () => {
             </button>
           )}
           {filtered.length === 0 && (
-            <p className="text-center text-note text-muted-foreground py-10">No exercises match — try another search.</p>
+            <EmptyState size="compact" icon={Search} title="No exercises match" description="Try another search." />
           )}
 
           {/* CC BY-SA attribution — required by the illustration license. */}

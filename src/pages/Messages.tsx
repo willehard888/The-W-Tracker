@@ -130,7 +130,7 @@ const Messages = () => {
             type="button"
             aria-label={pending > 0 ? `Friends — ${pending} pending` : "Friends"}
             onClick={() => { hapticImpact("light"); navigate("/friends"); }}
-            className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground/80 hover:text-foreground hover:bg-secondary transition-colors"
+            className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <Users aria-hidden size={18} />
             {pending > 0 && (
@@ -252,7 +252,7 @@ const ConversationRow = ({ conv, userId, navigate }: { conv: Thread; userId?: st
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <TierUsername as="p" username={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} className={cn("text-note truncate", unread ? "font-bold" : "font-semibold")} />
-          <span className={cn("text-label tabular-nums shrink-0", unread ? "text-foreground/75" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
+          <span className={cn("text-label tabular-nums shrink-0", unread ? "text-foreground/85" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
         </div>
         <p className={cn("text-meta truncate mt-0.5", unread ? "text-foreground/85 font-semibold" : "text-muted-foreground")}>
           {conv.lastMessage.sender_id === userId && "You: "}

@@ -65,7 +65,7 @@ const TargetsProposal = ({
   return (
     <div className="surface-card p-4 space-y-4">
       <div>
-        <p className="text-label font-bold text-gold/85 mb-1">{inUse ? "Proposed targets · in use" : "Proposed targets"}</p>
+        <p className="text-label font-bold text-gold mb-1">{inUse ? "Proposed targets · in use" : "Proposed targets"}</p>
         <p className="font-display text-[30px] font-black tracking-tight leading-none tabular-nums">
           {fmtInt(result.kcal)}
           <span className="text-read text-muted-foreground font-bold"> kcal / day</span>

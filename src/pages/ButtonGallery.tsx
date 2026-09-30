@@ -121,7 +121,7 @@ const ButtonGallery = () => {
         );
       })}
 
-      <p className="mt-8 text-label text-muted-foreground/60 text-center px-4 leading-relaxed">
+      <p className="mt-8 text-label text-muted-foreground/75 text-center px-4 leading-relaxed">
         Compare hover (mouse over) and pressed (mouse down/touch) states. The
         third column is permanently disabled to show the inert state.
       </p>
@@ -146,7 +146,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
     >
       <div className="flex items-baseline justify-between mb-2 px-0.5">
         <span className="text-note font-bold text-foreground">{spec.label}</span>
-        <code className="text-label text-muted-foreground/70 font-mono">{spec.id}</code>
+        <code className="text-label text-muted-foreground/75 font-mono">{spec.id}</code>
       </div>
       <p className="text-meta text-muted-foreground mb-3 px-0.5 leading-snug">
         {spec.description}
@@ -209,7 +209,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
 
 const StateCell = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex flex-col gap-1.5">
-    <span className="text-label font-bold text-muted-foreground/70 text-center">
+    <span className="text-label font-bold text-muted-foreground/75 text-center">
       {label}
     </span>
     {children}

@@ -55,11 +55,11 @@ const HeadToHead = ({ me, them }: HeadToHeadProps) => {
           const d = deltas[i];
           return (
             <div key={r.key} className="py-2.5 flex items-center gap-3">
-              <span className={cn("flex-1 text-right font-display font-black text-read tabular-nums tracking-tight", d > 0 ? "text-gold" : d < 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
+              <span className={cn("flex-1 text-right font-display font-black text-read tabular-nums tracking-tight", d > 0 ? "text-gold" : d < 0 ? "text-muted-foreground/75" : "text-foreground/85")}>
                 {r.format(me[r.key])}
               </span>
               <span className="w-[5.5rem] shrink-0 text-center text-label font-bold text-muted-foreground">{r.label}</span>
-              <span className={cn("flex-1 text-left font-display font-black text-read tabular-nums tracking-tight", d < 0 ? "text-gold" : d > 0 ? "text-muted-foreground/75" : "text-foreground/80")}>
+              <span className={cn("flex-1 text-left font-display font-black text-read tabular-nums tracking-tight", d < 0 ? "text-gold" : d > 0 ? "text-muted-foreground/75" : "text-foreground/85")}>
                 {r.format(them[r.key])}
               </span>
             </div>

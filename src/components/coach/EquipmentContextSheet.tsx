@@ -133,7 +133,7 @@ export const EquipmentContextSheet = ({
         </ul>
 
         {dropped > 0 && (
-          <p className="text-meta text-muted-foreground/80 leading-relaxed">
+          <p className="text-meta text-muted-foreground leading-relaxed">
             {dropped === 1 ? "One movement has" : `${dropped} movements have`} no equivalent here and
             will be left out rather than swapped for something that does not match.
           </p>

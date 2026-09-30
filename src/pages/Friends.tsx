@@ -144,7 +144,7 @@ const Friends = () => {
             searching && !results ? (
               <div className="mt-2 h-14 rounded-xl bg-card/60 skeleton-block" />
             ) : (results ?? []).length === 0 ? (
-              <p className="text-meta text-muted-foreground px-1 py-3 text-center">No one matches “{q.trim()}”.</p>
+              <EmptyState size="compact" title={`No one matches “${q.trim()}”`} />
             ) : (
               <ul className="mt-2 divide-y divide-border/35 border-t border-border/35">
                 {results!.map((r) => (

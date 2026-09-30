@@ -133,7 +133,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
         {scored && (
           <p className={cn(
             "font-display font-black text-title tabular-nums leading-none shrink-0",
-            felt ? "text-gold glow-gold-text" : "text-foreground/75",
+            felt ? "text-gold glow-gold-text" : "text-foreground/85",
           )}>
             {fmtInt(score)}
           </p>

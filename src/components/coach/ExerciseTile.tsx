@@ -103,7 +103,7 @@ const ExerciseTile = ({ group, size = 40, className }: ExerciseTileProps) => (
   <div
     aria-hidden
     className={cn(
-      "shrink-0 rounded-lg border border-gold/25 text-gold/90 flex items-center justify-center",
+      "shrink-0 rounded-lg border border-gold/25 text-gold flex items-center justify-center",
       "bg-gradient-to-br from-gold/[0.10] via-card/60 to-card/80 shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]",
       className,
     )}

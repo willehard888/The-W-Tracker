@@ -224,7 +224,7 @@ export default function AdminModeration() {
                   </p>
                 )}
                 {item.text_content && (
-                  <p className="mt-2 text-meta text-foreground/80 line-clamp-3 italic">
+                  <p className="mt-2 text-meta text-foreground/85 line-clamp-3 italic">
                     "{item.text_content}"
                   </p>
                 )}

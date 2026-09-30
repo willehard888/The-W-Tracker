@@ -81,7 +81,7 @@ const AiConsentSheet = () => {
         </div>
       }
     >
-      <div className="space-y-3 text-read leading-relaxed text-foreground/90">
+      <div className="space-y-3 text-read leading-relaxed text-foreground">
         <p>
           To coach you, Whealth Factory sends what you log to AI models from OpenAI and Google, through our
           gateway OpenRouter: your profile basics, check-ins, sleep, training and Apple Health summaries,
@@ -94,7 +94,7 @@ const AiConsentSheet = () => {
         </p>
         <p className="text-note text-muted-foreground">
           You can change this any time in Profile.{" "}
-          <Link to="/privacy" className="underline text-foreground/80">Privacy Policy</Link>
+          <Link to="/privacy" className="underline text-foreground/85">Privacy Policy</Link>
         </p>
       </div>
     </BottomSheet>

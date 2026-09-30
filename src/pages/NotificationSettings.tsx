@@ -204,15 +204,15 @@ const NotificationSettings = () => {
               <div className="h-[22px] w-[22px] rounded-[6px] gradient-gold flex items-center justify-center shrink-0">
                 <span className="font-display text-meta font-black text-primary-foreground leading-none">W</span>
               </div>
-              <span className="flex-1 text-label font-semibold text-foreground/75">
+              <span className="flex-1 text-label font-semibold text-foreground/85">
                 Whealth Factory
               </span>
-              <span className="text-label tabular-nums text-foreground/75">
+              <span className="text-label tabular-nums text-foreground/85">
                 {prefs.streak_guard ? previewTime : "muted"}
               </span>
             </div>
             <p className="mt-1.5 text-dense font-bold leading-snug">{copy.title(previewStreak)}</p>
-            <p className="mt-0.5 text-meta text-foreground/75 leading-snug">{copy.body}</p>
+            <p className="mt-0.5 text-meta text-foreground/85 leading-snug">{copy.body}</p>
           </div>
           <p className="mt-1.5 text-center text-label text-muted-foreground/75">
             Your streak guard, in your coach's voice — exactly as it lands.
@@ -309,7 +309,7 @@ const NotificationSettings = () => {
             <ToggleRow icon={BarChart3} label="Weekly briefing" sub="Your week, analyzed — Sundays" checked={prefs.briefing} onChange={setCategory("briefing")} />
             <ToggleRow icon={RotateCcw} label="Comeback nudges" sub="A hand back up if you drift away" checked={prefs.winback} onChange={setCategory("winback")} />
           </div>
-          <p className="mt-2 text-label text-muted-foreground/80 leading-relaxed">
+          <p className="mt-2 text-label text-muted-foreground leading-relaxed">
             Switching a category off silences its banners — everything still waits for you inside the app.
           </p>
         </div>

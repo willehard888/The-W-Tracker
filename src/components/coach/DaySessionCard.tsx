@@ -259,7 +259,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
           onClick={() => { hapticImpact("light"); setEquipOpen(true); }}
           className="mt-2 min-h-11 flex items-center gap-1.5 text-left"
         >
-          <span className="text-meta text-muted-foreground/80">Training at:</span>
+          <span className="text-meta text-muted-foreground">Training at:</span>
           <span className="text-meta font-bold text-foreground/85">{contextLabel(todaysContext)}</span>
           <ChevronDown aria-hidden size={12} className="text-muted-foreground/75" />
         </button>
@@ -446,7 +446,7 @@ const CollapseRow = ({
     <span className={cn(LABEL, "mt-0.5 shrink-0")}>{label}</span>
     <span className={cn(
       "text-meta leading-snug flex-1",
-      open ? "text-foreground/90" : "text-foreground/75 truncate",
+      open ? "text-foreground" : "text-foreground/85 truncate",
     )}>
       {preview}
     </span>

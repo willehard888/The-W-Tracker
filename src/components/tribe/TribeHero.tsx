@@ -322,7 +322,7 @@ const TribeHero = ({
           )}
           <h1 className="font-display font-black text-head leading-tight min-w-0 break-words">{tribe.name}</h1>
         </div>
-        <p className="text-meta text-muted-foreground/85 mt-1 tabular-nums">
+        <p className="text-meta text-muted-foreground mt-1 tabular-nums">
           {memberCount} member{memberCount === 1 ? "" : "s"}
           {avg !== null && !isCold && (
             <> · avg <span className="font-black text-foreground/85">{avg}</span></>
@@ -333,7 +333,7 @@ const TribeHero = ({
         </p>
 
         {isCold && (
-          <p className="text-meta text-muted-foreground/80 mt-2 leading-snug max-w-[260px]">
+          <p className="text-meta text-muted-foreground mt-2 leading-snug max-w-[260px]">
             The embers are waiting. <span className="font-black text-[var(--acc)]">{Math.max(0, 30 - total)} combined day{Math.max(0, 30 - total) === 1 ? "" : "s"}</span> of streaks to ignition.
           </p>
         )}
@@ -365,7 +365,7 @@ const TribeHero = ({
               >
                 <p
                   className={cn(
-                    "text-meta text-foreground/75 leading-snug",
+                    "text-meta text-foreground/85 leading-snug",
                     !descExpanded && "line-clamp-2",
                   )}
                 >
@@ -388,7 +388,7 @@ const TribeHero = ({
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className={LABEL}>Ignition</span>
-            <span className="text-label font-bold tabular-nums text-foreground/75">
+            <span className="text-label font-bold tabular-nums text-foreground/85">
               {total} / 30 days
             </span>
           </div>
@@ -401,7 +401,7 @@ const TribeHero = ({
         <div className="relative mt-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className={LABEL}>Next: {collectiveTierName(next)}</span>
-            <span className="text-label font-bold tabular-nums text-foreground/75">
+            <span className="text-label font-bold tabular-nums text-foreground/85">
               {fmtInt(Math.max(0, next - total))} to go
             </span>
           </div>

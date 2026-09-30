@@ -141,7 +141,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
               accent.ring,
               cfg.rank >= 5
                 ? "bg-background/60 text-foreground"
-                : "bg-background/60 text-foreground/80",
+                : "bg-background/60 text-foreground/85",
             )}
           >
             {cfg.rank >= 5 && <Flame aria-hidden size={12} strokeWidth={3} fill="currentColor" className="text-[hsl(var(--ember))]" />}
@@ -205,7 +205,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           {/* No idle shimmer here: the XP count-up IS this screen's spectacle,
               and an infinite background-position loop kept painting minutes
               after the celebration ended. */}
-          <p className="relative text-label font-bold text-gold/80 mb-1">
+          <p className="relative text-label font-bold text-gold mb-1">
             Experience earned
           </p>
           <div ref={xpTargetRef} className="relative flex items-baseline justify-center gap-1">
@@ -213,7 +213,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             <XpCounter value={summary.xpEarned} className="text-gold font-display text-5xl font-black glow-gold-text" />
           </div>
           <p className="relative text-meta text-muted-foreground mt-2">
-            <span className="font-bold text-foreground/80 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/75")}>{perfPct}%</span> output
+            <span className="font-bold text-foreground/85 tabular-nums">{summary.completedCount}/{summary.maxCount}</span> tasks · <span className={cn("font-bold tabular-nums", isPerfect ? "text-gold" : "text-foreground/85")}>{perfPct}%</span> output
           </p>
           {/* The lines the server scored — the same seven the check-in previewed.
               Health-scored lines carry the shield, so "why 94 and not 150" is

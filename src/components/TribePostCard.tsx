@@ -30,6 +30,7 @@ import { friendlyError } from "@/lib/error-copy";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/ui/empty-state";
 
 /**
  * Shared look for the Reply / Edit / Delete actions on a comment: uppercase
@@ -138,7 +139,7 @@ const CommentThread = ({
                 </div>
               </div>
             ) : (
-              <p className="text-meta text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+              <p className="text-meta text-foreground leading-relaxed break-words whitespace-pre-wrap">
                 {node.content}
               </p>
             )}
@@ -633,9 +634,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
 
             <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
               {tree.length === 0 && (
-                <p className="text-meta text-muted-foreground/75 text-center py-3">
-                  No comments yet — start the conversation
-                </p>
+                <EmptyState size="compact" title="No comments yet" description="Start the conversation." />
               )}
               {tree.filter((node) => !reportedIds.has(node.id)).map((node) => (
                 <CommentThread

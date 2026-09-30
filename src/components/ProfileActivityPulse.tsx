@@ -51,7 +51,7 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
       // tint carries the state on its own.
       "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border",
       isActive && "border-xp-green/40 bg-xp-green/10",
-      !isActive && isWarm && "border-amber-500/30 bg-amber-500/10",
+      !isActive && isWarm && "border-amber/30 bg-amber/10",
       !isWarm && "border-border/50 bg-secondary/50",
     )}>
       {isActive ? (
@@ -60,12 +60,12 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-xp-green" />
         </span>
       ) : (
-        <Activity aria-hidden size={12} className={cn(isWarm ? "text-amber-400" : "text-muted-foreground/75")} />
+        <Activity aria-hidden size={12} className={cn(isWarm ? "text-amber" : "text-muted-foreground/75")} />
       )}
       <span className={cn(
         "text-label font-bold tracking-wide",
         isActive && "text-xp-green",
-        !isActive && isWarm && "text-amber-400",
+        !isActive && isWarm && "text-amber",
         !isWarm && "text-muted-foreground",
       )}>
         {isActive ? "Active today" : `Checked in ${fmtRelative(lastCheckin)}`}

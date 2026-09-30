@@ -50,11 +50,11 @@ const TribeSkeleton = forwardRef<HTMLDivElement, { hero?: boolean }>(({ hero }, 
     )}
   >
     <div className="flex items-center gap-3">
-      <div className={cn("rounded-xl bg-secondary/60 shrink-0 shimmer-bg", hero ? "h-20 w-20" : "h-12 w-12")} />
+      <div className={cn("rounded-xl bg-secondary/60 shrink-0 skeleton-block", hero ? "h-20 w-20" : "h-12 w-12")} />
       <div className="flex-1 space-y-2 py-1">
-        <div className={cn("rounded bg-secondary/60 shimmer-bg", hero ? "h-5 w-3/5" : "h-3.5 w-2/3")} />
-        <div className="h-2.5 w-1/2 rounded bg-secondary/40 shimmer-bg" />
-        {hero && <div className="h-2.5 w-2/5 rounded bg-secondary/40 shimmer-bg" />}
+        <div className={cn("rounded bg-secondary/60 skeleton-block", hero ? "h-5 w-3/5" : "h-3.5 w-2/3")} />
+        <div className="h-2.5 w-1/2 rounded bg-secondary/40 skeleton-block" />
+        {hero && <div className="h-2.5 w-2/5 rounded bg-secondary/40 skeleton-block" />}
       </div>
     </div>
   </div>
@@ -623,7 +623,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                 aria-pressed={active}
                 className={cn(
                   "eyebrow relative min-h-11 inline-flex items-end pb-2 transition-colors",
-                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground/80",
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground/85",
                 )}
               >
                 {t === "mine" ? "My Tribes" : "Browse"}
@@ -636,7 +636,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
         </div>
         <button
           onClick={() => navigate("/tribes/leaderboard")}
-          className="press pb-2 inline-flex items-center gap-1 text-meta font-bold text-gold/85 transition-transform"
+          className="press pb-2 inline-flex items-center gap-1 text-meta font-bold text-gold transition-transform"
         >
           <Trophy aria-hidden size={12} /> Leaderboard <ChevronRight aria-hidden size={12} className="-ml-0.5" />
         </button>

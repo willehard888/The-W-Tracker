@@ -16,6 +16,7 @@ import { friendlyError } from "@/lib/error-copy";
 import { cn } from "@/lib/utils";
 import { TRIBE_ACTIVITY_GROUPS } from "@/lib/tribe-activities";
 import { FIELD_LABEL as LABEL } from "@/components/ui/label";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Member {
   user_id: string;
@@ -359,7 +360,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                 >
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <OIcon size={12} className={active ? "text-gold" : "text-muted-foreground"} aria-hidden />
-                    <p className={cn("text-meta font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
+                    <p className={cn("text-meta font-bold", active ? "text-gold" : "text-foreground/85")}>{opt.title}</p>
                   </div>
                   <p className="text-label text-muted-foreground leading-snug">{opt.sub}</p>
                 </button>
@@ -377,7 +378,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
         </div>
 
         {otherMembers.length === 0 ? (
-          <p className="text-meta text-muted-foreground py-3 text-center">No other members yet.</p>
+          <EmptyState size="compact" title="No other members yet" />
         ) : (
           <div className="divide-y divide-border/35">
             {otherMembers.map((m) => {

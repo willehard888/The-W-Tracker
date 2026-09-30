@@ -45,7 +45,7 @@ const DiarySlot = ({
           variant="ghost"
           size="xs"
           onClick={onAdd}
-          className="text-foreground/80"
+          className="text-foreground/85"
         >
           <Plus aria-hidden /> Add
         </Button>

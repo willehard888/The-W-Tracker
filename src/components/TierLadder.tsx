@@ -95,7 +95,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
               <p className="text-meta text-muted-foreground mt-1.5">{current.percentile}</p>
             </div>
           </div>
-          <p className="mt-3 text-dense italic text-foreground/75 leading-snug">“{current.message}”</p>
+          <p className="mt-3 text-dense italic text-foreground/85 leading-snug">“{current.message}”</p>
           <p className="mt-3 text-dense text-muted-foreground leading-snug">
             {next ? (
               <>

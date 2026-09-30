@@ -297,7 +297,7 @@ const StatusNameplate = ({
       {/* Sparkle accents — legend */}
       {isLegend && (
         <>
-          <Sparkles aria-hidden size={12} className="absolute top-2.5 right-3 text-gold/80" />
+          <Sparkles aria-hidden size={12} className="absolute top-2.5 right-3 text-gold" />
           <Sparkles aria-hidden
             size={10}
             className="absolute bottom-3 left-3 text-[hsl(280_70%_75%)]/70"

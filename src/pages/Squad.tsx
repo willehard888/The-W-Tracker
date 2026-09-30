@@ -77,7 +77,7 @@ const Squad = () => {
           type="button"
           aria-label={unread > 0 ? `Messages — ${unread} unread` : "Messages"}
           onClick={() => { hapticImpact("light"); navigate("/messages"); }}
-          className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground/80 hover:text-foreground hover:bg-secondary transition-colors"
+          className="press relative h-11 w-11 rounded-xl inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         >
           <MessageCircle aria-hidden size={18} />
           {unread > 0 && (

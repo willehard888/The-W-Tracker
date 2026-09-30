@@ -26,6 +26,7 @@ import {
 import { IllustrationPlayer, IllustrationThumb } from "@/components/coach/ExerciseIllustration";
 import { BreathFigure, BreathPacer, ORB_PACE } from "@/components/recovery/StepVisual";
 import { DoorRow } from "@/components/coach/rows";
+import { EmptyState } from "@/components/ui/empty-state";
 
 /**
  * The four shelves the founder asked for, by name: stretches, rolling,
@@ -222,7 +223,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
             ))}
           </ul>
           {hits.length + routineHits.length === 0 && (
-            <p className="text-center text-note text-muted-foreground py-10">Nothing matches. Try another word.</p>
+            <EmptyState size="compact" icon={Search} title="Nothing matches" description="Try another word." />
           )}
         </>
       ) : (
@@ -331,7 +332,7 @@ export function RecoverDetail({ m, onBack }: { m: RecoveryMovement; onBack: () =
           </section>
         )}
 
-        <p className="mt-7 text-meta text-muted-foreground/80 leading-snug">
+        <p className="mt-7 text-meta text-muted-foreground leading-snug">
           Educational guidance &mdash; not medical advice. Ease off anything that hurts rather than stretches.
         </p>
       </div>

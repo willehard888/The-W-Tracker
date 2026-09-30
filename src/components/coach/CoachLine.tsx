@@ -37,9 +37,9 @@ const TONE_STYLES: Record<CoachLineTone, { border: string; bg: string; iconColor
     iconColor: "text-gold",
   },
   warning: {
-    border: "border-rose-400/45",
-    bg: "bg-gradient-to-r from-rose-400/12 via-rose-400/6 to-transparent",
-    iconColor: "text-rose-300",
+    border: "border-rose/45",
+    bg: "bg-gradient-to-r from-rose/12 via-rose/6 to-transparent",
+    iconColor: "text-rose-light",
   },
   celebration: {
     border: "border-xp-green/45",
@@ -88,7 +88,7 @@ const CoachLine = ({
       aria-label={onClick ? "Open AI Coach" : undefined}
     >
       <span className={cn("shrink-0 mt-0.5", styles.iconColor)}>{resolvedIcon}</span>
-      <p className="text-meta italic leading-snug text-foreground/90">
+      <p className="text-meta italic leading-snug text-foreground">
         {withPrefix && (
           <span className={cn("not-italic font-black mr-1.5", styles.iconColor)}>Coach:</span>
         )}

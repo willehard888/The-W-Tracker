@@ -327,13 +327,13 @@ const ReflectionRow = ({ r, lazy }: { r: JourneyReflection; lazy: boolean }) => 
           {win && (
             <p className="text-dense leading-snug">
               <span className="font-bold">Win · </span>
-              <span className="text-foreground/90">{win}</span>
+              <span className="text-foreground">{win}</span>
             </p>
           )}
           {friction && (
             <p className="text-dense leading-snug">
               <span className="font-bold text-muted-foreground">Friction · </span>
-              <span className="text-foreground/80">{friction}</span>
+              <span className="text-foreground/85">{friction}</span>
             </p>
           )}
         </div>

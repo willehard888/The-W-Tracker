@@ -171,13 +171,13 @@ const IdentityCore = ({
           </span>
         </div>
         <div className="flex flex-col items-center gap-0.5 px-1">
-          <span className="font-display font-black text-read tabular-nums text-foreground/90">
+          <span className="font-display font-black text-read tabular-nums text-foreground">
             {profile.longest_streak ?? 0}d
           </span>
           <span className="text-label font-bold text-muted-foreground">Best</span>
         </div>
         <div className="flex flex-col items-center gap-0.5 px-1">
-          <span className="font-display font-black text-read tabular-nums text-foreground/90">
+          <span className="font-display font-black text-read tabular-nums text-foreground">
             {profile.level ?? 1}
           </span>
           <span className="text-label font-bold text-muted-foreground">Level</span>

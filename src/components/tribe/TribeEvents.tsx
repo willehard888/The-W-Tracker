@@ -250,7 +250,7 @@ const EventRow = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete 
           {ev.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={12} aria-hidden /> Online</span>}
           <span className="inline-flex items-center gap-1 tabular-nums"><Users size={12} aria-hidden /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
         </div>
-        {ev.description && <p className="text-meta text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
+        {ev.description && <p className="text-meta text-foreground/85 leading-snug mt-1.5">{ev.description}</p>}
         {isMember && (
           <div className="mt-2 flex items-center gap-1.5">
             {/* Ember is reserved for the one thing you'd actually tap next

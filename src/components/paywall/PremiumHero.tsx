@@ -188,7 +188,7 @@ const PremiumHero = ({
         {status === "error" && errorMessage && (
           <div role="alert" className="mt-3 surface-tint-danger rounded-xl px-3.5 py-2.5">
             <p className="text-dense font-bold text-destructive">Purchase failed</p>
-            <p className="text-meta text-foreground/90 leading-snug mt-0.5">{errorMessage}</p>
+            <p className="text-meta text-foreground leading-snug mt-0.5">{errorMessage}</p>
             {onDismissError && (
               <button
                 type="button"

@@ -63,7 +63,7 @@ const LessonQuiz = ({ quiz, accent, onScore }: { quiz: VaultQuizQ[]; accent: str
                           style={isPicked ? { borderColor: accent, background: accent } : { borderColor: "hsl(var(--border))" }}
                         />
                       )}
-                      <span className="text-foreground/95 leading-snug">{choice}</span>
+                      <span className="text-foreground leading-snug">{choice}</span>
                     </button>
                   );
                 })}

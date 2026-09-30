@@ -364,7 +364,7 @@ const Chat = () => {
                   <p
                     className={cn(
                       "text-label mt-1 px-1",
-                      isOwn ? "text-gold/75" : "text-muted-foreground/75"
+                      isOwn ? "text-gold/70" : "text-muted-foreground/75"
                     )}
                   >
                     {fmtRelative(msg.created_at)}

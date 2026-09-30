@@ -135,7 +135,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
               <span
                 className={cn(
                   "text-label truncate w-full text-center",
-                  isTopStoker ? "font-black text-foreground/95" : "text-muted-foreground/80",
+                  isTopStoker ? "font-black text-foreground" : "text-muted-foreground",
                 )}
               >
                 {m.username}

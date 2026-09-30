@@ -127,7 +127,7 @@ const ImageLightbox = ({
       >
         <div className="surface-glass rounded-2xl border-gold/15 p-3">
           {caption && (
-            <p className="text-meta text-foreground/90 leading-relaxed line-clamp-3 mb-2">
+            <p className="text-meta text-foreground leading-relaxed line-clamp-3 mb-2">
               {caption}
             </p>
           )}

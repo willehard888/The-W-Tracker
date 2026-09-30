@@ -38,11 +38,11 @@ const CoachBriefHero = ({
   if (isLoading) {
     return (
       <div className="surface-card p-5">
-        <div className="h-9 w-24 rounded-lg bg-foreground/[0.06] animate-pulse" />
+        <div className="h-9 w-24 rounded-lg bg-secondary/60 skeleton-block" />
         <div className="mt-4 space-y-2">
-          <div className="h-3.5 w-full rounded bg-foreground/[0.06] animate-pulse" />
-          <div className="h-3.5 w-[85%] rounded bg-foreground/[0.06] animate-pulse" />
-          <div className="h-3.5 w-[60%] rounded bg-foreground/[0.06] animate-pulse" />
+          <div className="h-3.5 w-full rounded bg-secondary/60 skeleton-block" />
+          <div className="h-3.5 w-[85%] rounded bg-secondary/60 skeleton-block" />
+          <div className="h-3.5 w-[60%] rounded bg-secondary/60 skeleton-block" />
         </div>
         <p className="text-meta text-muted-foreground mt-3">Coach is reading your week…</p>
       </div>
@@ -64,7 +64,7 @@ const CoachBriefHero = ({
         <>
           {/* The coach's words: the centrepiece. Sign-off stripped: briefs
               written before the prompt change end with "— W Coach". */}
-          <div className={cn("text-note leading-relaxed text-foreground/90 [&_p]:mb-2 [&_strong]:font-black [&_strong]:text-foreground", readiness != null && "mt-3")}>
+          <div className={cn("text-note leading-relaxed text-foreground [&_p]:mb-2 [&_strong]:font-black [&_strong]:text-foreground", readiness != null && "mt-3")}>
             <ReactMarkdown>{stripCoachSignoff(brief.brief_md)}</ReactMarkdown>
           </div>
 
@@ -81,7 +81,7 @@ const CoachBriefHero = ({
               {brief.suggested_questions.slice(0, 3).map((q, i) => (
                 <button key={i} type="button" onClick={() => onAsk(q)} className="press-row w-full min-h-11 flex items-center gap-2.5 py-2.5 text-left">
                   <MessageCircle size={14} className="text-muted-foreground shrink-0" aria-hidden />
-                  <span className="text-dense font-semibold text-foreground/90 leading-snug">{q}</span>
+                  <span className="text-dense font-semibold text-foreground leading-snug">{q}</span>
                 </button>
               ))}
             </div>

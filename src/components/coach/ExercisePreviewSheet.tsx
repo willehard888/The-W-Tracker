@@ -142,7 +142,7 @@ export const ExercisePreviewSheet = ({
                     onStep={(k) => setDose((d) => ({ ...d, rest: String(Math.min(900, Math.max(0, (Number(d.rest) || 0) + 15 * k))) }))} />
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-label text-muted-foreground/80">{editReach ?? "From this week on"}</p>
+                  <p className="text-label text-muted-foreground">{editReach ?? "From this week on"}</p>
                   <div className="flex gap-1.5">
                     <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Button>
                     <Button type="button" variant="ember" size="sm" onClick={saveDose}>Save dose</Button>
@@ -203,7 +203,7 @@ export const ExercisePreviewSheet = ({
           )}
 
           {muscles.length > 0 && (
-            <p className="text-note text-muted-foreground/90">
+            <p className="text-note text-muted-foreground">
               <span className="text-gold font-bold">Works</span>{" "}
               {muscles.join(", ")}
               {ex?.equipment ? ` · ${ex.equipment}` : ""}
@@ -239,11 +239,11 @@ export const ExercisePreviewSheet = ({
           <ExerciseCoachingBlock slug={illustrated?.slug} />
 
           {block.notes && (
-            <p className="text-meta text-muted-foreground/80 leading-relaxed">{block.notes}</p>
+            <p className="text-meta text-muted-foreground leading-relaxed">{block.notes}</p>
           )}
 
           {block.alt && (
-            <p className="text-meta text-muted-foreground/85">
+            <p className="text-meta text-muted-foreground">
               <span className="text-label font-bold text-muted-foreground mr-1">Swap</span>
               {block.alt}
             </p>

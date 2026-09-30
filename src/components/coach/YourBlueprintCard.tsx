@@ -113,7 +113,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
           {hobbies.map((h) => (
             <span
               key={h}
-              className="text-label font-bold px-2 py-0.5 rounded-full bg-card/80 border border-border/60 text-foreground/90"
+              className="text-label font-bold px-2 py-0.5 rounded-full bg-card/80 border border-border/60 text-foreground"
             >
               {h}
             </span>
@@ -122,7 +122,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
       )}
 
       {lifeContext && (
-        <p className="mt-3 text-meta italic text-muted-foreground/85 leading-relaxed line-clamp-2">
+        <p className="mt-3 text-meta italic text-muted-foreground leading-relaxed line-clamp-2">
           "{lifeContext}"
         </p>
       )}
@@ -144,7 +144,7 @@ const Row = ({
       <span className="shrink-0">{icon}</span>
       <p className="text-label font-bold text-muted-foreground">{label}</p>
     </div>
-    <p className="text-meta font-bold text-foreground/95 leading-tight truncate">{value}</p>
+    <p className="text-meta font-bold text-foreground leading-tight truncate">{value}</p>
   </div>
 );
 

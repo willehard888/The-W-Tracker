@@ -417,6 +417,6 @@ export const getTierUsernameClass = (tier: string): string => {
     case "operator":
       return "text-[hsl(170_75%_55%)] drop-shadow-[0_2px_12px_hsl(var(--teal)/0.4)]";
     default:
-      return "text-foreground/95";
+      return "text-foreground";
   }
 };

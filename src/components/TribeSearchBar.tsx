@@ -7,6 +7,7 @@ import { Search, Lock, Loader2, Users, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/error-copy";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface SearchResult {
   id: string;
@@ -164,7 +165,7 @@ const TribeSearchBar = ({ onChanged }: Props) => {
               <Loader2 aria-hidden size={16} className="animate-spin text-muted-foreground" />
             </div>
           ) : results.length === 0 ? (
-            <p className="text-center text-meta text-muted-foreground py-6">No tribes found.</p>
+            <EmptyState size="compact" title="No tribes found" />
           ) : (
             <div className="divide-y divide-border/35">
               {results.map((r) => (

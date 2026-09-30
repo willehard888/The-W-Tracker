@@ -19,7 +19,7 @@ interface TopInvitersWidgetProps {
 const rankColor = (i: number) => {
   if (i === 0) return "text-gold";
   if (i === 1) return "text-muted-foreground";
-  if (i === 2) return "text-amber-600";
+  if (i === 2) return "text-amber-dark";
   return "text-muted-foreground";
 };
 

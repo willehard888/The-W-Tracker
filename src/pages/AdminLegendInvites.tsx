@@ -154,7 +154,7 @@ export default function AdminLegendInvites() {
         <Button
           onClick={createInvite}
           disabled={creating}
-          className="w-full bg-gradient-to-r from-gold via-amber-500 to-gold text-background font-bold"
+          className="w-full bg-gradient-to-r from-gold via-amber to-gold text-background font-bold"
         >
           {creating ? <Loader2 aria-hidden className="h-4 w-4 animate-spin" /> : <Crown aria-hidden className="h-4 w-4" />}
           Generate Legend invite

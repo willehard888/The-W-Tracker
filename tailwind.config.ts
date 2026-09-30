@@ -152,6 +152,7 @@ export default {
           light: "hsl(var(--rose-light))",
           dark: "hsl(var(--rose-dark))",
         },
+        ice: "hsl(var(--ice))",
         amber: {
           DEFAULT: "hsl(var(--amber))",
           light: "hsl(var(--amber-light))",

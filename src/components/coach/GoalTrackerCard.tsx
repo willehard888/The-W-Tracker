@@ -160,7 +160,7 @@ const GoalTrackerCard = () => {
         </div>
         <span className={cn(
           "text-label font-bold text-muted-foreground px-2 py-1 rounded-full",
-          onPace ? "bg-xp-green/15 text-xp-green" : "bg-rose-500/15 text-rose-300"
+          onPace ? "bg-xp-green/15 text-xp-green" : "bg-rose/15 text-rose-light"
         )}>
           {onPace ? "On pace" : "Off pace"}
         </span>
@@ -211,7 +211,7 @@ const GoalTrackerCard = () => {
       {goals.filter(g => g.id !== activeGoal.id && g.status === "active").length === 0 && (
         <button type="button"
           onClick={() => setAdding(true)}
-          className="mt-3 w-full text-meta text-muted-foreground/80 inline-flex items-center justify-center gap-1 hover:text-gold">
+          className="mt-3 w-full text-meta text-muted-foreground inline-flex items-center justify-center gap-1 hover:text-gold">
           <Plus aria-hidden size={12} /> Add another goal
         </button>
       )}

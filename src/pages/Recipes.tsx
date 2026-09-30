@@ -116,7 +116,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
                     <span className="w-16 shrink-0 font-semibold tabular-nums">
                       {it.qty != null ? `${fmtQty(it.qty, batch)}${it.unit ? ` ${it.unit}` : ""}` : ""}
                     </span>
-                    <span className="min-w-0 text-foreground/90">
+                    <span className="min-w-0 text-foreground">
                       {it.item}
                       {it.note && <span className="text-muted-foreground/75"> ({it.note})</span>}
                     </span>

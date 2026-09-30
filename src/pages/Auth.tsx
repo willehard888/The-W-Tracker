@@ -396,8 +396,8 @@ const Auth = () => {
           {/* Said before the account exists, for both Apple and email. */}
           <p className="mt-3 px-6 text-label text-muted-foreground/75 leading-snug">
             By continuing you agree to our{" "}
-            <Link to="/terms" className="underline text-foreground/80">Terms of Use</Link> and{" "}
-            <Link to="/privacy" className="underline text-foreground/80">Privacy Policy</Link>.
+            <Link to="/terms" className="underline text-foreground/85">Terms of Use</Link> and{" "}
+            <Link to="/privacy" className="underline text-foreground/85">Privacy Policy</Link>.
           </p>
         </div>
       </div>

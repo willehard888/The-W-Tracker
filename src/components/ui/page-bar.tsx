@@ -32,13 +32,13 @@ const PageBar = ({
   >
     {onBack ? (
       <Button variant="ghost" size="icon" aria-label="Back" onClick={onBack}>
-        <ArrowLeft aria-hidden size={18} />
+        <ArrowLeft aria-hidden size={20} />
       </Button>
     ) : (
       <span className="w-10" aria-hidden />
     )}
     {typeof title === "string" ? (
-      <h1 className="flex-1 min-w-0 font-display text-copy font-black tracking-tight truncate">{title}</h1>
+      <h1 className="flex-1 min-w-0 h-card truncate">{title}</h1>
     ) : (
       <div className="flex-1 min-w-0">{title}</div>
     )}

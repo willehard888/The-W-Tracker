@@ -20,9 +20,9 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
     <div className="absolute inset-0 z-50 bg-background flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="shrink-0 px-2 pt-2 pb-1 flex items-center gap-1 border-b border-border/35">
         <Button variant="ghost" size="icon" aria-label="Back" onClick={() => onClose()}>
-          <ChevronLeft aria-hidden size={18} />
+          <ChevronLeft aria-hidden size={20} />
         </Button>
-        <p className="font-display text-read font-black tracking-tight">Coach playbook</p>
+        <p className="h-card">Coach playbook</p>
       </div>
 
       <div className="shrink-0 px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">

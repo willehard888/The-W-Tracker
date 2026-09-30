@@ -112,7 +112,7 @@ const RULES = [
   // Newline- and `=>`-tolerant: the old per-line form could not see a
   // <button whose className sat two lines below an onClick arrow, and 13
   // sub-floor buttons shipped through it.
-  { re: /<button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-([6-9]|10)|w-([6-9]|10)|p-1(\.5)?)\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt raw button — add min-h-11 / a before:-inset hit area or use <Button>", exempt: [UI, "src/components/StatusHeader.tsx"] },
+  { re: /<button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-([6-9]|10)|w-([6-9]|10)|p-1(\.5)?)\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt raw button — add min-h-11 / a before:-inset hit area or use <Button>", exempt: [UI] },
   // <Button> was invisible to the rule above, and an explicit h-7/h-8 beats the
   // variant's own min-h-9 (cn is twMerge), so these land under even 36 pt.
   { re: /<Button\b(?:[^>]|=>)*?className=\{?(?:cn\()?\s*["'`][^"'`]*\b(h-[3-8]|w-[3-8])\b(?!(?:[^>]|=>)*?(?:min-h-11|before:-inset|min-w-11))/, msg: "sub-44 pt <Button> — an explicit h-7/h-8 beats the variant's min-h-9 (cn is twMerge) and outgrows its before:-inset-1; add min-h-11 or a wider before:-inset",

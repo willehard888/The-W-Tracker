@@ -82,7 +82,7 @@ const ButtonGallery = () => {
           className="press h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
           aria-label="Back"
         >
-          <ArrowLeft aria-hidden size={18} />
+          <ArrowLeft aria-hidden size={20} />
         </Link>
         <div className="min-w-0">
           <h1 className="text-subhead font-display font-bold tracking-tight">Button Gallery</h1>

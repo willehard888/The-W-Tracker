@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
+import { ScrollContainerProvider } from "@/contexts/ScrollContainerContext";
 
 const auth = vi.hoisted(() => ({ user: { id: "u1" } as { id: string } | null, loading: false }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => auth }));
@@ -35,6 +36,20 @@ describe("BottomNav", () => {
   it("leaves the workout and a chat thread alone", () => {
     expect(at("/coach/session/x").querySelector("nav")).toBeNull();
     expect(at("/chat/abc").querySelector("nav")).toBeNull();
+  });
+
+  it("a tap on the tab you are on scrolls the shell to the top", () => {
+    const scrollTo = vi.fn();
+    const ref = { current: { scrollTo } as unknown as HTMLDivElement };
+    const root = render(
+      <MemoryRouter initialEntries={["/leaderboard"]}>
+        <ScrollContainerProvider value={ref}><BottomNav /></ScrollContainerProvider>
+      </MemoryRouter>,
+    ).container;
+    const ranks = root.querySelector('[aria-label="Ranks"]')!;
+    fireEvent.pointerDown(ranks);
+    fireEvent.pointerUp(ranks);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
   });
 
   it("shows no tabs to a signed-out visitor, but holds them while auth resolves", () => {

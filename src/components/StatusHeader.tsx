@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Crown, Clock, ChevronRight, Flame, Zap, Bell as BellIcon, Shield as ShieldIcon } from "lucide-react";
 import { m } from "framer-motion";
 import BrandLogo from "@/components/BrandLogo";
+import { Button } from "@/components/ui/button";
 
 // Voice matches the tier `message` strings in status-tiers.ts — quiet, earned,
 // premium restraint. Not gym-bro hustle clichés (which read cheap at the very
@@ -203,18 +204,20 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
             </span>
           </button>
           {/* The bell — one place for everything that happened to you */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => navigate("/notifications")}
             aria-label={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
-            className="press absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors before:absolute before:-inset-1 before:content-['']"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full text-muted-foreground hover:text-foreground"
           >
-            <BellIcon aria-hidden size={18} />
+            <BellIcon aria-hidden size={20} />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(var(--ember))] text-white text-label font-black flex items-center justify-center tabular-nums border-2 border-[hsl(var(--background))]">
+              <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-ember text-white text-label font-black flex items-center justify-center tabular-nums border-2 border-background">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
-          </button>
+          </Button>
         </div>
 
 

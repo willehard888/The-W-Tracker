@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { memo, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
+import { useScrollContainer } from "@/contexts/ScrollContainerContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Four focused tabs: show up (Today) → belong (Squad: feed/tribes/friends) →
@@ -75,25 +76,29 @@ const BottomNav = () => {
   const location = useLocation();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const scroller = useScrollContainer();
   const pressedAt = useRef<{ path: string; t: number } | null>(null);
 
   // Fire haptic on pointer-down (16ms before navigation) so feedback feels
   // instant. Navigate on pointer-up only if still on same target — cancels
   // accidental drags / scroll-from-nav.
   const onPointerDown = useCallback((path: string) => {
-    if (location.pathname === path) return;
     hapticImpact("light");
     pressedAt.current = { path, t: Date.now() };
-    prefetchRoute(path);
+    if (location.pathname !== path) prefetchRoute(path);
   }, [location.pathname]);
 
   const onPointerUp = useCallback((path: string) => {
     const p = pressedAt.current;
     pressedAt.current = null;
     if (!p || p.path !== path) return;
-    if (location.pathname === path) return;
+    // The tab you are on: back to the top, the way every iOS tab bar does it.
+    if (location.pathname === path) {
+      scroller?.current?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     navigate(path);
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, scroller]);
 
   const activeTab = activeTabFor(location.pathname);
   const activeIdx = tabs.findIndex((t) => t.path === activeTab);
@@ -200,7 +205,7 @@ const BottomNav = () => {
               <span className="relative flex items-center justify-center h-6 w-6">
                 <Icon aria-hidden
                   size={20}
-                  strokeWidth={active ? 2.5 : 1.75}
+                  strokeWidth={active ? 2.5 : 2}
                   className="relative z-10"
                   style={active ? { opacity: 1 } : undefined}
                 />

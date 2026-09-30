@@ -495,8 +495,8 @@ const AppRoutes = () => {
           </ErrorBoundary>
         </Suspense>
       </div>
-      </ScrollContainerProvider>
       <BottomNav />
+      </ScrollContainerProvider>
       {user && <TierPromotionCelebration />}
       {/* The one place the app asks to send what a member logs to an AI model.
           It registers with the consent gate; every AI surface asks through it. */}

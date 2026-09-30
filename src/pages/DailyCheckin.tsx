@@ -62,7 +62,7 @@ import { useNutritionTargets } from "@/hooks/use-nutrition-targets";
 import type { DaySnapshot, DayWorkout } from "@/lib/health/healthkit";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FieldError } from "@/components/ui/label";
-import StreakFlameInline from "@/components/StreakFlameInline";
+import LockItIn from "@/components/checkin/LockItIn";
 
 /** "Tennis 62 min · Gym 45 min · Polar Flow" — what Health recorded today, by sport. */
 const healthSessionsLine = (sessions: DayWorkout[]): string => {
@@ -73,6 +73,8 @@ const healthSessionsLine = (sessions: DayWorkout[]): string => {
 
 // Sport catalog now lives in src/lib/sports.ts — shared with the athlete
 // profile and (via the persisted sport column) the AI coach.
+/** The locked bar holds this long before the summary takes the screen. */
+const LOCK_BEAT_MS = 1200;
 const SPORT_CATEGORIES = SPORT_CATALOG;
 
 const PILLAR_ORDER: CheckinPillar[] = [
@@ -251,9 +253,19 @@ const DailyCheckin = () => {
   // habit tick (it used to only cross-fade a colour).
   const honestPop = useCommitPop(honest === true);
   const dishonestPop = useCommitPop(honest === false);
-  // The Lock press is the day's last commit: the flame on the button pops the
-  // instant the save starts.
-  const lockPop = useCommitPop(submitting);
+  // The Lock press is the day's last commit. The bar shows "locking" while
+  // the save is in flight and "locked" for one beat after it lands — the
+  // obsidian cool-down, the drawn check, the XP rising — before the summary
+  // takes the screen (LockItIn owns the look; this page owns the beat).
+  const [locked, setLocked] = useState(false);
+  const lockBeat = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(lockBeat.current), []);
+  const showLocked = () => {
+    setLocked(true);
+    void hapticNotification("success");
+    window.clearTimeout(lockBeat.current);
+    lockBeat.current = window.setTimeout(() => setSubmitted(true), LOCK_BEAT_MS);
+  };
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   // True once the user has explicitly chosen Trained/Rest/a sport — gates HK prefill.
@@ -596,9 +608,8 @@ const DailyCheckin = () => {
             score: dayScoreFromRow(lastCk?.score_breakdown),
           });
         } catch { /* summary is best-effort */ }
-        setSubmitted(true);
+        showLocked();
         setSubmitting(false);
-        void hapticNotification("success");
         queryClient.invalidateQueries({ queryKey: ["last-checkin"] });
         queryClient.invalidateQueries({ queryKey: ["my-rank"] });
         try { await refreshProfile(); } catch { /* non-critical */ }
@@ -640,9 +651,8 @@ const DailyCheckin = () => {
             newStreak: getEffectiveStreak(profile?.streak ?? 0, lastCheckin?.checked_in_at, profile?.streak_shields ?? 0) + 1,
             streakBroken: false, completedCount, maxCount, score,
           });
-          setSubmitted(true);
+          showLocked();
           setSubmitting(false);
-          try { hapticNotification("success"); } catch { /* cosmetic */ }
           return;
         }
         console.error("record_checkin failed after retries:", rpcError);
@@ -687,9 +697,8 @@ const DailyCheckin = () => {
         score: dayScoreFromRow(r.day_score) ?? score,
       });
 
-      setSubmitted(true);
+      showLocked();
       setSubmitting(false);
-      void hapticNotification("success");
 
       // Activation funnel: every completed check-in, plus streak milestones.
       void track(FUNNEL.checkinCompleted, {
@@ -1369,23 +1378,14 @@ const DailyCheckin = () => {
             <span className="text-muted-foreground/75"> · of {score.max}</span>
           </p>
 
-          {/* The label carries the in-flight state ("Locking…") rather than a
-              spinner, and the flame pops the instant the save starts. */}
-          <Button variant="ember" size="xl" className="w-full mt-4" onClick={handleSubmit} aria-busy={submitting} disabled={submitting || honest !== true}>
-            {/* The real fire, not the outline glyph — the same flame the
-                streak burns with, at the heat of the streak being defended
-                (tomorrow's day counts: the lock is what lights it). */}
-            <span aria-hidden className={cn("inline-flex", lockPop && "commit-pop")}>
-              <StreakFlameInline streak={Math.max(streak + 1, 3)} size={22} showCount={false} />
-            </span>
-            {submitting ? "Locking…" : (
-              // The number every tick feeds — it counts instead of teleporting,
-              // closing the tick → total chain at its endpoint.
-              <span className="tabular-nums">
-                Lock it in · +<AnimatedNumber value={totalXp} duration={350} className="inline" /> XP
-              </span>
-            )}
-          </Button>
+          <LockItIn
+            xp={totalXp}
+            day={streak + 1}
+            state={locked ? "locked" : submitting ? "locking" : "armed"}
+            disabled={honest !== true}
+            onClick={handleSubmit}
+            className="mt-4"
+          />
           <p className="mt-2.5 text-center text-meta text-muted-foreground tabular-nums">
             {honest === null && !submitting
               ? "Answer above to lock the day"

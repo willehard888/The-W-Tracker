@@ -225,14 +225,14 @@
      as a chip, not a row); segments answer with a surface inside their
      track (.segment, src/components/ui/segment.ts); tabs and menu items
      keep their own. */
-  button:not(.press-row):not(.segment):not([data-state]):not([role="tab"]):not([role="menuitem"]),
+  button:not(.press-row):not(.segment):not(.lock-bar):not([data-state]):not([role="tab"]):not([role="menuitem"]),
   [role="button"]:not(.press-row),
   .press {
     transition:
       transform 140ms var(--ease-ios),
       opacity   140ms var(--ease-ios);
   }
-  button:not(.press-row):not(.segment):not([data-state]):not([role="tab"]):not([role="menuitem"]):active:not(:disabled),
+  button:not(.press-row):not(.segment):not(.lock-bar):not([data-state]):not([role="tab"]):not([role="menuitem"]):active:not(:disabled),
   [role="button"]:not(.press-row):active,
   .press:active {
     transform: scale(0.97);
@@ -2779,6 +2779,146 @@ p, span.selectable, input, textarea, [contenteditable] {
 }
 @media (prefers-reduced-motion: reduce) {
   .cta-gloss-anim, .cta-melt-anim { animation: none !important; }
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   LOCK IT IN — the check-in's lock (src/components/checkin/LockItIn.tsx)
+   Luxury metal: a polished gold bar in a dark housing. At rest only the
+   light moves (two specular bands, 7 s). A press sinks the bar 3 px. The
+   lock is one catch of light, a small bloom and a hairline ring, then the
+   metal cools to obsidian with a gold engraving while the XP rises. Every
+   animated thing is transform/opacity on an absolutely positioned child.
+   Functional feedback like commit-pop: guarded by prefers-reduced-motion
+   only, not the coarse-pointer kill-switch.
+   ═════════════════════════════════════════════════════════════════ */
+.lock-bar { -webkit-tap-highlight-color: transparent; }
+.lock-bar:disabled { opacity: 0.55; filter: saturate(0.55); }
+.lock-house {
+  position: absolute; inset: -3px; border-radius: 19px;
+  background: linear-gradient(180deg, hsl(258 20% 2%) 0%, hsl(258 16% 7%) 100%);
+  box-shadow: inset 0 1px 0 hsl(0 0% 0% / 0.85), inset 0 -1px 0 hsl(0 0% 100% / 0.06);
+}
+.lock-face {
+  position: absolute; inset: 0; border-radius: 16px; overflow: hidden; isolation: isolate;
+  display: flex; align-items: center; justify-content: center;
+  font-family: theme('fontFamily.display'); font-weight: 900; font-size: 18px; letter-spacing: -0.01em;
+  color: hsl(28 80% 12%);
+  text-shadow: 0 1px 0 hsl(45 100% 88% / 0.5), 0 -1px 0 hsl(20 60% 20% / 0.35);
+  background: linear-gradient(180deg,
+    hsl(46 88% 74%) 0%, hsl(42 86% 62%) 18%, hsl(36 84% 52%) 46%,
+    hsl(30 82% 46%) 62%, hsl(24 78% 40%) 84%, hsl(20 70% 34%) 100%);
+  box-shadow:
+    0 0 0 1px hsl(44 70% 60% / 0.55),
+    inset 0 1px 0 hsl(50 100% 94% / 0.9),
+    inset 0 2px 1px hsl(48 100% 88% / 0.35),
+    inset 0 -3px 4px hsl(18 70% 22% / 0.55),
+    inset 0 -1px 0 hsl(46 100% 80% / 0.25),
+    0 3px 6px hsl(20 60% 6% / 0.6),
+    0 18px 34px -12px hsl(20 70% 8% / 0.9),
+    0 8px 22px -8px hsl(30 90% 45% / 0.35);
+  transition:
+    transform 220ms var(--ease-ios), box-shadow 220ms var(--ease-ios),
+    background 900ms var(--ease-soft), color 700ms var(--ease-soft), text-shadow 700ms var(--ease-soft);
+}
+.lock-brush {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.045) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+.lock-spec {
+  position: absolute; top: -30%; bottom: -30%; left: -40%; width: 34%; pointer-events: none;
+  background: linear-gradient(100deg, transparent 0%, hsl(50 100% 96% / 0.28) 40%, hsl(50 100% 98% / 0.55) 50%, hsl(50 100% 96% / 0.28) 60%, transparent 100%);
+  transform: skewX(-22deg); filter: blur(1.5px); will-change: transform;
+  animation: lock-spec 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+.lock-spec-soft {
+  width: 70%; filter: blur(6px); animation-delay: 400ms;
+  background: linear-gradient(100deg, transparent, hsl(30 90% 60% / 0.18) 50%, transparent);
+}
+@keyframes lock-spec {
+  0%   { transform: translateX(0) skewX(-22deg); }
+  100% { transform: translateX(420%) skewX(-22deg); }
+}
+/* The press: 3 px into the housing, the shadow contracts, the light waits. */
+.lock-bar:active:not(:disabled) .lock-face,
+.lock-bar.is-pressed .lock-face {
+  transform: translateY(3px);
+  box-shadow:
+    0 0 0 1px hsl(44 70% 60% / 0.55), inset 0 1px 0 hsl(50 100% 94% / 0.9),
+    inset 0 -2px 3px hsl(18 70% 22% / 0.5), 0 1px 2px hsl(20 60% 6% / 0.6),
+    0 6px 12px -8px hsl(20 70% 8% / 0.9);
+}
+.lock-bar:active:not(:disabled) .lock-spec { animation-play-state: paused; }
+/* The lock: one catch of light, then the metal cools to obsidian. */
+.lock-catch {
+  position: absolute; top: -40%; bottom: -40%; left: -30%; width: 26%; opacity: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent, hsl(52 100% 98% / 0.95) 50%, transparent);
+  transform: skewX(-22deg);
+}
+.is-locking .lock-catch { animation: lock-catch 620ms 60ms var(--ease-soft) both; }
+@keyframes lock-catch {
+  0%   { opacity: 1; transform: translateX(0) skewX(-22deg); }
+  100% { opacity: 0; transform: translateX(520%) skewX(-22deg); }
+}
+.is-locking .lock-face, .is-locked .lock-face {
+  background: linear-gradient(180deg, hsl(258 14% 16%) 0%, hsl(258 16% 9%) 60%, hsl(258 18% 6%) 100%);
+  color: hsl(var(--gold-light));
+  text-shadow: 0 0 14px hsl(var(--gold) / 0.45), 0 1px 0 hsl(0 0% 0% / 0.6);
+  box-shadow:
+    0 0 0 1px hsl(var(--gold) / 0.7), inset 0 1px 0 hsl(0 0% 100% / 0.08),
+    inset 0 -2px 4px hsl(0 0% 0% / 0.6), 0 3px 6px hsl(0 0% 0% / 0.6),
+    0 18px 34px -12px hsl(0 0% 0% / 0.9), 0 0 40px -6px hsl(var(--gold) / 0.35);
+}
+.is-locking .lock-spec, .is-locked .lock-spec { opacity: 0; transition: opacity 500ms var(--ease-soft); }
+.lock-lbl, .lock-done {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: opacity 500ms 200ms var(--ease-soft), transform 700ms 200ms var(--ease-soft);
+}
+.lock-done { opacity: 0; transform: translateY(6px); }
+.is-locking .lock-lbl, .is-locked .lock-lbl { opacity: 0; transform: translateY(-6px); transition-delay: 0ms; }
+.is-locking .lock-done, .is-locked .lock-done { opacity: 1; transform: translateY(0); }
+.lock-chk path { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; }
+.is-locking .lock-chk path, .is-locked .lock-chk path { animation: lock-draw 700ms 520ms var(--ease-soft) forwards; }
+@keyframes lock-draw { to { stroke-dashoffset: 0; } }
+/* Off the bar: a small bloom, a hairline ring, the XP rising. */
+.lock-bloom {
+  position: absolute; left: 50%; top: 50%; width: 420px; height: 420px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, hsl(var(--gold) / 0.42) 0%, hsl(var(--ember) / 0.2) 24%, hsl(var(--ember-dark) / 0.08) 46%, transparent 66%);
+  transform: translate(-50%, -50%) scale(0.1); opacity: 0;
+  transition: transform 900ms var(--ease-soft), opacity 800ms var(--ease-soft);
+}
+.is-locking .lock-bloom, .is-locked .lock-bloom { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+.is-locked .lock-bloom { opacity: 0.6; }
+.lock-ring {
+  position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; border-radius: 50%; pointer-events: none;
+  border: 1px solid hsl(var(--gold-light) / 0.8); opacity: 0;
+  transform: translate(-50%, -50%) scale(0.3);
+}
+.is-locking .lock-ring, .is-locked .lock-ring { animation: lock-ring 1400ms var(--ease-soft) both; }
+@keyframes lock-ring {
+  0%   { opacity: 0.9; transform: translate(-50%, -50%) scale(0.3); }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(4.5); }
+}
+.lock-xp {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap;
+  padding: 6px 14px; border-radius: 999px; opacity: 0;
+  background: linear-gradient(180deg, hsl(46 88% 74%), hsl(34 84% 50%));
+  color: hsl(28 80% 12%); font-family: theme('fontFamily.display'); font-weight: 900; font-size: 15px;
+  box-shadow: 0 0 0 1px hsl(44 70% 60% / 0.6), inset 0 1px 0 hsl(50 100% 94% / 0.9), 0 8px 20px -6px hsl(0 0% 0% / 0.7);
+}
+.is-locked .lock-xp { animation: lock-xp 1500ms 350ms var(--ease-soft) both; }
+@keyframes lock-xp {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  18%  { opacity: 1; transform: translate(-50%, -90%) scale(1); }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -1040%) scale(0.85); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lock-spec, .lock-catch, .lock-ring, .lock-xp, .lock-chk path { animation: none !important; }
+  .lock-chk path { stroke-dashoffset: 0; }
+  .lock-bloom { transition: none; }
+  .lock-face { transition: background 200ms, color 200ms; }
+  .lock-lbl, .lock-done { transition: opacity 200ms; transform: none; }
 }
 
 /* Escaped infinite loops the named guards above don't reach:

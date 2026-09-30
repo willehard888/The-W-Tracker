@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Flame, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LockItIn, { type LockState } from "@/components/checkin/LockItIn";
 
 /**
  * Internal gallery for previewing every Button variant side-by-side
@@ -70,6 +71,33 @@ const GROUPS: VariantSpec["group"][] = [
   "Utility",
 ];
 
+/** Armed → locking (700 ms) → locked (2.4 s) → armed. Tap the bar or Replay. */
+const LockDemo = () => {
+  const [state, setState] = useState<LockState>("armed");
+  const timers = useRef<number[]>([]);
+  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
+  const play = () => {
+    timers.current.forEach((t) => window.clearTimeout(t));
+    setState("locking");
+    timers.current = [
+      window.setTimeout(() => setState("locked"), 700),
+      window.setTimeout(() => setState("armed"), 3100),
+    ];
+  };
+  return (
+    <section className="mb-7">
+      <h2 className="text-label font-bold text-[hsl(var(--gold-soft))] mb-3 px-1">Lock it in</h2>
+      <div className="surface-card p-4 pt-24 overflow-visible">
+        <LockItIn xp={23} day={3} state={state} onClick={play} />
+        <p className="mt-2.5 text-center text-meta text-muted-foreground tabular-nums">1 of 21 logged</p>
+        <div className="mt-3 flex justify-center">
+          <Button variant="outline" size="sm" onClick={play}>Replay</Button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const ButtonGallery = () => {
   const [picked, setPicked] = useState<VariantId | null>(null);
 
@@ -98,6 +126,10 @@ const ButtonGallery = () => {
           <span className="font-bold text-[hsl(var(--gold-light))]">{picked}</span>
         </div>
       )}
+
+      {/* The check-in's lock, replayable — the only way to watch the whole
+          sequence without submitting a check-in on an account. */}
+      <LockDemo />
 
       {GROUPS.map((group) => {
         const items = VARIANTS.filter((v) => v.group === group);

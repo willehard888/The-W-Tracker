@@ -4,7 +4,6 @@ import BrandLogo from "@/components/BrandLogo";
 import { TIER_CONFIG, TIER_ORDER, getTierConfig } from "@/lib/status-tiers";
 import { strugglePromise, GOAL_OPTIONS } from "@/lib/onboarding";
 import { cn } from "@/lib/utils";
-import StreakFlameInline from "@/components/StreakFlameInline";
 
 /* The flame hero's keyframes (onboarding-float, pulseRing, flameDance,
    Entrances use the house `animate-fade-in-up`, which every reduced-motion
@@ -27,10 +26,8 @@ const FlameHero = ({ size = 40, box = "w-36 h-36" }: { size?: number; box?: stri
       />
     ))}
     <div className="absolute inset-0 flex items-center justify-center">
-      {/* The real fire — the streak's own flame at a blazing tier — not the
-          outline glyph the icon set draws. */}
-      <div aria-hidden style={{ animation: "flameDance 1.5s ease-in-out infinite" }} className="drop-shadow-[0_0_20px_hsl(var(--streak-orange)/0.6)]">
-        <StreakFlameInline streak={30} size={size} showCount={false} />
+      <div style={{ animation: "flameDance 1.5s ease-in-out infinite" }}>
+        <Flame aria-hidden size={size} className="text-[hsl(var(--streak-orange))] drop-shadow-[0_0_20px_hsl(var(--streak-orange))]" />
       </div>
     </div>
     <FloatingOrb color="hsl(var(--streak-orange))" size={7} delay={0} x="20%" y="28%" />

@@ -74,6 +74,7 @@ const GROUPS: VariantSpec["group"][] = [
 /** Armed → locking (700 ms) → locked (2.4 s) → armed. Tap the bar or Replay. */
 const LockDemo = () => {
   const [state, setState] = useState<LockState>("armed");
+  const [waiting, setWaiting] = useState(false);
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
   const play = () => {
@@ -88,10 +89,13 @@ const LockDemo = () => {
     <section className="mb-7">
       <h2 className="text-label font-bold text-[hsl(var(--gold-soft))] mb-3 px-1">Lock it in</h2>
       <div className="surface-card p-4 pt-24 overflow-visible">
-        <LockItIn xp={23} day={3} state={state} onClick={play} />
+        <LockItIn xp={23} day={3} state={state} disabled={waiting} onClick={play} />
         <p className="mt-2.5 text-center text-meta text-muted-foreground tabular-nums">1 of 21 logged</p>
-        <div className="mt-3 flex justify-center">
+        <div className="mt-3 flex justify-center gap-2">
           <Button variant="outline" size="sm" onClick={play}>Replay</Button>
+          <Button variant="outline" size="sm" aria-pressed={waiting} onClick={() => setWaiting((w) => !w)}>
+            {waiting ? "Lights on" : "Waiting"}
+          </Button>
         </div>
       </div>
     </section>

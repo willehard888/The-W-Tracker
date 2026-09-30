@@ -2783,142 +2783,256 @@ p, span.selectable, input, textarea, [contenteditable] {
 
 /* ═════════════════════════════════════════════════════════════════
    LOCK IT IN — the check-in's lock (src/components/checkin/LockItIn.tsx)
-   Luxury metal: a polished gold bar in a dark housing. At rest only the
-   light moves (two specular bands, 7 s). A press sinks the bar 3 px. The
-   lock is one catch of light, a small bloom and a hairline ring, then the
-   metal cools to obsidian with a gold engraving while the XP rises. Every
-   animated thing is transform/opacity on an absolutely positioned child.
-   Functional feedback like commit-pop: guarded by prefers-reduced-motion
-   only, not the coarse-pointer kill-switch.
+   Luxury metal, v3. Three materials: a dark well, a brushed gold bezel
+   ring, and 2.5 px inside it the polished face — mirror crown, a crisp
+   horizon, a warm bounce band, a dark foot, a guilloché band across the
+   satin middle. One light: a narrow line on the mirror and a wide sheen
+   on the satin cross once every 9 s, then the bar is still. One
+   mechanism: the press sinks face and bezel 3 px; the lock is a latch
+   (drop, spring back) as the shackle closes, one catch of light, then
+   the metal cools to obsidian on its own layer (WebKit does not
+   interpolate gradients of different stop counts). No filter, no blend
+   mode anywhere; masks are static; transform/opacity animate. Guarded by
+   prefers-reduced-motion only — this is the tap's feedback, like
+   commit-pop — never the coarse-pointer kill-switch.
    ═════════════════════════════════════════════════════════════════ */
-.lock-bar { -webkit-tap-highlight-color: transparent; }
-.lock-bar:disabled { opacity: 0.55; filter: saturate(0.55); }
+.lock-bar { -webkit-tap-highlight-color: transparent; --lx: 50%; }
+
+/* The well. Its top wall is in shadow (the strip the face exposes when it
+   sinks); its lower lip catches the gold. The slab carries contact and
+   ambient shadow; the floor reflection is a gradient ellipse, not a blur. */
 .lock-house {
-  position: absolute; inset: -3px; border-radius: 19px;
-  background: linear-gradient(180deg, hsl(258 20% 2%) 0%, hsl(258 16% 7%) 100%);
-  box-shadow: inset 0 1px 0 hsl(0 0% 0% / 0.85), inset 0 -1px 0 hsl(0 0% 100% / 0.06);
-}
-.lock-face {
-  position: absolute; inset: 0; border-radius: 16px; overflow: hidden; isolation: isolate;
-  display: flex; align-items: center; justify-content: center;
-  font-family: theme('fontFamily.display'); font-weight: 900; font-size: 18px; letter-spacing: -0.01em;
-  color: hsl(28 80% 12%);
-  text-shadow: 0 1px 0 hsl(45 100% 88% / 0.5), 0 -1px 0 hsl(20 60% 20% / 0.35);
-  background: linear-gradient(180deg,
-    hsl(46 88% 74%) 0%, hsl(42 86% 62%) 18%, hsl(36 84% 52%) 46%,
-    hsl(30 82% 46%) 62%, hsl(24 78% 40%) 84%, hsl(20 70% 34%) 100%);
+  position: absolute; inset: -4px; border-radius: 21px;
+  background: linear-gradient(180deg, hsl(258 18% 3%) 0%, hsl(258 14% 6%) 60%, hsl(258 12% 9%) 100%);
   box-shadow:
-    0 0 0 1px hsl(44 70% 60% / 0.55),
-    inset 0 1px 0 hsl(50 100% 94% / 0.9),
-    inset 0 2px 1px hsl(48 100% 88% / 0.35),
-    inset 0 -3px 4px hsl(18 70% 22% / 0.55),
-    inset 0 -1px 0 hsl(46 100% 80% / 0.25),
-    0 3px 6px hsl(20 60% 6% / 0.6),
-    0 18px 34px -12px hsl(20 70% 8% / 0.9),
-    0 8px 22px -8px hsl(30 90% 45% / 0.35);
-  transition:
-    transform 220ms var(--ease-ios), box-shadow 220ms var(--ease-ios),
-    background 900ms var(--ease-soft), color 700ms var(--ease-soft), text-shadow 700ms var(--ease-soft);
+    inset 0 3px 4px -1px hsl(0 0% 0% / 0.9),
+    inset 0 -1px 0 hsl(46 60% 76% / 0.12),
+    0 0 0 1px hsl(0 0% 0% / 0.55),
+    0 1px 0 hsl(var(--gold) / 0.10),
+    0 2px 2px hsl(0 0% 0% / 0.5),
+    0 18px 32px -10px hsl(0 0% 0% / 0.8);
+  transition: box-shadow 420ms var(--ease-soft);
 }
-.lock-brush {
+.lock-floor {
+  position: absolute; left: 6%; right: 6%; bottom: -18px; height: 28px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, hsl(40 92% 62% / 0.36) 0%, hsl(30 88% 50% / 0.14) 46%, transparent 72%);
+  transform-origin: 50% 0;
+  transition: transform 460ms var(--ease-spring), opacity 460ms var(--ease-soft);
+}
+/* The bezel: a thin machined gold ring with its own light and a 2 px brushing. */
+.lock-bezel {
+  position: absolute; inset: 0; border-radius: 17px;
+  background: linear-gradient(180deg, hsl(46 80% 70%) 0%, hsl(38 70% 48%) 30%, hsl(30 60% 36%) 55%, hsl(40 70% 52%) 80%, hsl(46 80% 66%) 100%);
+  box-shadow: inset 0 1px 0 hsl(52 100% 92% / 0.7), inset 0 -1px 0 hsl(20 60% 15% / 0.7), 0 1px 1px hsl(0 0% 0% / 0.6);
+  transition: transform 460ms var(--ease-spring), box-shadow 900ms var(--ease-soft);
+}
+.lock-bezel::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.08) 0 1px, transparent 1px 2px);
+}
+/* The face: polished gold is an environment reflection — crown, horizon,
+   bounce, foot — with a static crown highlight on the top-left curvature. */
+.lock-face {
+  position: absolute; inset: 2.5px; border-radius: 14.5px; overflow: hidden; isolation: isolate;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: theme('fontFamily.display'); font-weight: 900; font-size: 17px; letter-spacing: -0.005em;
+  color: hsl(26 70% 11%);
+  text-shadow: 0 1px 0 hsl(52 100% 93% / 0.75), 0 -1px 0 hsl(18 60% 12% / 0.5);
+  background:
+    radial-gradient(38% 120% at 14% 0%, hsl(54 100% 95% / 0.55) 0%, hsl(50 100% 90% / 0.16) 42%, transparent 70%),
+    linear-gradient(180deg,
+      hsl(48 92% 82%) 0%, hsl(46 90% 72%) 8%, hsl(43 88% 62%) 19%, hsl(40 86% 56%) 30%,
+      hsl(34 80% 47%) 36%, hsl(32 78% 44%) 48%, hsl(36 82% 50%) 60%,
+      hsl(31 78% 45%) 74%, hsl(26 72% 37%) 90%, hsl(22 66% 31%) 100%);
+  box-shadow:
+    inset 0 1px 0 hsl(54 100% 96% / 0.9),
+    inset 0 -3px 5px hsl(18 70% 20% / 0.5),
+    inset 0 0 0 1px hsl(20 60% 10% / 0.5),
+    0 0 0 1px hsl(52 100% 90% / 0.25);
+  transition: transform 460ms var(--ease-spring), box-shadow 300ms var(--ease-ios);
+}
+/* The smoked veil for the waiting state (unlit metal, not washed-out metal). */
+.lock-face::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: 3; pointer-events: none;
+  background: linear-gradient(180deg, hsl(252 22% 7% / 0.5), hsl(252 22% 4% / 0.6));
+  opacity: 0; transition: opacity 520ms var(--ease-soft);
+}
+/* Guilloché — engine-turned rings and a 2 px hairline, on the satin band only. */
+.lock-guil {
   position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.045) 0 1px, transparent 1px 3px);
-  mix-blend-mode: overlay;
+  background:
+    repeating-radial-gradient(circle at 50% 140%, hsl(52 100% 96% / 0.09) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg, hsl(52 100% 96% / 0.05) 0 1px, hsl(20 60% 10% / 0.05) 1px 2px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 16%, #000 30%, #000 70%, transparent 84%);
+          mask-image: linear-gradient(180deg, transparent 16%, #000 30%, #000 70%, transparent 84%);
 }
+/* The light: a narrow line on the mirror crown and foot, a wide sheen on
+   the satin band, one crossing then still. */
 .lock-spec {
-  position: absolute; top: -30%; bottom: -30%; left: -40%; width: 34%; pointer-events: none;
-  background: linear-gradient(100deg, transparent 0%, hsl(50 100% 96% / 0.28) 40%, hsl(50 100% 98% / 0.55) 50%, hsl(50 100% 96% / 0.28) 60%, transparent 100%);
-  transform: skewX(-22deg); filter: blur(1.5px); will-change: transform;
-  animation: lock-spec 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  position: absolute; inset: 0 auto 0 -70%; width: 60%; pointer-events: none;
+  background: linear-gradient(100deg, transparent 46%, hsl(52 100% 97% / 0.4) 49.4%, hsl(54 100% 99% / 0.8) 50%, hsl(52 100% 97% / 0.4) 50.6%, transparent 54%);
+  transform: translateX(0) skewX(-18deg); will-change: transform;
+  animation: lock-spec 9s linear infinite;
+  -webkit-mask-image: linear-gradient(180deg, #000 24%, transparent 34%, transparent 66%, #000 76%);
+          mask-image: linear-gradient(180deg, #000 24%, transparent 34%, transparent 66%, #000 76%);
 }
 .lock-spec-soft {
-  width: 70%; filter: blur(6px); animation-delay: 400ms;
-  background: linear-gradient(100deg, transparent, hsl(30 90% 60% / 0.18) 50%, transparent);
+  background: linear-gradient(100deg, transparent 0%, hsl(46 100% 80% / 0.10) 30%, hsl(50 100% 92% / 0.22) 50%, hsl(46 100% 80% / 0.10) 70%, transparent 100%);
+  animation-delay: 150ms;
+  -webkit-mask-image: linear-gradient(180deg, transparent 20%, #000 32%, #000 68%, transparent 80%);
+          mask-image: linear-gradient(180deg, transparent 20%, #000 32%, #000 68%, transparent 80%);
 }
 @keyframes lock-spec {
-  0%   { transform: translateX(0) skewX(-22deg); }
-  100% { transform: translateX(420%) skewX(-22deg); }
+  0%   { transform: translateX(0)    skewX(-18deg); animation-timing-function: cubic-bezier(0.55, 0.05, 0.35, 0.95); }
+  34%  { transform: translateX(283%) skewX(-18deg); }
+  100% { transform: translateX(283%) skewX(-18deg); }
 }
-/* The press: 3 px into the housing, the shadow contracts, the light waits. */
-.lock-bar:active:not(:disabled) .lock-face,
-.lock-bar.is-pressed .lock-face {
-  transform: translateY(3px);
-  box-shadow:
-    0 0 0 1px hsl(44 70% 60% / 0.55), inset 0 1px 0 hsl(50 100% 94% / 0.9),
-    inset 0 -2px 3px hsl(18 70% 22% / 0.5), 0 1px 2px hsl(20 60% 6% / 0.6),
-    0 6px 12px -8px hsl(20 70% 8% / 0.9);
+/* The light gathers under the finger while pressed. */
+.lock-touch {
+  position: absolute; top: -40%; bottom: -40%; left: var(--lx); width: 140px; margin-left: -70px; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, hsl(54 100% 96% / 0.45) 0%, hsl(50 100% 90% / 0.12) 45%, transparent 70%);
+  opacity: 0; transition: opacity 180ms var(--ease-soft), left 120ms var(--ease-soft);
 }
-.lock-bar:active:not(:disabled) .lock-spec { animation-play-state: paused; }
-/* The lock: one catch of light, then the metal cools to obsidian. */
-.lock-catch {
-  position: absolute; top: -40%; bottom: -40%; left: -30%; width: 26%; opacity: 0; pointer-events: none;
-  background: linear-gradient(100deg, transparent, hsl(52 100% 98% / 0.95) 50%, transparent);
-  transform: skewX(-22deg);
-}
-.is-locking .lock-catch { animation: lock-catch 620ms 60ms var(--ease-soft) both; }
-@keyframes lock-catch {
-  0%   { opacity: 1; transform: translateX(0) skewX(-22deg); }
-  100% { opacity: 0; transform: translateX(520%) skewX(-22deg); }
-}
-.is-locking .lock-face, .is-locked .lock-face {
-  background: linear-gradient(180deg, hsl(258 14% 16%) 0%, hsl(258 16% 9%) 60%, hsl(258 18% 6%) 100%);
+/* The padlock: body and shackle, the shackle open a hair until the lock. */
+.lock-ico { position: relative; width: 20px; height: 20px; display: inline-block; flex-shrink: 0; }
+.lock-ico svg { position: absolute; inset: 0; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.lock-shackle { transform: translateY(-2.5px); transition: transform 260ms var(--ease-spring); }
+.is-locking .lock-shackle, .is-locked .lock-shackle { transform: translateY(0); }
+/* Labels. The armed line waits for the latch before it leaves. */
+.lock-lbl, .lock-done { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.lock-lbl { transition: opacity 260ms 420ms var(--ease-soft), transform 420ms 420ms var(--ease-soft); }
+.lock-done {
+  opacity: 0; transform: translateY(5px);
   color: hsl(var(--gold-light));
-  text-shadow: 0 0 14px hsl(var(--gold) / 0.45), 0 1px 0 hsl(0 0% 0% / 0.6);
+  text-shadow: 0 0 14px hsl(var(--gold) / 0.45), 0 1px 0 hsl(0 0% 0% / 0.7);
+  transition: opacity 560ms 620ms var(--ease-soft), transform 760ms 620ms var(--ease-soft);
+}
+.lock-chk path { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; }
+/* The obsidian: its own layer fading in, the guilloché surviving in gold. */
+.lock-obsidian {
+  position: absolute; inset: 0; border-radius: inherit; opacity: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 110% at 18% 0%, hsl(258 22% 26% / 0.55) 0%, transparent 60%),
+    linear-gradient(180deg, hsl(258 14% 15%) 0%, hsl(258 16% 9%) 55%, hsl(258 18% 5%) 100%);
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.10), inset 0 -1px 0 hsl(var(--gold) / 0.22), inset 0 -4px 6px hsl(0 0% 0% / 0.6);
+  transition: opacity 1000ms 420ms var(--ease-soft);
+}
+.lock-obsidian::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-radial-gradient(circle at 50% 140%, hsl(var(--gold) / 0.07) 0 1px, transparent 1px 4px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 16%, #000 30%, #000 70%, transparent 84%);
+          mask-image: linear-gradient(180deg, transparent 16%, #000 30%, #000 70%, transparent 84%);
+}
+.lock-catch {
+  position: absolute; inset: 0 auto 0 -30%; width: 22%; opacity: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 0%, hsl(54 100% 98% / 0.5) 44%, hsl(54 100% 99%) 50%, hsl(54 100% 98% / 0.5) 56%, transparent 100%);
+  transform: skewX(-18deg);
+}
+/* The press: fast down, the rim light doubles, the floor compresses, the
+   sheen waits, the light gathers under the finger. */
+.lock-bar:active:not(:disabled) .lock-face,
+.lock-bar:active:not(:disabled) .lock-bezel { transform: translateY(3px); transition: transform 90ms var(--ease-ios); }
+.lock-bar:active:not(:disabled) .lock-house {
+  transition-duration: 90ms;
   box-shadow:
-    0 0 0 1px hsl(var(--gold) / 0.7), inset 0 1px 0 hsl(0 0% 100% / 0.08),
-    inset 0 -2px 4px hsl(0 0% 0% / 0.6), 0 3px 6px hsl(0 0% 0% / 0.6),
-    0 18px 34px -12px hsl(0 0% 0% / 0.9), 0 0 40px -6px hsl(var(--gold) / 0.35);
+    inset 0 3px 4px -1px hsl(0 0% 0% / 0.95),
+    inset 0 -1px 0 hsl(46 70% 80% / 0.30),
+    0 0 0 1px hsl(0 0% 0% / 0.55),
+    0 1px 0 hsl(var(--gold) / 0.16),
+    0 2px 2px hsl(0 0% 0% / 0.5),
+    0 18px 32px -10px hsl(0 0% 0% / 0.8);
 }
-.is-locking .lock-spec, .is-locked .lock-spec { opacity: 0; transition: opacity 500ms var(--ease-soft); }
-.lock-lbl, .lock-done {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: opacity 500ms 200ms var(--ease-soft), transform 700ms 200ms var(--ease-soft);
+.lock-bar:active:not(:disabled) .lock-floor { transform: scale(0.94, 0.6); opacity: 0.8; transition-duration: 90ms; }
+.lock-bar:active:not(:disabled) .lock-spec { animation-play-state: paused; }
+.lock-bar:active:not(:disabled) .lock-touch { opacity: 1; }
+/* The lock. Timeline from is-locking: the latch (0–520), the shackle closes,
+   the catch (380–940), the obsidian (420–1420), the label leaves (420),
+   "Locked" settles (620), the check draws (860–1500), the ring (300–1400). */
+.is-locking .lock-face, .is-locking .lock-bezel { animation: lock-latch 520ms var(--ease-spring) both; }
+@keyframes lock-latch {
+  0%   { transform: translateY(3px); }
+  30%  { transform: translateY(4.5px); }
+  100% { transform: translateY(0); }
 }
-.lock-done { opacity: 0; transform: translateY(6px); }
-.is-locking .lock-lbl, .is-locked .lock-lbl { opacity: 0; transform: translateY(-6px); transition-delay: 0ms; }
+.is-locking .lock-catch { animation: lock-catch 560ms 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes lock-catch {
+  0%   { opacity: 1; transform: translateX(0)    skewX(-18deg); }
+  100% { opacity: 0; transform: translateX(700%) skewX(-18deg); }
+}
+.is-locking .lock-obsidian, .is-locked .lock-obsidian { opacity: 1; }
+.is-locking .lock-face, .is-locked .lock-face {
+  box-shadow: inset 0 1px 0 hsl(54 100% 96% / 0), inset 0 -3px 5px hsl(18 70% 20% / 0), inset 0 0 0 1px hsl(var(--gold) / 0.6), 0 0 0 1px hsl(52 100% 90% / 0);
+  transition: transform 460ms var(--ease-spring), box-shadow 900ms 420ms var(--ease-soft);
+}
+.is-locking .lock-bezel, .is-locked .lock-bezel {
+  box-shadow: inset 0 1px 0 hsl(52 100% 92% / 0.7), inset 0 -1px 0 hsl(20 60% 15% / 0.7), 0 1px 1px hsl(0 0% 0% / 0.6), 0 0 36px -6px hsl(var(--gold) / 0.4);
+}
+.is-locking .lock-spec, .is-locked .lock-spec { opacity: 0; transition: opacity 400ms var(--ease-soft); }
+.is-locking .lock-floor, .is-locked .lock-floor { opacity: 0.45; }
+.is-locking .lock-lbl, .is-locked .lock-lbl { opacity: 0; transform: translateY(-5px); }
 .is-locking .lock-done, .is-locked .lock-done { opacity: 1; transform: translateY(0); }
-.lock-chk path { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; }
-.is-locking .lock-chk path, .is-locked .lock-chk path { animation: lock-draw 700ms 520ms var(--ease-soft) forwards; }
+.is-locking .lock-chk path, .is-locked .lock-chk path { animation: lock-draw 640ms 860ms var(--ease-ios) forwards; }
 @keyframes lock-draw { to { stroke-dashoffset: 0; } }
-/* Off the bar: a small bloom, a hairline ring, the XP rising. */
-.lock-bloom {
-  position: absolute; left: 50%; top: 50%; width: 420px; height: 420px; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, hsl(var(--gold) / 0.42) 0%, hsl(var(--ember) / 0.2) 24%, hsl(var(--ember-dark) / 0.08) 46%, transparent 66%);
-  transform: translate(-50%, -50%) scale(0.1); opacity: 0;
-  transition: transform 900ms var(--ease-soft), opacity 800ms var(--ease-soft);
-}
-.is-locking .lock-bloom, .is-locked .lock-bloom { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-.is-locked .lock-bloom { opacity: 0.6; }
+/* Off the bar: the housing's own outline leaving it once, a low warm haze,
+   and the XP lifting off. */
 .lock-ring {
-  position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; border-radius: 50%; pointer-events: none;
-  border: 1px solid hsl(var(--gold-light) / 0.8); opacity: 0;
-  transform: translate(-50%, -50%) scale(0.3);
+  position: absolute; inset: -4px; border-radius: 21px; pointer-events: none;
+  border: 1px solid hsl(var(--gold-light) / 0.7); opacity: 0;
 }
-.is-locking .lock-ring, .is-locked .lock-ring { animation: lock-ring 1400ms var(--ease-soft) both; }
+.is-locking .lock-ring, .is-locked .lock-ring { animation: lock-ring 1100ms 300ms var(--ease-soft) both; }
 @keyframes lock-ring {
-  0%   { opacity: 0.9; transform: translate(-50%, -50%) scale(0.3); }
-  100% { opacity: 0;   transform: translate(-50%, -50%) scale(4.5); }
+  0%   { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.06, 1.45); }
 }
+.lock-bloom {
+  position: absolute; left: 50%; top: 50%; width: 240px; height: 120px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, hsl(var(--gold) / 0.30) 0%, hsl(var(--ember) / 0.12) 40%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0.6); opacity: 0;
+  transition: transform 900ms var(--ease-soft), opacity 700ms var(--ease-soft);
+}
+.is-locking .lock-bloom, .is-locked .lock-bloom { transform: translate(-50%, -50%) scale(1); opacity: 0.55; }
 .lock-xp {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap;
-  padding: 6px 14px; border-radius: 999px; opacity: 0;
-  background: linear-gradient(180deg, hsl(46 88% 74%), hsl(34 84% 50%));
-  color: hsl(28 80% 12%); font-family: theme('fontFamily.display'); font-weight: 900; font-size: 15px;
-  box-shadow: 0 0 0 1px hsl(44 70% 60% / 0.6), inset 0 1px 0 hsl(50 100% 94% / 0.9), 0 8px 20px -6px hsl(0 0% 0% / 0.7);
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap; opacity: 0;
+  display: inline-flex; align-items: center; height: 36px; padding: 0 13px; border-radius: 999px;
+  background: linear-gradient(180deg, hsl(258 14% 14%), hsl(258 18% 6%));
+  color: hsl(var(--gold-light)); font-family: theme('fontFamily.display'); font-weight: 900; font-size: 14px; letter-spacing: 0.02em;
+  box-shadow: 0 0 0 1px hsl(var(--gold) / 0.8), inset 0 1px 0 hsl(0 0% 100% / 0.1), 0 10px 22px -8px hsl(0 0% 0% / 0.8), 0 0 18px -4px hsl(var(--gold) / 0.35);
+  text-shadow: 0 0 10px hsl(var(--gold) / 0.45);
 }
-.is-locked .lock-xp { animation: lock-xp 1500ms 350ms var(--ease-soft) both; }
+.is-locked .lock-xp { animation: lock-xp 1000ms 220ms var(--ease-soft) both; }
 @keyframes lock-xp {
-  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
-  18%  { opacity: 1; transform: translate(-50%, -90%) scale(1); }
-  85%  { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -1040%) scale(0.85); }
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  22%  { opacity: 1; transform: translate(-50%, -90%) scale(1); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -980%) scale(0.85); }
+}
+/* Waiting: the lights are off. */
+.lock-bar:disabled .lock-face::after { opacity: 1; transition-duration: 200ms; }
+.lock-bar:disabled .lock-spec { animation-play-state: paused; opacity: 0; }
+.lock-bar:disabled .lock-floor { opacity: 0; }
+/* Focus lands on the housing (the button's own ring hid under it). */
+.lock-bar:focus-visible { outline: none; box-shadow: none; }
+.lock-bar:focus-visible .lock-house {
+  box-shadow:
+    0 0 0 2px hsl(var(--background)),
+    0 0 0 4px hsl(var(--gold) / 0.6),
+    inset 0 3px 4px -1px hsl(0 0% 0% / 0.9),
+    inset 0 -1px 0 hsl(46 60% 76% / 0.12),
+    0 0 0 1px hsl(0 0% 0% / 0.55),
+    0 1px 0 hsl(var(--gold) / 0.10),
+    0 2px 2px hsl(0 0% 0% / 0.5),
+    0 18px 32px -10px hsl(0 0% 0% / 0.8);
 }
 @media (prefers-reduced-motion: reduce) {
-  .lock-spec, .lock-catch, .lock-ring, .lock-xp, .lock-chk path { animation: none !important; }
+  .lock-spec, .lock-catch, .lock-ring, .lock-xp, .lock-chk path,
+  .is-locking .lock-face, .is-locking .lock-bezel { animation: none !important; }
+  .lock-spec { opacity: 0; }
   .lock-chk path { stroke-dashoffset: 0; }
-  .lock-bloom { transition: none; }
-  .lock-face { transition: background 200ms, color 200ms; }
-  .lock-lbl, .lock-done { transition: opacity 200ms; transform: none; }
+  .lock-face, .lock-bezel, .lock-house, .lock-floor, .lock-bloom, .lock-face::after, .lock-shackle, .lock-touch { transition: none; }
+  .lock-obsidian { transition: opacity 200ms; }
+  .lock-lbl, .lock-done { transition: opacity 200ms; }
+  .lock-done, .is-locking .lock-lbl, .is-locked .lock-lbl { transform: none; }
+  .is-locked .lock-xp { opacity: 1; transform: translate(-50%, -90%); }
 }
 
 /* Escaped infinite loops the named guards above don't reach:

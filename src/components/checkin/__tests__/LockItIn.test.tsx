@@ -45,4 +45,16 @@ describe("LockItIn", () => {
       expect(container.querySelector("." + c), c).not.toBeNull();
     }
   });
+
+  it("v3 anatomy: bezel, guilloché, touch light, shackle, obsidian, floor — and the finger's x", () => {
+    const { container } = render(<LockItIn xp={23} day={3} state="armed" onClick={() => {}} />);
+    for (const c of ["lock-bezel", "lock-guil", "lock-touch", "lock-shackle", "lock-obsidian", "lock-floor", "lock-ico"]) {
+      expect(container.querySelector("." + c), c).not.toBeNull();
+    }
+    const bar = screen.getByRole("button") as HTMLButtonElement;
+    expect(bar).toHaveTextContent("Lock it in · +23 XP");
+    bar.getBoundingClientRect = () => ({ left: 100, top: 0, width: 300, height: 62, right: 400, bottom: 62, x: 100, y: 0, toJSON: () => ({}) });
+    bar.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, clientX: 220 }));
+    expect(bar.style.getPropertyValue("--lx")).toBe("120px");
+  });
 });

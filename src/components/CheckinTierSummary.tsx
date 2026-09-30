@@ -161,11 +161,11 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           )}
         >
           {leveledUp ? (
-            <Trophy aria-hidden size={34} strokeWidth={2.4} />
+            <Trophy aria-hidden size={34} strokeWidth={2.5} />
           ) : cfg.rank >= 5 ? (
-            <Flame aria-hidden size={34} strokeWidth={2.4} fill="currentColor" />
+            <Flame aria-hidden size={34} strokeWidth={2.5} fill="currentColor" />
           ) : (
-            <Zap aria-hidden size={34} strokeWidth={2.4} fill="currentColor" />
+            <Zap aria-hidden size={34} strokeWidth={2.5} fill="currentColor" />
           )}
         </m.div>
 
@@ -182,7 +182,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.18 }}
-          className="text-xs text-muted-foreground font-bold mb-4"
+          className="text-meta text-muted-foreground font-bold mb-4"
         >
           {subline}
         </m.p>
@@ -223,7 +223,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
                 <div key={l.k} className="flex items-center justify-between gap-2">
                   <span className={cn("inline-flex items-center gap-1 truncate", l.pts > 0 ? "text-foreground/85" : "text-muted-foreground")}>
                     {LINE_LABEL[l.k]}
-                    {l.src === "health" && <ShieldCheck aria-label="Apple Health" size={11} className="text-teal shrink-0" />}
+                    {l.src === "health" && <ShieldCheck aria-label="Apple Health" size={12} className="text-teal shrink-0" />}
                   </span>
                   <span className={cn("shrink-0 font-bold", l.pts > 0 ? "text-foreground/85" : "text-muted-foreground/75")}>{l.pts}<span className="font-normal text-muted-foreground/75">/{l.max}</span></span>
                 </div>
@@ -328,7 +328,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
               )}
             >
               <AnimatedNumber value={summary.newStreak} duration={800} />
-              <span className="text-base font-bold opacity-60">d</span>
+              <span className="text-copy font-bold opacity-60">d</span>
             </p>
             {/* Demoted from a tracked-uppercase eyebrow: seven of those on one
                 screen made the reward read as a dashboard of labels. Matches
@@ -356,10 +356,10 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
           )}
         >
           <span className="text-label font-bold flex items-center gap-1.5 text-muted-foreground">
-            <Target aria-hidden size={11} strokeWidth={3} />
+            <Target aria-hidden size={12} strokeWidth={3} />
             Total XP
           </span>
-          <span className="font-display text-xl font-black tabular-nums">
+          <span className="font-display text-head font-black tabular-nums">
             {fmtInt(summary.newTotalXp)}
           </span>
         </m.div>
@@ -402,7 +402,7 @@ const CheckinTierSummary = ({ tier, summary, onProfile, onDashboard, onAskCoach,
             transition={{ delay: 0.54 }}
             className="text-label font-bold mt-4 flex items-center justify-center gap-1.5 text-gold"
           >
-            <Crown aria-hidden size={11} strokeWidth={3} />
+            <Crown aria-hidden size={12} strokeWidth={3} />
             {cfg.rank === 6 ? "Founders Circle standard" : "Apex doesn't skip days"}
           </m.p>
         )}

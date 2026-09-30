@@ -404,7 +404,7 @@ export default function Recovery() {
               />
             )}
             <p className="eyebrow-sm text-muted-foreground">{SHELF_LABEL[routine.shelf]}</p>
-            <h1 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight text-balance">
+            <h1 className="h-page mt-1 text-balance">
               {routine.name}
             </h1>
             <p className="mt-3 text-dense text-muted-foreground leading-snug">{routine.blurb}</p>
@@ -428,7 +428,7 @@ export default function Recovery() {
               onClick={() => { hapticSelection(); navigate(`/vault?lesson=${routine.vault}`); }}
               className="press home-rise home-rise-2 mt-3 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
             >
-              Why it works, in the Vault <ChevronRight aria-hidden size={13} />
+              Why it works, in the Vault <ChevronRight aria-hidden size={14} />
             </button>
           )}
           {hasVoice(routine.id) && (
@@ -479,7 +479,7 @@ export default function Recovery() {
             <p className="eyebrow-sm text-muted-foreground">
               {source === "rest_day" ? "Rest day" : source === "post_workout" ? "After the work" : "Recovery"}
             </p>
-            <h1 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight text-balance">
+            <h1 className="h-page mt-1 text-balance">
               {session.general
                 ? "Loosen up."
                 : source === "rest_day"
@@ -591,7 +591,7 @@ export default function Recovery() {
         <PageBar onBack={() => backOr(navigate, home)} title="Recovery" />
         <div className="px-4 pt-6 pb-6">
           <div className="home-rise">
-            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+            <h2 className="h-page">
               {routine ? `Done. ${routine.name}.` : "Done. Recovery handled."}
             </h2>
             <p className="mt-3 text-read font-bold tabular-nums text-foreground/85">
@@ -653,7 +653,7 @@ export default function Recovery() {
             {blockLabel}
             {movement.areas.length > 0 && ` · ${movement.areas.join(", ")}`}
           </p>
-          <h2 className="mt-1 font-display font-black text-major leading-[1.06] tracking-tight text-balance">
+          <h2 className="mt-1 font-display font-black text-major leading-display tracking-tight text-balance">
             {movement.name}
           </h2>
           {/* Side is the one thing a timed stretch gets silently wrong: 30

@@ -151,7 +151,7 @@ const Vault = () => {
           {isLoading ? (
             <div className="h-7 w-3/4 rounded-lg bg-card/40 skeleton-block" />
           ) : (
-            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+            <h2 className="h-page">
               {practicedCount > 0 ? (
                 <>
                   <span className="text-gold glow-gold-text tabular-nums">{fmtInt(practicedCount)}</span>
@@ -358,7 +358,7 @@ const VaultCategoryBlock = ({
         )}
         <div className="absolute inset-x-0 bottom-0 z-10 p-4 pr-10">
           <p className="flex items-center gap-1.5 text-label font-semibold mb-1" style={{ color: category.accent }}>
-            <Icon size={12} strokeWidth={2.6} aria-hidden />
+            <Icon size={12} strokeWidth={2.5} aria-hidden />
             {category.tagline}
           </p>
           <p className="font-display text-head font-black leading-none tracking-tight text-white drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">

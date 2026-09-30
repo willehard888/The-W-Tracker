@@ -409,7 +409,7 @@ const Profile = () => {
       {/* ── OPENING BEAT + the one action. Sign Out sits in this menu too:
              users kept missing it inside the Settings tab. ── */}
       <header className="home-rise flex items-center justify-between gap-3 mb-4">
-        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+        <h1 className="h-page">
           {best > 0 ? `Lv ${profile.level ?? 1}. ${best}-day best.` : "Recruit. Day one."}
         </h1>
         <DropdownMenu>
@@ -516,7 +516,7 @@ const Profile = () => {
             >
               <div className="shrink-0">
                 <p className="font-display font-black text-3xl leading-none tabular-nums">{latest.overall}</p>
-                <p className="text-label font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={11} /> Whealth Index</p>
+                <p className="text-label font-bold text-muted-foreground mt-1 inline-flex items-center gap-1"><Gauge aria-hidden size={12} /> Whealth Index</p>
                 {/*
                   Home prints the LIVE index, recomputed on every open; this
                   one is the stored nightly score, on purpose (the live hook is
@@ -582,7 +582,7 @@ const Profile = () => {
       {/* User Posts */}
       {userPosts && userPosts.length > 0 && (
         <div>
-          <h2 className="font-display font-bold text-base mb-3 tracking-tight">Posts ({userPostsTotal})</h2>
+          <h2 className="font-display font-bold text-copy mb-3 tracking-tight">Posts ({userPostsTotal})</h2>
 
           {/* Proof first, as a grid — the same one another member sees on your
               profile. It used to render image_url only, so a video post showed
@@ -610,7 +610,7 @@ const Profile = () => {
           <div className="space-y-3">
             {textPosts.map((post) => (
               <div key={post.id} className="surface-card surface-card-quiet p-4">
-                {post.content && <p className="text-base mb-2">{post.content}</p>}
+                {post.content && <p className="text-copy mb-2">{post.content}</p>}
                 <div className="flex items-center gap-3 text-label text-muted-foreground">
                   <span className="flex items-center gap-1"><Heart aria-hidden size={12} /> {post.likes_count}</span>
                   <span className="flex items-center gap-1"><Trophy aria-hidden size={12} /> {post.kudos_count}</span>

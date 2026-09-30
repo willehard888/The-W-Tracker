@@ -38,7 +38,7 @@ const PageBar = ({
       <span className="w-10" aria-hidden />
     )}
     {typeof title === "string" ? (
-      <h1 className="flex-1 min-w-0 font-display text-base font-black tracking-tight truncate">{title}</h1>
+      <h1 className="flex-1 min-w-0 font-display text-copy font-black tracking-tight truncate">{title}</h1>
     ) : (
       <div className="flex-1 min-w-0">{title}</div>
     )}

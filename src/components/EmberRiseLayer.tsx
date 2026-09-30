@@ -107,7 +107,7 @@ const EmberRiseLayer = ({ events, accent }: EmberRiseLayerProps) => {
 
             {/* 4. +N chip rising from candle root */}
             <span
-              className="absolute left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full font-display font-black text-base tabular-nums"
+              className="absolute left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full font-display font-black text-copy tabular-nums"
               style={{
                 bottom: "26%",
                 color: "hsl(var(--background))",

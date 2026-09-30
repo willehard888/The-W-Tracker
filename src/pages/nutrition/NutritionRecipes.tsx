@@ -70,7 +70,7 @@ const NutritionRecipes = () => {
         ) : (
           <>
             <div className="home-rise">
-              <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+              <h2 className="h-page">
                 {recipes.length} {recipes.length === 1 ? "recipe" : "recipes"} ready to log.
               </h2>
             </div>

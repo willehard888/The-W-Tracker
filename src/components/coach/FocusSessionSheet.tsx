@@ -275,7 +275,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
         {preview && (
           <div className="home-rise">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="font-display font-black text-lead tracking-tight leading-tight">{preview.focus}</p>
+              <p className="h-card">{preview.focus}</p>
               <p className="text-meta text-muted-foreground tabular-nums shrink-0">
                 {preview.duration_min} min · {preview.blocks.length} exercises
               </p>
@@ -299,7 +299,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
                     disabled={busy || !!swapping}
                     onClick={() => swapRow(b.slug)}
                   >
-                    {swapping === b.slug ? <Loader2 aria-hidden size={15} className="animate-spin" /> : <ArrowLeftRight aria-hidden size={15} />}
+                    {swapping === b.slug ? <Loader2 aria-hidden size={16} className="animate-spin" /> : <ArrowLeftRight aria-hidden size={16} />}
                   </Button>
                 </li>
               ))}

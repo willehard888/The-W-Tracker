@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const Field = ({ label, value }: { label: string; value: string }) => (
-  <div className="grid grid-cols-[120px_1fr] gap-2 text-xs">
+  <div className="grid grid-cols-[120px_1fr] gap-2 text-meta">
     <span className="text-muted-foreground">{label}</span>
     <span className="font-mono break-all">{value}</span>
   </div>
@@ -58,13 +58,13 @@ const IosDebug = () => {
       </div>
 
       <div className="surface-card surface-card-quiet rounded-xl p-4">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           Platform: <span className="font-semibold text-foreground">{platform}</span> • Updated: {state.updatedAt}
         </p>
       </div>
 
       <section className="surface-card surface-card-quiet rounded-xl p-4 space-y-2">
-        <h2 className="font-display text-sm font-bold">Apple OAuth callback</h2>
+        <h2 className="font-display text-note font-bold">Apple OAuth callback</h2>
         <Field label="callbackAt" value={stringify(state.oauth.callbackAt)} />
         <Field label="redirectUri" value={stringify(state.oauth.redirectUri)} />
         <Field label="sentState" value={stringify(state.oauth.sentState)} />
@@ -78,7 +78,7 @@ const IosDebug = () => {
       </section>
 
       <section className="surface-card surface-card-quiet rounded-xl p-4 space-y-2">
-        <h2 className="font-display text-sm font-bold">RevenueCat products & purchase errors</h2>
+        <h2 className="font-display text-note font-bold">RevenueCat products & purchase errors</h2>
         <Field label="appUserId" value={stringify(state.revenuecat.appUserId)} />
         <Field label="entitlement" value={stringify(state.revenuecat.entitlement)} />
         <Field label="monthlyPrice" value={stringify(state.revenuecat.monthlyPriceLabel)} />
@@ -95,15 +95,15 @@ const IosDebug = () => {
       </section>
 
       <section className="surface-card surface-card-quiet rounded-xl p-4 space-y-3">
-        <h2 className="font-display text-sm font-bold">Recent debug logs</h2>
+        <h2 className="font-display text-note font-bold">Recent debug logs</h2>
         {logs.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No logs yet.</p>
+          <p className="text-meta text-muted-foreground">No logs yet.</p>
         ) : (
           <div className="space-y-2">
             {logs.map((log, index) => (
               <div key={`${log.at}-${index}`} className="rounded-lg border border-border p-2">
                 <p className="text-meta text-muted-foreground">{log.at} • {log.source}</p>
-                <p className="text-xs font-medium break-words">{log.message}</p>
+                <p className="text-meta font-semibold break-words">{log.message}</p>
                 {log.payload ? (
                   <pre className="mt-1 text-meta whitespace-pre-wrap break-all text-muted-foreground font-mono">
                     {log.payload}

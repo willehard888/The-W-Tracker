@@ -50,7 +50,7 @@ const WeekStrip = ({ week, selected, today, logs, onSelect }: Props) => (
             {SHORT[i]}
           </span>
           <span className="flex items-center justify-center h-3.5 mt-1.5" aria-hidden>
-            {done ? <Check size={12} strokeWidth={3} className="text-gold" />
+            {done ? <Check size={12} strokeWidth={3} className="text-gold" aria-hidden />
               : isRest ? <span className="h-px w-2 bg-muted-foreground/40" />
               : <span className="h-1.5 w-1.5 rounded-full bg-foreground/70" />}
           </span>

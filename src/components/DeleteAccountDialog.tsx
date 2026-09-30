@@ -64,7 +64,7 @@ const DeleteAccountDialog = ({ open, onOpenChange, username, onBusy }: Props) =>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-2 py-1">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             Type your username{" "}
             <span className="font-bold text-foreground">{username}</span>{" "}
             to confirm.

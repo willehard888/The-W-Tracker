@@ -128,8 +128,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
   if (!profile?.onboarded) {
     return (
       <div className="px-1 pt-2 pb-8">
-        <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Coach needs to meet you first</h2>
-        <p className="text-sm text-muted-foreground mt-1 mb-6 leading-relaxed">
+        <h2 className="font-display text-major font-black tracking-tight leading-tight">Coach needs to meet you first</h2>
+        <p className="text-note text-muted-foreground mt-1 mb-6 leading-relaxed">
           Your goal, the days you train, what you lift with, anything that hurts. Two minutes, once. Every week after
           that is built from it.
         </p>
@@ -142,8 +142,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
   return (
     <div className="px-1 pt-2 pb-8">
-      <h2 className="font-display text-2xl font-black tracking-tight leading-tight">Build my week</h2>
-      <p className="text-sm text-muted-foreground mt-1 mb-5 leading-relaxed">
+      <h2 className="font-display text-major font-black tracking-tight leading-tight">Build my week</h2>
+      <p className="text-note text-muted-foreground mt-1 mb-5 leading-relaxed">
         One session for each of your training days. The week repeats, and the loads follow what you log.
       </p>
 
@@ -152,10 +152,10 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
           <p className="text-label font-bold text-gold">From your athlete profile</p>
           <button type="button" onClick={() => navigate("/coach/profile")}
             className="text-label font-bold text-muted-foreground inline-flex items-center gap-1 hover:text-foreground transition-colors">
-            <Settings2 aria-hidden size={11} /> Edit
+            <Settings2 aria-hidden size={12} /> Edit
           </button>
         </div>
-        <dl className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
+        <dl className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-meta">
           <Row k="Goal"      v={goalLabel} />
           <Row k="Session"   v={`${sessionMin} min`} />
           <Row k="Schedule"  v={`${days.length} day${days.length === 1 ? "" : "s"}/wk`} extra={<DayDots active={days} />} wide />
@@ -193,7 +193,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 const Row = ({ k, v, wide, extra }: { k: string; v: string; wide?: boolean; extra?: React.ReactNode }) => (
   <div className={cn("flex flex-col gap-0.5", wide && "col-span-2")}>
     <dt className="text-label font-bold text-muted-foreground">{k}</dt>
-    <dd className="text-foreground/90 font-medium flex items-center gap-2">{v}{extra}</dd>
+    <dd className="text-foreground/90 font-semibold flex items-center gap-2">{v}{extra}</dd>
   </div>
 );
 
@@ -222,7 +222,7 @@ const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => voi
   ({ active, onClick, children }, ref) => (
     <button ref={ref} type="button" onClick={onClick}
       className={cn(
-        "rounded-full border transition-colors px-3 py-1.5 text-xs",
+        "rounded-full border transition-colors px-3 py-1.5 text-meta",
         active
           ? "border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] font-bold"
           : "border-border/40 bg-card/40 text-muted-foreground"

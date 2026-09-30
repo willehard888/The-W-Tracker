@@ -40,6 +40,11 @@ export default {
        * share-image sizes that should stay arbitrary. The ladder stops there,
        * and style-guard rule 19 polices only 0–27px for the same reason.
        */
+      // Display leading: the page and card titles sit at 1.04 (51 sites used
+      // to write leading-[1.04] by hand, five wrote 1.06).
+      lineHeight: {
+        display: "1.04",
+      },
       fontSize: {
         label: "11px", // the smallest text: Apple's smallest style is 11pt (Iipo's type scale); what an `.eyebrow` demotes to
         meta: "12px", // meta line, timestamp, caption

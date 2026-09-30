@@ -60,6 +60,16 @@ const RULES = [
   { re: /["'`][^"'`]*\brounded-(?:xl|2xl)\b[^"'`]*\bborder\b[^"'`]*\bbg-card(?:\/\d+)?\b[^"'`]*["'`]|["'`][^"'`]*\bbg-card(?:\/\d+)?\b[^"'`]*\bborder\b[^"'`]*\brounded-(?:xl|2xl)\b[^"'`]*["'`]/, msg: "hand-rolled card shell — use surface-card (surface-card-quiet for nested, surface-panel inside a card, surface-tint-* for an accent)", exempt: [UI, "src/components/skeletons/PageSkeleton.tsx"] },
   // One list: rows divide at /35 everywhere.
   { re: /\bdivide-border\/(?!35\b)\d+/, msg: "list divider off the scale — divide-border/35" },
+  // One type scale: the named ladder (label…beat) is the vocabulary; the stock
+  // steps are the same pixels under another name. LOCK IN's deck is locked.
+  { re: /(?<![\w:-])text-(?:xs|sm|base|lg|xl|2xl)\b/, msg: "stock text size — use the named ladder (meta·note·copy·subhead·head·major)", exempt: ["src/components/home/CommandDeck.tsx"] },
+  { re: /\bleading-\[/, msg: "arbitrary leading — leading-display (titles) or tight / snug / relaxed / none", exempt: ["src/components/home/CommandDeck.tsx"] },
+  { re: /\bfont-(?:medium|extrabold|light|thin)\b/, msg: "off-scale weight — the app speaks in semibold / bold / black", exempt: ["src/components/home/CommandDeck.tsx"] },
+  { re: /["'`](?=[^"'`]*\bfont-display\b)(?=[^"'`]*\btext-beat\b)(?=[^"'`]*\btracking-tight\b)(?=[^"'`]*\bleading-(?:display|tight)\b)[^"'`]*["'`]/, msg: "hand-written page title — .h-page", exempt: ["src/components/home/CommandDeck.tsx"] },
+  // One icon scale: 12 · 14 · 16 · 18 · 20 · 24 (10 and below for dots), one
+  // stroke: 2 (the default), 2.5 or 3 (0 for a filled mark).
+  { re: /\bsize=\{?(?:11|13|15|17|19|21|23)\}?/, msg: "icon size between the steps — 12 · 14 · 16 · 18 · 20 · 24", exempt: ["src/components/home/CommandDeck.tsx"] },
+  { re: /\bstrokeWidth=\{?(?:1\.[0-9]|2\.[1-46-9]|3\.[1-9])\b/, msg: "off-scale stroke — 2.5 or 3 (2 is the default: drop the prop; 0 fills)", exempt: ["src/components/home/CommandDeck.tsx"] },
   { re: /animate-reveal|animate-stagger-/, msg: "v1 entrance — use home-rise(-N)" },
   { re: /\btransition-all\b/, msg: "transition-all animates 11 properties and overrides .press — name the ones that move (transition-colors, transition-[width], …)" },
   { re: /document\.body\.style\.overflow/, msg: "body scroll lock is a no-op — use useScrollLock", exempt: ["src/contexts/ScrollContainerContext.tsx"] },

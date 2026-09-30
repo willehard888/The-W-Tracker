@@ -122,9 +122,9 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
       }
     >
       {searching ? (
-        <p className="text-xs text-muted-foreground text-center py-6">Searching…</p>
+        <p className="text-meta text-muted-foreground text-center py-6">Searching…</p>
       ) : query.trim().length >= 2 && results.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-6">No tribes found.</p>
+        <p className="text-meta text-muted-foreground text-center py-6">No tribes found.</p>
       ) : (
         <div className="divide-y divide-border/35">
           {results.map((r) => {
@@ -138,9 +138,9 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
                 className="press-row w-full min-h-11 text-left py-3 flex items-center gap-3"
               >
                 <div className="flex-1 min-w-0">
-                  <p className={cn("text-sm font-bold truncate", on && "text-gold")}>{r.name}</p>
+                  <p className={cn("text-note font-bold truncate", on && "text-gold")}>{r.name}</p>
                   <p className="text-label text-muted-foreground inline-flex items-center gap-1 tabular-nums">
-                    <Users size={11} aria-hidden /> {r.member_count} member{r.member_count === 1 ? "" : "s"} · {r.visibility}
+                    <Users size={12} aria-hidden /> {r.member_count} member{r.member_count === 1 ? "" : "s"} · {r.visibility}
                   </p>
                 </div>
                 {on && <Check size={16} className="commit-pop text-gold shrink-0" aria-hidden />}
@@ -162,7 +162,7 @@ const TribeChallengeModal = ({ open, onOpenChange, challengerTribeId, onCreated 
                 className="min-h-11 h-auto py-2 flex-col gap-0"
                 onClick={() => setDuration(d.value)}
               >
-                <span className="text-xs font-black">{d.label}</span>
+                <span className="text-meta font-black">{d.label}</span>
                 <span className="text-label font-normal text-muted-foreground">{d.sub}</span>
               </Button>
             ))}

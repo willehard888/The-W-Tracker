@@ -90,13 +90,13 @@ const Friends = () => {
   const relation = (id: string) => {
     const incomingFid = incomingById.get(id);
     if (friendIds.has(id)) {
-      return <span className="inline-flex items-center gap-1 text-meta font-bold text-muted-foreground px-2"><UserCheck size={13} aria-hidden /> In circle</span>;
+      return <span className="inline-flex items-center gap-1 text-meta font-bold text-muted-foreground px-2"><UserCheck size={14} aria-hidden /> In circle</span>;
     }
     if (incomingFid) {
       return (
         <Button size="sm" variant="ember" className={cn("min-h-11", busy === id && "commit-pop")} disabled={busy === id}
           onClick={() => guard(id, () => acceptRequest(incomingFid), "Friend added.")}>
-          <Check size={13} aria-hidden /> Accept
+          <Check size={14} aria-hidden /> Accept
         </Button>
       );
     }
@@ -106,7 +106,7 @@ const Friends = () => {
     return (
       <Button size="sm" variant="ember" className="min-h-11" disabled={busy === id}
         onClick={() => guard(id, () => sendRequest(id), "Request sent.")}>
-        <UserPlus size={13} aria-hidden /> Add
+        <UserPlus size={14} aria-hidden /> Add
       </Button>
     );
   };
@@ -117,7 +117,7 @@ const Friends = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h2 className="h-page">
             {friendsLoading || friendsFailed ? (
               "Your circle."
             ) : count === 0 ? (
@@ -168,12 +168,12 @@ const Friends = () => {
                 <PersonRow key={r.friendship_id} person={r} sub="wants in your circle" onOpen={open(r.user_id)}>
                   <Button size="sm" variant="ember" className={cn("min-h-11", busy === r.friendship_id && "commit-pop")} disabled={busy === r.friendship_id}
                     onClick={() => guard(r.friendship_id, () => acceptRequest(r.friendship_id), "Friend added.")}>
-                    <Check size={13} aria-hidden /> Accept
+                    <Check size={14} aria-hidden /> Accept
                   </Button>
                   <Button variant="ghost" size="icon-sm" className="rounded-full text-muted-foreground shrink-0" aria-label="Decline request"
                     disabled={busy === r.friendship_id}
                     onClick={() => guard(r.friendship_id, () => declineRequest(r.friendship_id))}>
-                    <X size={15} aria-hidden />
+                    <X size={16} aria-hidden />
                   </Button>
                 </PersonRow>
               ))}
@@ -224,7 +224,7 @@ const Friends = () => {
                     className="relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground/75 shrink-0"
                     aria-label={`Remove @${f.username}`}
                   >
-                    <UserMinus size={15} aria-hidden />
+                    <UserMinus size={16} aria-hidden />
                   </button>
                 </PersonRow>
               ))}

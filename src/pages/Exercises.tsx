@@ -103,7 +103,7 @@ const ExerciseDetail = ({ ex, onBack }: { ex: IllustratedExercise; onBack: () =>
     <div className="px-4 pt-4 pb-6">
       {/* The beat: the movement's name, and what it takes. */}
       <header className="home-rise">
-        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{ex.title}</h1>
+        <h1 className="h-page">{ex.title}</h1>
         <p className="mt-1.5 text-dense text-muted-foreground capitalize">
           {[...ex.equipment.map(equipLabel), ex.type].filter(Boolean).join(" · ")}
         </p>
@@ -255,7 +255,7 @@ const Exercises = () => {
           <>
           {/* Search */}
           <div className="relative mb-3">
-            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -270,7 +270,7 @@ const Exercises = () => {
                 onClick={() => setQuery("")}
                 className="absolute right-0 top-0 h-10 min-w-11 flex items-center justify-center text-muted-foreground"
               >
-                <X size={15} />
+                <X size={16} aria-hidden />
               </button>
             )}
           </div>
@@ -322,7 +322,7 @@ const Exercises = () => {
             </button>
           )}
           {filtered.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-10">No exercises match — try another search.</p>
+            <p className="text-center text-note text-muted-foreground py-10">No exercises match — try another search.</p>
           )}
 
           {/* CC BY-SA attribution — required by the illustration license. */}

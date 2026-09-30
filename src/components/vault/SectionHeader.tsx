@@ -10,8 +10,7 @@ const SectionHeader = ({ Icon, label, color }: { Icon?: LucideIcon; label: strin
     {Icon && (
       <Icon
         aria-hidden
-        size={13}
-        strokeWidth={2.6}
+        size={14} strokeWidth={2.5}
         className={color ? undefined : "text-muted-foreground"}
         style={color ? { color } : undefined}
       />

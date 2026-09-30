@@ -169,7 +169,7 @@ export const ExercisePreviewSheet = ({
             <div className="flex gap-2">
               {onSwap && (
                 <Button type="button" variant="outline" size="sm" onClick={() => { onSwap(); onClose(); }}>
-                  <ArrowLeftRight aria-hidden size={13} /> Swap
+                  <ArrowLeftRight aria-hidden size={14} /> Swap
                 </Button>
               )}
               {onRemove && (

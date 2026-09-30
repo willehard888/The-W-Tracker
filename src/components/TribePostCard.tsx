@@ -138,7 +138,7 @@ const CommentThread = ({
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+              <p className="text-meta text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
                 {node.content}
               </p>
             )}
@@ -448,7 +448,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
         {post.reported && (isAdmin || isOwner) && (
           <div className="px-4 py-2 bg-destructive/10 border-b border-destructive/30 flex items-center justify-between">
             <span className="text-label font-bold text-destructive flex items-center gap-1">
-              <AlertTriangle aria-hidden size={11} /> Reported
+              <AlertTriangle aria-hidden size={12} /> Reported
             </span>
             <Button
               variant="danger-outline"
@@ -473,13 +473,13 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <button onClick={() => navigate(`/user/${post.user_id}`)}
-                className="text-sm font-bold truncate hover:underline">
+                className="text-note font-bold truncate hover:underline">
                 <TierUsername
                   username={post.author?.username}
                   tier={post.author?.status_tier || "recruit"}
                   fallback="user"
                 />
-                {isOwn && <span className="ml-1 text-label text-[hsl(var(--ember))]/70 font-medium">(you)</span>}
+                {isOwn && <span className="ml-1 text-label text-[hsl(var(--ember))]/70 font-semibold">(you)</span>}
               </button>
               {isApexAuthor && (
                 <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-[hsl(var(--ember))]/15 border border-[hsl(var(--ember))]/40">
@@ -488,7 +488,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
                 </span>
               )}
               {post.author?.status_tier === "elite" && (
-                <Crown role="img" aria-label="Elite tier" size={11} className="text-gold shrink-0" />
+                <Crown role="img" aria-label="Elite tier" size={12} className="text-gold shrink-0" />
               )}
             </div>
             <div className="flex items-center gap-2 text-label text-muted-foreground">
@@ -544,7 +544,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
 
         {/* Content */}
         {post.content && (
-          <p className="px-4 pt-3 text-sm leading-relaxed whitespace-pre-wrap break-words">{post.content}</p>
+          <p className="px-4 pt-3 text-note leading-relaxed whitespace-pre-wrap break-words">{post.content}</p>
         )}
 
         {/* Image */}
@@ -566,22 +566,22 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
             <button onClick={() => toggleLike.mutate()}
               aria-label={post.liked ? "Remove fire" : "Give fire"}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-meta font-bold transition-[background-color,color,border-color,box-shadow]",
                 post.liked
                   ? "bg-streak-orange/15 text-streak-orange"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}>
-              <Flame aria-hidden size={15} fill={post.liked ? "currentColor" : "none"} className={cn(post.liked && "animate-scale-in")} />
+              <Flame aria-hidden size={16} fill={post.liked ? "currentColor" : "none"} className={cn(post.liked && "animate-scale-in")} />
               <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
             </button>
           )}
           <button onClick={() => { hapticSelection(); setReplyTo(null); setShowComments(!showComments); }}
             aria-label="Toggle comments"
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-meta font-bold transition-[background-color,color,border-color,box-shadow]",
               showComments ? "bg-[hsl(var(--ember))]/12 text-[hsl(var(--ember))]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}>
-            <MessageCircle aria-hidden size={15} fill={showComments ? "currentColor" : "none"} />
+            <MessageCircle aria-hidden size={16} fill={showComments ? "currentColor" : "none"} />
             <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
           </button>
 
@@ -599,22 +599,22 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
               aria-label={post.kudosed ? "Remove kudos" : "Give kudos"}
               title={`${kudosRemaining}/2 kudos remaining this month`}
               className={cn(
-                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
+                "flex items-center gap-1.5 px-3 h-11 min-w-11 rounded-full text-meta font-bold transition-[background-color,color,border-color,box-shadow]",
                 post.kudosed
                   ? "bg-purple/15 text-purple ring-1 ring-purple/30"
                   : kudosRemaining > 0
                     ? "text-muted-foreground hover:bg-purple/10 hover:text-purple"
                     : "text-muted-foreground/75 cursor-not-allowed"
               )}>
-              <Award aria-hidden size={15} fill={post.kudosed ? "currentColor" : "none"} className={cn(post.kudosed && "animate-scale-in")} />
+              <Award aria-hidden size={16} fill={post.kudosed ? "currentColor" : "none"} className={cn(post.kudosed && "animate-scale-in")} />
               <span className="tabular-nums">{post.kudos_count > 0 ? post.kudos_count : ""}</span>
             </button>
           )}
 
           {/* Show kudos count for own post */}
           {isOwn && post.kudos_count > 0 && (
-            <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
-              <Award aria-hidden size={15} fill="currentColor" />
+            <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-meta font-bold text-purple bg-purple/10">
+              <Award aria-hidden size={16} fill="currentColor" />
               <span className="tabular-nums">{post.kudos_count}</span>
             </div>
           )}
@@ -633,7 +633,7 @@ const TribePostCard = ({ post, isMember, isOwner, isAdmin, canKudos, kudosRemain
 
             <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
               {tree.length === 0 && (
-                <p className="text-xs text-muted-foreground/75 text-center py-3">
+                <p className="text-meta text-muted-foreground/75 text-center py-3">
                   No comments yet — start the conversation
                 </p>
               )}

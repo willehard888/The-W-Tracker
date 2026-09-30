@@ -24,7 +24,7 @@ const CoachReflect = () => {
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
           <p className="eyebrow">{isLoading ? "Checking" : failed ? "Couldn't check" : reflection ? "Logged tonight" : "Not logged yet"}</p>
-          <h2 className="font-display font-black text-title leading-[1.06] tracking-tight mt-1">Sixty seconds before bed.</h2>
+          <h2 className="font-display font-black text-title leading-display tracking-tight mt-1">Sixty seconds before bed.</h2>
           <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             Rate energy, sleep, mood and effort. Write the win and the friction.
             Best between 22:00 and 23:30; tomorrow's plan and the weekly review read it.

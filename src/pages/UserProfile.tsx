@@ -264,7 +264,7 @@ const UserProfile = () => {
       <div className="px-4 pt-3 pb-6">
         {/* ── OPENING BEAT — the rung and the proof, stated once ── */}
         <div className="home-rise mb-5">
-          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h2 className="h-page">
             {best > 0 ? `${formatTier(tierKey, profile.tier_division)}. ${best}-day best.` : `${tier.label}. Day one.`}
           </h2>
         </div>
@@ -279,7 +279,7 @@ const UserProfile = () => {
             nameplateSize="md"
             nameSuffix={
               isOwnProfile ? (
-                <span className="text-xs text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>
+                <span className="text-meta text-gold/70 ml-1.5 font-semibold align-middle">(you)</span>
               ) : undefined
             }
             afterPills={
@@ -298,12 +298,12 @@ const UserProfile = () => {
             <div key={friendState} className={cn("flex-1 min-w-0 flex items-center gap-1.5", landed && "commit-pop")}>
               {friendState === "friends" ? (
                 <Button variant="gold-outline" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => setConfirmUnfriend(true)}>
-                  <UserCheck size={15} aria-hidden /> Friends
+                  <UserCheck size={16} aria-hidden /> Friends
                 </Button>
               ) : friendState === "incoming" ? (
                 <>
                   <Button variant="ember" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => handleFriendAction("accept")}>
-                    <UserCheck size={15} aria-hidden /> Accept
+                    <UserCheck size={16} aria-hidden /> Accept
                   </Button>
                   <Button variant="ghost" size="icon" className="text-muted-foreground" aria-label="Decline request" loading={friendBusy} onClick={() => handleFriendAction("decline")}>
                     <UserX size={18} aria-hidden />
@@ -315,7 +315,7 @@ const UserProfile = () => {
                 </Button>
               ) : (
                 <Button variant="ember" size="sm" className="flex-1 min-h-11" loading={friendBusy} onClick={() => handleFriendAction("send")}>
-                  <UserPlus size={15} aria-hidden /> Add friend
+                  <UserPlus size={16} aria-hidden /> Add friend
                 </Button>
               )}
             </div>

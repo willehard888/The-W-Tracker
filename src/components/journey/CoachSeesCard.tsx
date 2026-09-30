@@ -43,7 +43,7 @@ const CoachSeesCard = ({ snapshot }: { snapshot: WhealthSnapshot }) => {
 
       {snapshot.focus && (
         <div className="flex items-start gap-2 mt-3 pt-2.5 border-t border-border/35">
-          <Target size={13} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
+          <Target size={14} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
           <p className="text-dense font-semibold text-foreground/95 leading-snug">{snapshot.focus}</p>
         </div>
       )}

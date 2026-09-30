@@ -149,7 +149,7 @@ const ProgressDashboard = ({ program }: Props) => {
 
 const Tile = ({ label, value, target }: { label: string; value: string; target: string }) => (
   <div className="surface-card surface-card-quiet rounded-xl p-3 text-center">
-    <p className="font-display text-xl font-black text-gold leading-none">
+    <p className="font-display text-head font-black text-gold leading-none">
       {value}
       <span className="text-label font-bold text-muted-foreground">{target}</span>
     </p>

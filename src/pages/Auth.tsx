@@ -171,8 +171,8 @@ const Auth = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm home-rise text-center">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Check your email.</h1>
-          <p className="text-sm text-muted-foreground mt-3">
+          <h1 className="h-page">Check your email.</h1>
+          <p className="text-note text-muted-foreground mt-3">
             We sent a verification link to <span className="text-foreground font-semibold">{email}</span>. Click the link to activate your account.
           </p>
           <Button variant="ghost" size="lg" className="mt-6" onClick={() => { setEmailSent(false); setMode("login"); }}>
@@ -200,10 +200,10 @@ const Auth = () => {
                you are here. ── */}
         <header className="home-rise flex flex-col items-center text-center mb-8">
           <BrandLogo size={48} priority className="rounded-xl mb-5" />
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h1 className="h-page">
             {mode === "login" ? "Welcome back." : "Earn your status."}
           </h1>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-note text-muted-foreground mt-2">
             {mode === "login" ? "Your streak is waiting." : "14 days free, then 8,99 €/month."}
           </p>
         </header>
@@ -216,7 +216,7 @@ const Auth = () => {
         )}
         {isNative && !showEmailForm && (
           <div className="home-rise home-rise-2">
-            <Button type="button" variant="ghost" size="lg" className="w-full text-sm text-muted-foreground" onClick={() => setShowEmailForm(true)}>
+            <Button type="button" variant="ghost" size="lg" className="w-full text-note text-muted-foreground" onClick={() => setShowEmailForm(true)}>
               Continue with email instead
             </Button>
           </div>
@@ -229,7 +229,7 @@ const Auth = () => {
             <div className="home-rise">
               <Label htmlFor="auth-username" className="mb-1.5 block text-muted-foreground">Username</Label>
               <div className="relative">
-                <span aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+                <span aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-note">@</span>
                 <Input
                   id="auth-username"
                   type="text"
@@ -310,7 +310,7 @@ const Auth = () => {
           </div>
 
           {error && (
-            <p role="alert" className="text-sm text-destructive surface-tint-danger rounded-lg p-3">
+            <p role="alert" className="text-note text-destructive surface-tint-danger rounded-lg p-3">
               {error}
             </p>
           )}
@@ -329,7 +329,7 @@ const Auth = () => {
           <div className="home-rise home-rise-2">
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground">or</span>
+              <span className="text-meta text-muted-foreground">or</span>
               <div className="flex-1 h-px bg-border" />
             </div>
             <AppleSignInButton externalLoading={appleLoading} />
@@ -357,7 +357,7 @@ const Auth = () => {
                 <p className="text-label text-muted-foreground mt-1.5">Links you to the friend who sent it. They hear when you join.</p>
               </div>
             ) : (
-              <button type="button" className="text-sm text-muted-foreground underline-offset-4 hover:underline" onClick={() => setInviteOpen(true)}>
+              <button type="button" className="text-note text-muted-foreground underline-offset-4 hover:underline" onClick={() => setInviteOpen(true)}>
                 Have an invite code?
               </button>
             )}
@@ -378,7 +378,7 @@ const Auth = () => {
                 if (error) toast.error(friendlyError(error, "Couldn't send the reset link. Try again in a minute."));
                 else toast.success("Reset link sent. Check your email.");
               }}
-              className="px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="px-3 text-meta text-muted-foreground hover:text-foreground transition-colors"
             >
               Forgot password?
             </button>
@@ -386,7 +386,7 @@ const Auth = () => {
           <button
             type="button"
             onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setShowEmailForm(true); }}
-            className="px-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="px-3 text-note text-muted-foreground hover:text-foreground transition-colors"
           >
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <span className="text-foreground font-semibold">

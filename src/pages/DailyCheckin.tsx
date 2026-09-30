@@ -843,9 +843,9 @@ const DailyCheckin = () => {
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mb-6">
             <Moon aria-hidden size={36} className="text-muted-foreground" />
           </div>
-          <h1 className="font-display text-2xl font-black tracking-tight mb-2">Already logged today</h1>
-          <p className="text-muted-foreground text-sm mb-2">You can only check in once per day.</p>
-          <p className="text-gold font-display text-lg font-bold mb-8">Next check-in in <MidnightCountdown /></p>
+          <h1 className="font-display text-major font-black tracking-tight mb-2">Already logged today</h1>
+          <p className="text-muted-foreground text-note mb-2">You can only check in once per day.</p>
+          <p className="text-gold font-display text-subhead font-bold mb-8">Next check-in in <MidnightCountdown /></p>
           <Button variant="gold-outline" size="lg" onClick={() => navigate("/")}>Back to Today</Button>
         </div>
       </div>
@@ -860,8 +860,8 @@ const DailyCheckin = () => {
             <div className="h-20 w-20 rounded-full bg-xp-green/15 flex items-center justify-center mx-auto mb-5">
               <Check aria-hidden size={40} className="text-xp-green" />
             </div>
-            <h1 className="font-display text-2xl font-black tracking-tight mb-2">Checked in</h1>
-            <p className="text-muted-foreground text-sm mb-8">Your day is locked in. Nice work.</p>
+            <h1 className="font-display text-major font-black tracking-tight mb-2">Checked in</h1>
+            <p className="text-muted-foreground text-note mb-8">Your day is locked in. Nice work.</p>
             <Button variant="ember" size="lg" onClick={() => navigate("/")}>Back to Today</Button>
           </div>
         }
@@ -928,7 +928,7 @@ const DailyCheckin = () => {
       <div className="px-4 pb-6">
         {/* ── OPENING BEAT — one line of type; the streak is its only gold. ── */}
         <div className="home-rise pt-2">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h1 className="h-page">
             {lastCheckin ? (
               <>Day <span className="text-gold glow-gold-text tabular-nums">{fmtInt(streak + 1)}</span>. Lock it in.</>
             ) : (
@@ -955,7 +955,7 @@ const DailyCheckin = () => {
           >
             <Thermometer size={18} className={cn("shrink-0", sickToday ? "text-teal" : "text-muted-foreground")} aria-hidden />
             <span className="min-w-0 flex-1">
-              <span className={cn("block text-sm font-bold", sickToday && "text-teal")}>Sick today</span>
+              <span className={cn("block text-note font-bold", sickToday && "text-teal")}>Sick today</span>
               <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
                 {sickToday
                   ? "Recovery mode on. The coach switches to recovery and won't push training today."
@@ -985,8 +985,8 @@ const DailyCheckin = () => {
         {showOnboard && (
           <div className="home-rise home-rise-1 mt-3 surface-card surface-card-quiet p-4 text-center">
             <Sparkles size={22} className="text-muted-foreground mx-auto mb-1.5" aria-hidden />
-            <p className="font-display text-lg font-black tracking-tight">Make it yours</p>
-            <p className="text-xs text-muted-foreground mt-1 mb-3 max-w-[280px] mx-auto">
+            <p className="font-display text-subhead font-black tracking-tight">Make it yours</p>
+            <p className="text-meta text-muted-foreground mt-1 mb-3 max-w-[280px] mx-auto">
               Pick the habits you'll actually track every day. Sleep, workout, water &amp; meditation
               stay in — add whatever matters to you.
             </p>
@@ -1004,7 +1004,7 @@ const DailyCheckin = () => {
         {(healthLines.length > 0 || trainingLine.manual || sessionLogged || detected.nutrition) && (
           <div className="home-rise home-rise-2 mt-3 rounded-xl border border-teal/30 bg-teal/5 p-3 flex items-start gap-2.5">
             <ShieldCheck aria-hidden size={18} className="text-teal shrink-0 mt-0.5" />
-            <div className="text-xs text-foreground/90 leading-snug min-w-0">
+            <div className="text-meta text-foreground/90 leading-snug min-w-0">
               <p className="font-semibold text-teal">
                 {healthLines.length > 0 ? "Today from Apple Health" : sessionLogged ? "Your session is logged." : "Detected."}
               </p>
@@ -1036,10 +1036,10 @@ const DailyCheckin = () => {
                 sleepFull ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground",
               )}><Moon aria-hidden size={20} /></div>
               <div>
-                <p className="font-semibold text-sm flex items-center gap-1.5">
+                <p className="font-semibold text-note flex items-center gap-1.5">
                   Sleep {healthNight != null && <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Health</span>}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-meta text-muted-foreground">
                   {healthNight != null
                     ? `Apple Health recorded ${fmtHours(healthNight)} — scored from Health`
                     : "7–9 hours scores in full · a recorded night up to 25, a claim up to 15"}
@@ -1047,7 +1047,7 @@ const DailyCheckin = () => {
               </div>
               <span className="ml-auto text-right">
                 <span className={cn(
-                  "block text-2xl font-bold font-display tabular-nums leading-none",
+                  "block text-major font-bold font-display tabular-nums leading-none",
                   sleepFull ? "text-gold" : scoredSleep <= 5 ? "text-destructive" : "text-muted-foreground",
                 )}>{healthNight != null ? `+${sleepLine.pts}` : `${sleep}h`}</span>
                 <span className="block text-label font-semibold text-muted-foreground mt-1">{sleepWord}</span>
@@ -1073,11 +1073,11 @@ const DailyCheckin = () => {
                 <Dumbbell aria-hidden size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className={cn("font-semibold text-sm flex items-center gap-1.5", workout && "text-gold")}>
+                <p className={cn("font-semibold text-note flex items-center gap-1.5", workout && "text-gold")}>
                   {workout ? `${selectedSport.emoji} ${selectedSport.label}` : "Workout"}
                   {detected.workout && <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-meta text-muted-foreground">
                   {isRestDay
                     ? "Rest day — logged"
                     : healthSessions.length > 0
@@ -1095,7 +1095,7 @@ const DailyCheckin = () => {
                 aria-pressed={Boolean(workout) && !isRestDay}
                 onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(false); setSportOpen(!sportOpen); }}
                 className={cn(
-                  "min-h-11 rounded-xl border px-3 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color] inline-flex items-center justify-center gap-1.5",
+                  "min-h-11 rounded-xl border px-3 text-note font-bold transition-[transform,background-color,border-color,box-shadow,color] inline-flex items-center justify-center gap-1.5",
                   workout ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
                 )}
               >
@@ -1106,7 +1106,7 @@ const DailyCheckin = () => {
                 aria-pressed={isRestDay}
                 onClick={() => { hapticSelection(); sportTouched.current = true; setRestDay(true); setSportCategory("none"); setSportOpen(false); }}
                 className={cn(
-                  "min-h-11 rounded-xl border px-3 text-sm font-bold transition-[transform,background-color,border-color,box-shadow,color]",
+                  "min-h-11 rounded-xl border px-3 text-note font-bold transition-[transform,background-color,border-color,box-shadow,color]",
                   isRestDay ? "border-gold/50 bg-gold/12 text-gold" : "border-border bg-secondary text-foreground/80",
                 )}
               >
@@ -1133,14 +1133,14 @@ const DailyCheckin = () => {
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
-                      <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
-                      <span className="text-sm font-medium flex-1 flex items-center gap-1.5">
+                      <span aria-hidden className="text-subhead w-7 text-center">{sport.emoji}</span>
+                      <span className="text-note font-semibold flex-1 flex items-center gap-1.5">
                         {sport.label}
                         {detectedSports.includes(sport.id) && (
                           <span className="inline-flex items-center gap-1 text-label font-bold text-teal bg-teal/10 px-1.5 py-0.5 rounded-full"><ShieldCheck aria-hidden size={12} /> Detected</span>
                         )}
                       </span>
-                      {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                      {sportCategory === sport.id && <Check aria-hidden size={16} strokeWidth={3} className="text-gold shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -1182,12 +1182,12 @@ const DailyCheckin = () => {
                         sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                       )}
                     >
-                      <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
-                      <span className="text-sm font-medium flex-1">{sport.label}</span>
-                      {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                      <span aria-hidden className="text-subhead w-7 text-center">{sport.emoji}</span>
+                      <span className="text-note font-semibold flex-1">{sport.label}</span>
+                      {sportCategory === sport.id && <Check aria-hidden size={16} strokeWidth={3} className="text-gold shrink-0" />}
                     </button>
                   )) : (
-                    <p className="px-4 py-4 text-xs text-muted-foreground">No sports match "{sportQuery.trim()}"</p>
+                    <p className="px-4 py-4 text-meta text-muted-foreground">No sports match "{sportQuery.trim()}"</p>
                   );
                 })()
               ) : (
@@ -1216,9 +1216,9 @@ const DailyCheckin = () => {
                             sportCategory === sport.id ? "bg-gold/10" : "hover:bg-secondary/50",
                           )}
                         >
-                          <span aria-hidden className="text-lg w-7 text-center">{sport.emoji}</span>
-                          <span className="text-sm font-medium flex-1">{sport.label}</span>
-                          {sportCategory === sport.id && <Check aria-hidden size={15} strokeWidth={3} className="text-gold shrink-0" />}
+                          <span aria-hidden className="text-subhead w-7 text-center">{sport.emoji}</span>
+                          <span className="text-note font-semibold flex-1">{sport.label}</span>
+                          {sportCategory === sport.id && <Check aria-hidden size={16} strokeWidth={3} className="text-gold shrink-0" />}
                         </button>
                       ))}
                     </div>
@@ -1231,7 +1231,7 @@ const DailyCheckin = () => {
                   className="press-row flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:bg-secondary/50 transition-colors"
                 >
                   <span className="w-7 flex justify-center"><X aria-hidden size={16} /></span>
-                  <span className="text-sm font-medium">Clear selection</span>
+                  <span className="text-note font-semibold">Clear selection</span>
                 </button>
               )}
             </div>
@@ -1247,8 +1247,8 @@ const DailyCheckin = () => {
                   "flex h-11 w-11 items-center justify-center rounded-xl shrink-0 transition-colors",
                   hydration >= 3 ? "bg-gold/15 text-gold" : "bg-teal/10 text-teal",
                 )}><Droplets aria-hidden size={20} /></div>
-                <div><p className="font-semibold text-sm">Hydration</p><p className="text-xs text-muted-foreground">3 L scores 15 · 2 L scores 8</p></div>
-                <span className={cn("ml-auto text-2xl font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
+                <div><p className="font-semibold text-note">Hydration</p><p className="text-meta text-muted-foreground">3 L scores 15 · 2 L scores 8</p></div>
+                <span className={cn("ml-auto text-major font-bold font-display tabular-nums", hydration >= 3 ? "text-gold" : "text-muted-foreground")}>{hydration}L</span>
               </div>
               <input type="range" aria-label="Litres of water" aria-valuetext={`${hydration} litres`} min={0} max={5} step={0.5} value={hydration} onChange={(e) => setHydration(Number(e.target.value))} className="range-gold w-full accent-[hsl(var(--gold))] h-11 cursor-pointer" style={{ touchAction: "pan-x", ["--range-fill" as string]: `${rangeFill(hydration, 0, 5)}%` }} />
             </div>
@@ -1283,7 +1283,7 @@ const DailyCheckin = () => {
             aria-expanded={moreOpen}
             className="press-row w-full min-h-11 surface-card surface-card-quiet flex items-center justify-between gap-2 px-4 py-3 text-left"
           >
-            <span className="text-sm font-semibold flex items-center gap-2">
+            <span className="text-note font-semibold flex items-center gap-2">
               <Plus aria-hidden size={16} className="text-muted-foreground" />
               Proof photo
               {proofFile && <span className="text-label font-bold text-muted-foreground">added</span>}
@@ -1296,9 +1296,9 @@ const DailyCheckin = () => {
               <label className="press flex items-center gap-3 w-full rounded-xl border border-dashed border-border p-4 hover:bg-secondary/40 transition-colors cursor-pointer">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground"><Camera aria-hidden size={20} /></div>
                 <div className="text-left flex-1">
-                  <p className="font-semibold text-sm">Add proof photo</p>
+                  <p className="font-semibold text-note">Add proof photo</p>
                   {/* Posting needs a paid membership (the feed INSERT policy). */}
-                  <p className="text-xs text-muted-foreground">{isElite ? "Posted to the Feed as today's proof." : "Your proof of the day."}</p>
+                  <p className="text-meta text-muted-foreground">{isElite ? "Posted to the Feed as today's proof." : "Your proof of the day."}</p>
                 </div>
                 {/* No `capture` attr: iOS then offers Take Photo AND Photo Library
                     in the native sheet (founder decision — gallery proofs allowed,
@@ -1325,7 +1325,7 @@ const DailyCheckin = () => {
                the same ember the button below is made of. ── */}
         <div className="home-rise home-rise-5 mt-6 surface-card p-4">
           <p className="font-bold text-read">Were you honest?</p>
-          <p className="text-xs text-muted-foreground mt-1 mb-3">
+          <p className="text-meta text-muted-foreground mt-1 mb-3">
             Answer truthfully — <span className="text-foreground/80 font-semibold">you can't grind with lies.</span>
           </p>
           <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Were you honest today?">
@@ -1334,7 +1334,7 @@ const DailyCheckin = () => {
               aria-checked={honest === true}
               onClick={() => { hapticSelection(); setHonest(true); }}
               className={cn(
-                "min-h-11 rounded-xl border px-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color]",
+                "min-h-11 rounded-xl border px-3 text-note font-black transition-[transform,background-color,border-color,box-shadow,color]",
                 honest === true
                   ? "border-[hsl(var(--ember)/0.55)] bg-[hsl(var(--ember)/0.12)] text-[hsl(var(--ember-light))]"
                   : "border-border bg-secondary text-muted-foreground",
@@ -1346,7 +1346,7 @@ const DailyCheckin = () => {
               aria-checked={honest === false}
               onClick={() => { hapticSelection(); setHonest(false); }}
               className={cn(
-                "min-h-11 rounded-xl border px-3 text-sm font-black transition-[transform,background-color,border-color,box-shadow,color]",
+                "min-h-11 rounded-xl border px-3 text-note font-black transition-[transform,background-color,border-color,box-shadow,color]",
                 honest === false
                   ? "border-destructive/50 bg-destructive/12 text-destructive"
                   : "border-border bg-secondary text-muted-foreground",
@@ -1355,7 +1355,7 @@ const DailyCheckin = () => {
             >No</button>
           </div>
           {honest === false && (
-            <p role="alert" className="text-xs text-destructive mt-2.5 font-medium">Be honest with yourself. Go back and fix your answers.</p>
+            <p role="alert" className="text-meta text-destructive mt-2.5 font-semibold">Be honest with yourself. Go back and fix your answers.</p>
           )}
 
           {/* How today scores, line by line — the same lines the server writes. */}

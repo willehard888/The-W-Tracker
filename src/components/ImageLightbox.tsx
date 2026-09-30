@@ -75,7 +75,7 @@ const ImageLightbox = ({
       >
         <StatusAvatar src={avatarUrl ?? undefined} name={username} tier={tier} size="sm" animated={false} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground truncate">@{username || "unknown"}</p>
+          <p className="text-note font-bold text-foreground truncate">@{username || "unknown"}</p>
           <div className="flex items-center gap-1.5 text-label text-muted-foreground">
             {typeof level === "number" && level > 0 && <span>Lv.{level}</span>}
             {showMetric(streak) && (
@@ -91,7 +91,7 @@ const ImageLightbox = ({
           aria-label="Close image"
           className="press relative before:absolute before:-inset-1 before:content-[''] h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center text-foreground hover:bg-secondary/80 transition-colors "
         >
-          <X size={18} />
+          <X size={18} aria-hidden />
         </button>
       </div>
 
@@ -127,7 +127,7 @@ const ImageLightbox = ({
       >
         <div className="surface-glass rounded-2xl border-gold/15 p-3">
           {caption && (
-            <p className="text-xs text-foreground/90 leading-relaxed line-clamp-3 mb-2">
+            <p className="text-meta text-foreground/90 leading-relaxed line-clamp-3 mb-2">
               {caption}
             </p>
           )}

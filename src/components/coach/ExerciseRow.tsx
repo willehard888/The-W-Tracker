@@ -66,7 +66,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen
         <div className="flex-1 min-w-0">
           {/* Two lines before an ellipsis: beside the prescription a long name
               lost the word that tells two lifts apart ("Reverse Grip Bent-Ov…"). */}
-          <span className="font-bold text-sm leading-snug text-foreground line-clamp-2">{block.name}</span>
+          <span className="font-bold text-note leading-snug text-foreground line-clamp-2">{block.name}</span>
           {lockedCount > 0 && top && (
             <span className="text-label font-bold text-xp-green inline-flex items-center gap-1 tabular-nums">
               <Check aria-hidden size={12} /> {Math.min(lockedCount, sets)}/{sets} locked
@@ -78,7 +78,7 @@ const ExerciseRow = ({ block, programId, week, dayIndex, loggable = true, onOpen
         </div>
         <span className="text-meta font-bold text-foreground/85 tabular-nums whitespace-nowrap inline-flex items-center gap-1">
           {prescriptionLabel(block)}
-          <ChevronRight aria-hidden size={11} className="text-muted-foreground/75" />
+          <ChevronRight aria-hidden size={12} className="text-muted-foreground/75" />
         </span>
       </button>
     </li>

@@ -128,7 +128,7 @@ const StatTile = ({
     <AnimatedNumber
       value={value}
       format={fmt}
-      className={cn("font-display text-xl font-black tracking-tight", accent && "text-gold")}
+      className={cn("font-display text-head font-black tracking-tight", accent && "text-gold")}
     />
     <p className="text-label font-bold text-muted-foreground mt-0.5">
       {label}
@@ -139,9 +139,9 @@ const StatTile = ({
 const SectionHeader = ({ icon: Icon, title, sub }: { icon: typeof Users; title: string; sub?: string }) => (
   <div className="flex items-center gap-2 mb-3 mt-8 first:mt-0">
     <div className="h-7 w-7 rounded-lg bg-gold/10 border border-gold/25 flex items-center justify-center">
-      <Icon size={13} className="text-gold" />
+      <Icon size={14} className="text-gold" />
     </div>
-    <h2 className="font-display font-bold text-base tracking-tight">{title}</h2>
+    <h2 className="font-display font-bold text-copy tracking-tight">{title}</h2>
     {sub && <span className="text-label font-bold ml-auto text-muted-foreground">{sub}</span>}
   </div>
 );
@@ -264,7 +264,7 @@ export default function AdminMetrics() {
       <PageBar title="Metrics" onBack={() => backOr(navigate, "/profile")} />
       <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       <div className="mb-6">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-note text-muted-foreground">
           The numbers the machine is steered by. Activity, retention, funnel, virality.
         </p>
         <button
@@ -319,7 +319,7 @@ export default function AdminMetrics() {
       {!cohorts ? (
         <div className="flex justify-center py-8"><Loader2 aria-hidden className="h-5 w-5 animate-spin text-gold/70" /></div>
       ) : cohorts.length === 0 ? (
-        <p className="text-xs text-muted-foreground py-4 text-center">No cohorts yet.</p>
+        <p className="text-meta text-muted-foreground py-4 text-center">No cohorts yet.</p>
       ) : (
         <div className="surface-card overflow-hidden">
           <table className="w-full text-meta">
@@ -471,7 +471,7 @@ export default function AdminMetrics() {
           {/* Per-signup cards — the WHOLE quiz answer set, not just a 4-column
               table that dropped struggle + training. */}
           {(waitlist.rows ?? []).length === 0 ? (
-            <p className="text-xs text-muted-foreground py-4 text-center">No signups yet.</p>
+            <p className="text-meta text-muted-foreground py-4 text-center">No signups yet.</p>
           ) : (
             <div className="space-y-2">
               {waitlist.rows.map((r) => {

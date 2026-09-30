@@ -76,7 +76,7 @@ export class ErrorBoundary extends Component<Props, State> {
             className="w-full rounded-lg border border-white/15 bg-black/40 p-3 text-meta text-white/75 leading-relaxed"
             open
           >
-            <summary className="cursor-pointer text-white/80 font-bold text-xs mb-1">
+            <summary className="cursor-pointer text-white/80 font-bold text-meta mb-1">
               {name}: {message}
             </summary>
             {stackHead && (

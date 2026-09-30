@@ -63,10 +63,10 @@ const OnboardingQuestion = (props: Props) => {
 
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col min-h-0 flex-1">
-      <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
+      <h1 className="h-page text-center mb-1.5">
         {title}
       </h1>
-      {sub && <p className="text-sm text-muted-foreground text-center mb-5">{sub}</p>}
+      {sub && <p className="text-note text-muted-foreground text-center mb-5">{sub}</p>}
       {!sub && <div className="mb-5" />}
 
       <div
@@ -90,13 +90,13 @@ const OnboardingQuestion = (props: Props) => {
                 : "border-border/40 bg-card/40",
             )}
           >
-            {o.emoji && <span aria-hidden className={dense ? "text-sm" : "text-xl leading-none mt-0.5"}>{o.emoji}</span>}
+            {o.emoji && <span aria-hidden className={dense ? "text-note" : "text-head leading-none mt-0.5"}>{o.emoji}</span>}
             <span className="min-w-0">
               <span className={cn("block font-bold text-foreground", dense ? "text-dense" : "text-read")}>
                 {o.label}
               </span>
               {!dense && o.desc && (
-                <span className="block text-xs text-muted-foreground leading-snug mt-0.5">{o.desc}</span>
+                <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{o.desc}</span>
               )}
             </span>
             {!dense && (

@@ -74,7 +74,7 @@ const FeaturedBadgeHero = ({ name, icon, rarity }: FeaturedBadgeHeroProps) => {
           cfg.border,
         )}
       >
-        <span className="relative z-[2] text-base leading-none">{icon}</span>
+        <span className="relative z-[2] text-copy leading-none">{icon}</span>
       </div>
 
       <div className="flex flex-col items-start leading-none">
@@ -84,7 +84,7 @@ const FeaturedBadgeHero = ({ name, icon, rarity }: FeaturedBadgeHeroProps) => {
             cfg.text
           )}
         >
-          <Icon size={11} strokeWidth={2.5} />
+          <Icon size={12} strokeWidth={2.5} />
           {cfg.label}
         </span>
         <span className={cn("text-meta font-black mt-0.5 leading-none", cfg.text)}>

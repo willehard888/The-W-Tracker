@@ -287,7 +287,7 @@ const Leaderboard = () => {
           <BeatSkeleton />
         ) : (
           <>
-            <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+            <h1 className="h-page">
               {seasonOver ? (
                 <>
                   {winner
@@ -415,12 +415,12 @@ const Leaderboard = () => {
                   onClick={() => navigate(`/user/${user.user_id}`)}
                   className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
-                  <span className={cn("w-6 shrink-0 font-display font-black text-sm tabular-nums", isMe ? "text-gold" : "text-muted-foreground")}>
+                  <span className={cn("w-6 shrink-0 font-display font-black text-note tabular-nums", isMe ? "text-gold" : "text-muted-foreground")}>
                     {marks[i + 3]?.tied ? `=${marks[i + 3].position}` : i + 4}
                   </span>
                   <StatusAvatar src={user.avatar_url} name={user.username} tier={user.status_tier || "recruit"} size="sm" animated={false} />
                   <span className="flex-1 min-w-0">
-                    <span className="flex items-center gap-1.5 text-sm font-semibold">
+                    <span className="flex items-center gap-1.5 text-note font-semibold">
                       <TierUsername username={user.username} tier={user.status_tier || "recruit"} className="min-w-0 truncate" />
                       {verifiedSet?.has(user.user_id) && (
                         <span
@@ -428,22 +428,22 @@ const Leaderboard = () => {
                           aria-label="HealthKit-verified — unfakeable discipline"
                           title="Verified by Apple Health"
                         >
-                          <ShieldCheck aria-hidden size={12} strokeWidth={2.6} />
+                          <ShieldCheck aria-hidden size={12} strokeWidth={2.5} />
                         </span>
                       )}
-                      {isMe && <span className="shrink-0 text-label text-muted-foreground font-medium">(you)</span>}
+                      {isMe && <span className="shrink-0 text-label text-muted-foreground font-semibold">(you)</span>}
                     </span>
                     <span className="flex items-center gap-2 mt-0.5 text-meta text-muted-foreground">
                       <span>Lv {user.level}</span>
                       {user.streak > 0 && <StreakFlameInline streak={user.streak} suffix="d" className="text-label" still />}
                       {wins > 0 && (
                         <span className="inline-flex items-center gap-0.5">
-                          <Medal aria-hidden size={11} /> {wins}×
+                          <Medal aria-hidden size={12} /> {wins}×
                         </span>
                       )}
                     </span>
                   </span>
-                  <span className="shrink-0 font-display font-black text-sm tabular-nums">{fmtUnit(points(user), "XP")}</span>
+                  <span className="shrink-0 font-display font-black text-note tabular-nums">{fmtUnit(points(user), "XP")}</span>
                 </button>
               </li>
             );
@@ -496,7 +496,7 @@ const Leaderboard = () => {
           <h2 className="font-display font-bold text-copy tracking-tight">Hall of champions</h2>
           <ul className="mt-1 divide-y divide-border/35">
             {championData.recent.map((row) => (
-              <li key={`${row.season_id}-${row.user_id}`} className="flex items-center justify-between gap-2 py-2.5 text-sm">
+              <li key={`${row.season_id}-${row.user_id}`} className="flex items-center justify-between gap-2 py-2.5 text-note">
                 <span className="truncate">@{row.username_snapshot || "unknown"}</span>
                 <span className="shrink-0 text-muted-foreground">{row.season_name}</span>
               </li>
@@ -559,10 +559,10 @@ const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCar
         as="p"
         username={user.username}
         tier={user.status_tier || "recruit"}
-        className="font-display font-bold text-xs mt-2 truncate max-w-full px-1"
+        className="font-display font-bold text-meta mt-2 truncate max-w-full px-1"
       />
-      {isMe && <span className="text-label text-muted-foreground font-medium">(you)</span>}
-      <p className={cn("font-display font-black tabular-nums mt-1", isFirst ? "text-gold text-lg" : "text-sm")}>
+      {isMe && <span className="text-label text-muted-foreground font-semibold">(you)</span>}
+      <p className={cn("font-display font-black tabular-nums mt-1", isFirst ? "text-gold text-subhead" : "text-note")}>
         {fmtUnit(points, "XP")}
       </p>
       {(user.streak > 0 || wins > 0) && (
@@ -572,7 +572,7 @@ const PodiumCard = ({ user, rank, mark, points, isMe, wins, onClick }: PodiumCar
           )}
           {wins > 0 && (
             <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-              <Medal aria-hidden size={11} /> {wins}×
+              <Medal aria-hidden size={12} /> {wins}×
             </span>
           )}
         </span>

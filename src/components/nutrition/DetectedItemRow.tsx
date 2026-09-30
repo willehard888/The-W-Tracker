@@ -71,7 +71,7 @@ const DetectedItemRow = ({
         <div className="min-w-0 flex-1">
           <p className="text-read font-bold leading-tight">
             {chosen ? chosen.name : item.name}
-            {chosen?.brand && <span className="text-muted-foreground font-medium"> · {chosen.brand}</span>}
+            {chosen?.brand && <span className="text-muted-foreground font-semibold"> · {chosen.brand}</span>}
           </p>
           <p className="text-meta text-muted-foreground leading-snug mt-0.5 flex items-center gap-1.5 flex-wrap">
             {!chosen && <span>{item.name}</span>}
@@ -109,7 +109,7 @@ const DetectedItemRow = ({
           className="text-muted-foreground shrink-0"
           onClick={() => onRemove(item.id)}
         >
-          <X />
+          <X aria-hidden />
         </Button>
       </div>
 

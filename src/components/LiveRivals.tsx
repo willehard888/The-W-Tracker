@@ -65,11 +65,11 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
                 as="p"
                 username={data.above.username}
                 tier={data.above.status_tier}
-                className="font-bold text-sm truncate"
+                className="font-bold text-note truncate"
               />
               <p className="text-label font-bold text-muted-foreground">Ahead of you</p>
             </div>
-            <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
+            <div className="flex items-center gap-1 text-meta font-black tabular-nums text-muted-foreground">
               <ArrowUp aria-hidden size={12} className="text-xp-green" />
               {data.above.delta.toFixed(1)} pts
             </div>
@@ -99,7 +99,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
                 as="p"
                 username={data.below.username}
                 tier={data.below.status_tier}
-                className="font-bold text-sm truncate"
+                className="font-bold text-note truncate"
               />
               <p
                 className={cn(
@@ -116,7 +116,7 @@ const LiveRivals = ({ userId, myScore, className }: LiveRivalsProps) => {
                 )}
               </p>
             </div>
-            <div className="flex items-center gap-1 text-xs font-black tabular-nums text-muted-foreground">
+            <div className="flex items-center gap-1 text-meta font-black tabular-nums text-muted-foreground">
               <ArrowDown aria-hidden size={12} className={heatBelow ? "text-destructive" : "text-muted-foreground"} />
               {data.below.delta.toFixed(1)} pts
             </div>

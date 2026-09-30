@@ -135,9 +135,9 @@ const VaultArticleSheet = ({
               </VaultChip>
             </div>
 
-            <h2 className="font-display text-title leading-[1.08] font-black tracking-tight pr-8 text-balance">{article.title}</h2>
+            <h2 className="font-display text-title leading-display font-black tracking-tight pr-8 text-balance">{article.title}</h2>
             {article.subtitle && (
-              <p className="text-dense mt-1.5 font-medium leading-snug" style={{ color: accent }}>
+              <p className="text-dense mt-1.5 font-semibold leading-snug" style={{ color: accent }}>
                 {article.subtitle}
               </p>
             )}
@@ -207,7 +207,7 @@ const VaultArticleSheet = ({
                 <ul className="space-y-2">
                   {article.benefits.map((b, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-dense">
-                      <CheckCircle2 aria-hidden size={13} className="mt-0.5 shrink-0 text-xp-green" strokeWidth={2.6} />
+                      <CheckCircle2 aria-hidden size={14} className="mt-0.5 shrink-0 text-xp-green" strokeWidth={2.5} />
                       <span className="text-foreground/90 leading-snug">{b}</span>
                     </li>
                   ))}
@@ -221,7 +221,7 @@ const VaultArticleSheet = ({
                 <ul className="space-y-2">
                   {article.risks.map((r, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-dense">
-                      <AlertTriangle aria-hidden size={13} className="mt-0.5 shrink-0 text-amber-light" strokeWidth={2.6} />
+                      <AlertTriangle aria-hidden size={14} className="mt-0.5 shrink-0 text-amber-light" strokeWidth={2.5} />
                       <span className="text-foreground/90 leading-snug">{r}</span>
                     </li>
                   ))}

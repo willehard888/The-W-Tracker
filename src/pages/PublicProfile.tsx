@@ -159,7 +159,7 @@ const PublicProfile = () => {
       <div className="px-4 pt-3 pb-6">
         {/* ── OPENING BEAT — the rung and the proof, stated once ── */}
         <div className="home-rise mb-5">
-          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h2 className="h-page">
             {best > 0 ? `${formatTier(tierKey, profile.tier_division)}. ${best}-day best.` : `${tier.label}. Day one.`}
           </h2>
           {profile.display_name && <p className="text-dense text-muted-foreground mt-1">{profile.display_name}</p>}
@@ -174,7 +174,7 @@ const PublicProfile = () => {
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {isApexSubscriber && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/40 bg-gold/10 text-label font-bold text-gold">
-                <Crown size={11} aria-hidden /> Day-One
+                <Crown size={12} aria-hidden /> Day-One
               </span>
             )}
             {tierKey === 'apex' ? (
@@ -184,7 +184,7 @@ const PublicProfile = () => {
             ) : null}
             {profile.champion_wins > 0 && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-label font-bold text-muted-foreground">
-                <Trophy size={11} aria-hidden /> {profile.champion_wins > 1 ? `${profile.champion_wins}× ` : ""}Season Champion
+                <Trophy size={12} aria-hidden /> {profile.champion_wins > 1 ? `${profile.champion_wins}× ` : ""}Season Champion
               </span>
             )}
           </div>
@@ -277,7 +277,7 @@ const PublicProfile = () => {
             <div className="grid grid-cols-4 gap-2">
               {badges.map((b) => (
                 <div key={b.badge_id} className="aspect-square surface-card surface-card-quiet rounded-xl flex flex-col items-center justify-center">
-                  <span className="text-2xl" aria-hidden>{b.badges?.icon}</span>
+                  <span className="text-major" aria-hidden>{b.badges?.icon}</span>
                   <span className="text-label font-bold mt-0.5 line-clamp-1 px-1 text-center text-muted-foreground">
                     {b.badges?.name}
                   </span>

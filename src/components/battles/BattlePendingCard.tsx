@@ -16,7 +16,7 @@ const BattlePendingCard = ({ battle, opponentName, typeInfo, onDismiss }: Props)
   const TypeIcon = typeInfo.icon;
   return (
     <div className="flex items-center gap-3 py-3 min-h-11">
-      <TypeIcon size={15} className="text-muted-foreground shrink-0" aria-hidden />
+      <TypeIcon size={16} className="text-muted-foreground shrink-0" aria-hidden />
       <div className="flex-1 min-w-0">
         <p className="text-note font-semibold leading-tight truncate">@{opponentName}</p>
         <p className="text-meta text-muted-foreground mt-0.5">

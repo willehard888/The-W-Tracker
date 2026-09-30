@@ -38,7 +38,7 @@ const AiConsentRow = () => {
 
   return (
     <div className="flex items-center gap-3 py-3">
-      <Sparkles size={15} className="text-muted-foreground shrink-0" aria-hidden />
+      <Sparkles size={16} className="text-muted-foreground shrink-0" aria-hidden />
       <span className="flex-1 min-w-0">
         <span className="block text-note font-semibold leading-tight">AI coaching</span>
         <span className="block text-meta text-muted-foreground leading-snug mt-0.5">

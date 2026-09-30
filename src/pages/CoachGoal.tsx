@@ -17,7 +17,7 @@ const CoachGoal = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-title leading-[1.06] tracking-tight">One goal. A number and a date.</h2>
+          <h2 className="font-display font-black text-title leading-display tracking-tight">One goal. A number and a date.</h2>
           <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             The Coach checks weekly that your training, sleep and nutrition are pulling toward it.
           </p>

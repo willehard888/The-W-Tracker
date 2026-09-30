@@ -33,7 +33,7 @@ export const ActionRow = ({
       {subtitle && <p className="text-label text-muted-foreground truncate">{subtitle}</p>}
     </div>
     <Button size="sm" variant="ember" className="min-h-11" disabled={busy} onClick={onAccept}>
-      <Check size={13} aria-hidden /> {acceptLabel}
+      <Check size={14} aria-hidden /> {acceptLabel}
     </Button>
     <Button
       variant="ghost"
@@ -43,7 +43,7 @@ export const ActionRow = ({
       disabled={busy}
       onClick={onDecline}
     >
-      <X size={15} aria-hidden />
+      <X size={16} aria-hidden />
     </Button>
   </div>
 );

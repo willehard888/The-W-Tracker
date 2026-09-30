@@ -329,7 +329,7 @@ const UserFoodEditor = () => {
                       onClick={() => setServings((rows) => rows.filter((r) => r.key !== s.key))}
                       className="press shrink-0 h-11 w-11 flex items-center justify-center rounded-xl text-muted-foreground transition-transform"
                     >
-                      <X size={16} />
+                      <X size={16} aria-hidden />
                     </button>
                   </div>
                   {errors.servings[s.key] && (

@@ -36,7 +36,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
     <BottomSheet open={open} onClose={() => onOpenChange(false)} label={title} title={title} subtitle={subtitle}>
         <div className="pt-1 pb-2">
           <div className="relative">
-            <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -89,7 +89,7 @@ const FriendPickerSheet = ({ open, onOpenChange, title, subtitle, excludeIds = [
                     <span>Lv {f.level ?? 1}</span>
                     {(f.streak ?? 0) > 0 && (
                       <span className="inline-flex items-center gap-0.5 text-[hsl(var(--streak-orange))]">
-                        <Flame aria-hidden size={11} /> {f.streak}
+                        <Flame aria-hidden size={12} /> {f.streak}
                       </span>
                     )}
                   </p>

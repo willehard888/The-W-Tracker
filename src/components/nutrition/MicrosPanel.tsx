@@ -33,7 +33,7 @@ const MicrosPanel = ({ rows, className }: { rows: MicroRow[]; className?: string
         return (
           <div key={r.key} className="py-2.5">
             <div className="flex items-baseline justify-between gap-3 text-dense">
-              <span className="font-medium truncate">{r.label}</span>
+              <span className="font-semibold truncate">{r.label}</span>
               <span className="tabular-nums text-muted-foreground shrink-0">
                 <span className={cn("font-bold", r.value != null && "text-foreground")}>
                   {r.value == null ? "—" : fmtValue(r.value, r.unit)}

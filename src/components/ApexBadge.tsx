@@ -46,7 +46,7 @@ const ApexBadge = ({
           className,
         )}
       >
-        <Crown aria-hidden size={s.icon} strokeWidth={2.6} />
+        <Crown aria-hidden size={s.icon} strokeWidth={2.5} />
         Founder
       </span>
     );
@@ -84,7 +84,7 @@ const ApexBadge = ({
         className,
       )}
     >
-      <Flame aria-hidden size={s.icon} strokeWidth={2.6} />
+      <Flame aria-hidden size={s.icon} strokeWidth={2.5} />
       Earned Apex
     </span>
   );

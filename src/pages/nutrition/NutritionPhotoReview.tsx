@@ -487,7 +487,7 @@ const NutritionPhotoReview = () => {
               Estimated · {pct} % confident
             </span>,
           )}
-          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight mt-4">
+          <h2 className="h-page mt-4">
             {items.length === 0 ? "Nothing left to add." : unresolved > 0 ? `${unresolved} ${unresolved === 1 ? "item needs" : "items need"} a match.` : `${items.length} ${items.length === 1 ? "item" : "items"}, ready when you are.`}
           </h2>
           {result.low_confidence && (

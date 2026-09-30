@@ -46,7 +46,7 @@ const MediaPreview = ({ imageSrc, videoSrc, sizeBytes, onClear, progressLabel, c
           aria-label="Remove media"
           className="press absolute top-2.5 right-2.5 before:absolute before:-inset-0.5 before:content-[''] h-10 w-10 rounded-full bg-black/55 backdrop-blur-sm border border-white/15 text-white flex items-center justify-center transition-transform"
         >
-          <X size={18} />
+          <X size={18} aria-hidden />
         </button>
       )}
 

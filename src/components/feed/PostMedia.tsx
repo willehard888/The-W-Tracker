@@ -52,7 +52,7 @@ const PostMedia = ({ imageUrl, videoUrl, alt = "", tier, dayStats, onOpenImage, 
 
   if (isUnsupportedHeic(imageUrl)) {
     return (
-      <div className={cn("mt-3 mx-4 surface-panel rounded-2xl p-4 text-xs text-muted-foreground", className)}>
+      <div className={cn("mt-3 mx-4 surface-panel rounded-2xl p-4 text-meta text-muted-foreground", className)}>
         This image format isn't supported on all devices. Please upload JPG, PNG or WEBP.
       </div>
     );

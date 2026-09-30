@@ -83,7 +83,7 @@ export const EquipmentContextSheet = ({
                 saveDefault ? "bg-gold border-gold" : "border-border",
               )}
             >
-              {saveDefault && <Check aria-hidden size={11} className="text-primary-foreground" />}
+              {saveDefault && <Check aria-hidden size={12} className="text-primary-foreground" />}
             </span>
             Make this my usual
           </button>
@@ -121,7 +121,7 @@ export const EquipmentContextSheet = ({
                       on ? "bg-gold border-gold" : "border-border",
                     )}
                   >
-                    {on && <Check aria-hidden size={11} className="text-primary-foreground" />}
+                    {on && <Check aria-hidden size={12} className="text-primary-foreground" />}
                   </span>
                   <span className={cn("text-note font-bold", on ? "text-foreground" : "text-muted-foreground/75")}>
                     {EQUIPMENT_LABEL[v]}

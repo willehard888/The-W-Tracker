@@ -38,7 +38,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
       <header className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Trophy aria-hidden size={16} className="text-gold shrink-0" />
-          <h2 className="font-display font-bold text-sm tracking-tight truncate">Top inviters this month</h2>
+          <h2 className="font-display font-bold text-note tracking-tight truncate">Top inviters this month</h2>
         </div>
         <span className="text-label font-bold shrink-0 whitespace-nowrap text-muted-foreground">
           Resets 1st
@@ -88,7 +88,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
               >
                 <span
                   className={cn(
-                    "w-5 text-center font-display font-black text-sm tabular-nums shrink-0",
+                    "w-5 text-center font-display font-black text-note tabular-nums shrink-0",
                     rankColor(i),
                   )}
                 >
@@ -107,13 +107,13 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
                     animated={false}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">
+                    <p className="text-note font-semibold truncate">
                       <TierUsername
                         username={inv.username}
                         tier={inv.status_tier || "recruit"}
                       />
                       {isMe && (
-                        <span className="ml-1 text-label text-gold/70 font-medium">
+                        <span className="ml-1 text-label text-gold/70 font-semibold">
                           (you)
                         </span>
                       )}
@@ -136,7 +136,7 @@ const TopInvitersWidget = ({ limit = 10, className, hideEmptyCta = false }: TopI
       {!isLoading && inviters && inviters.length > 0 && !inList && hasMySignups && (
         <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-xs font-semibold truncate">
+            <p className="text-meta font-semibold truncate">
               You: {myStats?.signupCount ?? 0} signups ·{" "}
               <span className="text-gold">{myStats?.convertedCount ?? 0} paid</span>
             </p>

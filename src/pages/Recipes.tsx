@@ -70,7 +70,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
 
       <div className="px-4 pb-6 -mt-6 relative">
         <header className="home-rise">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{recipe.title}</h1>
+          <h1 className="h-page">{recipe.title}</h1>
           <p className="mt-2 text-dense text-muted-foreground leading-snug">{recipe.blurb}</p>
           <p className="mt-2 text-meta font-bold text-muted-foreground tabular-nums">
             {[...recipe.tags, `${totalMin} min`].join(" · ")}
@@ -106,7 +106,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </div>
 
         <section className="home-rise home-rise-3 mt-7">
-          <h2 className="font-display font-black text-lead leading-tight tracking-tight">Ingredients</h2>
+          <h2 className="h-card">Ingredients</h2>
           {recipe.groups.map((g) => (
             <div key={g.title} className="mt-3.5">
               <p className="text-label font-bold text-muted-foreground mb-1.5">{g.title}</p>
@@ -128,7 +128,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </section>
 
         <section className="home-rise home-rise-4 mt-7">
-          <h2 className="font-display font-black text-lead leading-tight tracking-tight">Method</h2>
+          <h2 className="h-card">Method</h2>
           <div className="mt-1 divide-y divide-border/35">
             {recipe.method.map((phase, pi) => (
               <div key={phase.title} className="py-3.5 flex gap-3">
@@ -147,7 +147,7 @@ const RecipeDetail = ({ recipe }: { recipe: Recipe }) => {
         </section>
 
         <section className="home-rise home-rise-5 mt-7">
-          <h2 className="font-display font-black text-lead leading-tight tracking-tight">Keeps</h2>
+          <h2 className="h-card">Keeps</h2>
           <div className="mt-1 divide-y divide-border/35">
             <FactRow k="Fridge" v={`${recipe.mealPrep.fridgeDays} ${recipe.mealPrep.fridgeDays === 1 ? "day" : "days"}`} />
             {recipe.mealPrep.freezerWeeks != null && (
@@ -189,7 +189,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">What to cook tonight.</h2>
+          <h2 className="h-page">What to cook tonight.</h2>
           <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             Every recipe scales to a week of meals. Search by what's in the fridge.
           </p>
@@ -199,7 +199,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
             question people actually arrive with. */}
         <div className="home-rise home-rise-1 mt-4">
           <div className="relative">
-            <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Search aria-hidden size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -213,7 +213,7 @@ const RecipeList = ({ onOpen }: { onOpen: () => void }) => {
                 aria-label="Clear search"
                 className="absolute right-1 top-1/2 -translate-y-1/2 before:absolute before:-inset-x-1 before:inset-y-0 before:content-[''] h-11 w-9 flex items-center justify-center text-muted-foreground"
               >
-                <X size={15} />
+                <X size={16} aria-hidden />
               </button>
             )}
           </div>

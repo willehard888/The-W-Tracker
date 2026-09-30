@@ -205,7 +205,7 @@ export const BottomSheet = ({
                   {subtitle && <p className="text-label text-muted-foreground truncate">{subtitle}</p>}
                 </div>
                 <Button variant="ghost" size="icon" aria-label="Close" className="min-h-11 min-w-11" onClick={onClose}>
-                  <X size={20} />
+                  <X size={20} aria-hidden />
                 </Button>
               </div>
             ) : (
@@ -216,7 +216,7 @@ export const BottomSheet = ({
                 className="absolute top-1.5 right-2 z-10 min-h-11 min-w-11 rounded-full bg-background/60"
                 onClick={onClose}
               >
-                <X size={18} />
+                <X size={18} aria-hidden />
               </Button>
             )}
             </div>

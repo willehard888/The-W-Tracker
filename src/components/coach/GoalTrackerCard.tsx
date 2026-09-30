@@ -101,7 +101,7 @@ const GoalTrackerCard = () => {
     );
     return (
       <div className="surface-card surface-card-quiet p-4 space-y-3">
-        <p className="font-display font-black text-lead tracking-tight leading-tight">New goal</p>
+        <p className="h-card">New goal</p>
         {field("Goal", <Input placeholder="Bench 100 kg" value={draft.title}
           onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />)}
         <div className="grid grid-cols-2 gap-2">
@@ -117,7 +117,7 @@ const GoalTrackerCard = () => {
           <div>
             <span className="eyebrow mb-1 block">Deadline</span>
             <div className="relative surface-inset h-10 rounded-md px-3 flex items-center">
-              <span className={cn("text-sm font-medium", draft.deadline ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
+              <span className={cn("text-note font-semibold", draft.deadline ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
                 {draft.deadline ? fmtDate(draft.deadline) : "Pick a date"}
               </span>
               <input
@@ -152,7 +152,7 @@ const GoalTrackerCard = () => {
           <p className="text-label font-bold text-gold flex items-center gap-1">
             <Target aria-hidden size={12} /> North Star
           </p>
-          <h3 className="font-display text-base font-black mt-0.5 truncate">{activeGoal.title}</h3>
+          <h3 className="font-display text-copy font-black mt-0.5 truncate">{activeGoal.title}</h3>
           <p className="text-meta text-muted-foreground mt-0.5">
             {activeGoal.current_value ?? activeGoal.baseline_value ?? 0}{activeGoal.unit} → {activeGoal.target_value}{activeGoal.unit}
             {etaText && <span className="ml-2">· {etaText}</span>}

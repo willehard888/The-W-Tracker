@@ -97,7 +97,7 @@ const LevelUpCelebration = ({ newLevel, onComplete }: LevelUpCelebrationProps) =
         >
           Level {newLevel}.
         </h1>
-        <p className="text-sm text-muted-foreground"
+        <p className="text-note text-muted-foreground"
           style={{ animation: phase === "show" ? "fade-in 0.5s ease-out 0.7s both" : undefined }}
         >
           You're built different.

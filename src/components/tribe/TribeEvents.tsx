@@ -31,7 +31,7 @@ const errMsg = (e: any) =>
 // the field is ours. Same shape as nutrition's DateBar.
 const DateTimeField = ({ value, onChange, label, className }: { value: string; onChange: (v: string) => void; label: string; className?: string }) => (
   <div className={cn("relative surface-inset h-11 rounded-xl px-3 flex items-center", className)}>
-    <span className={cn("text-dense font-medium", value ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
+    <span className={cn("text-dense font-semibold", value ? "text-foreground" : "text-muted-foreground/75")} aria-hidden>
       {value ? format(new Date(value), "EEE d MMM · HH:mm") : "Pick date & time"}
     </span>
     <input
@@ -121,7 +121,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
             size="pill"
             onClick={() => { hapticImpact("light"); setShowCreate(true); }}
           >
-            <Plus aria-hidden size={13} /> Host
+            <Plus aria-hidden size={14} /> Host
           </Button>
         )}
       </div>
@@ -210,7 +210,7 @@ const TribeEvents = ({ tribeId, isMember, currentUserId }: { tribeId: string; is
 const DateStamp = ({ start, hot }: { start: Date; hot: boolean }) => (
   <div className="shrink-0 w-11 flex flex-col items-center leading-none">
     <span className={LABEL}>{format(start, "EEE")}</span>
-    <span className={cn("font-display font-black text-2xl tabular-nums my-0.5", hot ? EMBER : "text-foreground")}>{format(start, "d")}</span>
+    <span className={cn("font-display font-black text-major tabular-nums my-0.5", hot ? EMBER : "text-foreground")}>{format(start, "d")}</span>
     <span className={LABEL}>{format(start, "MMM")}</span>
   </div>
 );
@@ -239,16 +239,16 @@ const EventRow = ({ ev, isNext, isMember, currentUserId, busy, onRsvp, onDelete 
       <div className="flex-1 min-w-0">
         {(ActIcon || rel) && (
           <div className="flex items-center gap-2 text-label font-bold">
-            {ActIcon && <span className="inline-flex items-center gap-1 text-muted-foreground"><ActIcon size={11} strokeWidth={2.6} aria-hidden /> {ev.activity}</span>}
+            {ActIcon && <span className="inline-flex items-center gap-1 text-muted-foreground"><ActIcon size={12} strokeWidth={2.5} aria-hidden /> {ev.activity}</span>}
             {rel && <span className={EMBER}>{rel}</span>}
           </div>
         )}
         <p className="font-display font-black text-read tracking-tight truncate mt-0.5">{ev.title}</p>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-meta text-muted-foreground">
-          <span className="inline-flex items-center gap-1"><Clock size={11} aria-hidden /> {format(start, "HH:mm")} · {ev.duration_min}m</span>
-          {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} aria-hidden /> {ev.place}</span>}
-          {ev.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={11} aria-hidden /> Online</span>}
-          <span className="inline-flex items-center gap-1 tabular-nums"><Users size={11} aria-hidden /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
+          <span className="inline-flex items-center gap-1"><Clock size={12} aria-hidden /> {format(start, "HH:mm")} · {ev.duration_min}m</span>
+          {ev.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={12} aria-hidden /> {ev.place}</span>}
+          {ev.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={12} aria-hidden /> Online</span>}
+          <span className="inline-flex items-center gap-1 tabular-nums"><Users size={12} aria-hidden /> {ev.going_count}{ev.capacity ? `/${ev.capacity}` : ""} going</span>
         </div>
         {ev.description && <p className="text-meta text-foreground/75 leading-snug mt-1.5">{ev.description}</p>}
         {isMember && (
@@ -323,8 +323,8 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
         <DateStamp start={new Date(series.sessions[0].starts_at)} hot={isNext} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-label font-bold text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><Layers size={11} strokeWidth={2.6} aria-hidden /> {series.sessions.length}-part series</span>
-            {series.activity && <span className="inline-flex items-center gap-1"><ActIcon size={11} strokeWidth={2.6} aria-hidden /> {series.activity}</span>}
+            <span className="inline-flex items-center gap-1"><Layers size={12} strokeWidth={2.5} aria-hidden /> {series.sessions.length}-part series</span>
+            {series.activity && <span className="inline-flex items-center gap-1"><ActIcon size={12} strokeWidth={2.5} aria-hidden /> {series.activity}</span>}
           </div>
           <p className="font-display font-black text-read tracking-tight truncate mt-0.5">{series.title}</p>
           <p className="text-meta text-muted-foreground mt-0.5 tabular-nums">
@@ -355,9 +355,9 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
               <div className="flex-1 min-w-0">
                 <p className="text-meta font-bold truncate tabular-nums">{format(start, "EEE d MMM · HH:mm")}</p>
                 <div className="flex items-center gap-2 text-label text-muted-foreground">
-                  <span className="inline-flex items-center gap-1"><Clock size={11} aria-hidden /> {s.duration_min}m</span>
-                  {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={11} aria-hidden /> {s.place}</span>}
-                  {s.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={11} aria-hidden /> Online</span>}
+                  <span className="inline-flex items-center gap-1"><Clock size={12} aria-hidden /> {s.duration_min}m</span>
+                  {s.place && <span className="inline-flex items-center gap-1 truncate"><MapPin size={12} aria-hidden /> {s.place}</span>}
+                  {s.meeting_url && <span className={cn("inline-flex items-center gap-1 font-bold", EMBER)}><Video size={12} aria-hidden /> Online</span>}
                   {rel && <span className={cn("font-bold", EMBER)}>{rel}</span>}
                 </div>
               </div>
@@ -378,7 +378,7 @@ const SeriesRow = ({ series, isNext, isMember, currentUserId, busy, onRsvp, onDe
         })}
         {hidden > 0 && (
           <Button variant="ghost" size="sm" className="w-full min-h-11 text-muted-foreground" onClick={() => setExpanded(true)}>
-            <ChevronDown aria-hidden size={13} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
+            <ChevronDown aria-hidden size={14} /> Show {hidden} more session{hidden === 1 ? "" : "s"}
           </Button>
         )}
       </div>
@@ -533,7 +533,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                       size="pill"
                       onClick={() => pickActivity(name)}
                     >
-                      <Icon size={12} strokeWidth={2.4} /> {name}
+                      <Icon size={12} strokeWidth={2.5} /> {name}
                     </Button>
                   ))}
                 </div>
@@ -562,7 +562,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                       onClick={() => setSessions((prev) => prev.filter((_, idx) => idx !== i))}
                       aria-label="Remove session"
                     >
-                      <X size={15} />
+                      <X size={16} aria-hidden />
                     </Button>
                   )}
                 </div>
@@ -575,7 +575,7 @@ const CreateEventSheet = ({ onClose, onCreate, onCreateSeries }: {
                   className="w-full min-h-11"
                   onClick={() => setSessions((prev) => [...prev, ""])}
                 >
-                  <Plus aria-hidden size={13} /> Add session
+                  <Plus aria-hidden size={14} /> Add session
                 </Button>
               )}
             </div>

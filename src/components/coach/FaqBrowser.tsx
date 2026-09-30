@@ -51,7 +51,7 @@ const FaqBrowser = ({ onSelect, onClose }: Props) => {
             className="press-row w-full min-h-11 text-left surface-card surface-card-quiet p-3.5"
           >
             <p className="text-label text-muted-foreground mb-0.5">{f.category}</p>
-            <p className="text-sm text-foreground">{f.question}</p>
+            <p className="text-note text-foreground">{f.question}</p>
           </button>
         ))}
       </div>

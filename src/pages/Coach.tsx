@@ -114,8 +114,8 @@ const Coach = () => {
         <div className="home-rise px-6 pt-16 pb-6 text-center">
           <div className="max-w-sm mx-auto space-y-4">
             <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center mx-auto" aria-hidden><AlertTriangle aria-hidden size={32} className="text-muted-foreground" /></div>
-            <h2 className="text-lg font-display font-bold">Coach is taking a breather</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <h2 className="text-subhead font-display font-bold">Coach is taking a breather</h2>
+            <p className="text-note text-muted-foreground leading-relaxed">
               We couldn't load your Coach just now. Check your connection and try
               again — your progress is safe.
             </p>
@@ -139,7 +139,7 @@ const Coach = () => {
           <button
             type="button"
             onClick={skipOnboarding}
-            className="press min-h-11 text-xs font-medium text-muted-foreground px-3"
+            className="press min-h-11 text-meta font-semibold text-muted-foreground px-3"
             aria-label="Skip personalisation for now"
           >
             Skip for now
@@ -257,7 +257,7 @@ const CoachShell = ({
 
       <div className="px-4 pt-3 pb-6">
         <header className="home-rise">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h1>
+          <h1 className="h-page">{beat}</h1>
           <p className="mt-1.5 text-label text-muted-foreground">{DISCLAIMER}</p>
         </header>
 
@@ -325,7 +325,7 @@ const PERFORMANCE_FOLLOWUPS = [
 ];
 
 /** A quick answer: one quiet row. */
-const CHIP = "press w-full min-h-11 surface-card surface-card-quiet px-3.5 py-2.5 text-left text-sm";
+const CHIP = "press w-full min-h-11 surface-card surface-card-quiet px-3.5 py-2.5 text-left text-note";
 
 /** Memoized markdown for COMPLETED assistant messages — parsing markdown on
  *  every SSE delta of every message made long chats visibly stutter. The
@@ -764,9 +764,9 @@ const ChatSheet = ({
           >
             <div
               className={m.role === "user"
-                ? cn("max-w-[82%] rounded-2xl rounded-br-md px-3.5 py-2.5 bg-gold text-primary-foreground text-sm whitespace-pre-wrap", i === popIdx && "commit-pop")
+                ? cn("max-w-[82%] rounded-2xl rounded-br-md px-3.5 py-2.5 bg-gold text-primary-foreground text-note whitespace-pre-wrap", i === popIdx && "commit-pop")
                 : cn(
-                    "max-w-[88%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm coach-md",
+                    "max-w-[88%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-note coach-md",
                     m.failed
                       ? "bg-destructive/10 border border-destructive/30 cursor-pointer"
                       : m.isFaq
@@ -793,7 +793,7 @@ const ChatSheet = ({
               ) : m.content}
               {m.failed && (
                 <div className="mt-1.5 inline-flex items-center gap-1 text-meta text-destructive font-bold">
-                  <RotateCw aria-hidden size={11} /> Tap to retry
+                  <RotateCw aria-hidden size={12} /> Tap to retry
                 </div>
               )}
             </div>

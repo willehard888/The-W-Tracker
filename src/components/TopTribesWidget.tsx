@@ -51,8 +51,8 @@ const TopTribesWidget = () => {
     <div className="surface-tint-ember p-4 home-rise home-rise-3">
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
-          <Crown aria-hidden size={15} className="text-[hsl(var(--ember))] shrink-0" />
-          <h2 className="font-display font-bold text-base tracking-tight truncate">Top tribes</h2>
+          <Crown aria-hidden size={16} className="text-[hsl(var(--ember))] shrink-0" />
+          <h2 className="font-display font-bold text-copy tracking-tight truncate">Top tribes</h2>
           <span className="text-label font-bold shrink-0 text-muted-foreground px-1.5 py-0.5 rounded-full border border-border/60 bg-secondary/50">
             Weekly
           </span>
@@ -71,7 +71,7 @@ const TopTribesWidget = () => {
         </div>
       ) : rows.length === 0 ? (
         <div className="text-center py-3">
-          <p className="text-xs text-muted-foreground mb-2">
+          <p className="text-meta text-muted-foreground mb-2">
             {canCreate ? "No tribes ranked yet — be the first founder." : "No tribes ranked yet."}
           </p>
           <button
@@ -107,7 +107,7 @@ const TopTribesWidget = () => {
                   }}
                 >
                   {Icon ? (
-                    <Icon size={14} style={{ color }} strokeWidth={2.4} />
+                    <Icon size={14} style={{ color }} strokeWidth={2.5} />
                   ) : (
                     <span className="text-label font-black tabular-nums" style={{ color }}>
                       {r.rank}
@@ -115,13 +115,13 @@ const TopTribesWidget = () => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black truncate leading-tight">{r.name}</p>
+                  <p className="text-note font-black truncate leading-tight">{r.name}</p>
                   <span className="inline-flex items-center gap-1 text-label text-muted-foreground">
-                    <Users aria-hidden size={11} /> {r.member_count}
+                    <Users aria-hidden size={12} /> {r.member_count}
                   </span>
                 </div>
                 <span className="inline-flex items-center gap-1 text-meta font-black tabular-nums" style={{ color }}>
-                  <Zap aria-hidden size={11} fill="currentColor" strokeWidth={0} />
+                  <Zap aria-hidden size={12} fill="currentColor" strokeWidth={0} />
                   {formatScore(r.score)}
                 </span>
               </button>

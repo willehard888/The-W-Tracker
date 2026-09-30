@@ -182,7 +182,7 @@ const BadgeVault = ({
       {/* === Header === */}
       <div className="flex items-end justify-between mb-3">
         <div>
-          <h2 className="font-display font-black text-base tracking-tight flex items-center gap-1.5">
+          <h2 className="font-display font-black text-copy tracking-tight flex items-center gap-1.5">
             Badge Vault
             <Sparkles aria-hidden size={12} className="text-gold" />
           </h2>
@@ -271,7 +271,7 @@ const BadgeVault = ({
                   Next Drop
                 </span>
               </div>
-              <p className="text-sm font-bold text-foreground truncate">{nextDrop.badge.name}</p>
+              <p className="text-note font-bold text-foreground truncate">{nextDrop.badge.name}</p>
               <div className="mt-1.5 flex items-center gap-2">
                 <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
                   <div

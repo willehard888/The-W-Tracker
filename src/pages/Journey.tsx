@@ -116,7 +116,7 @@ const Journey = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h2 className="h-page">
             {isLoading || isError ? (
               "Your journey."
             ) : !hasAnyData ? (

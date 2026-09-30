@@ -30,13 +30,13 @@ export default function PushPrimingSheet({ open, context = "home", onEnable, onD
   return (
     <BottomSheet open={open} onClose={dismiss} label="Turn on reminders" bodyClassName="px-6">
       <div className="mx-auto mt-2 mb-4 flex h-16 w-16 items-center justify-center rounded-2xl gradient-gold glow-gold">
-        <Bell size={30} className="text-primary-foreground" strokeWidth={2.2} aria-hidden />
+        <Bell size={30} className="text-primary-foreground" aria-hidden />
       </div>
 
-      <h2 className="text-center font-display text-2xl font-black tracking-tight">
+      <h2 className="text-center font-display text-major font-black tracking-tight">
         {afterCheckin ? "Keep the chain" : "Never break the chain"}
       </h2>
-      <p className="mx-auto mt-2 mb-5 max-w-[300px] text-center text-sm text-muted-foreground">
+      <p className="mx-auto mt-2 mb-5 max-w-[300px] text-center text-note text-muted-foreground">
         {afterCheckin
           ? "Day one is in. A reminder tomorrow evening keeps a busy day from costing you this streak."
           : "Turn on reminders so a busy day never costs you your streak. You stay in control — only what matters."}
@@ -45,8 +45,8 @@ export default function PushPrimingSheet({ open, context = "home", onEnable, onD
       <ul className="mb-6 divide-y divide-border/35">
         {ROWS.map(({ icon: Icon, text }, i) => (
           <li key={i} className="flex items-center gap-3 py-3">
-            <Icon size={17} className="text-gold shrink-0" aria-hidden />
-            <p className="text-sm text-foreground/90 leading-snug">{text}</p>
+            <Icon size={18} className="text-gold shrink-0" aria-hidden />
+            <p className="text-note text-foreground/90 leading-snug">{text}</p>
           </li>
         ))}
       </ul>

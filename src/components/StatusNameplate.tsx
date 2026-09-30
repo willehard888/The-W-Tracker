@@ -296,7 +296,7 @@ const StatusNameplate = ({
       {/* Sparkle accents — legend */}
       {isLegend && (
         <>
-          <Sparkles aria-hidden size={11} className="absolute top-2.5 right-3 text-gold/80" />
+          <Sparkles aria-hidden size={12} className="absolute top-2.5 right-3 text-gold/80" />
           <Sparkles aria-hidden
             size={10}
             className="absolute bottom-3 left-3 text-[hsl(280_70%_75%)]/70"
@@ -328,8 +328,7 @@ const StatusNameplate = ({
         {/* The main event — huge tier label with icon */}
         <div className="flex items-center justify-center gap-2.5">
           <Icon
-            size={size === "lg" ? 26 : 22}
-            strokeWidth={2.6}
+            size={size === "lg" ? 26 : 22} strokeWidth={2.5}
             className={cn(
               iconColor,
               "drop-shadow-[0_0_8px_currentColor]",
@@ -346,8 +345,7 @@ const StatusNameplate = ({
             {cfg.label}
           </h2>
           <Icon
-            size={size === "lg" ? 26 : 22}
-            strokeWidth={2.6}
+            size={size === "lg" ? 26 : 22} strokeWidth={2.5}
             className={cn(
               iconColor,
               "drop-shadow-[0_0_8px_currentColor] scale-x-[-1]",

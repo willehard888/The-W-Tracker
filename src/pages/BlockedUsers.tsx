@@ -50,7 +50,7 @@ const BlockedUsers = () => {
 
       <div className="px-4 pt-4 pb-6">
       <header className="home-rise">
-        <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+        <h2 className="h-page">
           {isLoading ? "\u00a0" : isError ? "Couldn't load your list." : !rows?.length ? "Nobody blocked." : `${rows.length} blocked.`}
         </h2>
         <p className="mt-1.5 text-dense text-muted-foreground leading-snug">

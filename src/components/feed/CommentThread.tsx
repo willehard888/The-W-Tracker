@@ -133,7 +133,7 @@ const CommentThread = memo(function CommentThread({
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
+              <p className="text-meta text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
                 {node.content}
               </p>
             )}

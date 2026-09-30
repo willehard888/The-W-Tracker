@@ -68,16 +68,16 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
           {/* Three lines by design: at 44 px "You either level up" does not fit
               a phone width, and a break inside "level up" split the one gold
               phrase across two lines. */}
-          <h1 className="font-display text-[2.75rem] font-black tracking-tight leading-[0.92]">
+          <h1 className="font-display text-[2.75rem] font-black tracking-tight leading-none">
             You either
             <br />
             <span className="text-gold">level up</span>
             <br />
             or fall behind.
           </h1>
-          <p className="mt-5 text-muted-foreground text-base leading-relaxed max-w-sm">
+          <p className="mt-5 text-muted-foreground text-copy leading-relaxed max-w-sm">
             Turn self-improvement into a visible status game.{" "}
-            <span className="text-foreground font-medium">
+            <span className="text-foreground font-semibold">
               Track your discipline. Compete with others. Earn your Status.
             </span>
           </p>
@@ -89,7 +89,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
             variant="ember"
             size="xl"
             onClick={() => navigate("/auth?mode=signup")}
-            className="w-full group text-base"
+            className="w-full group text-copy"
           >
             Start your journey
             <ArrowRight aria-hidden
@@ -127,7 +127,7 @@ const Landing = forwardRef<HTMLDivElement>((_props, ref) => {
           identifies the organization — the footer used to hold the tagline and
           nothing else, so the site named no company at all. */}
       <footer className="relative px-6 pb-8 pt-10 home-rise home-rise-4">
-        <p className="text-label text-muted-foreground/75 tracking-[0.22em] uppercase font-medium">
+        <p className="text-label text-muted-foreground/75 tracking-[0.22em] uppercase font-semibold">
           Built for those who refuse to be average
         </p>
         <nav aria-label="Legal" className="mt-6 flex flex-wrap items-center gap-x-5 text-label text-muted-foreground/75">

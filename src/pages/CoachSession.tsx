@@ -345,7 +345,7 @@ const CoachSession = () => {
   if (!program || !planDay || plan.length === 0) {
     return (
       <div className="home-rise px-5 pt-10">
-        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Nothing to run here</h1>
+        <h1 className="h-page">Nothing to run here</h1>
         <p className="mt-1.5 text-dense text-muted-foreground mb-5">
           This day has no exercises in your plan.
         </p>
@@ -388,7 +388,7 @@ const CoachSession = () => {
           {/* Opening beat: the day, done. One standing line under it — the
               volume is the screen's one felt number. */}
           <div className="home-rise">
-            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+            <h2 className="h-page">
               {focus || "Workout"} done.
             </h2>
             <p className="mt-3 text-read font-bold tabular-nums text-foreground/85">
@@ -411,7 +411,7 @@ const CoachSession = () => {
                     key={p.slug}
                     className="inline-flex items-center gap-1.5 min-h-8 rounded-full border border-[hsl(var(--teal))]/30 bg-[hsl(var(--teal))]/[0.08] px-3 text-meta font-bold text-[hsl(var(--teal))]"
                   >
-                    <TrendingUp size={13} aria-hidden />
+                    <TrendingUp size={14} aria-hidden />
                     <span className="sr-only">Personal record: </span>
                     {p.name} · est. 1RM {fmtUnit(Math.round(p.e1rm), "kg")}
                   </span>
@@ -629,7 +629,7 @@ const CoachSession = () => {
                 }}
               />
               <div className="flex items-start justify-between gap-3">
-                <h2 className="mt-1 font-display font-black text-beat leading-[1.04] tracking-tight">
+                <h2 className="h-page mt-1">
                   {current.name}
                 </h2>
                 {/* Any movement with nothing logged yet can be traded by hand,

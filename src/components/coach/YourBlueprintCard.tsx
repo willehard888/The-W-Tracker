@@ -75,7 +75,7 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
           <p className="text-label font-bold text-muted-foreground">
             Your blueprint
           </p>
-          <p className="text-sm font-bold text-foreground">
+          <p className="text-note font-bold text-foreground">
             How the Coach sees you
           </p>
         </div>
@@ -98,10 +98,10 @@ const YourBlueprintCard = ({ className }: YourBlueprintCardProps) => {
 
       <div className="mt-4 grid grid-cols-2 gap-2.5">
         {goalLabel && (
-          <Row icon={<Target aria-hidden size={11} />} label="Goal" value={goalLabel} />
+          <Row icon={<Target aria-hidden size={12} />} label="Goal" value={goalLabel} />
         )}
         {toneLabel && (
-          <Row icon={<MessageCircle aria-hidden size={11} />} label="Voice" value={toneLabel} />
+          <Row icon={<MessageCircle aria-hidden size={12} />} label="Voice" value={toneLabel} />
         )}
       </div>
 

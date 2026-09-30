@@ -120,7 +120,7 @@ const ExercisePickerSheet = ({ open, onClose, title, current, exclude, onPick }:
       headerExtra={
         <div className="px-4 pb-3 space-y-2.5">
           <div className="relative">
-            <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}

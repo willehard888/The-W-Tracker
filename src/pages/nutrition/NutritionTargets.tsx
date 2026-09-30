@@ -171,7 +171,7 @@ const NutritionTargets = () => {
 
       <div className="px-4 pt-4 pb-6 space-y-6">
         <div className="home-rise">
-          <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h2 className="h-page">
             {targets ? (
               <>
                 Measuring against <span className="tabular-nums">{fmtKcal(targets.kcal)}</span> kcal.

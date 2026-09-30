@@ -79,7 +79,7 @@ const MemberContributionStrip = ({ members, maxFlames = 8, className }: MemberCo
                     boxShadow: `0 0 10px ${withAlpha(accent, 0.5)}`,
                   }}
                 >
-                  <Crown aria-hidden size={7} strokeWidth={2.6} fill="currentColor" />
+                  <Crown aria-hidden size={7} strokeWidth={2.5} fill="currentColor" />
                   Top
                 </span>
               )}

@@ -541,7 +541,7 @@ const NutritionDiary = () => {
             {/* ── OPENING BEAT — the day's verdict, one line. The hero is a
                    sentence with a number in it, not a metric tile. ── */}
             <div className="home-rise">
-              <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+              <h1 className="h-page">
                 {state === "no_targets" ? (
                   <button type="button" onClick={() => navigate("/nutrition/targets")} className="text-left min-h-11 active:opacity-70 transition-opacity">
                     {beat}

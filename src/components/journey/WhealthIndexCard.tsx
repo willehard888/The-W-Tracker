@@ -101,7 +101,7 @@ const WhealthIndexCard = ({ overall, priorOverall, priorDate, live, history, onS
                 aria-label="Share your Whealth Index"
                 className="relative h-8 w-8 rounded-full flex items-center justify-center bg-secondary/60 border border-border/50 text-muted-foreground before:absolute before:-inset-2 before:content-['']"
               >
-                <Share2 size={13} aria-hidden />
+                <Share2 size={14} aria-hidden />
               </button>
             )}
           </div>

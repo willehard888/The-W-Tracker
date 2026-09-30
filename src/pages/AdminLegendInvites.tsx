@@ -110,7 +110,7 @@ export default function AdminLegendInvites() {
       <PageBar title="Legend invites" onBack={() => backOr(navigate, "/profile")} />
       <div className="px-4 pt-4 pb-6">
       <div className="mb-6">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-note text-muted-foreground">
           Invite-only access to the Legend tier. Each code is single-use.
         </p>
       </div>
@@ -118,10 +118,10 @@ export default function AdminLegendInvites() {
       <div className="surface-tint-gold p-4 mb-6 space-y-3">
         <div className="flex items-center gap-2">
           <Sparkles aria-hidden className="h-4 w-4 text-gold" />
-          <h2 className="font-display font-bold text-sm tracking-tight">Create new invite</h2>
+          <h2 className="font-display font-bold text-note tracking-tight">Create new invite</h2>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Custom code (optional, auto-generated if empty)</Label>
+          <Label className="text-meta">Custom code (optional, auto-generated if empty)</Label>
           <Input
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -131,7 +131,7 @@ export default function AdminLegendInvites() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-2">
-            <Label className="text-xs">Expires in (days)</Label>
+            <Label className="text-meta">Expires in (days)</Label>
             <Input
               type="number"
               min="1"
@@ -142,7 +142,7 @@ export default function AdminLegendInvites() {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs">Note</Label>
+            <Label className="text-meta">Note</Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -185,7 +185,7 @@ export default function AdminLegendInvites() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <code className="font-mono text-sm font-bold text-gold tracking-wider">
+                    <code className="font-mono text-note font-bold text-gold tracking-wider">
                       {inv.code}
                     </code>
                     {isUsed && (
@@ -205,7 +205,7 @@ export default function AdminLegendInvites() {
                     )}
                   </div>
                   {inv.note && (
-                    <p className="text-xs text-muted-foreground mt-1 truncate">{inv.note}</p>
+                    <p className="text-meta text-muted-foreground mt-1 truncate">{inv.note}</p>
                   )}
                   <p className="text-label text-muted-foreground mt-1 inline-flex items-center gap-1">
                     <Clock aria-hidden size={12} />

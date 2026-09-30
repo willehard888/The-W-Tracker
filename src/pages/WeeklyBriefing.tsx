@@ -183,7 +183,7 @@ const WeeklyBriefing = () => {
         {/* ── OPENING BEAT — the dateline, then the coach's own headline. ── */}
         <header className="home-rise">
           <p className="eyebrow">Week {isoWeek(briefing.week_start)} · {weekRange}</p>
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight mt-1.5">
+          <h1 className="h-page mt-1.5">
             {briefing.headline}
           </h1>
           <p className="mt-2 text-read leading-snug">
@@ -210,7 +210,7 @@ const WeeklyBriefing = () => {
         {/* ── WHAT STOOD OUT ── */}
         {briefing.key_insights?.length > 0 && (
           <section className="home-rise home-rise-3 mt-7">
-            <h2 className="font-display font-black text-lead leading-tight tracking-tight">What stood out</h2>
+            <h2 className="h-card">What stood out</h2>
             <div className="mt-1 divide-y divide-border/35">
               {briefing.key_insights.map((insight, i) => (
                 <div key={i} className="py-3.5">
@@ -225,7 +225,7 @@ const WeeklyBriefing = () => {
         {/* ── NEXT WEEK — numbered plainly. ── */}
         {briefing.next_week_protocol?.length > 0 && (
           <section className="home-rise home-rise-4 mt-7">
-            <h2 className="font-display font-black text-lead leading-tight tracking-tight">Next week</h2>
+            <h2 className="h-card">Next week</h2>
             <ol className="mt-1 divide-y divide-border/35">
               {briefing.next_week_protocol.map((item, i) => (
                 <li key={i} className="py-3.5 flex gap-3">

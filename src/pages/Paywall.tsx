@@ -151,7 +151,7 @@ const Paywall = () => {
       <div className="min-h-full">
         <PageBar onBack={leave} />
         <div className="home-rise px-4 pt-3 pb-6">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">You're in.</h1>
+          <h1 className="h-page">You're in.</h1>
           <p className="mt-1.5 text-dense text-muted-foreground">
             Full access, new content every week. Your price stays locked.
           </p>
@@ -301,7 +301,7 @@ const Paywall = () => {
         {/* BEAT: what this buys, or how long it is already free. A new account
             meets this screen straight after sign-up: the trial is the door. */}
         <header className="home-rise">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h1 className="h-page">
             {creditsActive
               ? `Free until ${creditsUntilLabel}.`
               : isNative && trialOffer && trialOffer.eligible !== false

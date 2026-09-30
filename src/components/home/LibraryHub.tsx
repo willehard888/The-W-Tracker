@@ -63,7 +63,7 @@ const RowThumb = ({ id }: { id: (typeof ROWS)[number]["key"] }) => {
   if (id === "recipes") {
     return (
       <div className={base}>
-        <Utensils aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.6} />
+        <Utensils aria-hidden size={16} className="text-[hsl(260_18%_4%)]" strokeWidth={2.5} />
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${recipeSquare("greek-chicken-bowl") ?? recipeThumb("greek-chicken-bowl")})` }}

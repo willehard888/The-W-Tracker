@@ -194,7 +194,7 @@ export const IllustrationPlayer = ({
           aria-label={playing ? "Pause the movement" : "Play the movement"}
           className="absolute bottom-2 right-2 h-11 w-11 rounded-full bg-background/70 border border-border/60 flex items-center justify-center text-gold"
         >
-          {playing ? <Pause aria-hidden size={15} /> : <Play aria-hidden size={15} />}
+          {playing ? <Pause aria-hidden size={16} /> : <Play aria-hidden size={16} />}
         </button>
 
         <span className="absolute bottom-4 left-4 text-label font-bold text-gold/70">

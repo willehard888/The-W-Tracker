@@ -56,7 +56,7 @@ export default function OnboardingBottomSheet({ def, onComplete, onSkip }: Onboa
             aria-label="Close"
             className="absolute right-2 top-1.5 z-10 min-h-11 min-w-11 rounded-full text-muted-foreground/75"
           >
-            <X size={18} />
+            <X size={18} aria-hidden />
           </Button>
 
           <div
@@ -64,11 +64,11 @@ export default function OnboardingBottomSheet({ def, onComplete, onSkip }: Onboa
               reduced ? "" : "animate-in zoom-in-50 fade-in duration-500"
             }`}
           >
-            <Icon size={30} className="text-primary-foreground" strokeWidth={2.2} />
+            <Icon size={30} className="text-primary-foreground" />
           </div>
 
-          <h2 className="text-center font-display text-2xl font-black tracking-tight">{def.title}</h2>
-          <p className="mx-auto mt-2 mb-6 max-w-[300px] text-center text-sm leading-relaxed text-muted-foreground">
+          <h2 className="text-center font-display text-major font-black tracking-tight">{def.title}</h2>
+          <p className="mx-auto mt-2 mb-6 max-w-[300px] text-center text-note leading-relaxed text-muted-foreground">
             {def.body}
           </p>
 

@@ -326,6 +326,14 @@
   .eyebrow-sm {
     @apply text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground;
   }
+  /* The two title voices. .h-page opens a screen (49 sites wrote the five
+     utilities by hand); .h-card names a card or a row group. */
+  .h-page {
+    @apply font-display text-beat font-black tracking-tight leading-display;
+  }
+  .h-card {
+    @apply font-display text-lead font-black tracking-tight leading-tight;
+  }
 }
 
 @layer utilities {

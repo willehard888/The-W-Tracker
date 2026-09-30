@@ -173,7 +173,7 @@ export const SetRow = ({
           disabled={saving}
           onClick={async () => { await onLog(w, r); setEditing(false); }}
         >
-          {saving ? <Loader2 aria-hidden size={13} className="animate-spin" /> : done ? "Save" : "Lock"}
+          {saving ? <Loader2 aria-hidden size={14} className="animate-spin" /> : done ? "Save" : "Lock"}
         </Button>
       </div>
     </div>

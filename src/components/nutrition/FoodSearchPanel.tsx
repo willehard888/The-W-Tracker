@@ -71,7 +71,7 @@ const FoodSearchPanel = ({
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search aria-hidden size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <Search aria-hidden size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         <Input
           ref={inputRef}
           type="search"
@@ -85,7 +85,7 @@ const FoodSearchPanel = ({
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
           {query && (
             <button type="button" onClick={() => onQueryChange("")} aria-label="Clear search" className="h-11 min-w-11 flex items-center justify-center text-muted-foreground">
-              <X size={15} />
+              <X size={16} aria-hidden />
             </button>
           )}
           {barcodeSupported && onScanBarcode && (

@@ -39,7 +39,7 @@ const RecoveryCard = () => {
         className="press-row w-full text-left surface-card surface-card-quiet p-4"
       >
         <div className="flex items-center gap-2 mb-1">
-          <HeartPulse aria-hidden size={13} className="text-[hsl(var(--ember))]" />
+          <HeartPulse aria-hidden size={14} className="text-[hsl(var(--ember))]" />
           <p className="text-label font-bold text-muted-foreground">Recovery</p>
         </div>
         <p className="text-meta text-muted-foreground leading-snug">
@@ -118,7 +118,7 @@ const RecoveryCard = () => {
   return (
     <div className="surface-card surface-card-quiet p-4">
       <div className="flex items-center gap-2 mb-2.5">
-        <HeartPulse aria-hidden size={13} className={statusColor} />
+        <HeartPulse aria-hidden size={14} className={statusColor} />
         <p className="text-label font-bold text-muted-foreground">Recovery · last night</p>
         <span className={cn("text-label font-bold ml-auto", statusColor)}>{status}</span>
       </div>
@@ -146,7 +146,7 @@ const RecoveryCard = () => {
       <div className="flex items-center gap-4 mb-3">
         {last!.resting_hr != null && (
           <div className="flex items-center gap-1.5">
-            <HeartPulse aria-hidden size={13} className="text-muted-foreground/75" />
+            <HeartPulse aria-hidden size={14} className="text-muted-foreground/75" />
             <span className="text-dense font-black tabular-nums">{Math.round(last!.resting_hr)}</span>
             <span className="text-label text-muted-foreground">rhr</span>
             {rhrDelta != null && Math.abs(rhrDelta) >= 1 && (
@@ -158,7 +158,7 @@ const RecoveryCard = () => {
         )}
         {last!.respiratory_rate != null && (
           <div className="flex items-center gap-1.5">
-            <Wind aria-hidden size={13} className="text-muted-foreground/75" />
+            <Wind aria-hidden size={14} className="text-muted-foreground/75" />
             <span className="text-dense font-black tabular-nums">{last!.respiratory_rate}</span>
             <span className="text-label text-muted-foreground">br/min</span>
           </div>
@@ -219,7 +219,7 @@ const RecoveryCard = () => {
         onClick={() => navigate("/coach")}
         className="text-label font-bold w-full min-h-11 inline-flex items-center justify-center gap-1 surface-inset rounded-xl text-foreground/85"
       >
-        Ask coach why <ChevronRight aria-hidden size={13} />
+        Ask coach why <ChevronRight aria-hidden size={14} />
       </button>
       </>
       )}

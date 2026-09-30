@@ -110,7 +110,7 @@ const PracticeLoop = ({
                 style={done || current ? { color: accent } : undefined}
                 aria-current={current ? "step" : undefined}
               >
-                {done ? <Check size={11} strokeWidth={3} className="inline -mt-0.5 mr-0.5" aria-hidden /> : null}
+                {done ? <Check size={12} strokeWidth={3} className="inline -mt-0.5 mr-0.5" aria-hidden /> : null}
                 {s.label}
               </span>
               {i < STAGES.length - 1 && <span aria-hidden className="h-px w-3 bg-border/60 shrink-0" />}
@@ -265,7 +265,7 @@ const Stage = ({
                 : { borderColor: "hsl(var(--border) / 0.6)" }
           }
         >
-          {state === "done" && <Check size={10} strokeWidth={3.5} />}
+          {state === "done" && <Check size={10} strokeWidth={3} aria-hidden />}
         </span>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline justify-between gap-3">
@@ -316,7 +316,7 @@ const AnswerBox = ({
   const dirty = text.trim() !== initial.trim();
   return (
     <div>
-      <p className="font-display text-lead font-black tracking-tight leading-[1.25]">{prompt}</p>
+      <p className="h-card">{prompt}</p>
       <Textarea
         value={text}
         onChange={(e) => setText(e.target.value.slice(0, 1200))}

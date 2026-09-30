@@ -198,7 +198,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
             aria-label="Whealth Factory — Home"
           >
             <BrandLogo aria-hidden size={28} alt="" className="rounded-md shadow-[0_2px_8px_hsl(var(--gold)/0.5)]" />
-            <span className="font-display font-black tracking-[0.22em] uppercase text-gold leading-none text-lg">
+            <span className="font-display font-black tracking-[0.22em] uppercase text-gold leading-none text-subhead">
               Whealth Factory
             </span>
           </button>
@@ -251,10 +251,10 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
                 as="p"
                 username={profile.username}
                 tier={tier}
-                className="text-base font-black truncate leading-none"
+                className="text-copy font-black truncate leading-none"
               />
               {streak > 0 && (
-                <StreakFlameInline streak={streak} suffix="" className="leading-none text-xs" />
+                <StreakFlameInline streak={streak} suffix="" className="leading-none text-meta" />
               )}
               {(profile.streak_shields ?? 0) > 0 && (
                 <span
@@ -262,7 +262,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
                   aria-label={`${profile.streak_shields} streak shield${profile.streak_shields === 1 ? "" : "s"} — a missed day costs a shield, not your streak`}
                   className="shrink-0 inline-flex items-center gap-0.5 text-label font-bold text-teal leading-none"
                 >
-                  <ShieldIcon size={11} strokeWidth={2.8} aria-hidden />{profile.streak_shields}
+                  <ShieldIcon size={12} strokeWidth={3} aria-hidden />{profile.streak_shields}
                 </span>
               )}
             </div>
@@ -307,7 +307,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
                     aria-label={`How to reach ${label}`}
                   >
                     → {label}
-                    <ChevronRight size={11} aria-hidden />
+                    <ChevronRight size={12} aria-hidden />
                   </button>
                 );
               })()}
@@ -330,7 +330,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
           {isApex ? (
             <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-[hsl(var(--ember))]/55 animate-breathe-soft">
               <Zap aria-hidden
-                size={11}
+                size={12}
                 className="relative z-10 text-primary-foreground status-flame-flicker"
                 strokeWidth={3}
                 fill="currentColor"
@@ -350,7 +350,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
                   : "bg-gold/10 border-gold/35 text-gold",
               )}
             >
-              {trialUrgent ? <Clock aria-hidden size={11} /> : <Crown aria-hidden size={11} />}
+              {trialUrgent ? <Clock aria-hidden size={12} /> : <Crown aria-hidden size={12} />}
               {/* Narrow screens keep just crown + days — the long label was
                   squeezing the tier row into "RE…" next to the next-tier chip. */}
               <span className="hidden min-[400px]:inline text-label font-bold uppercase tracking-wider">
@@ -362,7 +362,7 @@ const StatusHeaderBody = memo(({ showIdentity }: { showIdentity: boolean }) => {
             </button>
           ) : isElite ? (
             <div className="surface-metal shrink-0 relative flex items-center gap-1 px-2.5 py-1 rounded-full border border-gold/55 animate-breathe-soft">
-              <Crown aria-hidden size={11} className="relative z-10 text-primary-foreground status-flame-flicker" />
+              <Crown aria-hidden size={12} className="relative z-10 text-primary-foreground status-flame-flicker" />
               {/* Membership indicator — NOT the earned "Elite" rank tier (that's
                   shown in the tier row above). Buying a subscription must never
                   read as having earned the Elite status. */}

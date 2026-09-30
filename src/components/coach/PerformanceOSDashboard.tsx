@@ -72,7 +72,7 @@ const PerformanceOSDashboard = () => {
         ].map((c) => (
           <div key={c.label} className="surface-card p-3">
             <p className="text-label font-bold text-muted-foreground">{c.label}</p>
-            <p className="text-lg font-black tabular-nums mt-0.5">{c.val}<span className="text-label text-muted-foreground/75">/{c.max}</span></p>
+            <p className="text-subhead font-black tabular-nums mt-0.5">{c.val}<span className="text-label text-muted-foreground/75">/{c.max}</span></p>
             <div className="h-1 rounded-full bg-card mt-1 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[hsl(42_88%_62%)] to-[hsl(42_78%_48%)] transition-[width]"
@@ -100,7 +100,7 @@ const PerformanceOSDashboard = () => {
           {review.driver_of_week && (
             <div className="mb-2.5">
               <p className="text-label font-bold text-muted-foreground">Driver of the week</p>
-              <p className="text-sm font-bold mt-0.5">{review.driver_of_week}</p>
+              <p className="text-note font-bold mt-0.5">{review.driver_of_week}</p>
             </div>
           )}
           {review.next_week_focus && (

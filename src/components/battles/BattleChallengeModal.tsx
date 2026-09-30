@@ -110,7 +110,7 @@ const BattleChallengeModal = ({
       </ul>
 
       <p className="text-label font-bold text-muted-foreground mb-2 flex items-center gap-1">
-        <Clock size={11} aria-hidden /> Length
+        <Clock size={12} aria-hidden /> Length
       </p>
       <div className="flex rounded-xl border border-border/60 p-1 gap-1" role="radiogroup" aria-label="Length">
         {BATTLE_DURATIONS.map((d) => (

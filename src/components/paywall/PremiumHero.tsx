@@ -204,7 +204,7 @@ const PremiumHero = ({
         <Button
           size="xl"
           variant="ember"
-          className="mt-3 w-full font-black text-base tracking-wide"
+          className="mt-3 w-full font-black text-copy tracking-wide"
           disabled={busy}
           onClick={() => onCta(plan)}
         >
@@ -226,7 +226,7 @@ const PremiumHero = ({
       <ul className="mt-5 divide-y divide-border/35 border-t border-border/35">
         {PILLARS.map(({ icon: Icon, title, text }) => (
           <li key={title} className="py-3 flex gap-3">
-            <Icon size={15} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
+            <Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
             <span className="min-w-0">
               <span className="block text-dense font-bold leading-tight">{title}</span>
               <span className="block text-meta text-muted-foreground leading-snug mt-0.5">{text}</span>

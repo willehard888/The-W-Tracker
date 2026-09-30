@@ -219,7 +219,7 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action, track }: Badg
             </span>
           </div>
           {badge.description && (
-            <p className="text-sm text-muted-foreground mt-3 max-w-[260px] leading-relaxed">{badge.description}</p>
+            <p className="text-note text-muted-foreground mt-3 max-w-[260px] leading-relaxed">{badge.description}</p>
           )}
           {track && (
             <p className="text-label text-muted-foreground/80 mt-2 tabular-nums">
@@ -242,7 +242,7 @@ const BadgeUnlockModal = ({ badge, onClose, earned = true, action, track }: Badg
         {/* Tap to dismiss */}
         <p
           className={cn(
-            "text-xs text-muted-foreground transition-opacity duration-500 mt-2",
+            "text-meta text-muted-foreground transition-opacity duration-500 mt-2",
             phase === "details" ? "opacity-50" : "opacity-0"
           )}
         >

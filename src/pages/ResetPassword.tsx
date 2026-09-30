@@ -89,8 +89,8 @@ const ResetPassword = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center home-rise">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">This link has expired.</h1>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <h1 className="h-page">This link has expired.</h1>
+          <p className="mt-3 text-note text-muted-foreground">
             {onWebsite
               ? "Reset links work once. Open Whealth Factory on your iPhone and request a new one from the sign-in screen."
               : "Reset links work once. Sign in and request a new one."}
@@ -109,8 +109,8 @@ const ResetPassword = () => {
     return (
       <div className="min-h-full gradient-dark flex flex-col items-center justify-center px-6">
         <div className="w-full max-w-sm text-center home-rise">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Password updated.</h1>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <h1 className="h-page">Password updated.</h1>
+          <p className="mt-3 text-note text-muted-foreground">
             {onWebsite
               ? "Open Whealth Factory on your iPhone and sign in with the new password. Your streak is waiting."
               : "You're signed in. Your streak is waiting."}
@@ -130,8 +130,8 @@ const ResetPassword = () => {
       <div className="w-full max-w-sm">
         <header className="home-rise flex flex-col items-center text-center mb-8">
           <BrandLogo size={48} priority className="rounded-xl mb-5" />
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Set a new password.</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Six characters or more.</p>
+          <h1 className="h-page">Set a new password.</h1>
+          <p className="mt-2 text-note text-muted-foreground">Six characters or more.</p>
         </header>
 
         <form onSubmit={handleReset} className="home-rise home-rise-1 space-y-4">
@@ -164,7 +164,7 @@ const ResetPassword = () => {
           </div>
 
           {error && (
-            <p role="alert" className="text-sm text-destructive surface-tint-danger rounded-lg p-3">
+            <p role="alert" className="text-note text-destructive surface-tint-danger rounded-lg p-3">
               {error}
             </p>
           )}

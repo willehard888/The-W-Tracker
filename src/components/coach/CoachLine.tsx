@@ -49,9 +49,9 @@ const TONE_STYLES: Record<CoachLineTone, { border: string; bg: string; iconColor
 };
 
 const DEFAULT_ICON: Record<CoachLineTone, React.ReactNode> = {
-  default: <Sparkles size={13} aria-hidden />,
-  warning: <AlertTriangle size={13} aria-hidden />,
-  celebration: <Trophy size={13} aria-hidden />,
+  default: <Sparkles size={14} aria-hidden />,
+  warning: <AlertTriangle size={14} aria-hidden />,
+  celebration: <Trophy size={14} aria-hidden />,
 };
 
 const CoachLine = ({

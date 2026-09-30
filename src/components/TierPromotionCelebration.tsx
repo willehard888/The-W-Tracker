@@ -123,7 +123,7 @@ const TierPromotionCelebration = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="flex items-center justify-center gap-2 mb-2 text-xs text-muted-foreground"
+                  className="flex items-center justify-center gap-2 mb-2 text-meta text-muted-foreground"
                 >
                   <span className="line-through opacity-50">{previousTier}</span>
                   <span>→</span>
@@ -146,7 +146,7 @@ const TierPromotionCelebration = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="text-sm text-foreground/80 mb-1"
+                className="text-note text-foreground/80 mb-1"
               >
                 {config.message}
               </m.p>
@@ -155,7 +155,7 @@ const TierPromotionCelebration = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
-                className="text-xs text-muted-foreground mb-6"
+                className="text-meta text-muted-foreground mb-6"
               >
                 You're now in the <span className="font-bold text-foreground">{config.percentile}</span>
               </m.p>

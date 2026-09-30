@@ -771,7 +771,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
           demote to two icon buttons that no longer out-shout the page. */}
       <header className="home-rise relative z-10 pt-0.5 mb-5">
         <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h1 className="h-page">
             {(todayWins ?? 0) > 0 ? (
               <>
                 <span className="text-gold glow-gold-text tabular-nums">{todayWins}</span> locked in.
@@ -793,7 +793,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
                 )}
               >
-                {showReported ? <EyeOff aria-hidden size={15} /> : <Eye aria-hidden size={15} />}
+                {showReported ? <EyeOff aria-hidden size={16} /> : <Eye aria-hidden size={16} />}
               </button>
               <button
                 onClick={() => setShowReportsPanel(!showReportsPanel)}
@@ -806,7 +806,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                     : "text-muted-foreground/80 hover:text-foreground hover:bg-secondary",
                 )}
               >
-                <ShieldCheck aria-hidden size={15} />
+                <ShieldCheck aria-hidden size={16} />
                 {unresolvedReportsCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-label font-black flex items-center justify-center">
                     {unresolvedReportsCount}
@@ -833,11 +833,11 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
         <div className="home-rise surface-card border-[hsl(var(--purple))]/30 p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck aria-hidden size={16} className="text-[hsl(var(--purple))]" />
-            <h2 className="font-display text-sm font-bold">Pending Reports</h2>
+            <h2 className="font-display text-note font-bold">Pending Reports</h2>
             <span className="text-label text-muted-foreground">({unresolvedReportsCount})</span>
           </div>
           {unresolvedReportsCount === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">No pending reports</p>
+            <p className="text-meta text-muted-foreground text-center py-4">No pending reports</p>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {reports?.map((report: any) => (
@@ -849,10 +849,10 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                         {" · "}
                         {fmtRelative(report.created_at)}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{report.reason}</p>
+                      <p className="text-meta text-muted-foreground mt-0.5">{report.reason}</p>
                       {report.post && (
                         <div className="mt-2 surface-card surface-card-quiet rounded-lg p-2">
-                          <p className="text-xs text-foreground/80 line-clamp-2">{report.post.content || "(image only)"}</p>
+                          <p className="text-meta text-foreground/80 line-clamp-2">{report.post.content || "(image only)"}</p>
                           {report.post.image_url && (
                             <AppImage src={report.post.image_url} width={96} alt="" className="mt-1 h-16 w-24 object-cover rounded" />
                           )}
@@ -905,7 +905,7 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
           {composerExpanded ? (
             <div className="surface-card p-4">
               <div className="flex gap-3">
-                <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-xs font-black text-primary-foreground shrink-0">
+                <div className="h-9 w-9 rounded-full gradient-gold flex items-center justify-center text-meta font-black text-primary-foreground shrink-0">
                   {composerInitial}
                 </div>
                 <textarea
@@ -957,14 +957,14 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
                   <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="press relative before:absolute before:-inset-1 before:content-[''] flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold"
+                    className="press relative before:absolute before:-inset-1 before:content-[''] flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-meta font-semibold"
                   >
                     <Image aria-hidden size={14} />
                     Photo
                   </button>
                   <button
                     onClick={() => videoRef.current?.click()}
-                    className="press relative before:absolute before:-inset-1 before:content-[''] flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-xs font-semibold"
+                    className="press relative before:absolute before:-inset-1 before:content-[''] flex items-center gap-1.5 px-3 h-9 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground text-meta font-semibold"
                   >
                     <Video aria-hidden size={14} />
                     Video
@@ -993,8 +993,8 @@ const EliteFeed = ({ active = true }: { active?: boolean } = {}) => {
               </span>
               <span className="flex-1 text-note text-muted-foreground/80">Share your W today…</span>
               <span className="flex items-center gap-2.5 text-muted-foreground/75 shrink-0">
-                <Image aria-hidden size={15} />
-                <Video aria-hidden size={15} />
+                <Image aria-hidden size={16} />
+                <Video aria-hidden size={16} />
               </span>
             </button>
           )}

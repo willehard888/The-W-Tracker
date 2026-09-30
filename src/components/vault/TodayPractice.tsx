@@ -44,7 +44,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
         {path ? ` · ${path.title}` : ""}
         {progress.total > 0 ? ` · ${progress.done} of ${progress.total}` : ""}
       </p>
-      <p className="mt-2 font-display text-subhead leading-[1.3] tracking-tight text-foreground/90">{lens}</p>
+      <p className="mt-2 font-display text-subhead leading-snug tracking-tight text-foreground/90">{lens}</p>
       <p className="mt-2 text-meta text-muted-foreground leading-relaxed">
         <span className="text-foreground/85 font-semibold">{article.title}</span>
         {master ? ` · ${master.name}` : ""}

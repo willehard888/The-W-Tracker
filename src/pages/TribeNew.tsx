@@ -110,7 +110,7 @@ const TribeNew = () => {
 
       <div className="px-4 pt-3 pb-6">
       <header className="home-rise">
-        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Light a new fire.</h1>
+        <h1 className="h-page">Light a new fire.</h1>
         <p className="mt-1.5 text-dense text-muted-foreground">Name it, say what it's about, choose who can join.</p>
       </header>
 
@@ -125,14 +125,14 @@ const TribeNew = () => {
             {/* The tribe page's own fire, so the preview promises what they get. */}
             <TribeFireCanvas tier={3} palette={tierPalette(3)} size={72} className="mb-1" />
             <p className={cn(
-              "font-display text-xl font-black tracking-tight leading-tight",
+              "font-display text-head font-black tracking-tight leading-tight",
               name.trim() ? "text-foreground" : "text-muted-foreground/75",
             )}>
               {name.trim() || "Your tribe"}
             </p>
             <p className={cn(LABEL, "mt-1.5 inline-flex items-center gap-1")}>
               {activity && <>{activity} · </>}
-              {visibility === "public" ? <><Globe size={11} aria-hidden /> Open to anyone</> : <><Lock size={11} aria-hidden /> Approval to join</>}
+              {visibility === "public" ? <><Globe size={12} aria-hidden /> Open to anyone</> : <><Lock size={12} aria-hidden /> Approval to join</>}
             </p>
             {description.trim() && (
               <p className="text-meta text-muted-foreground leading-snug mt-2 max-w-[260px] line-clamp-2">{description.trim()}</p>
@@ -197,7 +197,7 @@ const TribeNew = () => {
                       size="pill"
                       onClick={() => setActivity(name === activity ? "" : name)}
                     >
-                      <Icon aria-hidden size={12} strokeWidth={2.4} />
+                      <Icon aria-hidden size={12} strokeWidth={2.5} />
                       {name}
                     </Button>
                   ))}
@@ -248,8 +248,8 @@ const TribeNew = () => {
                   visibility === o.v ? "border-foreground/40 bg-secondary/70" : "border-border/60 bg-card/40",
                 )}
               >
-                {visibility === o.v && <Check size={13} className="absolute right-2.5 top-2.5 text-foreground" aria-hidden />}
-                <o.icon size={15} className={visibility === o.v ? "text-foreground" : "text-muted-foreground"} aria-hidden />
+                {visibility === o.v && <Check size={14} className="absolute right-2.5 top-2.5 text-foreground" aria-hidden />}
+                <o.icon size={16} className={visibility === o.v ? "text-foreground" : "text-muted-foreground"} aria-hidden />
                 <p className={cn("text-meta font-black mt-1.5", visibility === o.v ? "text-foreground" : "text-muted-foreground")}>{o.t}</p>
                 <p className="text-label text-muted-foreground leading-snug mt-0.5">{o.d}</p>
               </button>

@@ -44,7 +44,7 @@ const CoachMemoryScreen = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-title leading-[1.06] tracking-tight">What the Coach knows about you.</h2>
+          <h2 className="font-display font-black text-title leading-display tracking-tight">What the Coach knows about you.</h2>
           <p className="mt-1.5 text-dense text-muted-foreground leading-snug">
             Capped at 30. Add anything it should know; forget anything it shouldn't.
           </p>

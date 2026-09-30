@@ -63,7 +63,7 @@ const ProgramReveal = ({
 
   return (
     <section>
-      <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">{lead}</h2>
+      <h2 className="h-page">{lead}</h2>
       {rest && <p className="mt-2 text-dense text-foreground/85 leading-snug">{rest}</p>}
 
       <p className="mt-2 text-dense text-muted-foreground">

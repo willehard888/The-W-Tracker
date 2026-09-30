@@ -28,7 +28,7 @@ export const MoreSection = ({ label = "More", defaultOpen = false, children, cla
         className="w-full flex items-center justify-center gap-1.5 py-2.5 eyebrow text-muted-foreground/70 active:text-foreground transition-colors"
       >
         {label}
-        <ChevronDown aria-hidden size={13} className={cn("transition-transform duration-200", open && "rotate-180")} />
+        <ChevronDown aria-hidden size={14} className={cn("transition-transform duration-200", open && "rotate-180")} />
       </button>
       {/* No space-y here: children carry their own bottom margins, and the two
           compounded into ~36px gaps inside a page laid out on a 16px rhythm. */}

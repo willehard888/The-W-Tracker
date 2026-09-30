@@ -132,7 +132,7 @@ const RestTimer = ({
         aria-label="Add 30 seconds"
         className="min-h-11 min-w-11 rounded-xl border border-border/50 inline-flex items-center justify-center text-meta font-bold text-foreground/85"
       >
-        <Plus size={13} aria-hidden />30s
+        <Plus size={14} aria-hidden />30s
       </button>
       <button
         type="button"

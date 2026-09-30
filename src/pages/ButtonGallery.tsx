@@ -85,15 +85,15 @@ const ButtonGallery = () => {
           <ArrowLeft aria-hidden size={18} />
         </Link>
         <div className="min-w-0">
-          <h1 className="text-lg font-display font-bold tracking-tight">Button Gallery</h1>
-          <p className="text-xs text-muted-foreground">
+          <h1 className="text-subhead font-display font-bold tracking-tight">Button Gallery</h1>
+          <p className="text-meta text-muted-foreground">
             Hover to see live state · Tap to mark as your pick
           </p>
         </div>
       </div>
 
       {picked && (
-        <div className="mb-5 surface-tint-gold rounded-xl px-3 py-2 text-xs">
+        <div className="mb-5 surface-tint-gold rounded-xl px-3 py-2 text-meta">
           <span className="text-muted-foreground">Picked: </span>
           <span className="font-bold text-[hsl(var(--gold-light))]">{picked}</span>
         </div>
@@ -145,7 +145,7 @@ const VariantRow = ({ spec, isPicked, onPick }: VariantRowProps) => {
       }`}
     >
       <div className="flex items-baseline justify-between mb-2 px-0.5">
-        <span className="text-sm font-bold text-foreground">{spec.label}</span>
+        <span className="text-note font-bold text-foreground">{spec.label}</span>
         <code className="text-label text-muted-foreground/70 font-mono">{spec.id}</code>
       </div>
       <p className="text-meta text-muted-foreground mb-3 px-0.5 leading-snug">

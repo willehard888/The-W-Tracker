@@ -153,7 +153,7 @@ export default function AdminModeration() {
       <PageBar title="Moderation queue" onBack={() => backOr(navigate, "/profile")} />
       <div className="px-4 pt-4 pb-6">
       <div className="mb-6">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-note text-muted-foreground">
           Low-confidence AI blocks waiting for human review.
         </p>
         <div className="mt-3 flex items-center gap-4">
@@ -177,7 +177,7 @@ export default function AdminModeration() {
       {!isLoading && queue && queue.length === 0 && (
         <div className="text-center py-16">
           <CheckCircle2 aria-hidden className="h-10 w-10 mx-auto mb-3 text-gold/70" />
-          <p className="text-sm font-semibold text-muted-foreground">Queue clear 🎉</p>
+          <p className="text-note font-semibold text-muted-foreground">Queue clear 🎉</p>
         </div>
       )}
 
@@ -217,14 +217,14 @@ export default function AdminModeration() {
                     {fmtRelative(item.created_at)}
                   </span>
                 </div>
-                <p className="text-sm font-semibold mt-1">{item.ai_reason ?? "No reason"}</p>
+                <p className="text-note font-semibold mt-1">{item.ai_reason ?? "No reason"}</p>
                 {item.ai_categories?.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-meta text-muted-foreground mt-0.5">
                     {item.ai_categories.join(" · ")}
                   </p>
                 )}
                 {item.text_content && (
-                  <p className="mt-2 text-xs text-foreground/80 line-clamp-3 italic">
+                  <p className="mt-2 text-meta text-foreground/80 line-clamp-3 italic">
                     "{item.text_content}"
                   </p>
                 )}

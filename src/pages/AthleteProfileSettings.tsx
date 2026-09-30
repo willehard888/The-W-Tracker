@@ -101,7 +101,7 @@ const AthleteProfileSettings = () => {
 
       <div className="px-4 pt-3 pb-6">
         <header className="home-rise">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h1>
+          <h1 className="h-page">{beat}</h1>
           <p className="mt-1.5 text-dense text-muted-foreground">What the coach is coaching.</p>
           {profile.i_am && (
             <blockquote className="mt-4 font-display text-lead font-bold leading-snug tracking-tight">

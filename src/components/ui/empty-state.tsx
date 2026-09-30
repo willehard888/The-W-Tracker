@@ -69,7 +69,7 @@ export const EmptyState = ({
       <p
         className={cn(
           "font-semibold text-foreground/90 tracking-tight",
-          isCompact ? "text-dense" : "text-sm",
+          isCompact ? "text-dense" : "text-note",
         )}
       >
         {title}
@@ -81,7 +81,7 @@ export const EmptyState = ({
             // under it, on a dashed card that is already low-contrast, in the
             // ~10 places the app explains what "empty" means.
             "text-muted-foreground/75 leading-relaxed max-w-[260px]",
-            isCompact ? "text-meta" : "text-xs",
+            isCompact ? "text-meta" : "text-meta",
           )}
         >
           {description}

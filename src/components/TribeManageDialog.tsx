@@ -325,7 +325,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                       aria-pressed={activity === name}
                       onClick={() => setActivity(name === activity ? "" : name)}
                     >
-                      <Icon size={12} strokeWidth={2.4} aria-hidden />
+                      <Icon size={12} strokeWidth={2.5} aria-hidden />
                       {name}
                     </Button>
                   ))}
@@ -359,7 +359,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                 >
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <OIcon size={12} className={active ? "text-gold" : "text-muted-foreground"} aria-hidden />
-                    <p className={cn("text-xs font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
+                    <p className={cn("text-meta font-bold", active ? "text-gold" : "text-foreground/80")}>{opt.title}</p>
                   </div>
                   <p className="text-label text-muted-foreground leading-snug">{opt.sub}</p>
                 </button>
@@ -377,7 +377,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
         </div>
 
         {otherMembers.length === 0 ? (
-          <p className="text-xs text-muted-foreground py-3 text-center">No other members yet.</p>
+          <p className="text-meta text-muted-foreground py-3 text-center">No other members yet.</p>
         ) : (
           <div className="divide-y divide-border/35">
             {otherMembers.map((m) => {
@@ -396,7 +396,7 @@ const TribeManageDialog = ({ tribeId, open, onOpenChange, tribe, members, curren
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate">{m.username}</p>
+                    <p className="text-meta font-semibold truncate">{m.username}</p>
                     {isAdmin && (
                       <span className="inline-flex items-center gap-0.5 text-label font-bold text-gold">
                         <Crown size={10} aria-hidden /> Admin

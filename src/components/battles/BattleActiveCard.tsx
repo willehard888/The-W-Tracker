@@ -114,7 +114,7 @@ const BattleActiveCard = ({
       {/* Scoreboard — the leading total is the one felt number. */}
       <div className="mt-4 flex items-end justify-between gap-3">
         <p className="text-dense font-bold truncate">
-          @{profileUsername} <span className="text-muted-foreground font-medium">you</span>
+          @{profileUsername} <span className="text-muted-foreground font-semibold">you</span>
         </p>
         {score(myScore, amWinning)}
       </div>
@@ -202,7 +202,7 @@ export const BattleActiveRow = ({
   const { day, total, started } = battleDay(battle.start_date, battle.end_date);
   return (
     <div className="flex items-center gap-3 py-3 min-h-11">
-      <TypeIcon size={15} className="text-muted-foreground shrink-0" aria-hidden />
+      <TypeIcon size={16} className="text-muted-foreground shrink-0" aria-hidden />
       <div className="flex-1 min-w-0">
         <p className="text-note font-semibold leading-tight truncate">@{opp.username}</p>
         <p className="text-meta text-muted-foreground mt-0.5">

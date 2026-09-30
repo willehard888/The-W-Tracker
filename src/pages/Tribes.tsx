@@ -295,7 +295,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
     if (t.visibility === "private") {
       return (
         <Button size="sm" variant="ember-glass" className={cls} disabled={joiningId !== null} onClick={(e) => { e.stopPropagation(); void handleJoin(t.id); }}>
-          <Lock aria-hidden size={11} /> {wide ? "Request to join" : "Request"}
+          <Lock aria-hidden size={12} /> {wide ? "Request to join" : "Request"}
         </Button>
       );
     }
@@ -372,8 +372,8 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
-              <h2 className="font-display font-black text-title leading-[1.05] tracking-tight truncate">{t.name}</h2>
-              {t.visibility === "private" && <Lock size={13} className="text-muted-foreground/75 shrink-0" aria-label="Private" />}
+              <h2 className="font-display font-black text-title leading-display tracking-tight truncate">{t.name}</h2>
+              {t.visibility === "private" && <Lock size={14} className="text-muted-foreground/75 shrink-0" aria-label="Private" />}
               {ownedIds.has(t.id) && <Crown size={12} className="text-gold shrink-0" aria-label="Owner" />}
             </div>
             {t.description && (
@@ -382,11 +382,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             <div className="mt-2.5 flex items-center gap-x-3 gap-y-1 flex-wrap">
               {cTier >= 0 ? (
                 <span className="inline-flex items-center gap-1 text-meta font-black tabular-nums" style={{ color: cAccent }}>
-                  <Flame aria-hidden size={13} fill="currentColor" /> {fmtInt(cStreak)}d · {collectiveTierName(cStreak)}
+                  <Flame aria-hidden size={14} fill="currentColor" /> {fmtInt(cStreak)}d · {collectiveTierName(cStreak)}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-meta font-bold text-[hsl(var(--ember))]/85">
-                  <Flame aria-hidden size={13} /> Embers waiting
+                  <Flame aria-hidden size={14} /> Embers waiting
                 </span>
               )}
               <span className="inline-flex items-center gap-1 text-meta font-bold tabular-nums text-muted-foreground">
@@ -409,7 +409,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
             </div>
             {ev && (
               <div className="flex items-center gap-1.5 mt-2 text-meta font-bold text-[hsl(var(--ember))]">
-                <Calendar aria-hidden size={12} strokeWidth={2.6} className="shrink-0" />
+                <Calendar aria-hidden size={12} strokeWidth={2.5} className="shrink-0" />
                 <span className="truncate">
                   {ev.title} · {format(new Date(ev.starts_at), "EEE HH:mm")}
                   {ev.going > 0 ? ` · ${ev.going} going` : ""}
@@ -499,7 +499,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               <div className="flex items-center gap-1.5">
                 <p className="font-bold text-read truncate leading-tight">{t.name}</p>
                 {t.visibility === "private" && <Lock size={12} className="text-muted-foreground/75 shrink-0" aria-label="Private" />}
-                {ownedIds.has(t.id) && <Crown size={11} className="text-gold shrink-0" aria-label="Owner" />}
+                {ownedIds.has(t.id) && <Crown size={12} className="text-gold shrink-0" aria-label="Owner" />}
                 {isNew && (
                   <span className="text-label font-bold shrink-0 px-1.5 py-px rounded-full border border-gold/40 bg-gold/10 text-gold">
                     New
@@ -515,11 +515,11 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
                 {ActIcon && t.primary_activity && (
                   <span className="text-label font-semibold inline-flex items-center gap-1 text-muted-foreground">
-                    <ActIcon aria-hidden size={11} strokeWidth={2.4} /> {t.primary_activity}
+                    <ActIcon aria-hidden size={12} strokeWidth={2.5} /> {t.primary_activity}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1 text-label font-bold tabular-nums text-muted-foreground">
-                  <Users aria-hidden size={11} /> {t.member_count}
+                  <Users aria-hidden size={12} /> {t.member_count}
                   {spotsLeft != null && spotsLeft > 0 && spotsLeft <= 5 && (
                     <span className="text-[hsl(var(--ember))]">· {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left</span>
                   )}
@@ -538,7 +538,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               </div>
               {ev && (
                 <div className="flex items-center gap-1.5 mt-1.5 text-label font-bold text-[hsl(var(--ember))]">
-                  <Calendar aria-hidden size={12} strokeWidth={2.6} className="shrink-0" />
+                  <Calendar aria-hidden size={12} strokeWidth={2.5} className="shrink-0" />
                   <span className="truncate">
                     {ev.title} · {format(new Date(ev.starts_at), "EEE HH:mm")}
                     {ev.going > 0 ? ` · ${ev.going} going` : ""}
@@ -573,10 +573,10 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
               >
                 <div className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[hsl(var(--ember))]/30 to-gold/15 border border-[hsl(var(--ember))]/40 flex items-center justify-center shrink-0">
-                    <Crown aria-hidden size={14} className="text-[hsl(var(--ember))]" strokeWidth={2.4} />
+                    <Crown aria-hidden size={14} className="text-[hsl(var(--ember))]" strokeWidth={2.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-black text-sm truncate">{inv.tribe?.name ?? "Tribe"}</p>
+                    <p className="font-black text-note truncate">{inv.tribe?.name ?? "Tribe"}</p>
                     <p className="text-meta text-muted-foreground truncate">
                       Invited by @{inv.inviter?.username ?? "?"}
                     </p>
@@ -638,7 +638,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
           onClick={() => navigate("/tribes/leaderboard")}
           className="press pb-2 inline-flex items-center gap-1 text-meta font-bold text-gold/85 transition-transform"
         >
-          <Trophy aria-hidden size={11} /> Leaderboard <ChevronRight aria-hidden size={11} className="-ml-0.5" />
+          <Trophy aria-hidden size={12} /> Leaderboard <ChevronRight aria-hidden size={12} className="-ml-0.5" />
         </button>
       </div>
 
@@ -674,7 +674,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                       else { setOpenGroup(g.label); setActivityFilter(null); }
                     }}
                   >
-                    <GIcon aria-hidden size={12} strokeWidth={2.4} /> {g.label}
+                    <GIcon aria-hidden size={12} strokeWidth={2.5} /> {g.label}
                   </Button>
                 );
               })}
@@ -694,7 +694,7 @@ const Tribes = ({ initialSub }: { initialSub?: "mine" | "browse" }) => {
                       className="shrink-0"
                       onClick={() => { void hapticSelection(); setActivityFilter(active ? null : a.name); }}
                     >
-                      <AIcon aria-hidden size={11} strokeWidth={2.4} /> {a.name}
+                      <AIcon aria-hidden size={12} strokeWidth={2.5} /> {a.name}
                     </Button>
                   );
                 })}

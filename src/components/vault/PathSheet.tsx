@@ -42,7 +42,7 @@ const PathSheet = ({
       title={path.title}
       subtitle={`${DIMENSION_LABEL[path.dimension]} · ${pp.complete ? "walked" : `${pp.done} of ${pp.total} practised`}`}
     >
-      <p className="font-display text-lead font-black tracking-tight leading-[1.25] pt-1">{path.thesis}</p>
+      <p className="h-card pt-1">{path.thesis}</p>
 
       <ol className="mt-5 divide-y divide-border/35" aria-label="Steps">
         {path.steps.map((slug, i) => {
@@ -65,7 +65,7 @@ const PathSheet = ({
                           : { borderColor: "hsl(var(--border) / 0.6)", color: "hsl(var(--muted-foreground) / 0.75)" }
                     }
                   >
-                    {done ? <Check size={11} strokeWidth={3.5} /> : i + 1}
+                    {done ? <Check size={12} strokeWidth={3} aria-hidden /> : i + 1}
                   </span>
                 }
                 kicker={

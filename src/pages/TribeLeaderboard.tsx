@@ -119,7 +119,7 @@ const TribeLeaderboard = () => {
       {/* pb-32 clears this page's fixed "your tribe" footer. */}
       <div className="px-4 pt-3 pb-32">
       <header className="home-rise">
-        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+        <h1 className="h-page">
           {myBest ? <>Your tribe is <span className="text-gold glow-gold-text tabular-nums">#{myBest.rank}</span> {span}.</> : "Every tribe, ranked."}
         </h1>
         <p className="mt-1.5 text-dense text-muted-foreground">
@@ -187,9 +187,9 @@ const TribeLeaderboard = () => {
                 onClick={() => navigate(`/tribes/${r.tribe_id}`)}
                 className="press-row w-full min-h-11 text-left py-3 flex items-center gap-3"
               >
-                <span className={cn("relative w-8 shrink-0 text-right font-display font-black text-base tabular-nums", PODIUM[r.rank] ?? "text-muted-foreground")}>
+                <span className={cn("relative w-8 shrink-0 text-right font-display font-black text-copy tabular-nums", PODIUM[r.rank] ?? "text-muted-foreground")}>
                   {r.rank === 1 && (
-                    <Crown size={11} className="absolute -top-2.5 right-0.5 text-gold" strokeWidth={2.6} fill="currentColor" aria-hidden />
+                    <Crown size={12} className="absolute -top-2.5 right-0.5 text-gold" strokeWidth={2.5} fill="currentColor" aria-hidden />
                   )}
                   {r.rank}
                 </span>
@@ -203,13 +203,13 @@ const TribeLeaderboard = () => {
                   </div>
                   <div className="flex items-center gap-2.5 mt-0.5 flex-wrap">
                     <span className="inline-flex items-center gap-1 text-label font-bold tabular-nums text-muted-foreground">
-                      <Users size={11} aria-hidden /> {r.member_count}
+                      <Users size={12} aria-hidden /> {r.member_count}
                     </span>
                     {fireChip(r.tribe_id)}
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1 text-dense font-black tabular-nums shrink-0 text-foreground/85">
-                  <Zap size={11} fill="currentColor" strokeWidth={0} aria-hidden />
+                  <Zap size={12} fill="currentColor" strokeWidth={0} aria-hidden />
                   {fmtInt(r.score)}
                 </span>
               </button>
@@ -231,11 +231,11 @@ const TribeLeaderboard = () => {
               className="w-full min-h-11 rounded-xl px-3 py-2.5 border border-gold/40 bg-background shadow-[var(--shadow-3)] flex items-center gap-3"
             >
               <span className={"text-label font-bold text-muted-foreground shrink-0"}>Your tribe</span>
-              <span className="font-bold text-sm truncate flex-1 text-left tabular-nums">
+              <span className="font-bold text-note truncate flex-1 text-left tabular-nums">
                 #{myBest.rank} · {myBest.name}
               </span>
               <span className="inline-flex items-center gap-1 text-dense font-black tabular-nums text-foreground/85 shrink-0">
-                <Zap size={11} fill="currentColor" strokeWidth={0} aria-hidden />
+                <Zap size={12} fill="currentColor" strokeWidth={0} aria-hidden />
                 {fmtInt(myBest.score)}
               </span>
             </button>

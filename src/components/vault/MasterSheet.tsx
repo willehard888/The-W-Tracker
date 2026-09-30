@@ -33,7 +33,7 @@ const MasterSheet = ({
 
   return (
     <BottomSheet open={open} onClose={onClose} label={master.name} title={master.name} subtitle={`${master.lived} · ${master.tradition}`}>
-      <p className="font-display text-title font-black tracking-tight leading-[1.15] pt-1">{master.lens}</p>
+      <p className="font-display text-title font-black tracking-tight leading-display pt-1">{master.lens}</p>
       <p className="mt-3 text-note text-muted-foreground leading-relaxed">
         {MASTER_KIND_LABEL[master.kind]}. Read for the practice you can run this week; the evidence chip on each piece rates that practice, not the worldview.
       </p>

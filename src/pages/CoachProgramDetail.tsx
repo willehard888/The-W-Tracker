@@ -129,7 +129,7 @@ const CoachProgramDetail = () => {
         {/* The reveal carries its own beat, so the page's stays out of its way. */}
         {!isLoading && !failed && !justGenerated && (
           <header className="home-rise">
-            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+            <h2 className="h-page">
               {program
                 ? repeating
                   ? "Your week."

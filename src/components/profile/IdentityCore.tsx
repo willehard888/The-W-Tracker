@@ -78,7 +78,7 @@ const IdentityCore = ({
       {isApexSubscriber && (
         <div className="mt-2 mb-1 flex justify-center">
           <span className="text-label font-bold inline-flex items-center gap-1.5 px-3 py-[5px] rounded-sm bg-gold/15 text-gold border border-gold/40">
-            <Crown aria-hidden size={11} strokeWidth={3} />
+            <Crown aria-hidden size={12} strokeWidth={3} />
             Premium · Day-One
           </span>
         </div>
@@ -95,7 +95,7 @@ const IdentityCore = ({
           {nameSuffix}
         </h1>
         {showLock && (
-          <Lock size={13} className="text-muted-foreground/75 shrink-0" aria-label="Permanent username" />
+          <Lock size={14} className="text-muted-foreground/75 shrink-0" aria-label="Permanent username" />
         )}
       </div>
 

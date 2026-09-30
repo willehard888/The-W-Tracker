@@ -238,7 +238,7 @@ const Chat = () => {
               size="xs"
             />
             <div className="text-left min-w-0">
-              <p className="text-sm font-semibold leading-tight truncate flex items-center gap-1.5">
+              <p className="text-note font-semibold leading-tight truncate flex items-center gap-1.5">
                 @{partner?.username || "…"}
                 {partnerIsElite && (
                   <span className="text-label font-bold text-muted-foreground bg-secondary/60 border border-border/60 rounded-full px-1.5 py-[1px] leading-none">
@@ -346,7 +346,7 @@ const Chat = () => {
               <div className={cn("max-w-[78%] flex flex-col", isOwn ? "items-end" : "items-start")}>
                 <div
                   className={cn(
-                    "px-3.5 py-2 text-sm leading-relaxed break-words",
+                    "px-3.5 py-2 text-note leading-relaxed break-words",
                     msg.id === justSentId && "commit-pop origin-bottom-right",
                     isOwn
                       ? "bg-gradient-to-br from-gold/25 to-gold/10 text-foreground border border-gold/25 shadow-[0_1px_0_hsl(var(--gold)/0.25)_inset]"

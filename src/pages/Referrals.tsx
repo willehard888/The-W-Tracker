@@ -99,7 +99,7 @@ const Referrals = () => {
             <div className="h-7 w-2/5 rounded skeleton-block bg-secondary/30" />
           </div>
         ) : (
-          <h2 className="home-rise font-display font-black text-beat leading-[1.04] tracking-tight">
+          <h2 className="h-page home-rise">
             {paidCount > 0
               ? `${paidCount % CREDIT_EVERY} of ${CREDIT_EVERY}. ${toNextMonth} ${toNextMonth === 1 ? "friend" : "friends"} to a free month.`
               : "Three paid friends. One month free."}
@@ -167,11 +167,11 @@ const Referrals = () => {
         )}
         {!recruitsLoading && (recruits?.length ?? 0) > 0 && (
           <section className="home-rise home-rise-3 mt-7">
-            <h3 className="font-display font-bold text-sm tracking-tight">Your recruits</h3>
+            <h3 className="font-display font-bold text-note tracking-tight">Your recruits</h3>
             <div className="divide-y divide-border/35 mt-1">
               {recruits!.map((r, i) => (
                 <div key={i} className="flex items-center gap-3 py-2.5">
-                  <div className="h-9 w-9 rounded-full overflow-hidden bg-secondary flex items-center justify-center font-black text-xs text-muted-foreground shrink-0">
+                  <div className="h-9 w-9 rounded-full overflow-hidden bg-secondary flex items-center justify-center font-black text-meta text-muted-foreground shrink-0">
                     {r.avatar_url ? (
                       <img src={avatarUrl(r.avatar_url, 72)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
@@ -198,7 +198,7 @@ const Referrals = () => {
 
         {/* How it works — three lines of type. */}
         <section className="home-rise home-rise-4 mt-7">
-          <h3 className="font-display font-bold text-sm tracking-tight">How it works</h3>
+          <h3 className="font-display font-bold text-note tracking-tight">How it works</h3>
           <ul className="mt-2 space-y-1.5 text-dense text-muted-foreground leading-snug">
             <li>Share your code. They enter it at sign-up and it links you two; the 14-day free trial is Apple's, and everyone gets it.</li>
             <li>They show up. You hear when they join and when they log their third day.</li>
@@ -209,7 +209,7 @@ const Referrals = () => {
         {/* Badge milestones — bragging rights, never credits or status. */}
         <section className="home-rise home-rise-4 mt-7">
           <div className="flex items-baseline justify-between">
-            <h3 className="font-display font-bold text-sm tracking-tight">Badge milestones</h3>
+            <h3 className="font-display font-bold text-note tracking-tight">Badge milestones</h3>
             <p className="text-label text-muted-foreground">paid friends</p>
           </div>
           <div className="divide-y divide-border/35 mt-1">
@@ -217,7 +217,7 @@ const Referrals = () => {
               const unlocked = paidCount >= m.count;
               return (
                 <div key={m.count} className={cn("flex items-center gap-3 py-2.5", !unlocked && "text-muted-foreground")}>
-                  <span className="w-7 shrink-0 font-display font-black text-sm tabular-nums">{m.count}</span>
+                  <span className="w-7 shrink-0 font-display font-black text-note tabular-nums">{m.count}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-dense font-bold tracking-tight">{m.title}</p>
                     <p className="text-meta text-muted-foreground leading-snug">{m.detail}</p>

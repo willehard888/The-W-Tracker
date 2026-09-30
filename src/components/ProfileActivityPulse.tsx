@@ -60,7 +60,7 @@ const ProfileActivityPulse = ({ userId }: ProfileActivityPulseProps) => {
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-xp-green" />
         </span>
       ) : (
-        <Activity aria-hidden size={11} className={cn(isWarm ? "text-amber-400" : "text-muted-foreground/75")} />
+        <Activity aria-hidden size={12} className={cn(isWarm ? "text-amber-400" : "text-muted-foreground/75")} />
       )}
       <span className={cn(
         "text-label font-bold tracking-wide",

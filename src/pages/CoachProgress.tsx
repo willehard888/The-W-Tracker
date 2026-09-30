@@ -74,7 +74,7 @@ const CoachProgress = () => {
 
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h2 className="font-display font-black text-title leading-[1.06] tracking-tight">
+          <h2 className="font-display font-black text-title leading-display tracking-tight">
             {recent ? `${checkinsThisWeek} of 7 days locked in.` : "Your last seven days."}
           </h2>
         </header>

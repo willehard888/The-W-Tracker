@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 // filled primary variant so all CTAs match.
 // ─────────────────────────────────────────────────────────────────────
 const PRIMARY_EMBER = [
-  "text-[hsl(26_85%_10%)] font-extrabold tracking-[-0.005em]",
+  "text-[hsl(26_85%_10%)] font-black tracking-[-0.005em]",
   "[text-shadow:0_1px_0_hsl(45_100%_88%/0.4)]",
   "overflow-hidden isolate",
   // MOLTEN METAL: champagne crown → rich amber → deep ember foot. The old
@@ -51,7 +51,7 @@ const HIT_AREA_VARIANTS = [
 const buttonVariants = cva(
   [
     "relative inline-flex items-center justify-center gap-2.5 whitespace-nowrap",
-    "rounded-xl text-sm font-semibold select-none",
+    "rounded-xl text-note font-semibold select-none",
     // One press for the whole app: the same 140 ms iOS curve the global
     // button rule in index.css uses, and every state the variants change
     // (colour, border, shadow) rides the same curve instead of snapping.
@@ -218,7 +218,7 @@ const buttonVariants = cva(
         // One radius scale by size, not by variant: 8 px under 40 pt,
         // 12 px at 40–48 pt, 16 px for the hero size, full for pills.
         default: "h-10 min-h-10 px-4 py-2 rounded-xl",
-        sm: "h-9 min-h-9 px-3 rounded-lg text-xs",
+        sm: "h-9 min-h-9 px-3 rounded-lg text-meta",
         /**
          * Inline micro-action inside a dense text row — a comment's
          * Reply/Edit/Delete beside its timestamp, a banner's Remove. Added
@@ -237,14 +237,14 @@ const buttonVariants = cva(
          * Reply · Edit · Delete meta row at its hand-rolled 4px density.
          */
         xs: "h-7 min-h-7 px-2 rounded-lg text-label [&_svg]:size-3 gap-1 [&>span]:gap-1",
-        lg: "h-12 min-h-12 px-8 rounded-xl text-base",
-        xl: "h-14 min-h-14 px-10 rounded-2xl text-lg tracking-[-0.01em] font-display",
+        lg: "h-12 min-h-12 px-8 rounded-xl text-copy",
+        xl: "h-14 min-h-14 px-10 rounded-2xl text-subhead tracking-[-0.01em] font-display",
         icon: "h-10 w-10 min-h-10 rounded-xl",
         "icon-sm": "h-8 w-8 min-h-8 rounded-lg [&_svg]:size-3.5",
         "icon-lg": "h-12 w-12 min-h-12 rounded-xl [&_svg]:size-5",
         // Filter chips ran gap-1.5 when hand-rolled; keep that density here
         // rather than the base gap-2.5 (root hop for asChild, span otherwise).
-        pill: "h-9 min-h-9 px-5 rounded-full text-xs gap-1.5 [&>span]:gap-1.5",
+        pill: "h-9 min-h-9 px-5 rounded-full text-meta gap-1.5 [&>span]:gap-1.5",
       },
     },
     // Invisible 44 pt hit area for the three sub-floor sizes. Only variants

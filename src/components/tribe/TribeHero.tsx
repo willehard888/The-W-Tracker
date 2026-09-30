@@ -309,18 +309,18 @@ const TribeHero = ({
           <span className="font-display font-black text-4xl tabular-nums leading-none text-[var(--acc)] [text-shadow:0_0_32px_var(--acc-d)]">
             {fmtInt(total)}
           </span>
-          <span className="text-sm font-bold text-muted-foreground">days</span>
+          <span className="text-note font-bold text-muted-foreground">days</span>
         </div>
-        <p className="font-display font-black text-sm mt-1.5 text-[var(--acc)] [text-shadow:0_0_18px_var(--acc-c)]">
+        <p className="font-display font-black text-note mt-1.5 text-[var(--acc)] [text-shadow:0_0_18px_var(--acc-c)]">
           {tierLabel}
         </p>
 
         {/* Tribe name + stat line */}
         <div className="flex items-center gap-1.5 mt-3">
           {tribe.visibility === "private" && (
-            <Lock size={13} className="text-muted-foreground shrink-0" aria-label="Private tribe" />
+            <Lock size={14} className="text-muted-foreground shrink-0" aria-label="Private tribe" />
           )}
-          <h1 className="font-display font-black text-xl leading-tight min-w-0 break-words">{tribe.name}</h1>
+          <h1 className="font-display font-black text-head leading-tight min-w-0 break-words">{tribe.name}</h1>
         </div>
         <p className="text-meta text-muted-foreground/85 mt-1 tabular-nums">
           {memberCount} member{memberCount === 1 ? "" : "s"}
@@ -347,7 +347,7 @@ const TribeHero = ({
                 onClick={() => onNavigateUser(founder.user_id)}
                 className="min-h-11 inline-flex items-center gap-1.5 px-2 text-meta"
               >
-                <Crown size={11} className="text-gold" strokeWidth={2.8} fill="currentColor" aria-hidden />
+                <Crown size={12} className="text-gold" strokeWidth={3} fill="currentColor" aria-hidden />
                 <span className="font-bold text-muted-foreground">Founder</span>
                 <TierUsername
                   username={founder.username}
@@ -365,7 +365,7 @@ const TribeHero = ({
               >
                 <p
                   className={cn(
-                    "text-xs text-foreground/75 leading-snug",
+                    "text-meta text-foreground/75 leading-snug",
                     !descExpanded && "line-clamp-2",
                   )}
                 >

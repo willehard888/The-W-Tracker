@@ -183,7 +183,7 @@ const Notifications = () => {
 
       <div className="px-4 pt-4 pb-6">
         {/* Opening beat — what is waiting, stated once. */}
-        <h2 className="home-rise font-display font-black text-beat leading-[1.04] tracking-tight">
+        <h2 className="h-page home-rise">
           {waiting > 0 ? `${fmtInt(waiting)} waiting on you.` : "All caught up."}
         </h2>
 
@@ -237,7 +237,7 @@ const Notifications = () => {
                 }
                 title={
                   <>
-                    <Swords size={13} className="inline -mt-0.5 mr-1 text-gold" aria-hidden />@{b.challenger?.username ?? "someone"}
+                    <Swords size={14} className="inline -mt-0.5 mr-1 text-gold" aria-hidden />@{b.challenger?.username ?? "someone"}
                   </>
                 }
                 subtitle={`${battleTypeInfo(b.battle_type).label} · ${b.duration_days} days`}

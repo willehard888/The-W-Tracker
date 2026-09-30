@@ -82,7 +82,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
         >
           <div
             className={cn(
-              "relative flex h-12 w-12 items-center justify-center rounded-full text-xl border overflow-hidden",
+              "relative flex h-12 w-12 items-center justify-center rounded-full text-head border overflow-hidden",
               style.iconRing,
               style.iconBg,
               earned && style.glow,
@@ -128,7 +128,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
         <div
           className={cn(
             "relative flex items-center justify-center rounded-full border overflow-hidden",
-            compact ? "h-12 w-12 text-2xl" : "h-14 w-14 text-2xl",
+            compact ? "h-12 w-12 text-major" : "h-14 w-14 text-major",
             style.iconRing,
             style.iconBg,
             earned && "badge-holo-sweep",
@@ -152,7 +152,7 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
           <p
             className={cn(
               "font-bold text-foreground leading-tight line-clamp-2",
-              compact ? "text-meta" : "text-xs"
+              compact ? "text-meta" : "text-meta"
             )}
           >
             {name}

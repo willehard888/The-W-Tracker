@@ -14,7 +14,7 @@ interface Props {
 const BattleIncomingCard = ({ battle, opp, typeInfo, onRespond, responding = false }: Props) => (
   <ActionRow
     leading={
-      <span className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-sm font-black text-muted-foreground">
+      <span className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-note font-black text-muted-foreground">
         {opp.username?.charAt(0)?.toUpperCase()}
       </span>
     }

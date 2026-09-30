@@ -44,7 +44,7 @@ export const WelcomeSlide = ({ onNext }: { onNext: () => void }) => (
       <BrandLogo size={88} className="relative rounded-2xl shadow-[0_8px_32px_hsl(var(--gold)/0.45)]" priority />
     </div>
     <h1 className="font-display text-4xl font-black tracking-tight mb-3">Welcome to Whealth Factory.</h1>
-    <p className="text-muted-foreground text-base leading-relaxed mb-10 max-w-[280px]">
+    <p className="text-muted-foreground text-copy leading-relaxed mb-10 max-w-[280px]">
       The game where showing up wins. 60 seconds to build your setup.
     </p>
     <Button variant="ember" size="xl" className="w-full max-w-xs group" onClick={onNext}>
@@ -65,10 +65,10 @@ export const CoreLoopSlide = ({ struggle, onNext }: { struggle?: string; onNext:
   return (
     <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
       <FlameHero />
-      <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mt-5 mb-1.5">
+      <h1 className="h-page text-center mt-5 mb-1.5">
         {promise.title}
       </h1>
-      <p className="text-sm text-muted-foreground text-center mb-7 max-w-[300px]">{promise.sub}</p>
+      <p className="text-note text-muted-foreground text-center mb-7 max-w-[300px]">{promise.sub}</p>
 
       {/* The loop as one ember line: live is ember; the flame above keeps the gold. */}
       <ol className="w-full mb-9 pl-1">
@@ -104,10 +104,10 @@ const LADDER_PREVIEW = ["recruit", "performer", "elite", "legend"] as const;
 
 export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-    <h1 className="font-display text-beat leading-tight font-black tracking-tight text-center mb-1.5">
+    <h1 className="h-page text-center mb-1.5">
       Every check-in climbs the ladder.
     </h1>
-    <p className="text-sm text-muted-foreground text-center mb-6 max-w-[300px]">
+    <p className="text-note text-muted-foreground text-center mb-6 max-w-[300px]">
       {TIER_ORDER.length} tiers from {getTierConfig("recruit").label} to {getTierConfig("legend").label}. Rank is earned — never bought.
     </p>
 
@@ -138,7 +138,7 @@ export const ClimbSlide = ({ onNext }: { onNext: () => void }) => (
     <div className="w-full flex items-center justify-center gap-4 text-muted-foreground mb-8">
       {[{ icon: Bot, label: "AI Coach" }, { icon: BookOpen, label: "Library" }, { icon: Users, label: "Tribes" }].map((f) => (
         <span key={f.label} className="flex items-center gap-1.5 text-meta font-bold">
-          <f.icon size={13} aria-hidden />
+          <f.icon size={14} aria-hidden />
           {f.label}
         </span>
       ))}
@@ -159,10 +159,10 @@ export const PushSlide = ({ onEnable, onSkip, busy }: { onEnable: () => void; on
         <Bell aria-hidden size={34} className="text-primary-foreground" />
       </div>
     </div>
-    <h1 className="font-display text-beat leading-tight font-black tracking-tight mb-1.5">
+    <h1 className="h-page mb-1.5">
       Guard your streak?
     </h1>
-    <p className="text-sm text-muted-foreground mb-9 max-w-[280px]">
+    <p className="text-note text-muted-foreground mb-9 max-w-[280px]">
       One reminder before your streak breaks. That's it — no spam, ever.
     </p>
     <Button variant="ember" size="xl" className="w-full max-w-xs" onClick={onEnable} loading={busy}>
@@ -171,7 +171,7 @@ export const PushSlide = ({ onEnable, onSkip, busy }: { onEnable: () => void; on
     <button
       type="button"
       onClick={onSkip}
-      className="mt-2 min-h-11 px-4 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+      className="mt-2 min-h-11 px-4 text-meta font-semibold text-muted-foreground hover:text-foreground transition-colors"
     >
       Not now
     </button>
@@ -184,15 +184,15 @@ export const FinaleSlide = ({ goal, onNext }: { goal?: string; onNext: () => voi
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto w-full">
       <FlameHero size={56} box="w-44 h-44" />
-      <h1 className="font-display text-beat leading-tight font-black tracking-tight mt-4 mb-1.5">
+      <h1 className="h-page mt-4 mb-1.5">
         Setup done. Time for your first W.
       </h1>
       {goalOpt && (
-        <p className="text-sm text-muted-foreground mb-2">
+        <p className="text-note text-muted-foreground mb-2">
           Goal: <span className="text-gold font-bold">{goalOpt.emoji} {goalOpt.label}</span> · locked in
         </p>
       )}
-      <p className="text-sm text-muted-foreground mb-9 max-w-[280px]">
+      <p className="text-note text-muted-foreground mb-9 max-w-[280px]">
         Your first check-in takes 60 seconds — and starts the streak.
       </p>
       <Button variant="ember" size="xl" className="w-full max-w-xs group" onClick={onNext}>

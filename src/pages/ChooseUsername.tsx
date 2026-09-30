@@ -129,8 +129,8 @@ const ChooseUsername = () => {
     <div className="min-h-full gradient-dark flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <header className="home-rise text-center mb-8">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">Claim your name.</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <h1 className="h-page">Claim your name.</h1>
+          <p className="mt-2 text-note text-muted-foreground">
             Your permanent @handle. On the leaderboard, in your tribe, under every W you post.
           </p>
         </header>
@@ -139,7 +139,7 @@ const ChooseUsername = () => {
           <div>
             <Label htmlFor="choose-username" className="mb-1.5 block text-muted-foreground">Username</Label>
             <div className="relative">
-              <span aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+              <span aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-note">@</span>
               <Input
                 id="choose-username"
                 type="text"

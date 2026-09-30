@@ -29,7 +29,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         type={type}
         className={cn(
           FIELD,
-          "h-11 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
+          "h-11 file:border-0 file:bg-transparent file:text-note file:font-semibold file:text-foreground",
           className,
         )}
         ref={ref}

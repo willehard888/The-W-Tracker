@@ -183,7 +183,7 @@ const NotificationSettings = () => {
           </header>
         ) : (
           <header className="home-rise">
-            <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">{beat}</h2>
+            <h2 className="h-page">{beat}</h2>
             <p className="mt-1.5 text-dense text-muted-foreground leading-snug">{standing}</p>
           </header>
         )}
@@ -282,7 +282,7 @@ const NotificationSettings = () => {
                 >
                   <Minus aria-hidden size={14} />
                 </button>
-                <span className="font-display text-lg font-black tabular-nums w-[52px] text-center">
+                <span className="font-display text-subhead font-black tabular-nums w-[52px] text-center">
                   {previewTime}
                 </span>
                 <button

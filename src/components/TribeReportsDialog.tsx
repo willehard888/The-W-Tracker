@@ -238,12 +238,12 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                           <img loading="lazy" decoding="async" src={avatarUrl(r.post.author.avatar_url, 40)} alt="" className="h-full w-full object-cover" />
                         ) : null}
                       </div>
-                      <span className="text-xs font-semibold truncate">
+                      <span className="text-meta font-semibold truncate">
                         @{r.post.author?.username ?? "user"}
                       </span>
                     </div>
                     {r.post.content && (
-                      <p className="text-xs text-foreground/85 line-clamp-3 italic mb-1.5">
+                      <p className="text-meta text-foreground/85 line-clamp-3 italic mb-1.5">
                         "{r.post.content}"
                       </p>
                     )}
@@ -259,7 +259,7 @@ export default function TribeReportsDialog({ tribeId, open, onOpenChange, onChan
                     {r.post.video_url && <ReportVideo src={r.post.video_url} />}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">Post no longer exists.</p>
+                  <p className="text-meta text-muted-foreground italic">Post no longer exists.</p>
                 )}
 
                 <div className="flex gap-2 mt-3">

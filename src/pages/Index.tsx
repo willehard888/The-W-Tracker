@@ -203,7 +203,7 @@ const Index = () => {
              photographs on black ground, they were atmosphere competing with
              content — the empty space does that work. ── */}
       <header className="home-rise pt-0.5">
-        <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">
+        <h1 className="h-page">
           {weekday}
           <span className="text-muted-foreground"> · {monthDay}</span>
         </h1>
@@ -296,7 +296,7 @@ const Index = () => {
         </button>
         {pulse.hasSnapshot && pulse.rankDelta > 0 && (
           <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-teal/12 px-2 py-1 mr-2 text-label font-black text-teal">
-            <ArrowUp aria-hidden size={11} strokeWidth={3} /> {pulse.rankDelta}
+            <ArrowUp aria-hidden size={12} strokeWidth={3} /> {pulse.rankDelta}
           </span>
         )}
         <button
@@ -305,7 +305,7 @@ const Index = () => {
           onClick={() => navigate("/coach?chat=1")}
           className="shrink-0 min-h-14 flex items-center gap-1.5 pl-4 py-3 font-display font-black text-lead text-gold glow-gold-text active:opacity-70 transition-opacity"
         >
-          <Sparkles size={14} strokeWidth={2.8} aria-hidden /> Ask
+          <Sparkles size={14} strokeWidth={3} aria-hidden /> Ask
         </button>
       </div>
 

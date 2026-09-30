@@ -83,7 +83,7 @@ const FocusDoor = ({ label = "Pick a different focus", aside }: { label?: string
           onClick={() => { hapticSelection(); setOpen(true); }}
           className="press flex-1 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
         >
-          {label} <ChevronRight aria-hidden size={13} />
+          {label} <ChevronRight aria-hidden size={14} />
         </button>
         {aside}
       </div>
@@ -106,7 +106,7 @@ const RecoveryDoor = ({ to = "/recovery?src=manual" }: { to?: string }) => {
       onClick={() => { hapticImpact("light"); navigate(to); }}
       className="press w-full min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
     >
-      Recovery session <ChevronRight aria-hidden size={13} />
+      Recovery session <ChevronRight aria-hidden size={14} />
     </button>
   );
 };
@@ -140,7 +140,7 @@ const TrainingZone = () => {
           <button type="button" onClick={go} aria-label="Open today's session" className={BODY}>
             <p className={LABEL}>Training · Today</p>
             <p className="text-note font-bold leading-tight truncate">
-              {done && <Check aria-hidden size={13} className="inline mr-1 text-xp-green" />}
+              {done && <Check aria-hidden size={14} className="inline mr-1 text-xp-green" />}
               {dayFocus(d) || "Your session"}
             </p>
             <p className="text-meta text-muted-foreground leading-snug mt-0.5">
@@ -165,7 +165,7 @@ const TrainingZone = () => {
               onClick={() => { hapticImpact("light"); navigate("/coach/program"); }}
               className="press shrink-0 min-h-11 flex items-center gap-1 pl-4 text-meta font-bold text-muted-foreground"
             >
-              Your program <ChevronRight aria-hidden size={13} />
+              Your program <ChevronRight aria-hidden size={14} />
             </button>
           ) : undefined}
         />
@@ -299,7 +299,7 @@ const TrainingZone = () => {
           // could be anything and this one was built from today's sets.
           <>
             <p className="text-note font-bold leading-tight truncate">
-              <Check aria-hidden size={13} className="inline mr-1 text-xp-green" />
+              <Check aria-hidden size={14} className="inline mr-1 text-xp-green" />
               {dayFocus(day) || "Today's session"} · logged
             </p>
             <p className="text-meta text-muted-foreground leading-snug mt-0.5 truncate capitalize">
@@ -310,7 +310,7 @@ const TrainingZone = () => {
         ) : (
           <>
             <p className="text-note font-bold leading-tight truncate">
-              {done && <Check aria-hidden size={13} className="inline mr-1 text-xp-green" />}
+              {done && <Check aria-hidden size={14} className="inline mr-1 text-xp-green" />}
               {dayFocus(day) || "Today's session"}
             </p>
             <p className="text-meta text-muted-foreground leading-snug mt-0.5">

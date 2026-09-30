@@ -460,7 +460,7 @@ const AthleteProfileOnboarding = ({ onDone }: Props) => {
           </div>
           <span className="text-label font-bold text-muted-foreground tabular-nums">{step + 1}/{STEPS.length}</span>
         </div>
-        <h2 className="font-display font-black text-beat leading-[1.04] tracking-tight">{cur.title}</h2>
+        <h2 className="h-page">{cur.title}</h2>
         <p className="mt-1.5 text-dense text-muted-foreground mb-5">{cur.sub}</p>
       </header>
 
@@ -582,7 +582,7 @@ const Chip = forwardRef<HTMLButtonElement, { active: boolean; onClick: () => voi
   ({ active, onClick, children }, ref) => (
     <button ref={ref} type="button" aria-pressed={active} onClick={onClick}
       className={cn(
-        "relative h-9 rounded-full border px-3 text-xs font-semibold transition-colors before:absolute before:-inset-1 before:content-['']",
+        "relative h-9 rounded-full border px-3 text-meta font-semibold transition-colors before:absolute before:-inset-1 before:content-['']",
         active
           ? "border-gold/70 bg-gold/[0.08] text-gold"
           : "border-border/50 text-muted-foreground"
@@ -612,8 +612,8 @@ const Stepper = ({
           <Minus aria-hidden size={16} />
         </button>
         <div className="flex-1 text-center">
-          <span className="font-display text-2xl font-black tabular-nums">{value}</span>
-          <span className="text-xs text-muted-foreground ml-1.5">{unit}</span>
+          <span className="font-display text-major font-black tabular-nums">{value}</span>
+          <span className="text-meta text-muted-foreground ml-1.5">{unit}</span>
         </div>
         <button type="button" onClick={inc} aria-label={`Increase ${label.toLowerCase()}`}
           className="h-11 w-11 shrink-0 rounded-full border border-border/50 flex items-center justify-center text-muted-foreground">

@@ -78,7 +78,7 @@ const TierRiskBanner = ({ risk, className }: TierRiskBannerProps) => {
             against the icon instead of hanging off its top edge. */}
         <p
           className={cn(
-            "flex-1 min-w-0 font-display font-black text-sm uppercase tracking-wider truncate",
+            "flex-1 min-w-0 font-display font-black text-note uppercase tracking-wider truncate",
             isDanger ? "text-destructive" : "text-gold",
           )}
         >

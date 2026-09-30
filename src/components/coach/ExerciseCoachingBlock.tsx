@@ -39,7 +39,7 @@ const Rhythm = ({ c, compact }: { c: ExerciseCoaching; compact?: boolean }) => (
 const Mistake = ({ m }: { m: ExerciseCoaching["mistakes"][number] }) => (
   <li className="py-2.5">
     <p className="flex gap-2 text-dense font-semibold leading-snug">
-      <AlertTriangle size={13} className="shrink-0 mt-px text-ember-light" aria-hidden />
+      <AlertTriangle size={14} className="shrink-0 mt-px text-ember-light" aria-hidden />
       {m.error}
     </p>
     <p className="mt-1 pl-[21px] text-dense text-muted-foreground leading-snug">{m.fix}</p>

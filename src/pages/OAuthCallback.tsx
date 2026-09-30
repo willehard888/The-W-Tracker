@@ -85,7 +85,7 @@ const OAuthCallback = () => {
   return (
     <div className="min-h-full flex flex-col items-center justify-center gap-3">
       <div className="h-8 w-8 rounded-full border-2 border-gold border-t-transparent animate-spin" />
-      <p className="text-sm text-muted-foreground">Signing you in…</p>
+      <p className="text-note text-muted-foreground">Signing you in…</p>
     </div>
   );
 };

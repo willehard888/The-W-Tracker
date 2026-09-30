@@ -120,7 +120,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
             {tier >= 0 ? (
               <TribeFireLite tier={tier} palette={collectivePalette(streak)} variant="mini" still size={26} />
             ) : (
-              <Flame aria-hidden size={14} className="text-muted-foreground/75" strokeWidth={1.6} />
+              <Flame aria-hidden size={14} className="text-muted-foreground/75" />
             )}
           </div>
           <div className="min-w-0">
@@ -153,7 +153,7 @@ const TribeBattleCard = ({ battle, myTribeId, isOwner, onAccept, onDecline, resp
         </p>
         {live && (
           <span className="inline-flex items-center gap-1 text-[hsl(var(--streak-orange))] shrink-0">
-            <Clock size={11} aria-hidden /> {days === 0 ? "Final day" : `${days}d left`}
+            <Clock size={12} aria-hidden /> {days === 0 ? "Final day" : `${days}d left`}
           </span>
         )}
       </div>
@@ -222,7 +222,7 @@ export const TribeBattleRow = ({
     return (
       <div className="-mx-3">
         <ActionRow
-          leading={<Swords size={15} className="text-muted-foreground" aria-hidden />}
+          leading={<Swords size={16} className="text-muted-foreground" aria-hidden />}
           title={name}
           subtitle={`Wants a ${battle.duration_days}-day battle`}
           busy={responding}
@@ -253,7 +253,7 @@ export const TribeBattleRow = ({
 
   const body = (
     <>
-      <Swords size={15} className="text-muted-foreground shrink-0" aria-hidden />
+      <Swords size={16} className="text-muted-foreground shrink-0" aria-hidden />
       <span className="flex-1 min-w-0">
         <span className="block text-note font-semibold leading-tight truncate">{name}</span>
         <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums">{sub}</span>

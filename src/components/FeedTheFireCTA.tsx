@@ -56,19 +56,19 @@ const FeedTheFireCTA = ({ accent, tribeName, className }: FeedTheFireCTAProps) =
           borderColor: c.replace(")", " / 0.4)"),
         }}
       >
-        <Flame aria-hidden size={18} style={{ color: c }} strokeWidth={2.4} />
+        <Flame aria-hidden size={18} style={{ color: c }} strokeWidth={2.5} />
       </div>
 
       <div className="flex-1 min-w-0">
         <p className="text-label font-bold text-muted-foreground" style={{ color: c }}>
           Feed the fire
         </p>
-        <p className="font-bold text-sm leading-tight truncate">
+        <p className="font-bold text-note leading-tight truncate">
           {tribeName ? `Stoke ${tribeName} — check in today` : "Check in today → +1 to the fire"}
         </p>
       </div>
 
-      <ChevronRight aria-hidden size={16} className="shrink-0" style={{ color: c }} strokeWidth={2.6} />
+      <ChevronRight aria-hidden size={16} className="shrink-0" style={{ color: c }} strokeWidth={2.5} />
     </button>
   );
 };

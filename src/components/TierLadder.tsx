@@ -127,7 +127,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
                   className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left"
                 >
                   <TierMark rank={cfg.rank} className={cn("h-9 w-9 text-label", !held && !isCurrent && "opacity-70")}>
-                    {held ? <Check size={15} strokeWidth={3} aria-hidden /> : isLegend && !isCurrent ? <Crown size={14} aria-hidden /> : cfg.shortLabel}
+                    {held ? <Check size={16} strokeWidth={3} aria-hidden /> : isLegend && !isCurrent ? <Crown size={14} aria-hidden /> : cfg.shortLabel}
                   </TierMark>
                   <span className="flex-1 min-w-0">
                     <span className={cn("block text-note font-semibold leading-tight truncate", !held && !isCurrent && "text-foreground/85")}>{cfg.label}</span>
@@ -161,7 +161,7 @@ const TierLadder = ({ currentTier, className, bare = false }: TierLadderProps) =
                         className="min-h-11 mt-1"
                         onClick={() => { setOpen(false); redeemRef.current?.click(); }}
                       >
-                        <Crown size={13} aria-hidden /> Redeem invite code
+                        <Crown size={14} aria-hidden /> Redeem invite code
                       </Button>
                     )}
                   </div>

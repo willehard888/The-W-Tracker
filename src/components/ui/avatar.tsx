@@ -50,7 +50,7 @@ const AvatarFallback = React.forwardRef<
     // initials placeholder first (kills list-scroll avatar flicker).
     delayMs={props.delayMs ?? 120}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full text-xs font-semibold text-fg-muted",
+      "flex h-full w-full items-center justify-center rounded-full text-meta font-semibold text-fg-muted",
       "[background:linear-gradient(180deg,hsl(258_16%_12%)_0%,hsl(258_16%_7%)_100%)]",
       className,
     )}

@@ -54,7 +54,7 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Close
         className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "absolute right-2 top-2 text-fg-muted hover:text-foreground disabled:pointer-events-none")}
       >
-        <X className="h-4 w-4" />
+        <X className="h-4 w-4" aria-hidden />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>

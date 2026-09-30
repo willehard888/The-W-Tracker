@@ -39,8 +39,8 @@ const ShieldEarnedSheet = ({ shieldsBanked, onClose }: ShieldEarnedSheetProps) =
             <Shield aria-hidden size={36} className="text-gold" fill="currentColor" fillOpacity={0.25} />
           </div>
         </div>
-        <h2 className="font-display text-2xl font-black tracking-tight">Streak Shield earned</h2>
-        <p className="text-sm text-muted-foreground mt-1 tabular-nums">
+        <h2 className="font-display text-major font-black tracking-tight">Streak Shield earned</h2>
+        <p className="text-note text-muted-foreground mt-1 tabular-nums">
           {shieldsBanked}/3 banked — your streak just got insurance.
         </p>
       </div>

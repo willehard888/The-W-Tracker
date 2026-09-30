@@ -99,7 +99,7 @@ const PilotCodeRedeem = () => {
           onClick={() => setOpen(true)}
           className="press inline-flex items-center gap-1.5 min-h-11 px-3 text-meta text-muted-foreground hover:text-gold transition-colors"
         >
-          <Ticket size={12} aria-hidden strokeWidth={2.4} />
+          <Ticket size={12} aria-hidden strokeWidth={2.5} />
           Have a pilot code?
         </button>
       </div>

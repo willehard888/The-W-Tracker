@@ -148,7 +148,7 @@ const Messages = () => {
       {/* OPENING BEAT — who is waiting on you. Hidden, not absent, while the
           count loads so the search box never jumps. */}
       <header className="home-rise mb-4">
-        <h2 className={cn("font-display font-black text-beat leading-[1.04] tracking-tight transition-opacity duration-300", isLoading && "opacity-0")}>
+        <h2 className={cn("h-page transition-opacity duration-300", isLoading && "opacity-0")}>
           {unread > 0 ? <><span className="text-gold glow-gold-text tabular-nums">{fmtInt(unread)}</span> unread.</> : "Quiet. Start one."}
         </h2>
       </header>
@@ -159,7 +159,7 @@ const Messages = () => {
         <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search users…" {...SEARCH_FIELD} className="pl-9 pr-11" />
         {searchQuery && (
           <button type="button" aria-label="Clear search" onClick={() => setSearchQuery("")} className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-muted-foreground/75 hover:text-foreground">
-            <X size={14} />
+            <X size={14} aria-hidden />
           </button>
         )}
       </div>
@@ -237,8 +237,8 @@ const PersonRow = ({ profile, subtitle, onClick }: {
   <button type="button" onClick={onClick} className="press-row w-full flex items-center gap-3 py-3 text-left">
     <StatusAvatar src={profile.avatar_url} name={profile.username} tier={profile.status_tier || "recruit"} size="sm" animated={false} />
     <div className="flex-1 min-w-0">
-      <TierUsername as="p" username={profile.username} tier={profile.status_tier || "recruit"} className="text-sm font-semibold truncate" />
-      <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
+      <TierUsername as="p" username={profile.username} tier={profile.status_tier || "recruit"} className="text-note font-semibold truncate" />
+      <p className="text-meta text-muted-foreground truncate mt-0.5">{subtitle}</p>
     </div>
     <MessageCircle size={14} className="text-muted-foreground/75 shrink-0" aria-hidden />
   </button>
@@ -251,10 +251,10 @@ const ConversationRow = ({ conv, userId, navigate }: { conv: Thread; userId?: st
       <StatusAvatar src={conv.profile?.avatar_url} name={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} size="sm" animated={false} />
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
-          <TierUsername as="p" username={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} className={cn("text-sm truncate", unread ? "font-bold" : "font-semibold")} />
+          <TierUsername as="p" username={conv.profile?.username} tier={conv.profile?.status_tier || "recruit"} className={cn("text-note truncate", unread ? "font-bold" : "font-semibold")} />
           <span className={cn("text-label tabular-nums shrink-0", unread ? "text-foreground/75" : "text-muted-foreground")}>{fmtRelative(conv.lastMessage.created_at)}</span>
         </div>
-        <p className={cn("text-xs truncate mt-0.5", unread ? "text-foreground/85 font-medium" : "text-muted-foreground")}>
+        <p className={cn("text-meta truncate mt-0.5", unread ? "text-foreground/85 font-semibold" : "text-muted-foreground")}>
           {conv.lastMessage.sender_id === userId && "You: "}
           {conv.lastMessage.content}
         </p>

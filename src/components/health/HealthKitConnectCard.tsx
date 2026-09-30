@@ -152,7 +152,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
           </p>
         </div>
         <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-meta" loading={syncing} onClick={() => { void syncToday(); }}>
-          <RefreshCw aria-hidden size={11} /> Sync
+          <RefreshCw aria-hidden size={12} /> Sync
         </Button>
       </div>
     );
@@ -178,7 +178,7 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
         )}
       </div>
       <Button variant="ghost" size="sm" className="min-h-11 shrink-0 text-meta" loading={syncing} onClick={() => { void syncToday(); }}>
-        <RefreshCw aria-hidden size={11} /> Sync
+        <RefreshCw aria-hidden size={12} /> Sync
       </Button>
     </div>
   );

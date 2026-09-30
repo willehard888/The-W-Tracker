@@ -145,7 +145,7 @@ const ShelfSection = ({ section, onOpen }: { section: Section; onOpen: (id: stri
             className="press mt-2 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
           >
             {open ? "Hide" : "All"} {items.length} {section.noun}
-            <ChevronRight aria-hidden size={13} className={cn("transition-transform", open && "rotate-90")} />
+            <ChevronRight aria-hidden size={14} className={cn("transition-transform", open && "rotate-90")} />
           </button>
           {open && (
             <ul className="divide-y divide-border/35 border-t border-border/35">
@@ -191,7 +191,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
       </button>
 
       <div className="relative mb-6">
-        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -206,7 +206,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
             onClick={() => setQuery("")}
             className="absolute right-0 top-0 h-10 min-w-11 flex items-center justify-center text-muted-foreground"
           >
-            <X size={15} />
+            <X size={16} aria-hidden />
           </button>
         )}
       </div>
@@ -222,7 +222,7 @@ export function RecoverList({ onOpen }: { onOpen: (id: string) => void }) {
             ))}
           </ul>
           {hits.length + routineHits.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-10">Nothing matches. Try another word.</p>
+            <p className="text-center text-note text-muted-foreground py-10">Nothing matches. Try another word.</p>
           )}
         </>
       ) : (
@@ -266,7 +266,7 @@ export function RecoverDetail({ m, onBack }: { m: RecoveryMovement; onBack: () =
       <PageBar onBack={onBack} />
       <div className="px-4 pt-4 pb-6">
         <header className="home-rise">
-          <h1 className="font-display font-black text-beat leading-[1.04] tracking-tight">{m.name}</h1>
+          <h1 className="h-page">{m.name}</h1>
           <p className="mt-1.5 text-dense text-muted-foreground">
             {[SHELF_LABEL[itemShelf(m)], m.equipment !== "none" ? m.equipment : null, holdLabel(m)].filter(Boolean).join(" · ")}
           </p>

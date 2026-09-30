@@ -214,7 +214,7 @@ const Onboarding = () => {
               variant="ghost"
               size="sm"
               onClick={() => finish(true)}
-              className="min-h-11 -mr-3 text-xs font-medium text-muted-foreground shrink-0"
+              className="min-h-11 -mr-3 text-meta font-semibold text-muted-foreground shrink-0"
             >
               Skip
             </Button>

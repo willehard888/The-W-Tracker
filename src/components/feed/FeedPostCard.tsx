@@ -180,7 +180,7 @@ const FeedPostCard = memo(function FeedPostCard({
                 username={post.profile?.username}
                 tier={post.profile?.status_tier || "recruit"}
               />
-              {isOwn && <span className="ml-1 text-label text-gold/70 font-medium">(you)</span>}
+              {isOwn && <span className="ml-1 text-label text-gold/70 font-semibold">(you)</span>}
             </button>
             {post.profile?.status_tier === "elite" && (
               <Crown size={12} role="img" aria-label="Elite tier" className="text-gold shrink-0" />
@@ -290,26 +290,26 @@ const FeedPostCard = memo(function FeedPostCard({
           onClick={() => onToggleReaction(post.id)}
           aria-label={liked ? "Remove fire" : "Give fire"}
           className={cn(
-            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-meta font-bold transition-[background-color,color,border-color,box-shadow]",
             liked
               ? "bg-streak-orange/15 text-streak-orange commit-pop"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
           )}
         >
-          <Flame aria-hidden size={15} fill={liked ? "currentColor" : "none"} />
+          <Flame aria-hidden size={16} fill={liked ? "currentColor" : "none"} />
           <span className="tabular-nums">{post.likes_count > 0 ? post.likes_count : ""}</span>
         </button>
         <button
           onClick={() => onToggleComments(post.id)}
           aria-label="Toggle comments"
           className={cn(
-            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
+            "press flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-meta font-bold transition-[background-color,color,border-color,box-shadow]",
             isCommentsOpen
               ? "bg-gold/10 text-gold"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
           )}
         >
-          <MessageCircle aria-hidden size={15} fill={isCommentsOpen ? "currentColor" : "none"} />
+          <MessageCircle aria-hidden size={16} fill={isCommentsOpen ? "currentColor" : "none"} />
           <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ""}</span>
         </button>
 
@@ -327,7 +327,7 @@ const FeedPostCard = memo(function FeedPostCard({
             disabled={giveKudosPending}
             aria-label={hasGivenKudos ? "Remove kudos" : "Give kudos"}
             className={cn(
-              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-xs font-bold transition-[background-color,color,border-color,box-shadow]",
+              "flex items-center gap-1.5 px-3 h-11 min-w-11 justify-center rounded-full text-meta font-bold transition-[background-color,color,border-color,box-shadow]",
               hasGivenKudos
                 ? "bg-purple/15 text-purple ring-1 ring-purple/30 commit-pop"
                 : kudosRemaining > 0
@@ -336,15 +336,15 @@ const FeedPostCard = memo(function FeedPostCard({
             )}
             title={`${kudosRemaining}/${kudosPerMonth} kudos remaining this month`}
           >
-            <Award aria-hidden size={15} fill={hasGivenKudos ? "currentColor" : "none"} />
+            <Award aria-hidden size={16} fill={hasGivenKudos ? "currentColor" : "none"} />
             <span className="tabular-nums">{(post.kudos_count || 0) > 0 ? post.kudos_count : ""}</span>
           </button>
         )}
 
         {/* Kudos count on own posts */}
         {isOwn && (post.kudos_count || 0) > 0 && (
-          <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-xs font-bold text-purple bg-purple/10">
-            <Award aria-hidden size={15} fill="currentColor" />
+          <div className="flex items-center gap-1.5 px-3 h-9 rounded-full text-meta font-bold text-purple bg-purple/10">
+            <Award aria-hidden size={16} fill="currentColor" />
             <span className="tabular-nums">{post.kudos_count}</span>
           </div>
         )}
@@ -364,7 +364,7 @@ const FeedPostCard = memo(function FeedPostCard({
 
           <div className="space-y-3 mb-3 max-h-80 overflow-y-auto pr-1">
             {commentTree.length === 0 && (
-              <p className="text-xs text-muted-foreground/75 text-center py-3">
+              <p className="text-meta text-muted-foreground/75 text-center py-3">
                 No comments yet — start the conversation
               </p>
             )}
@@ -453,7 +453,7 @@ const FeedPostCard = memo(function FeedPostCard({
                       : "bg-secondary text-muted-foreground/75 cursor-not-allowed"
                   )}
                 >
-                  <Send aria-hidden size={13} />
+                  <Send aria-hidden size={14} />
                 </button>
               </div>
             </div>

@@ -243,7 +243,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
       <p className="text-label font-bold text-muted-foreground mb-1">
         {DAY_NAMES[todayDayIndex] ?? day.day}{isToday ? " · Today" : ""}
       </p>
-      <h2 className="font-display font-black text-head leading-[1.1] tracking-tight">
+      <h2 className="font-display font-black text-head leading-display tracking-tight">
         {isRest ? "Rest day" : dayFocus(day) || "Today's session"}
       </h2>
       <p className="mt-1 text-dense text-muted-foreground">
@@ -386,7 +386,7 @@ const DaySessionCard = ({ program, week: currentWeek, dayIndex: todayDayIndex, i
                   rpeSaving === value && "commit-pop",
                 )}
               >
-                {rpeSaving === value ? <Loader2 aria-hidden size={13} className="animate-spin mx-auto" /> : value}
+                {rpeSaving === value ? <Loader2 aria-hidden size={14} className="animate-spin mx-auto" /> : value}
               </button>
             ))}
           </div>

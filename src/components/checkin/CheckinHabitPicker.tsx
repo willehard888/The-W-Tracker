@@ -113,24 +113,24 @@ const CheckinHabitPicker = ({ open, onOpenChange, selectedKeys, onSave, saving: 
                               on ? "border-gold/40 bg-gold/[0.07]" : "border-border bg-card hover:bg-secondary/50",
                             )}
                           >
-                            <span aria-hidden className="text-2xl w-9 text-center shrink-0">{h.emoji}</span>
+                            <span aria-hidden className="text-major w-9 text-center shrink-0">{h.emoji}</span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <p className={cn("font-bold text-read truncate", on && "text-gold")}>{h.label}</p>
-                                {h.verify && <ShieldCheck aria-hidden size={13} className="text-teal shrink-0" />}
+                                {h.verify && <ShieldCheck aria-hidden size={14} className="text-teal shrink-0" />}
                               </div>
                               {h.note && <p className="text-meta text-muted-foreground leading-snug line-clamp-2">{h.note}</p>}
                             </div>
                             {h.core ? (
                               <span className="shrink-0 inline-flex items-center gap-1 text-label font-bold text-muted-foreground uppercase tracking-wide">
-                                <Lock aria-hidden size={11} /> Core
+                                <Lock aria-hidden size={12} /> Core
                               </span>
                             ) : (
                               <div className={cn(
                                 "h-6 w-6 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors",
                                 on ? "border-gold bg-gold" : "border-muted-foreground/30",
                               )}>
-                                {on && <Check aria-hidden size={13} className="text-primary-foreground" strokeWidth={3} />}
+                                {on && <Check aria-hidden size={14} className="text-primary-foreground" strokeWidth={3} />}
                               </div>
                             )}
                           </button>

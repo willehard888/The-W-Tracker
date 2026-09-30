@@ -101,7 +101,7 @@ const TribeInviteModal = ({ tribeId, open, onClose }: Props) => {
       }
     >
       {hint ? (
-        <p className="text-xs text-muted-foreground text-center py-8">{hint}</p>
+        <p className="text-meta text-muted-foreground text-center py-8">{hint}</p>
       ) : (
         <div className="divide-y divide-border/35">
           {hits.map((u) => {

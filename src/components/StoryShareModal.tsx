@@ -481,7 +481,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
           <div className="absolute bottom-3 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
 
           <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-            <p className="font-bold tracking-[0.22em] text-gold/80 mb-1 text-lg">WHEALTH FACTORY</p>
+            <p className="font-bold tracking-[0.22em] text-gold/80 mb-1 text-subhead">WHEALTH FACTORY</p>
             <p className={cn(
               "text-label font-bold text-muted-foreground mb-4",
               tier === 'legend' ? "text-[hsl(280_70%_60%)]" :
@@ -493,11 +493,11 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
 
             {variant === "stats" && (
               <>
-                <p className="font-extrabold text-foreground mb-2 text-2xl">@{profile.username}</p>
+                <p className="font-black text-foreground mb-2 text-major">@{profile.username}</p>
                 <p className="font-black text-gold text-5xl drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)]">
                   {fmtInt(profile.xp)}
                 </p>
-                <p className="font-bold tracking-widest text-gold/50 mb-6 text-xs">TOTAL XP</p>
+                <p className="font-bold tracking-widest text-gold/50 mb-6 text-meta">TOTAL XP</p>
                 <div className="grid grid-cols-3 gap-2 w-full">
                   {[
                     { label: "STREAK", value: `${profile.streak}d`, emoji: "🔥" },
@@ -505,7 +505,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                     { label: "BEST", value: `${profile.longest_streak}d`, emoji: "🏆" },
                   ].map((s) => (
                     <div key={s.label} className="flex flex-col items-center">
-                      <p className="font-black text-foreground text-lg">{s.emoji} {s.value}</p>
+                      <p className="font-black text-foreground text-subhead">{s.emoji} {s.value}</p>
                       <p className="font-bold tracking-widest text-muted-foreground/30 text-label">{s.label}</p>
                     </div>
                   ))}
@@ -515,7 +515,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
 
             {variant === "whealth" && whealthData && (
               <>
-                <p className="font-extrabold text-foreground mb-2 text-xl">@{profile.username}</p>
+                <p className="font-black text-foreground mb-2 text-head">@{profile.username}</p>
                 <p className="font-black text-gold text-6xl drop-shadow-[0_0_20px_hsl(42_78%_54%/0.5)] tabular-nums">
                   {whealthData.overall}
                 </p>
@@ -533,7 +533,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                             />
                           )}
                         </div>
-                        <p className="text-[9px] font-extrabold tracking-wider text-white/35">{label}</p>
+                        <p className="text-[9px] font-black tracking-wider text-white/35">{label}</p>
                       </div>
                     );
                   })}
@@ -546,22 +546,22 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
 
             {variant === "streak" && (
               <>
-                <p className="font-extrabold text-foreground mb-3 text-xl">@{profile.username}</p>
+                <p className="font-black text-foreground mb-3 text-head">@{profile.username}</p>
                 <p className="text-7xl drop-shadow-[0_0_25px_hsl(18_95%_58%/0.5)]">🔥</p>
                 <p className="font-black text-gold mt-2 text-5xl drop-shadow-[0_0_15px_hsl(42_78%_54%/0.4)]">
                   {profile.streak}
                 </p>
-                <p className="font-black text-gold/70 tracking-wider text-base">DAY STREAK</p>
-                <p className="text-muted-foreground/40 font-bold mt-2 text-xs">
+                <p className="font-black text-gold/70 tracking-wider text-copy">DAY STREAK</p>
+                <p className="text-muted-foreground/40 font-bold mt-2 text-meta">
                   {profile.streak >= 30 ? "MOST FAIL BEFORE THIS →" : profile.streak >= 7 ? "DON'T BREAK NOW →" : "BEAT MY STREAK →"}
                 </p>
-                <p className="text-muted-foreground/25 mt-1 text-sm">Best: {profile.longest_streak} day{profile.longest_streak === 1 ? "" : "s"}</p>
+                <p className="text-muted-foreground/25 mt-1 text-note">Best: {profile.longest_streak} day{profile.longest_streak === 1 ? "" : "s"}</p>
               </>
             )}
 
             {variant === "badge" && badgeData && (
               <>
-                <p className="font-extrabold text-foreground mb-3 text-xl">@{profile.username}</p>
+                <p className="font-black text-foreground mb-3 text-head">@{profile.username}</p>
                 <p className={cn(
                   "text-6xl",
                   badgeData.rarity === 'legendary' && "drop-shadow-[0_0_25px_hsl(42_78%_54%/0.6)]",
@@ -569,9 +569,9 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                 )}>
                   {badgeData.icon}
                 </p>
-                <p className="font-extrabold text-foreground mt-3 text-lg">{badgeData.name}</p>
+                <p className="font-black text-foreground mt-3 text-subhead">{badgeData.name}</p>
                 <p className={cn(
-                  "font-bold tracking-widest mt-1 text-xs",
+                  "font-bold tracking-widest mt-1 text-meta",
                   badgeData.rarity === 'legendary' ? "text-gold" :
                   badgeData.rarity === 'epic' ? "text-[hsl(280_70%_60%)]" :
                   badgeData.rarity === 'rare' ? "text-[hsl(217_91%_60%)]" : "text-muted-foreground/40"
@@ -594,8 +594,8 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                     <div className="absolute inset-0 -m-2 rounded-full bg-gold/20 blur-xl" aria-hidden />
                     <BrandLogo size={48} className="relative rounded-xl shadow-[0_4px_18px_hsl(var(--gold)/0.5)]" alt="" />
                   </div>
-                  <p className="font-extrabold text-foreground text-2xl">Train with me.</p>
-                  <p className="text-muted-foreground/60 text-xs mb-5">@{profile.username} on Whealth Factory</p>
+                  <p className="font-black text-foreground text-major">Train with me.</p>
+                  <p className="text-muted-foreground/60 text-meta mb-5">@{profile.username} on Whealth Factory</p>
                   <div className="w-full surface-tint-gold rounded-xl px-4 py-3 mb-4">
                     <p className="text-label font-bold tracking-[0.22em] text-gold/60 mb-1">YOUR INVITE CODE</p>
                     <p
@@ -615,7 +615,7 @@ const StoryShareModal = ({ open, onClose, variant = "stats", badgeData, referral
                 USE MY CODE AT SIGN-UP
               </p>
             ) : (
-              <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.22em] text-xl">
+              <p className="absolute bottom-4 text-muted-foreground/20 font-semibold tracking-[0.22em] text-head">
                 DISCIPLINE IS THE NEW FLEX
               </p>
             )}

@@ -59,7 +59,7 @@ const MoodSnapshot = ({ onCaptured, onSkip }: Props) => {
         <button
           type="button"
           onClick={() => { hapticImpact("light"); onSkip(); }}
-          className="press min-h-11 -mr-2 px-2 text-meta font-medium text-muted-foreground"
+          className="press min-h-11 -mr-2 px-2 text-meta font-semibold text-muted-foreground"
           aria-label="Skip mood snapshot"
         >
           Skip
@@ -97,7 +97,7 @@ const EmojiRow = ({
           key={v}
           type="button"
           onClick={() => { hapticImpact("light"); onChange(v); }}
-          className={`press flex-1 h-11 rounded-xl text-lg transition-colors border ${
+          className={`press flex-1 h-11 rounded-xl text-subhead transition-colors border ${
             active ? "bg-gold/15 border-gold/60" : "surface-inset border-border/40"
           }`}
           aria-pressed={active}

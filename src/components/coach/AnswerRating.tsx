@@ -34,7 +34,7 @@ const AnswerRating = ({ rated, onRate }: Props) => {
         onClick={() => onRate(true)}
         className="press min-h-11 min-w-11 inline-flex items-center justify-center text-muted-foreground"
       >
-        <ThumbsUp size={13} aria-hidden />
+        <ThumbsUp size={14} aria-hidden />
       </button>
       <button
         type="button"
@@ -42,7 +42,7 @@ const AnswerRating = ({ rated, onRate }: Props) => {
         onClick={() => onRate(false)}
         className="press min-h-11 min-w-11 inline-flex items-center justify-center text-muted-foreground"
       >
-        <ThumbsDown size={13} aria-hidden />
+        <ThumbsDown size={14} aria-hidden />
       </button>
     </span>
   );

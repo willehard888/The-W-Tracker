@@ -81,7 +81,7 @@ export const RedeemLegendInviteDialog = ({ trigger }: Props) => {
           <div className="mx-auto mb-2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gold/15 border border-gold/30">
             <Crown className="h-6 w-6 text-gold" fill="currentColor" aria-hidden />
           </div>
-          <DialogTitle className="text-center font-display text-xl">
+          <DialogTitle className="text-center font-display text-head">
             Legend is invite-only
           </DialogTitle>
           <DialogDescription className="text-center">

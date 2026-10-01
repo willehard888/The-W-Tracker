@@ -1,7 +1,7 @@
 // Pure logic for the nutrition-scan edge function. NO Deno / supabase
 // imports — vitest imports this file directly from src/lib/__tests__.
 
-export const PROMPT_VERSION = 3; // bump whenever the prompt OR the post-processing changes: the cache stores the processed result
+export const PROMPT_VERSION = 8; // bump whenever the prompt OR the post-processing changes: the cache stores the processed result
 export const DEFAULT_MODEL = "google/gemini-3-flash-preview";
 export const FALLBACK_MODEL = "google/gemini-2.5-flash";
 export const ID_AUTO_SELECT = 0.7;
@@ -191,6 +191,17 @@ const oneOf = <T extends string>(v: unknown, list: readonly T[], fallback: T): T
   typeof v === "string" && (list as readonly string[]).includes(v) ? (v as T) : fallback;
 const strMax = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
+// The model names the cut ("tomato wedges", "kurkkuviipaleet"); the catalog names
+// the food. Searched as written, "tomato wedges" fuzzy-matched a potato casserole
+// and "cucumber slices" a pickle (salad plate, 2026-10-01). English cut words are
+// whole tokens; the Finnish ones are compound tails (tomaattiLOHKOT, kurkkuVIIPALEET).
+const CUT_WORDS = /\b(wedges?|slices?|sliced|strips?|rings?|chopped|diced|shredded|grated|chunks?|cubes?|cubed|halves|halved|quartered)\b|lohko\w*|viipale\w*|suikale\w*|renka\w*|rengas|pilkottu\w*|kuutio\w*|raaste\w*/gi;
+/** A search term without its cut form: "tomato wedges" → "tomato", "paprikasuikaleet" → "paprika". The term itself when nothing is left. */
+export function plainFoodTerm(term: string): string {
+  const plain = term.replace(CUT_WORDS, " ").replace(/\s+/g, " ").trim();
+  return plain.length >= 2 ? plain : term;
+}
+
 export function clampGrams(g: number, category: Category): number {
   const [lo, hi] = GRAM_PRIORS[category];
   return Math.min(hi, Math.max(lo, Math.min(2000, Math.max(1, g))));
@@ -224,11 +235,12 @@ export function validateScanArgs(raw: unknown): RawScanArgs | null {
 
     const category = oneOf(it.category, CATEGORIES, "other");
     const preparation = oneOf(it.preparation, PREPARATIONS, "unknown");
-    const terms = (Array.isArray(it.canonical_search_terms) ? it.canonical_search_terms : [])
-      .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
-      .map((t) => t.trim().slice(0, 40))
-      .slice(0, 4);
-    if (terms.length === 0) terms.push(name.slice(0, 40));
+    const terms = [...new Set(
+      (Array.isArray(it.canonical_search_terms) ? it.canonical_search_terms : [])
+        .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+        .map((t) => plainFoodTerm(t.trim().slice(0, 40))),
+    )].slice(0, 4);
+    if (terms.length === 0) terms.push(plainFoodTerm(name.slice(0, 40)));
 
     const est = clampGrams(it.estimated_grams, category);
     const lowRaw = isNum(it.grams_low) ? it.grams_low : est;
@@ -492,17 +504,24 @@ export const GENERIC_BONUS_PACKAGED = 0.2;
 export const candidateScore = (c: Candidate, genericBonus = GENERIC_BONUS_MEAL): number =>
   c.rank + (c.source && GENERIC_SOURCES.has(c.source) ? genericBonus : 0);
 
+// A raw item must not land on the cooked or pickled row of the same food: for the
+// raw onion rings on a salad, "Punasipuli, paistettu" won the first-word tier.
+const COOKED_WORDS = /paistettu|keitetty|grillattu|uunissa|friteerattu|savustettu|marinoitu|suolattu|säilyke|etikka|fried|roasted|baked|grilled|boiled|cooked|pickled|brine|canned|smoked/i;
+export const RAW_PENALTY = 0.3;
+
 export function pickCandidate(
   cands: Candidate[],
   idConf: number,
   genericBonus = GENERIC_BONUS_MEAL,
+  preparation?: Preparation,
 ): { selected: Candidate | null; needs_user_choice: boolean; candidates: Candidate[] } {
   const best = new Map<string, Candidate>();
   for (const c of cands) {
     const prev = best.get(c.food_id);
     if (!prev || c.rank > prev.rank) best.set(c.food_id, c);
   }
-  const candidates = [...best.values()].sort((a, b) => candidateScore(b, genericBonus) - candidateScore(a, genericBonus));
+  const score = (c: Candidate) => candidateScore(c, genericBonus) - (preparation === "raw" && COOKED_WORDS.test(c.name) ? RAW_PENALTY : 0);
+  const candidates = [...best.values()].sort((a, b) => score(b) - score(a));
   const top = candidates[0];
   const second = candidates[1];
   const auto =
@@ -531,7 +550,7 @@ export function selectForPass2(items: Pass2Input[]): number[] {
     .map(({ i }) => i);
 }
 
-type MergeItem = Pick<ScanItem, "category" | "grams" | "grams_low" | "grams_high" | "ml" | "density_g_per_ml" | "count" | "portion_confidence" | "candidates" | "selected_food_id" | "needs_user_choice" | "pass2">;
+type MergeItem = Pick<ScanItem, "category" | "grams" | "grams_low" | "grams_high" | "ml" | "density_g_per_ml" | "count" | "unit_g" | "portion_confidence" | "candidates" | "selected_food_id" | "needs_user_choice" | "pass2">;
 
 /** Fold validated pass-2 rows into the items: clamped grams, a candidate only when its match is credible. Non-mutating. */
 export function mergePass2<T extends MergeItem>(items: T[], rows: RefineRow[]): T[] {
@@ -544,13 +563,20 @@ export function mergePass2<T extends MergeItem>(items: T[], rows: RefineRow[]): 
     const grams = g(r.refined_grams);
     const chosen = r.chosen_candidate_index >= 0 ? it.candidates[r.chosen_candidate_index] : undefined;
     const pick = chosen && chosen.similarity >= MATCH_MIN_FOR_MODEL_PICK;
+    // Pass 2 corrects a count pass 1 reported; it never adds one (pass 1 said
+    // "tomato wedges, count 0" and pass 2 answered "3 pieces" — a 3 × 120 g
+    // stepper on a 55 g item). A piece weight the refined grams contradict is
+    // dropped the same way applyCount drops it.
+    const count = it.count == null ? null : (r.count ?? it.count);
+    const unit_g = count != null && it.unit_g != null && Math.abs(count * it.unit_g - grams) / grams <= 0.5 ? it.unit_g : null;
     out[r.index] = {
       ...it,
       grams,
       grams_low: Math.min(g(r.grams_low), grams),
       grams_high: Math.max(g(r.grams_high), grams),
       ml: it.ml != null ? Math.round(r.refined_grams) : null,
-      count: r.count ?? it.count,
+      count,
+      unit_g,
       portion_confidence: Math.max(it.portion_confidence, r.portion_confidence),
       selected_food_id: pick ? chosen.food_id : it.selected_food_id,
       needs_user_choice: pick ? false : it.needs_user_choice,
@@ -803,11 +829,12 @@ SCENE
 - If a barcode is readable, copy its digits into barcode_seen; otherwise an empty string.
 
 IDENTIFY
-- Report every distinct food or drink as its own item (max 12). A plate of chicken, rice and salad is three items.
+- Report every distinct food or drink as its own item (max 12). A plate of chicken, rice and a side salad of lettuce, tomato and cucumber is five items.
 - Split composite meals into their visible components UNLESS it is a standard named dish that a database lists as one entry (lasagne, pizza slice, karjalanpiirakka, hamburger, sushi roll, porridge). Then report the dish as one item with category composite_dish.
+- Salads, bowls and plates of raw vegetables are never one item, not even a named salad (Caesar, Greek, kreikkalainen): report every visible ingredient - lettuce, tomato, cucumber, bell pepper, onion, olives, feta, croutons, visible dressing - as its own item with its own grams, category vegetable or the ingredient's real category.
 - Name the preparation you can see (grilled, fried, boiled, raw, ...). Use "unknown" when it is not visible.
-- canonical_search_terms: 1-4 generic database search terms for this item, English first, then Finnish (e.g. "chicken breast grilled", "broileri rintafilee grillattu"). Include a brand only when it is printed on visible packaging.
-- count: the number of discrete pieces for countable items (eggs, meatballs, slices; berries are NOT countable). 0 otherwise.
+- canonical_search_terms: 1-4 generic database search terms for this item, English first, then Finnish (e.g. "chicken breast grilled", "broileri rintafilee grillattu"). Name the food, not its cut: "tomato", "tomaatti" - never "tomato wedges" or "kurkkuviipaleet". Include a brand only when it is printed on visible packaging.
+- count: the number of discrete whole pieces for countable items (eggs, meatballs, bread slices, cherry tomatoes). Berries, leaves and vegetable slices, wedges, strips or rings are NOT countable: use 0.
 
 REFERENCES
 - List every size reference you can see in references_seen (plate, bowl, cutlery, hand, can, mug, glass, card or phone). Use "none" only when there is nothing.
@@ -816,7 +843,7 @@ REFERENCES
 
 ESTIMATE GRAMS
 - Give estimated_grams plus an honest low-high range. Reason from visible references: dinner plate ≈ 26 cm, fork ≈ 19 cm, a hand ≈ 18 cm, 330 ml can, mug ≈ 300 ml, glass ≈ 200-250 ml.
-- Typical single portions: rice or pasta side 120-250 g, chicken breast 100-200 g, salmon fillet 120-180 g, salad 60-150 g, potatoes 100-250 g, bread slice 30-40 g, glass of milk 200-250 g, sauce 20-60 g, butter or oil 5-15 g.
+- Typical single portions: rice or pasta side 120-250 g, chicken breast 100-200 g, salmon fillet 120-180 g, lettuce leaves 20-60 g, tomato 50-120 g (a medium tomato ≈ 120 g, a cherry tomato ≈ 15 g), cucumber 30-80 g, bell pepper 30-80 g, red onion 10-30 g, salad dressing 10-30 g, potatoes 100-250 g, bread slice 30-40 g, glass of milk 200-250 g, sauce 20-60 g, butter or oil 5-15 g.
 - Wide ranges are honest. A piled or reference-less plate deserves a wide range and a low portion_confidence.
 
 BOXES
@@ -844,7 +871,7 @@ RULES
 - Never output calories, macros or any nutrition number anywhere, not even in names or notes. The database computes nutrition from your grams.
 - Respond only by calling the report_food_items tool. No prose.`;
 
-export const PASS2_PROMPT = `You already reported the items on this meal. Look again at the listed items only, at the region each box marks on photo 1 (and photo 2 when given). For each listed item: choose the catalog candidate index that IS this food, or -1 when none of them is; refine grams (millilitres for liquids) with an honest low-high range and a portion_confidence; confirm the count of pieces (0 when not countable). Candidates are tagged [generic] (a plain food from a national food composition database) or [packaged] (a branded product): on a cooked plate choose the [generic] entry unless the packaging itself is visible in the photo — a name that merely matches your description is not evidence of a brand. Never output calories, macros or any nutrition number. Respond only by calling the refine_items tool.`;
+export const PASS2_PROMPT = `You already reported the items on this meal. Look again at the listed items only, at the region each box marks on photo 1 (and photo 2 when given). For each listed item: choose the catalog candidate index that IS this food, or -1 when none of them is; refine grams (millilitres for liquids) with an honest low-high range and a portion_confidence; confirm the count of whole pieces (eggs, meatballs, bread slices, cherry tomatoes; 0 for berries, leaves and vegetable slices, wedges, strips or rings, and 0 whenever the item was reported without a count). Candidates are tagged [generic] (a plain food from a national food composition database) or [packaged] (a branded product): on a cooked plate choose the [generic] entry unless the packaging itself is visible in the photo — a name that merely matches your description is not evidence of a brand. Never output calories, macros or any nutrition number. Respond only by calling the refine_items tool.`;
 
 export const LABEL_PROMPT = `Transcribe the printed nutrition table in this photo exactly as printed, through the report_nutrition_label tool. Copy the numbers for the basis the table uses (per 100 g, per 100 ml, or per serving) and give the serving weight when the label prints it. Use -1 for every value that is not printed. Never estimate, complete or round a missing value. Copy a readable barcode's digits into barcode_seen. Respond only by calling the tool.`;
 

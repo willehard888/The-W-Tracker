@@ -109,8 +109,11 @@ credit UI is not built. The attribution sheet in the app is generated from `food
 ## Limits and cost
 
 - Photo scans: 15/day on trial, 60/day paid (`bump_ai_usage`, kind `nutrition`), model
-  `google/gemini-2.5-flash` via OpenRouter, roughly $0.003–0.005 per scan; identical photos
-  hit a per-user cache and cost nothing.
+  `google/gemini-3-flash-preview` via OpenRouter (fallback `google/gemini-2.5-flash`),
+  roughly $0.003–0.005 per scan; identical photos hit a per-user cache and cost nothing.
+- Salads, bowls and plates of raw vegetables come back per ingredient — lettuce, tomato,
+  cucumber, bell pepper, dressing — one row each with its own grams; a standard named dish
+  (lasagne, pizza slice, karjalanpiirakka) stays one row.
 - Online food lookups: 300/day per user (kind `nutrition_lookup`). OFF allows 15 product
   reads and 10 searches per minute *per IP*, shared across all edge-function egress — the
   7-day miss cache and the explicit "Search online" button are what keep us under it.

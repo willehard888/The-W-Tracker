@@ -412,7 +412,7 @@ Deno.serve(async (req) => {
       if (results.some((r) => r.error)) return pickCandidate([], 0); // degrade this item only
       const rows: unknown[] = results.flatMap((r) => (Array.isArray(r.data) ? r.data : []));
       const cands = rows.map(toCandidateFields).filter((c): c is Candidate => c !== null);
-      return pickCandidate(cands, it.identification_confidence, (scan.scene_type === "meal" ? GENERIC_BONUS_MEAL : GENERIC_BONUS_PACKAGED));
+      return pickCandidate(cands, it.identification_confidence, (scan.scene_type === "meal" ? GENERIC_BONUS_MEAL : GENERIC_BONUS_PACKAGED), it.preparation);
     });
 
     // ── Online fallback for zero-candidate items (OFF/USDA via nutrition-lookup) ──
@@ -433,7 +433,7 @@ Deno.serve(async (req) => {
             const foods = isRecord(data) && Array.isArray(data.foods) ? data.foods : [];
             const cands = foods.map(toCandidateFields).filter((c): c is Candidate => c !== null);
             online[i] = cands.length ? "hit" : "miss";
-            if (cands.length) picked[i] = pickCandidate(cands, est[i].identification_confidence, (scan.scene_type === "meal" ? GENERIC_BONUS_MEAL : GENERIC_BONUS_PACKAGED));
+            if (cands.length) picked[i] = pickCandidate(cands, est[i].identification_confidence, (scan.scene_type === "meal" ? GENERIC_BONUS_MEAL : GENERIC_BONUS_PACKAGED), est[i].preparation);
           } catch (e) {
             console.warn("nutrition-scan online fallback failed:", e instanceof Error ? e.message : String(e));
           }

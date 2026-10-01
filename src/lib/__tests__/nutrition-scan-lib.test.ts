@@ -17,9 +17,12 @@ import {
   mergePass2,
   overallConfidence,
   pickCandidate,
+  plainFoodTerm,
   GENERIC_BONUS_PACKAGED,
+  PROMPT_VERSION,
   sanitizeRange,
   selectForPass2,
+  SYSTEM_PROMPT,
   toCandidateFields,
   unitWeightFor,
   validateLabelArgs,
@@ -388,7 +391,7 @@ describe("selectForPass2", () => {
 
 describe("mergePass2", () => {
   const base = () => ({
-    category: "fat_oil" as const, grams: 10, grams_low: 8, grams_high: 12, ml: null, density_g_per_ml: null, count: null, portion_confidence: 0.3,
+    category: "fat_oil" as const, grams: 10, grams_low: 8, grams_high: 12, ml: null, density_g_per_ml: null, count: null, unit_g: null, portion_confidence: 0.3,
     candidates: [cand("a", 0.2), cand("b", 0.5)], selected_food_id: null, needs_user_choice: true, pass2: false,
   });
   const row = (over: Partial<ReturnType<typeof validateRefineArgs>[number]> = {}) => ({
@@ -406,11 +409,22 @@ describe("mergePass2", () => {
   });
 
   it("converts liquids through their density, keeps the count, and leaves other items untouched", () => {
-    const items = [base(), { ...base(), category: "dairy" as const, grams: 206, ml: 200, density_g_per_ml: 1.03 }];
+    const items = [base(), { ...base(), category: "dairy" as const, grams: 206, ml: 200, density_g_per_ml: 1.03, count: 1 }];
     const out = mergePass2(items, [row({ index: 1, refined_grams: 250, grams_low: 200, grams_high: 300, count: 2 })]);
     expect(out[1]).toMatchObject({ grams: 258, ml: 250, grams_low: 206, grams_high: 309, count: 2, pass2: true });
     expect(out[0]).toEqual(base());
     expect(items[1].pass2).toBe(false);
+  });
+
+  it("never introduces a count pass 1 did not report, and drops a piece weight the refined grams contradict", () => {
+    // Salad plate, 2026-10-01: pass 1 obeyed "wedges are not countable" (count 0),
+    // pass 2 "confirmed 3 pieces" — the UI showed "3 pcs ≈ 120 g each" on 55 g.
+    const wedges = { ...base(), category: "vegetable" as const, grams: 300, unit_g: 120 };
+    expect(mergePass2([wedges], [row({ refined_grams: 55, grams_low: 40, grams_high: 70, count: 3 })])[0]).toMatchObject({ grams: 55, count: null, unit_g: null });
+    // A counted item keeps its weight while count × weight still agrees, and loses it when the grams move far away.
+    const eggs = { ...wedges, count: 3, grams: 165, unit_g: 55 };
+    expect(mergePass2([eggs], [row({ refined_grams: 150, grams_low: 120, grams_high: 180, count: 3 })])[0]).toMatchObject({ count: 3, unit_g: 55 });
+    expect(mergePass2([eggs], [row({ refined_grams: 150, grams_low: 120, grams_high: 180, count: 6 })])[0]).toMatchObject({ count: 6, unit_g: null });
   });
 });
 
@@ -544,6 +558,38 @@ describe("tool schemas", () => {
   });
 });
 
+describe("prompt — a salad is its ingredients (founder, 2026-10-01)", () => {
+  it("v8 reports lettuce, tomato, cucumber and bell pepper as their own rows, never one 'salad'", () => {
+    expect(PROMPT_VERSION).toBe(8); // the cache keys on it; v3 cached one-row salads; v4–v7 lived minutes (pass-2 counts, onion rings, cut-word terms, raw penalty)
+    const salad = SYSTEM_PROMPT.match(/^- Salads, bowls.*$/m)?.[0] ?? "";
+    for (const w of ["lettuce", "tomato", "cucumber", "bell pepper", "dressing"]) expect(salad).toContain(w);
+    expect(salad).toMatch(/never one item/);
+    const hints = SYSTEM_PROMPT.match(/^- Typical single portions:.*$/m)?.[0] ?? "";
+    for (const w of ["lettuce leaves", "tomato", "cucumber", "bell pepper", "salad dressing"]) expect(hints).toContain(w);
+    expect(SYSTEM_PROMPT).not.toContain("salad 60-150 g");
+    expect(SYSTEM_PROMPT).not.toContain("rice and salad is three items");
+    // Slices of cucumber or tomato must not be counted: a count would meet the
+    // UNIT_TABLE "slice" row (the 32 g bread slice) in applyCount.
+    expect(SYSTEM_PROMPT).toMatch(/vegetable slices, wedges, strips or rings are NOT countable/);
+    expect(SYSTEM_PROMPT).toMatch(/Name the food, not its cut/);
+  });
+
+  it("searches the food, not its cut, in both languages — and dedupes what that leaves", () => {
+    expect(plainFoodTerm("tomato wedges")).toBe("tomato");
+    expect(plainFoodTerm("tomaattilohkot")).toBe("tomaatti");
+    expect(plainFoodTerm("cucumber slices")).toBe("cucumber");
+    expect(plainFoodTerm("kurkkuviipaleet")).toBe("kurkku");
+    expect(plainFoodTerm("bell pepper strips")).toBe("bell pepper");
+    expect(plainFoodTerm("paprikasuikaleet")).toBe("paprika");
+    expect(plainFoodTerm("red onion rings")).toBe("red onion");
+    expect(plainFoodTerm("punasipulirenkaat")).toBe("punasipuli");
+    expect(plainFoodTerm("chicken breast strips grilled")).toBe("chicken breast grilled");
+    expect(plainFoodTerm("Slices")).toBe("Slices"); // nothing left → the term as given
+    const v = validateScanArgs(args([item({ canonical_search_terms: ["tomato wedges", "tomato", "tomaattilohkot", "tomaatti"] })]));
+    expect(v?.items[0].canonical_search_terms).toEqual(["tomato", "tomaatti"]);
+  });
+});
+
 describe("schemas — Google AI Studio compatibility (bisected in prod 2026-09-05)", () => {
   it("no schema carries minimum/maximum (Google answers 400 INVALID_ARGUMENT)", () => {
     const offenders: string[] = [];
@@ -578,5 +624,11 @@ describe("pickCandidate — generic sources beat branded name coincidences", () 
   it("on a meal scene a plausible generic row beats a branded name coincidence", () => {
     const r = pickCandidate([cand("Grilled chicken breast", "off", 1.0, 1), cand("Broileri, rintafilee, grillattu", "fineli", 0.45, 0.45)], 0.95);
     expect(r.candidates[0].source).toBe("fineli");
+  });
+  it("a raw item is steered off the cooked or pickled row of the same food (salad onion rings, 2026-10-01)", () => {
+    const rows = [cand("Punasipuli, paistettu", "fineli", 0.97, 0.97), cand("Sipuli, punasipuli", "fineli", 0.9, 0.9)];
+    expect(pickCandidate(rows, 0.95, undefined, "raw").candidates[0].name).toBe("Sipuli, punasipuli");
+    expect(pickCandidate(rows, 0.95, undefined, "fried").candidates[0].name).toBe("Punasipuli, paistettu");
+    expect(pickCandidate(rows, 0.95).candidates[0].name).toBe("Punasipuli, paistettu");
   });
 });

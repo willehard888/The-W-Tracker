@@ -5,6 +5,9 @@
 //
 // FAIL-OPEN: any error → empty, the coach simply won't mention lifts.
 
+import { loadAdvice, type LoadAdvice } from "./overload.ts";
+import { programWeekState } from "./program-week.ts";
+
 // deno-lint-ignore no-explicit-any
 type AnyClient = any;
 
@@ -125,7 +128,121 @@ ${lines.join("\n")}${summary ? `\n${summary}` : ""}
 
 Coach with this:
 - When training comes up, reference a SPECIFIC lift's trajectory by its numbers ("your bench has gone X→Y over N sessions"). It proves you're watching.
-- Give the EXACT next target: weight × reps. If a lift is climbing or hit the top of its rep range at low RPE, add load or a rep. Celebrate a 🏆 PR by name.
+- Give the EXACT next target: weight × reps — and when a NEXT LOADS block lists the lift, that block's number IS the target (it is the app's own rule and what the set row will show); never add load or reps on top of it. Only a lift absent from NEXT LOADS is yours to reason about from its trajectory. Celebrate a 🏆 PR by name.
 - For a ⏸ STALLED lift, name it and prescribe the fix (small deload then build, a rep/tempo change, or more recovery) — don't let it drift.
 - Be concrete and forward-moving. The athlete should feel you are personally driving their numbers up.`;
+}
+
+// ── The next load, by the app's own rule ────────────────────────────────────
+//
+// The block above is a digest of top sets; this one is the number the set row
+// will seed: double progression (_shared/overload.ts, mirrored from the
+// client) over EVERY set of the most recent session, against the rep range
+// the current program week prescribes for that movement. The coach quotes
+// these, never invents a load.
+
+export interface NextLoad {
+  slug: string;
+  name: string;
+  move: LoadAdvice["move"];
+  weight: number | null;
+  reps: number | null;
+  step: number;
+  reason: string;
+  /** Last session: its date and the top set, for the sentence. */
+  last: { on: string; weight: number | null; reps: number | null } | null;
+  /** The rule had a rep range to judge against (a programmed movement). */
+  prescribed: boolean;
+}
+
+interface SetRow {
+  exercise_slug: string | null;
+  exercise_name: string;
+  weight: number | null;
+  reps: number | null;
+  rpe: number | null;
+  set_index: number | null;
+  logged_on: string;
+}
+
+/** The rep range and effort each movement is prescribed at in the current program week. */
+async function prescriptionBySlug(supabase: AnyClient, userId: string): Promise<Map<string, { reps: string | number; rpe: number | null }>> {
+  const out = new Map<string, { reps: string | number; rpe: number | null }>();
+  try {
+    const { data: program } = await supabase
+      .from("coach_programs").select("id, started_on, weeks, plan_json")
+      .eq("user_id", userId).eq("status", "active")
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const weeks = program?.plan_json?.weeks;
+    if (!program || !Array.isArray(weeks)) return out;
+    const { data: logs } = await supabase.from("coach_program_logs").select("week, completed").eq("user_id", userId).eq("program_id", program.id);
+    const { currentWeek } = programWeekState({ startedOn: program.started_on, weeks: program.weeks, logs: (logs ?? []) as { week: number; completed: boolean }[], now: new Date() });
+    const wk = weeks.find((w: { week: number }) => w.week === currentWeek) ?? weeks[0];
+    for (const d of wk?.days ?? []) {
+      for (const b of d?.blocks ?? []) {
+        if (typeof b?.slug === "string" && b.reps != null && !out.has(b.slug)) out.set(b.slug, { reps: b.reps, rpe: typeof b.rpe === "number" ? b.rpe : null });
+      }
+    }
+  } catch { /* fail-open: no prescription, the rule holds the weight */ }
+  return out;
+}
+
+/**
+ * Every movement with a loaded set in the window, most recently trained
+ * first, each with the load the rule says next. FAIL-OPEN: any error → [].
+ */
+export async function gatherNextLoads(
+  supabase: AnyClient,
+  userId: string,
+  opts: { days?: number; limit?: number } = {},
+): Promise<NextLoad[]> {
+  const since = new Date(Date.now() - (opts.days ?? 28) * 86_400_000).toISOString().slice(0, 10);
+  let rows: SetRow[] = [];
+  try {
+    const { data } = await supabase
+      .from("workout_set_logs")
+      .select("exercise_slug, exercise_name, weight, reps, rpe, set_index, logged_on")
+      .eq("user_id", userId).gte("logged_on", since)
+      .order("logged_on", { ascending: false }).order("set_index", { ascending: true })
+      .limit(opts.limit ?? 600);
+    rows = Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+  if (!rows.length) return [];
+  const rx = await prescriptionBySlug(supabase, userId);
+  const bySlug = new Map<string, SetRow[]>();
+  for (const r of rows) {
+    if (!r.exercise_slug) continue;
+    (bySlug.get(r.exercise_slug) ?? bySlug.set(r.exercise_slug, []).get(r.exercise_slug)!).push(r);
+  }
+  const out: NextLoad[] = [];
+  for (const [slug, list] of bySlug) {
+    const p = rx.get(slug);
+    const a = loadAdvice(list, p?.reps ?? null, p?.rpe ?? null);
+    if (a.move === "first") continue;
+    const top = list.find((r) => r.logged_on === a.last?.date && r.weight === a.last?.weight) ?? list[0];
+    out.push({
+      slug, name: list[0].exercise_name, move: a.move, weight: a.weight, reps: a.reps, step: a.step, reason: a.reason,
+      last: a.last ? { on: a.last.date, weight: top.weight, reps: top.reps } : null,
+      prescribed: !!p,
+    });
+  }
+  return out.sort((a, b) => (b.last?.on ?? "").localeCompare(a.last?.on ?? ""));
+}
+
+const kg = (v: number | null) => (v == null ? "—" : `${Number.isInteger(v) ? v : v.toFixed(1).replace(/\.0$/, "")} kg`);
+
+/** The next loads as prompt text; "" when nothing is loaded. */
+export function buildNextLoadsBlock(items: NextLoad[]): string {
+  if (!items.length) return "";
+  const arrow = (m: NextLoad["move"]) => (m === "up" ? "↑" : m === "repeat" ? "↻" : "→");
+  const lines = items.slice(0, 12).map((n) =>
+    `- ${n.name}: ${arrow(n.move)} ${kg(n.weight)}${n.reps != null ? ` × ${n.reps}` : ""}${n.reason ? ` — ${n.reason}` : ""}${n.prescribed ? "" : " (no program range: the weight holds)"}`,
+  );
+  const ups = items.filter((n) => n.move === "up").length;
+  return `NEXT LOADS — BINDING. The app's own rule (double progression: every set at the top of the rep range earns one plate of 2.5 kg and the reps restart at the bottom; a set under the range repeats the weight; otherwise the weight holds and the top of the range is the target), computed from every set of the last session. ↑ = plate earned, → = hold, ↻ = repeat. These are exactly what the set rows will show:
+${lines.join("\n")}
+${ups ? `${ups} lift${ups === 1 ? "" : "s"} earned a plate.` : "No lift earned a plate yet — the weights hold until every set reaches the top of its range."}
+When you name a load, sets or reps for one of these movements, use THIS weight × reps and this reason, word for word in substance. Do NOT add 2.5 kg, a rep or a set to a → or ↻ lift, and do not round a number. A lift not listed here has no load you may quote — say the athlete will see it on the set row. This block outranks any load named in the morning brief, the daily plan or an earlier message.`;
 }

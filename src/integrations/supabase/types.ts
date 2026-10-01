@@ -756,6 +756,8 @@ export type Database = {
           frictions: Json
           generated_with: string
           id: string
+          lifts: Json
+          lifts_note: string | null
           next_week_focus: string | null
           performance_score: number
           program_tweak: string | null
@@ -770,6 +772,8 @@ export type Database = {
           frictions?: Json
           generated_with?: string
           id?: string
+          lifts?: Json
+          lifts_note?: string | null
           next_week_focus?: string | null
           performance_score?: number
           program_tweak?: string | null
@@ -784,6 +788,8 @@ export type Database = {
           frictions?: Json
           generated_with?: string
           id?: string
+          lifts?: Json
+          lifts_note?: string | null
           next_week_focus?: string | null
           performance_score?: number
           program_tweak?: string | null
@@ -4610,6 +4616,8 @@ export type Database = {
           _driver_of_week: string
           _frictions: Json
           _generated_with: string
+          _lifts?: Json
+          _lifts_note?: string
           _next_week_focus: string
           _performance_score: number
           _program_tweak: string

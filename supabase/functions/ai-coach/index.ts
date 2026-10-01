@@ -19,7 +19,7 @@ import {
   type TodayMood,
 } from "../_shared/coach-persona.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
-import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
+import { gatherProgression, buildProgressionBlock, gatherNextLoads, buildNextLoadsBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
@@ -91,7 +91,7 @@ ${lastIsToday ? "Today (already checked in)" : "Yesterday"}: sleep ${last.sleep_
 const GREETING_RE =
   /^(moi+|moikka|morjes|moro|terve|hei+|heippa|huomenta|hyvää huomenta|hyvää iltaa|iltaa|kiitos|kiitti|ok(ei)?|selvä|jees|hyvä|joo+|no moi|mitä kuuluu|mitäs kuuluu|mites menee|miten menee|hi|hey+|hello|yo|sup|thanks|thank you|good (morning|evening)|gm|what'?s up|how are you)[\s!?.,🙂😊👋🔥💪]*$/i;
 const DOMAIN_RE =
-  /tree?ni|ohjelm|sali|penk|kyyk|maastav|sarj|toisto|prote|ravin|ruoka|nukku|\buni\b|palautu|väsy|stress|workout|program|plan|gym|bench|squat|deadlift|\bset\b|\brep\b|sleep|recover|paino|kilo|\d/i;
+  /tree?ni|ohjelm|sali|penk|kyyk|maastav|sarj|toisto|prote|ravin|ruoka|nukku|\buni\b|palautu|väsy|stress|workout|program|plan|gym|bench|squat|deadlift|\bset\b|\brep\b|sleep|recover|paino|kilo|lift|nosto|kuorma|load|progress|kehity|\d/i;
 const isLightMessage = (msg: string, goDeep: boolean): boolean => {
   if (goDeep) return false;
   const t = msg.trim();
@@ -462,7 +462,7 @@ Deno.serve(async (req) => {
     const program: any = programRes.data ?? null;
 
     const tzOffset = typeof body?.tz_offset === "number" ? body.tz_offset : undefined;
-    const [situation, logsRes] = await Promise.all([
+    const [situation, logsRes, nextLoads] = await Promise.all([
       gatherSituation(supabase, userId, {
         tzOffsetMinutes: tzOffset,
         streak: profile?.streak ?? null,
@@ -475,6 +475,8 @@ Deno.serve(async (req) => {
             .eq("program_id", program.id)
             .order("logged_at", { ascending: false })
         : Promise.resolve({ data: [] as any[] }),
+      // The load the app's own rule says next, per lifted movement (28 days).
+      gatherNextLoads(supabase, userId).catch(() => []),
     ]);
     const allLogs: any[] = (logsRes as any).data ?? [];
     const recentLogs = allLogs.slice(0, 5);
@@ -513,9 +515,11 @@ Deno.serve(async (req) => {
       redFlag === "latest" ? CRISIS_DIRECTIVE : redFlag === "earlier" ? PRIOR_CRISIS_DIRECTIVE : "";
 
     const progressionBlock = buildProgressionBlock(progression);
+    const nextLoadsBlock = buildNextLoadsBlock(nextLoads);
     const causalBlock = buildCausalBlock(nightSignals as any);
     const workoutsBlock = buildWorkoutsBlock(await gatherHealthWorkouts(supabase, 7), (id) => sportName(id) ?? id);
-    const workoutLogBlock = [progressionBlock, causalBlock, workoutsBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
+    // The binding numbers first, the digest second: the model reads the rule before the trend.
+    const workoutLogBlock = [nextLoadsBlock, progressionBlock, causalBlock, workoutsBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
 
     // Long-term memory block — injected right after the athlete file so the
     // coach actually KNOWS the athlete across sessions.

@@ -9,7 +9,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportName } from "../_shared/sports.ts";
 import { buildPersonaBlock, buildHolisticContext, goalLabel } from "../_shared/coach-persona.ts";
 import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
-import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
+import { gatherProgression, buildProgressionBlock, gatherNextLoads, buildNextLoadsBlock } from "../_shared/progression.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 import { programWeekState } from "../_shared/program-week.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
@@ -690,7 +690,9 @@ Deno.serve(async (req) => {
         // open: a plan without it is worse, but a plan that never arrives is
         // worse still.
         const progression = await gatherProgression(supabase, userId).catch(() => []);
-        const progressionBlock = buildProgressionBlock(progression);
+        // The binding numbers first (the app's own rule), the digest second.
+        const nextLoads = await gatherNextLoads(supabase, userId).catch(() => []);
+        const progressionBlock = [buildNextLoadsBlock(nextLoads), buildProgressionBlock(progression)].filter(Boolean).join("\n\n");
         const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext, progressionBlock)
           + (causalBlock ? `\n\n${causalBlock}\n\nIf recovery is clearly suppressed vs baseline, bias today toward recovery/lighter load and say why in the rationale.` : "")
           + (workoutsBlock ? `\n\n${workoutsBlock}` : "")

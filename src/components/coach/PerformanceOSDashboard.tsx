@@ -8,6 +8,66 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { useState } from "react";
 import { friendlyError, readEdgeError } from "@/lib/error-copy";
+import { cn } from "@/lib/utils";
+import { NBSP } from "@/lib/format";
+import { fmtKg } from "@/components/coach/session/SetRow";
+
+/** One stored lift row of a weekly review — computed in the edge function by the overload rule. */
+export interface ReviewLift {
+  slug: string;
+  name: string;
+  move: "up" | "hold" | "repeat";
+  weight: number | null;
+  reps: number | null;
+  step: number;
+  reason: string;
+  last: { on: string; weight: number | null; reps: number | null } | null;
+  pr: boolean;
+}
+
+const isLift = (v: unknown): v is ReviewLift =>
+  typeof v === "object" && v !== null && typeof (v as ReviewLift).name === "string" && typeof (v as ReviewLift).move === "string";
+
+/** The review's `lifts` column, typed; anything else is an empty week. */
+export const reviewLifts = (v: unknown): ReviewLift[] => (Array.isArray(v) ? v.filter(isLift) : []);
+
+/**
+ * The week's lifts: the load the rule says next for every movement trained
+ * this week — the same number the set row seeds — with a plate earned marked
+ * in gold and a PR named. The model's one-sentence verdict sits under them.
+ */
+const ReviewLifts = ({ lifts, note }: { lifts: ReviewLift[]; note: string | null }) => {
+  if (lifts.length === 0) return null;
+  const ups = lifts.filter((l) => l.move === "up").length;
+  return (
+    <div className="mb-2.5" aria-label="Lifts this week">
+      <div className="flex items-baseline justify-between">
+        <p className="text-label font-bold text-muted-foreground">Lifts this week</p>
+        <p className="text-label text-muted-foreground tabular-nums">
+          {ups > 0 ? `${ups} ${ups === 1 ? "plate" : "plates"} earned` : "weights hold"}
+        </p>
+      </div>
+      <ul className="mt-1 divide-y divide-border/35">
+        {lifts.map((l) => (
+          <li key={l.slug} className="flex items-center justify-between gap-3 py-1.5">
+            <span className="min-w-0">
+              <span className="block text-meta font-bold text-foreground truncate">
+                {l.name}{l.pr ? <span className="text-xp-green"> · PR</span> : ""}
+              </span>
+              {l.reason && <span className="block text-label text-muted-foreground/75 truncate">{l.reason}</span>}
+            </span>
+            <span className={cn("shrink-0 text-meta font-black tabular-nums", l.move === "up" ? "text-gold" : "text-foreground")}>
+              {l.move === "up" ? "↑ " : l.move === "repeat" ? "↻ " : ""}
+              {l.weight != null ? fmtKg(l.weight) : "—"}{l.reps != null ? ` × ${l.reps}` : ""}
+              {l.move === "up" && l.step > 0 && <span className="text-label font-bold text-gold/70"> +{l.step}{NBSP}kg</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {note && <p className="text-meta mt-1.5 leading-relaxed">{note}</p>}
+    </div>
+  );
+};
 
 /**
  * The weekly review: its three component scores (once a review has written
@@ -109,6 +169,7 @@ const PerformanceOSDashboard = () => {
               <p className="text-meta mt-0.5 leading-relaxed">{review.next_week_focus}</p>
             </div>
           )}
+          <ReviewLifts lifts={reviewLifts(review.lifts)} note={review.lifts_note ?? null} />
           {review.program_tweak && (
             <div className="surface-tint-gold rounded-lg px-2.5 py-1.5 mt-2">
               <p className="text-label font-bold text-gold">Program tweak</p>

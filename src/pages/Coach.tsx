@@ -684,7 +684,7 @@ const ChatSheet = ({
   const quickAnswers = COACH_FAQ.slice(0, 4);
   // Conversational starters — real model round-trips (no faqId) so the empty
   // state teaches "you can TALK to this coach", not just request briefings.
-  const conversationStarters = ["How am I doing?", "How should I train today?"];
+  const conversationStarters = ["How am I doing?", "How should I train today?", "What should I lift next?"];
 
   return (
     <BottomSheet

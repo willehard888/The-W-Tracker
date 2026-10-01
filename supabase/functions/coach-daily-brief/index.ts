@@ -4,7 +4,7 @@ import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown, sportName } from "../_shared/sports.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
-import { gatherProgression, buildProgressionBlock } from "../_shared/progression.ts";
+import { gatherProgression, buildProgressionBlock, gatherNextLoads, buildNextLoadsBlock } from "../_shared/progression.ts";
 import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
@@ -152,7 +152,9 @@ Deno.serve(async (req) => {
 
     // Strength progression — so the morning brief can drive a specific lift.
     const progression = await gatherProgression(sb, uid).catch(() => []);
-    const progressionBlock = buildProgressionBlock(progression);
+    // The binding numbers first (the app's own rule), the digest second.
+    const nextLoads = await gatherNextLoads(sb, uid).catch(() => []);
+    const progressionBlock = [buildNextLoadsBlock(nextLoads), buildProgressionBlock(progression)].filter(Boolean).join("\n\n");
     // Last night's recovery — so the brief can explain WHY they feel how they feel.
     const nightSignals = await gatherNightSignals(sb, uid).catch(() => ({ hasData: false }));
     const causalBlock = buildCausalBlock(nightSignals as any);

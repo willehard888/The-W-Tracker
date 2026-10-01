@@ -163,7 +163,12 @@ export const progressiveWeeks = (week: ProgramWeek, n = WEEK_WAVE.length): Progr
  * makes the weeks differ and brings the switcher back.
  */
 export const isRepeatingWeek = (plan: PlanJson, fromWeek = 1): boolean => {
-  const ahead = (plan.weeks ?? []).filter((w) => w.week >= fromWeek).map((w) => JSON.stringify(w.days));
+  const weeks = plan.weeks ?? [];
+  // The last week of a block is judged against the one before it: alone it
+  // is trivially "the same", and the switcher vanished on week 4 of a wave.
+  const lastWeek = Math.max(...weeks.map((w) => w.week), 1);
+  const from = Math.min(fromWeek, lastWeek - 1);
+  const ahead = weeks.filter((w) => w.week >= from).map((w) => JSON.stringify(w.days));
   // No week from here on is not "a week that repeats": it would hide the only way off a stale week.
   return ahead.length > 0 && ahead.every((d) => d === ahead[0]);
 };

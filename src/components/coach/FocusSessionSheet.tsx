@@ -13,6 +13,8 @@ import { localDateKey } from "@/lib/date";
 import { resolveIllustration } from "@/lib/exercise-match";
 import { goldThumb } from "@/components/coach/gold-lines";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
+import { useRecentWorkoutLogs } from "@/hooks/use-workout-log";
+import { fmtKg } from "@/components/coach/session/SetRow";
 import { sessionMinutes, useBuildFocusSession, useMuscleBalance, useSwapExercise, type BuiltSession, type Feel, type Focus } from "@/hooks/use-focus-session";
 import { track, FUNNEL } from "@/lib/analytics";
 
@@ -86,6 +88,18 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
   const [feel, setFeel] = useState<Feel>("normal");
   // The muscle groups the athlete has been skipping: offered, never imposed.
   const neglected = useMuscleBalance(open);
+  // The newest top set per movement (the balance hook already loads these):
+  // the preview says "last time" where there is one, and the builder has
+  // kept those lifts in their slots so the loads carry on.
+  const recentLogs = useRecentWorkoutLogs();
+  const lastBySlug = new Map<string, { weight: number | null; reps: number | null; logged_on: string }>();
+  for (const r of recentLogs.data ?? []) {
+    if (r.exercise_slug && !lastBySlug.has(r.exercise_slug)) lastBySlug.set(r.exercise_slug, { weight: r.weight, reps: r.reps, logged_on: r.logged_on });
+  }
+  const daysAgo = (day: string) => {
+    const d = Math.round((Date.parse(`${localDateKey()}T00:00:00Z`) - Date.parse(`${day.slice(0, 10)}T00:00:00Z`)) / 86_400_000);
+    return d <= 0 ? "today" : d === 1 ? "1d ago" : `${d}d ago`;
+  };
   const novice = profile?.training_experience === "never_trained";
   const [seed, setSeed] = useState(1);
   const [preview, setPreview] = useState<BuiltSession | null>(null);
@@ -288,6 +302,14 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
                     <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums">
                       {b.sets} × {b.reps} · RPE {b.rpe} · rest {formatRest(b.rest_sec)}
                     </span>
+                    {(() => {
+                      const last = lastBySlug.get(b.slug);
+                      return last && (last.weight != null || last.reps != null) ? (
+                        <span className="block text-label text-muted-foreground/75 mt-0.5 tabular-nums">
+                          Last {last.weight != null ? fmtKg(Number(last.weight)) : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}${last.weight == null ? " reps" : ""}` : ""} · {daysAgo(last.logged_on)}
+                        </span>
+                      ) : null;
+                    })()}
                   </span>
                   <Button
                     type="button"
@@ -303,6 +325,16 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
                 </li>
               ))}
             </ul>
+            {(() => {
+              const trained = preview.blocks.filter((b) => lastBySlug.has(b.slug)).length;
+              return (
+                <p className="text-label text-muted-foreground mt-2 tabular-nums">
+                  {trained > 0
+                    ? `${trained} of ${preview.blocks.length} movements you've trained before — loads follow your log.`
+                    : "New movements: the first session sets the loads, the next one builds on them."}
+                </p>
+              );
+            })()}
             <div className="flex gap-2 mt-4">
               <Button variant="ghost" size="lg" className="shrink-0 text-muted-foreground" disabled={busy} onClick={shuffle} aria-label="Shuffle the session">
                 <Shuffle aria-hidden size={16} /> Shuffle

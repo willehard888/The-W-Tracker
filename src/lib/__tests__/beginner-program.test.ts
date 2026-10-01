@@ -14,6 +14,7 @@ import { PATH_MOVEMENTS, type PathMovement } from "@/data/beginner-path";
 import type { InjuryTag } from "@/lib/training/injuries";
 import { findIllustrated } from "@/data/exercises-illustrated";
 import { coachingFor } from "@/data/exercise-coaching";
+import { loadAdvice, parseRange } from "@/lib/training/overload";
 
 /**
  * The written path only renders for free because it emits exactly the shape
@@ -107,6 +108,22 @@ describe.each(blocks)("beginner plan — block %i", (block) => {
     expect(plan.weekly_check_targets.workouts).toBe(3);
     expect(plan.weekly_check_targets.perfect_days).toBeLessThanOrEqual(7);
   });
+});
+
+describe("beginner plan — the written path and the overload rule agree", () => {
+  const row = (logged_on: string, set_index: number, weight: number, reps: number, rpe: number) => ({ logged_on, set_index, weight, reps, rpe });
+  for (const block of [1, 2] as const) {
+    it(`block ${block}: the bottom of the range holds, the top on every set earns the plate, a miss repeats`, () => {
+      for (const w of buildBeginnerPlan(block).weeks) {
+        const b = w.days[0].blocks[0];
+        const { lo, hi } = parseRange(b.reps)!;
+        const did = (reps: number[]) => reps.map((r, i) => row("2026-09-29", i + 1, 40, r, b.rpe ?? 7));
+        expect(loadAdvice(did(Array(b.sets).fill(lo)), b.reps, b.rpe).move, `week ${w.week} bottom`).toBe("hold");
+        expect(loadAdvice(did(Array(b.sets).fill(hi)), b.reps, b.rpe), `week ${w.week} top`).toMatchObject({ move: "up", weight: 42.5, reps: lo });
+        expect(loadAdvice(did([hi, ...Array(b.sets - 1).fill(lo - 1)]), b.reps, b.rpe).move, `week ${w.week} miss`).toBe("repeat");
+      }
+    });
+  }
 });
 
 describe("beginner plan — block differences", () => {

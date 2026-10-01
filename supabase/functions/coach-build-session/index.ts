@@ -74,6 +74,16 @@ Deno.serve(async (req) => {
       : Number(profile.preferred_session_length_min) || 45));
     const seed = `${String(body?.seed ?? today).slice(0, 64)}:${userId}`;
     const injuries = normalizeInjuries(profile.injuries);
+    // What the athlete has lifted in the last four weeks (the heaviest set per
+    // exercise per day, through the caller's own RLS): those lifts keep their
+    // slot so the overload rule has a last time to progress from.
+    const { data: recentRows } = await supabase.rpc("recent_workout_logs", { p_limit: 120 });
+    const since = new Date(Date.parse(`${today}T00:00:00Z`) - 28 * 86_400_000).toISOString().slice(0, 10);
+    const recent = new Set(
+      (Array.isArray(recentRows) ? recentRows : [])
+        .filter((r: { exercise_slug?: string | null; logged_on?: string }) => typeof r.exercise_slug === "string" && String(r.logged_on ?? "") >= since)
+        .map((r: { exercise_slug?: string | null }) => r.exercise_slug as string),
+    );
 
     const input = {
       focus,
@@ -85,6 +95,7 @@ Deno.serve(async (req) => {
       seed,
       // The day's feel (light / normal / hard); old builds send nothing.
       feel: (FEELS as string[]).includes(body?.feel) ? (body.feel as Feel) : undefined,
+      recent,
     };
     const strs = (v: unknown, cap: number) =>
       (Array.isArray(v) ? v : []).filter((x): x is string => typeof x === "string").slice(0, cap);

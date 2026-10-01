@@ -41,6 +41,8 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
   const [lastError, setLastError] = useState<string | null>(null);
 
   const goalLabel = GOAL_LABEL[profile?.primary_goal ?? "all"] ?? "All-around";
+  // A never-trained athlete gets the written path (see submit), not the wave — say so.
+  const beginner = profile?.training_experience === "never_trained";
   // The same answer the builder uses: an empty list showed "0 days/wk" and then built four.
   const days = trainingDaysOf(profile);
   const sessionMin = profile?.preferred_session_length_min ?? 45;
@@ -140,9 +142,11 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
   return (
     <div className="px-1 pt-2 pb-8">
-      <h2 className="font-display text-major font-black tracking-tight leading-tight">Build my week</h2>
+      <h2 className="font-display text-major font-black tracking-tight leading-tight">{beginner ? "Start the path" : "Build my week"}</h2>
       <p className="text-note text-muted-foreground mt-1 mb-5 leading-relaxed">
-        One session for each of your training days, run as a four-week block: base, build, peak, light. The loads follow what you log — hit the top of a range on every set and the next one goes up a plate.
+        {beginner
+          ? "The written beginner path: three full-body sessions a week, two four-week blocks. Own eight clean reps, reach ten on every set, and the next session adds the smallest plate."
+          : "One session for each of your training days, run as a four-week block: base, build, peak, light. The loads follow what you log — hit the top of a range on every set and the next one goes up a plate."}
       </p>
 
       <div className="surface-tint-gold p-4 mb-5">
@@ -179,7 +183,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
 
       <Button variant="ember" size="lg" className="w-full mt-6" loading={building} onClick={generate}>
         {building && <Loader2 aria-hidden size={16} className="animate-spin" />}
-        Build my week
+        {beginner ? "Start the path" : "Build my week"}
       </Button>
       <p className="text-label text-muted-foreground/75 text-center mt-3">
         Any day can become a rest day, and any movement can be swapped, after it is built.

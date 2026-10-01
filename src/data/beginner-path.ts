@@ -139,38 +139,42 @@ export interface PathWeek {
 }
 
 /**
- * Load goes up on one rule, stated in plain words, rather than by asking a
- * beginner to rate an effort they have no reference for yet. RPE is still
- * recorded because the coach reads it later — but the instruction is the note.
+ * Load goes up on one rule, stated in plain words and run by the app's
+ * overload engine (src/lib/training/overload.ts): every rep range is a
+ * ladder — own the bottom, reach the top on every set, and the next session
+ * loads the smallest plate and starts again from the bottom. A set under the
+ * range repeats the weight. RPE is still recorded because the coach reads it
+ * later — but the instruction is the note, and the note never contradicts
+ * what the engine will seed into the set rows.
  */
 export const BLOCK_1_WEEKS: PathWeek[] = [
   {
     week: 1,
     theme: "Learn the movements",
     progression_note:
-      "This week is technique, not weight. Pick a load you could lift about five more times than asked, on everything. Finishing every set feeling like you had plenty left is exactly right.",
-    sets: 2, reps: "8", rpe: 5, rest_sec: 120,
+      "This week is technique, not weight. Two easy sets: pick a load that lets you own eight clean reps with plenty left. Reach ten on a set only if it stays clean.",
+    sets: 2, reps: "8-10", rpe: 5, rest_sec: 120,
   },
   {
     week: 2,
     theme: "Add a set",
     progression_note:
-      "Same weights, one more set on each movement. If a movement still feels awkward, keep the weight where it is — another week of practice is worth more than another 5 kg.",
-    sets: 3, reps: "8", rpe: 6, rest_sec: 120,
+      "One more set on each movement, same weights. From here the ladder runs: ten clean reps on every set, and the next session adds the smallest plate — then back to eight.",
+    sets: 3, reps: "8-10", rpe: 6, rest_sec: 120,
   },
   {
     week: 3,
     theme: "Start adding weight",
     progression_note:
-      "The rule from here: if you finished all sets last week with clean technique, add the smallest available increment — usually 2.5 kg on a barbell, one plate or one notch on a machine. If you did not, repeat the same weight.",
-    sets: 3, reps: "8", rpe: 7, rest_sec: 120,
+      "The rule from here: if you finished every set at the top of the range with clean technique, add the smallest available increment — usually 2.5 kg on a barbell, one plate or one notch on a machine. If you did not, repeat the same weight.",
+    sets: 3, reps: "8-10", rpe: 7, rest_sec: 120,
   },
   {
     week: 4,
-    theme: "More reps at the same weight",
+    theme: "Own the range",
     progression_note:
-      "Same weights as last week, two more reps per set. This is how you find out the load actually got easier rather than just heavier.",
-    sets: 3, reps: "10", rpe: 7, rest_sec: 120,
+      "Three sets at the top of the range is the goal this week. Every ten earns the next plate; a set that falls under eight means the weight stays until it does not.",
+    sets: 3, reps: "8-10", rpe: 7, rest_sec: 120,
   },
 ];
 
@@ -179,29 +183,29 @@ export const BLOCK_2_WEEKS: PathWeek[] = [
     week: 1,
     theme: "Five movements now",
     progression_note:
-      "A fifth movement joins each session. Drop back to eight reps and keep last block's weights — the extra work is the new stimulus, not extra load on top of it.",
-    sets: 3, reps: "8", rpe: 7, rest_sec: 120,
+      "A fifth movement joins each session — the extra work is the new stimulus. The ladder does not change: the weights you earned carry over, and ten on every set still means the next plate.",
+    sets: 3, reps: "8-10", rpe: 7, rest_sec: 120,
   },
   {
     week: 2,
-    theme: "Build the reps back",
+    theme: "Build the reps",
     progression_note:
-      "Same weights, back up to ten reps. Same rule as before: all sets completed cleanly means you add the smallest increment next week.",
-    sets: 3, reps: "10", rpe: 7, rest_sec: 120,
+      "Same rule, a little more effort: finish each set with one or two reps left, not five. All sets at ten, cleanly, adds the smallest increment next time.",
+    sets: 3, reps: "8-10", rpe: 7, rest_sec: 120,
   },
   {
     week: 3,
-    theme: "Add weight",
+    theme: "A wider ladder",
     progression_note:
-      "Add the smallest increment to everything you completed cleanly last week, and drop back to eight reps to absorb it.",
-    sets: 3, reps: "8", rpe: 8, rest_sec: 150,
+      "The range opens to twelve and the rests grow. Twelve on every set is the new top — that is what earns the plate now, and eight is still the floor.",
+    sets: 3, reps: "8-12", rpe: 8, rest_sec: 150,
   },
   {
     week: 4,
     theme: "Finish the block",
     progression_note:
-      "Same weights, ten reps, last week of the written path. Log every set — your coach reads these numbers to build what comes next, and it can only be as good as what you record.",
-    sets: 3, reps: "10", rpe: 8, rest_sec: 150,
+      "Last week of the written path. Log every set — your coach reads these numbers to build what comes next, and the loads you leave here are where the next block starts.",
+    sets: 3, reps: "8-12", rpe: 8, rest_sec: 150,
   },
 ];
 

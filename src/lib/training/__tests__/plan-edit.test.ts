@@ -99,6 +99,12 @@ describe("plan-edit", () => {
     expect(isRepeatingWeek(oneOff, 2)).toBe(true);
     // An edit that reaches every later week keeps the week repeating.
     expect(isRepeatingWeek(setRest(same, { week: 1, day: 3, scope: "remaining" }))).toBe(true);
+    // The last week is judged against the one before it, never alone: a block
+    // that waves stays planned on week 4, a one-off change in week 1 does not.
+    const waved = setRest(same, { week: 3, day: 3, scope: "week" });
+    expect(isRepeatingWeek(waved, 3)).toBe(false);
+    expect(isRepeatingWeek(oneOff, 3)).toBe(true);
+    expect(isRepeatingWeek(same, 3)).toBe(true);
   });
 
   it("knows a label the app wrote from one a coach wrote, and times a session like the builder", () => {

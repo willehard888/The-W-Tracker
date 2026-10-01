@@ -10,6 +10,7 @@ import {
   neglectedFocuses,
   prescribeSlugs,
   primaryFocuses,
+  SCHEMES,
   sessionPlan,
   swapBlock,
   swapCandidates,
@@ -20,6 +21,7 @@ import {
 import { PRIORITY_SLUGS } from "../../../supabase/functions/_shared/illustrated-catalog";
 import { EXERCISE_CATALOG } from "../../../supabase/functions/_shared/exercise-catalog";
 import { bannedSlugs, type InjuryTag } from "../../../supabase/functions/_shared/program-safety";
+import { parseRange } from "@/lib/training/overload";
 
 type Input = Parameters<typeof buildSession>[0];
 const base: Omit<Input, "focus"> = {
@@ -130,6 +132,35 @@ describe("session builder", () => {
     const firstOther = ranked.findIndex((e) => e.pattern !== patternOf(first.slug));
     if (firstOther >= 0) expect(ranked.slice(firstOther).every((e) => e.pattern !== patternOf(first.slug) || e.focus[0] !== SESSION_POOL[first.slug].focus[0])).toBe(true);
     expect(swapCandidates({ ...o, current: "Not_A_Movement" })).toEqual([]);
+  });
+
+  it("a lift logged lately keeps its slot ahead of a never-logged sibling, and only the seed orders the rest", () => {
+    const day = build(["back", "biceps"]);
+    const lead = day.blocks[0];
+    // A sibling of the lead's pattern, muscle and tier that the seed ranked below it.
+    const cur = SESSION_POOL[lead.slug];
+    const sibling = swapCandidates({ ...base, focus: ["back", "biceps"], current: lead.slug, exclude: [] })
+      .find((e) => e.pattern === cur.pattern && e.focus[0] === cur.focus[0] && e.tier === cur.tier)!;
+    expect(sibling).toBeDefined();
+    const remembered = build(["back", "biceps"], { recent: new Set([sibling.slug]) });
+    expect(remembered.blocks.map((b) => b.slug)).toContain(sibling.slug);
+    expect(remembered.blocks.find((b) => patternOf(b.slug) === patternOf(lead.slug))!.slug).toBe(sibling.slug);
+    // The same seed with nothing logged is the session as before.
+    expect(build(["back", "biceps"], { recent: new Set() })).toEqual(day);
+    // A swap offers the logged sibling first too.
+    const ranked = swapCandidates({ ...base, focus: ["back", "biceps"], current: lead.slug, exclude: [], recent: new Set([sibling.slug]) });
+    expect(ranked[0].slug).toBe(sibling.slug);
+  });
+
+  it("every prescription is a rep range the overload rule can climb (never AMRAP, never seconds)", () => {
+    for (const [goal, byClass] of Object.entries(SCHEMES)) {
+      for (const [cls, rx] of Object.entries(byClass)) {
+        const r = parseRange(rx.reps);
+        expect(r, `${goal}/${cls} reps "${rx.reps}"`).not.toBeNull();
+        expect(r!.hi, `${goal}/${cls}`).toBeGreaterThan(r!.lo);
+      }
+    }
+    for (const b of build(["legs"], { minutes: 75 }).blocks) expect(parseRange(b.reps)).not.toBeNull();
   });
 
   it("the day's feel changes the dose, never the movements", () => {

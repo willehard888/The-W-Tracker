@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { parseRange } from "@/lib/training/overload";
 import {
   PATH_MOVEMENTS,
   BLOCK_1_SESSIONS,
@@ -88,7 +89,11 @@ describe("beginner path — shape", () => {
       expect(weeks.map((w) => w.week)).toEqual([1, 2, 3, 4]);
       for (const w of weeks) {
         expect(w.sets).toBeGreaterThan(0);
-        expect(w.reps.trim().length, `week ${w.week} has no rep target`).toBeGreaterThan(0);
+        // A ladder, not a number: the overload engine holds the weight until
+        // every set reaches the top, then adds the smallest plate.
+        const range = parseRange(w.reps);
+        expect(range, `week ${w.week} reps "${w.reps}" is not a range the overload rule can climb`).not.toBeNull();
+        expect(range!.hi).toBeGreaterThan(range!.lo);
         expect(w.rpe).toBeGreaterThanOrEqual(1);
         expect(w.rpe).toBeLessThanOrEqual(10);
         expect(

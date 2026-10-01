@@ -349,7 +349,17 @@ export interface BuildInput {
   injuries: Set<InjuryTag>;
   seed: string;
   feel?: Feel;
+  /**
+   * Catalog slugs the athlete has logged lately. A lift they are progressing
+   * on keeps its slot ahead of a never-logged sibling, so the overload rule
+   * has a "last time" to build on; the seed still orders the rest.
+   */
+  recent?: ReadonlySet<string>;
 }
+
+/** Logged lately sorts first; the seed decides inside each half. */
+const recency = (o: Pick<BuildInput, "seed" | "recent">, e: PoolItem): number =>
+  (o.recent?.has(e.slug) ? 0 : 2 ** 33) + fnv(o.seed + e.slug);
 
 /**
  * The day's feel, applied after the session is laid out, so the movements
@@ -442,13 +452,13 @@ export const poolFor = (o: Pick<BuildInput, "focus" | "experience" | "equipment"
  * never one the athlete's profile bans. Null when the pool has nothing else.
  */
 export function swapCandidates(
-  o: Pick<BuildInput, "focus" | "experience" | "equipment" | "injuries" | "seed"> & { current: string; exclude: string[] },
+  o: Pick<BuildInput, "focus" | "experience" | "equipment" | "injuries" | "seed" | "recent"> & { current: string; exclude: string[] },
 ): PoolItem[] {
   const cur = SESSION_POOL[o.current];
   if (!cur) return [];
   const taken = new Set([...o.exclude, o.current]);
   const items = poolFor(o).filter((e) => !taken.has(e.slug));
-  const order = (a: PoolItem, b: PoolItem) => fnv(o.seed + a.slug) - fnv(o.seed + b.slug);
+  const order = (a: PoolItem, b: PoolItem) => recency(o, a) - recency(o, b);
   const same = items.filter((e) => e.pattern === cur.pattern && e.focus[0] === cur.focus[0]).sort(order);
   const pattern = items.filter((e) => e.pattern === cur.pattern).sort(order);
   const muscle = items.filter((e) => e.focus[0] === cur.focus[0]).sort(order);
@@ -492,7 +502,7 @@ export function buildSession(o: BuildInput): BuiltSession {
   const focus = [...new Set(o.focus)];
   const items = poolFor(o);
 
-  const key = (e: PoolItem) => ORDER.indexOf(e.pattern) * 2 ** 32 + fnv(o.seed + e.slug);
+  const key = (e: PoolItem) => ORDER.indexOf(e.pattern) * 2 ** 34 + recency(o, e);
   const byKey = (a: PoolItem, b: PoolItem) => key(a) - key(b);
   // Primary-focus lists per picked muscle, round-robin so back + biceps
   // alternates; secondary matches (a deadlift for "back") come last.
@@ -633,7 +643,7 @@ export const sessionPlan = (day: BuiltSession, dayIndex: number) =>
   weekPlan(DAY_NAMES.map((_, i) => (i === dayIndex ? day : null)), {
     theme: day.focus,
     nutritionNote: "One session. Eat normally, protein at every meal.",
-    progressionNote: "Beat last time by one rep or one small plate.",
+    progressionNote: "Loads follow your log: the top of a range on every set earns the next plate.",
   });
 
 // ── A whole week ─────────────────────────────────────────────────────────

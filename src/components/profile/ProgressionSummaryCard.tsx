@@ -19,7 +19,7 @@ const ProgressionSummaryCard = () => {
   return (
     <button
       type="button"
-      onClick={() => navigate("/coach/program")}
+      onClick={() => navigate("/coach/progress")}
       className="press-row w-full text-left surface-card surface-card-quiet p-4"
     >
       <div className="flex items-center gap-2 mb-2">
@@ -58,7 +58,7 @@ const ProgressionSummaryCard = () => {
       )}
 
       <div className="text-label font-bold text-muted-foreground flex items-center justify-end mt-2">
-        Open program <ChevronRight aria-hidden size={12} />
+        All lifts <ChevronRight aria-hidden size={12} />
       </div>
     </button>
   );

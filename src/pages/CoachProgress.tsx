@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import PerformanceOSDashboard from "@/components/coach/PerformanceOSDashboard";
 import ProgressDashboard from "@/components/coach/ProgressDashboard";
 import { DoorRow } from "@/components/coach/rows";
+import LiftsList from "@/components/coach/LiftsList";
 import { useCoachProgram } from "@/hooks/use-coach-program";
 import { useRecentCheckins } from "@/hooks/use-recent-checkins";
 import { sessionsBySport, useHealthWorkouts } from "@/hooks/use-health-workouts";
@@ -139,7 +140,11 @@ const CoachProgress = () => {
           <ErrorState size="compact" className="mt-4" title="Couldn't load your last seven days" onRetry={refetchRecent} />
         )}
 
-        <div className="home-rise home-rise-2 mt-4">
+        {/* Every lift the athlete has logged, with its curve — the program's
+            movement sheet one level up, for the whole log. */}
+        <LiftsList className="home-rise home-rise-2 mt-5" />
+
+        <div className="home-rise home-rise-3 mt-5">
           {isElite ? (
             <div className="space-y-4">
               <PerformanceOSDashboard />

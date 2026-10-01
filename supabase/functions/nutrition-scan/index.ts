@@ -292,7 +292,7 @@ Deno.serve(async (req) => {
     // ── Pass 1: identify + weigh ────────────────────────────────────────
     const pass1 = await callTool({
       system: SYSTEM_PROMPT,
-      content: [{ type: "text", text: buildContextText({ slot, local_time: localTime, plate_cm: plateCm, priors, hint, two_photos: !!imageB64Two }) }, ...images],
+      content: [{ type: "text", text: buildContextText({ slot, local_time: localTime, plate_cm: plateCm, priors, hint, two_photos: !!imageB64Two, country }) }, ...images],
       tool: buildToolSchema(),
       toolName: "report_food_items",
       maxTokens: 3500,
@@ -402,7 +402,9 @@ Deno.serve(async (req) => {
       est.map((it) =>
         Promise.all(
           it.canonical_search_terms.slice(0, 3).map((term) =>
-            userClient.rpc("search_foods", { p_query: term, p_limit: 3, p_country: country, p_barcode: null }),
+            // 5 rows, not 3: a branded product named exactly like an English term
+            // ("Chicken Breast") fills the first three on its own.
+            userClient.rpc("search_foods", { p_query: term, p_limit: 5, p_country: country, p_barcode: null }),
           ),
         ),
       ),

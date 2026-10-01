@@ -1,7 +1,7 @@
 // Pure logic for the nutrition-scan edge function. NO Deno / supabase
 // imports — vitest imports this file directly from src/lib/__tests__.
 
-export const PROMPT_VERSION = 8; // bump whenever the prompt OR the post-processing changes: the cache stores the processed result
+export const PROMPT_VERSION = 10; // bump whenever the prompt OR the post-processing changes: the cache stores the processed result
 export const DEFAULT_MODEL = "google/gemini-3-flash-preview";
 export const FALLBACK_MODEL = "google/gemini-2.5-flash";
 export const ID_AUTO_SELECT = 0.7;
@@ -202,6 +202,17 @@ export function plainFoodTerm(term: string): string {
   return plain.length >= 2 ? plain : term;
 }
 
+/** The model's note, cut at the last full sentence inside `max` (else the last word, else hard) — "a standard 26cm din" is not a note. */
+export function noteCut(text: string, max: number): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const head = t.slice(0, max);
+  const sentence = Math.max(head.lastIndexOf(". "), head.lastIndexOf("! "), head.lastIndexOf("? "));
+  if (sentence >= 40) return head.slice(0, sentence + 1);
+  const word = head.lastIndexOf(" ");
+  return word >= 40 ? `${head.slice(0, word)}…` : head;
+}
+
 export function clampGrams(g: number, category: Category): number {
   const [lo, hi] = GRAM_PRIORS[category];
   return Math.min(hi, Math.max(lo, Math.min(2000, Math.max(1, g))));
@@ -271,7 +282,7 @@ export function validateScanArgs(raw: unknown): RawScanArgs | null {
   return {
     is_food: raw.is_food === true,
     scene_type: oneOf(raw.scene_type, SCENE_TYPES, raw.is_food === true ? "meal" : "not_food"),
-    scene_notes: typeof raw.scene_notes === "string" ? raw.scene_notes.slice(0, 200) : "",
+    scene_notes: typeof raw.scene_notes === "string" ? noteCut(raw.scene_notes, 200) : "",
     references_seen: [...new Set(refs)].slice(0, 6),
     plate_cm_estimate: plate >= 10 && plate <= 40 ? plate : null,
     scale_confidence: clamp01(raw.scale_confidence),
@@ -504,10 +515,23 @@ export const GENERIC_BONUS_PACKAGED = 0.2;
 export const candidateScore = (c: Candidate, genericBonus = GENERIC_BONUS_MEAL): number =>
   c.rank + (c.source && GENERIC_SOURCES.has(c.source) ? genericBonus : 0);
 
-// A raw item must not land on the cooked or pickled row of the same food: for the
-// raw onion rings on a salad, "Punasipuli, paistettu" won the first-word tier.
+// Preparation decides between rows of the same food. A raw item must not land
+// on the cooked or pickled row ("Punasipuli, paistettu" for raw onion rings on
+// a salad), and a cooked item must not land on the raw, frozen or powdered row
+// ("Pork, chop, center cut, raw" for a grilled chop; "Gravy, brown, dry" — a
+// 380 kcal powder — for the brown sauce on the plate). Dried, cured, fermented
+// and unknown preparations judge nothing.
 const COOKED_WORDS = /paistettu|keitetty|grillattu|uunissa|friteerattu|savustettu|marinoitu|suolattu|säilyke|etikka|fried|roasted|baked|grilled|boiled|cooked|pickled|brine|canned|smoked/i;
-export const RAW_PENALTY = 0.3;
+const UNCOOKED_WORDS = /\b(?:raw|uncooked|unprepared|frozen|dry|dried|powder|mix|concentrate)\b|raaka|pakaste|jauhe|kuiva|tiiviste/i;
+const COOKED: ReadonlySet<Preparation> = new Set(["grilled", "fried", "deep_fried", "roasted", "baked", "boiled", "steamed", "smoked"]);
+export const PREPARATION_PENALTY = 0.3;
+export const preparationPenalty = (preparation: Preparation | undefined, name: string): number => {
+  if (preparation === "raw") return COOKED_WORDS.test(name) ? PREPARATION_PENALTY : 0;
+  if (preparation && COOKED.has(preparation)) return UNCOOKED_WORDS.test(name) ? PREPARATION_PENALTY : 0;
+  return 0;
+};
+/** The review screen lists every candidate; past eight the list is noise. */
+export const MAX_CANDIDATES = 8;
 
 export function pickCandidate(
   cands: Candidate[],
@@ -520,15 +544,18 @@ export function pickCandidate(
     const prev = best.get(c.food_id);
     if (!prev || c.rank > prev.rank) best.set(c.food_id, c);
   }
-  const score = (c: Candidate) => candidateScore(c, genericBonus) - (preparation === "raw" && COOKED_WORDS.test(c.name) ? RAW_PENALTY : 0);
-  const candidates = [...best.values()].sort((a, b) => score(b) - score(a));
+  const score = (c: Candidate) => candidateScore(c, genericBonus) - preparationPenalty(preparation, c.name);
+  const candidates = [...best.values()].sort((a, b) => score(b) - score(a)).slice(0, MAX_CANDIDATES);
   const top = candidates[0];
   const second = candidates[1];
+  // The margin is measured on the ordering score, so a branded product named
+  // exactly like the term ("Chicken Breast", similarity 1.0) cannot block the
+  // generic row the bonus put first; two plausible generic rows still ask.
   const auto =
     !!top &&
     idConf >= ID_AUTO_SELECT &&
     top.similarity >= SIM_AUTO_SELECT &&
-    (!second || top.similarity - second.similarity >= SIM_MARGIN);
+    (!second || score(top) - score(second) >= SIM_MARGIN);
   return { selected: auto ? top : null, needs_user_choice: !auto, candidates };
 }
 
@@ -627,10 +654,12 @@ export function buildContextText(ctx: {
   priors: PriorRow[];
   hint?: string;
   two_photos: boolean;
+  country?: string;
 }): string {
   const lines: string[] = [];
   if (ctx.hint) lines.push(`User note: «${ctx.hint}»`);
   const facts: string[] = [];
+  if (ctx.country === "FI") facts.push("Catalog: Finnish (Fineli) - give the Finnish search terms first");
   if (ctx.slot) facts.push(`Meal: ${ctx.slot}`);
   if (ctx.local_time) facts.push(`Local time: ${ctx.local_time}`);
   if (ctx.plate_cm) facts.push(`User's dinner plate: ${ctx.plate_cm} cm`);
@@ -833,7 +862,7 @@ IDENTIFY
 - Split composite meals into their visible components UNLESS it is a standard named dish that a database lists as one entry (lasagne, pizza slice, karjalanpiirakka, hamburger, sushi roll, porridge). Then report the dish as one item with category composite_dish.
 - Salads, bowls and plates of raw vegetables are never one item, not even a named salad (Caesar, Greek, kreikkalainen): report every visible ingredient - lettuce, tomato, cucumber, bell pepper, onion, olives, feta, croutons, visible dressing - as its own item with its own grams, category vegetable or the ingredient's real category.
 - Name the preparation you can see (grilled, fried, boiled, raw, ...). Use "unknown" when it is not visible.
-- canonical_search_terms: 1-4 generic database search terms for this item, English first, then Finnish (e.g. "chicken breast grilled", "broileri rintafilee grillattu"). Name the food, not its cut: "tomato", "tomaatti" - never "tomato wedges" or "kurkkuviipaleet". Include a brand only when it is printed on visible packaging.
+- canonical_search_terms: 1-4 generic database search terms for this item. When the context says the catalog is Finnish, give the Finnish terms first, then English; otherwise English first. A term is the food's base noun in the singular, in the catalog's own shape, with the preparation after it: "broileri rintafilee paistettu", "naudanlihapihvi", "peruna keitetty", "perunasose", "ruskea kastike", "riisi keitetty", "chicken breast grilled". Never an inflected plural ("perunat keitetyt"). Name the food, not its cut: "tomato", "tomaatti" - never "tomato wedges" or "kurkkuviipaleet". Include a brand only when it is printed on visible packaging.
 - count: the number of discrete whole pieces for countable items (eggs, meatballs, bread slices, cherry tomatoes). Berries, leaves and vegetable slices, wedges, strips or rings are NOT countable: use 0.
 
 REFERENCES
@@ -843,7 +872,7 @@ REFERENCES
 
 ESTIMATE GRAMS
 - Give estimated_grams plus an honest low-high range. Reason from visible references: dinner plate ≈ 26 cm, fork ≈ 19 cm, a hand ≈ 18 cm, 330 ml can, mug ≈ 300 ml, glass ≈ 200-250 ml.
-- Typical single portions: rice or pasta side 120-250 g, chicken breast 100-200 g, salmon fillet 120-180 g, lettuce leaves 20-60 g, tomato 50-120 g (a medium tomato ≈ 120 g, a cherry tomato ≈ 15 g), cucumber 30-80 g, bell pepper 30-80 g, red onion 10-30 g, salad dressing 10-30 g, potatoes 100-250 g, bread slice 30-40 g, glass of milk 200-250 g, sauce 20-60 g, butter or oil 5-15 g.
+- Typical single portions: rice or pasta side 120-250 g, chicken breast 100-200 g, steak or chop 120-200 g, meatballs 25 g each, salmon fillet 120-180 g, boiled potatoes 60-120 g each, mashed potatoes 150-250 g, brown or cream sauce 40-100 g, lingonberry jam 15-30 g, lettuce leaves 20-60 g, tomato 50-120 g (a medium tomato ≈ 120 g, a cherry tomato ≈ 15 g), cucumber 30-80 g, bell pepper 30-80 g, red onion 10-30 g, salad dressing 10-30 g, potatoes 100-250 g, bread slice 30-40 g, glass of milk 200-250 g, sauce 20-60 g, butter or oil 5-15 g.
 - Wide ranges are honest. A piled or reference-less plate deserves a wide range and a low portion_confidence.
 
 BOXES

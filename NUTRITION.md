@@ -114,6 +114,15 @@ credit UI is not built. The attribution sheet in the app is generated from `food
 - Salads, bowls and plates of raw vegetables come back per ingredient — lettuce, tomato,
   cucumber, bell pepper, dressing — one row each with its own grams; a standard named dish
   (lasagne, pizza slice, karjalanpiirakka) stays one row.
+- Catalog matching (2026-10-01): for a Finnish user the model gives Finnish search terms
+  first, in Fineli's shape (singular base noun, preparation after it: "naudanlihapihvi",
+  "peruna keitetty", "ruskea kastike"); the scan retrieves 5 rows per term and picks with
+  the generic bonus, a ±0.3 preparation penalty (a raw item is steered off cooked/pickled
+  rows, a cooked item off raw/frozen/powdered ones) and a margin measured on that score —
+  so a branded "Chicken Breast" twin cannot block Fineli's "Broileri, rintafilee". The
+  `search_foods` candidate cut once sorted NULL-country (USDA) rows FIRST whenever
+  `p_country` was set and starved every Finnish search of Fineli rows
+  (`20261001130000_food_search_country_nulls.sql`).
 - Online food lookups: 300/day per user (kind `nutrition_lookup`). OFF allows 15 product
   reads and 10 searches per minute *per IP*, shared across all edge-function egress — the
   7-day miss cache and the explicit "Search online" button are what keep us under it.

@@ -16,8 +16,12 @@ import {
   MAX_ITEMS,
   mergePass2,
   overallConfidence,
+  MAX_CANDIDATES,
+  noteCut,
   pickCandidate,
   plainFoodTerm,
+  PREPARATION_PENALTY,
+  preparationPenalty,
   GENERIC_BONUS_PACKAGED,
   PROMPT_VERSION,
   sanitizeRange,
@@ -125,6 +129,15 @@ describe("validateScanArgs", () => {
     expect(v?.items[0].identification_confidence).toBe(0);
     expect(v?.scene_notes).toHaveLength(200);
     expect(validateScanArgs(args([], { scene_notes: 5 }))?.scene_notes).toBe("");
+  });
+
+  it("cuts a long scene note at a sentence, then a word, then hard", () => {
+    const sentences = "A meal of chicken and rice. The fork gives scale. " + "The user mentioned a 30cm plate but this looks like a standard 26cm dinner plate so portions follow that instead ".repeat(3);
+    expect(sentences.length).toBeGreaterThan(200);
+    expect(noteCut(sentences, 200)).toBe("A meal of chicken and rice. The fork gives scale.");
+    expect(noteCut("word ".repeat(60), 200)).toMatch(/word…$/);
+    expect(noteCut("x".repeat(300), 200)).toHaveLength(200);
+    expect(noteCut("  short  ", 200)).toBe("short");
   });
 
   it("is_food is only true when literally true", () => {
@@ -483,6 +496,11 @@ describe("buildContextText", () => {
     expect(t).not.toContain("Usual portions");
   });
 
+  it("names the Finnish catalog for a Finnish user only", () => {
+    expect(buildContextText({ priors: [], two_photos: false, country: "FI" })).toContain("Catalog: Finnish (Fineli)");
+    expect(buildContextText({ priors: [], two_photos: false, country: "SE" })).not.toContain("Catalog");
+  });
+
   it("lists at most 20 priors as portion hints", () => {
     const priors = Array.from({ length: 25 }, (_, i) => ({ food_id: `f${i}`, name: `food ${i}`, median_g: 100 + i, n: 3 }));
     const t = buildContextText({ priors, two_photos: false });
@@ -559,8 +577,8 @@ describe("tool schemas", () => {
 });
 
 describe("prompt — a salad is its ingredients (founder, 2026-10-01)", () => {
-  it("v8 reports lettuce, tomato, cucumber and bell pepper as their own rows, never one 'salad'", () => {
-    expect(PROMPT_VERSION).toBe(8); // the cache keys on it; v3 cached one-row salads; v4–v7 lived minutes (pass-2 counts, onion rings, cut-word terms, raw penalty)
+  it("v10 reports lettuce, tomato, cucumber and bell pepper as their own rows, never one 'salad'", () => {
+    expect(PROMPT_VERSION).toBe(10); // the cache keys on it; v3 cached one-row salads; v4–v7 lived minutes; v9/v10 = plates (Finnish-first terms, preparation both ways, margin on score, note cut)
     const salad = SYSTEM_PROMPT.match(/^- Salads, bowls.*$/m)?.[0] ?? "";
     for (const w of ["lettuce", "tomato", "cucumber", "bell pepper", "dressing"]) expect(salad).toContain(w);
     expect(salad).toMatch(/never one item/);
@@ -572,6 +590,11 @@ describe("prompt — a salad is its ingredients (founder, 2026-10-01)", () => {
     // UNIT_TABLE "slice" row (the 32 g bread slice) in applyCount.
     expect(SYSTEM_PROMPT).toMatch(/vegetable slices, wedges, strips or rings are NOT countable/);
     expect(SYSTEM_PROMPT).toMatch(/Name the food, not its cut/);
+    // Plates: Finnish catalog shape first for a Finnish user, singular base noun, preparation after it.
+    expect(SYSTEM_PROMPT).toMatch(/Finnish terms first/);
+    for (const w of ["naudanlihapihvi", "peruna keitetty", "perunasose", "ruskea kastike"]) expect(SYSTEM_PROMPT).toContain(w);
+    expect(SYSTEM_PROMPT).toMatch(/Never an inflected plural/);
+    expect(SYSTEM_PROMPT).toMatch(/steak or chop 120-200 g, meatballs 25 g each/);
   });
 
   it("searches the food, not its cut, in both languages — and dedupes what that leaves", () => {
@@ -630,5 +653,27 @@ describe("pickCandidate — generic sources beat branded name coincidences", () 
     expect(pickCandidate(rows, 0.95, undefined, "raw").candidates[0].name).toBe("Sipuli, punasipuli");
     expect(pickCandidate(rows, 0.95, undefined, "fried").candidates[0].name).toBe("Punasipuli, paistettu");
     expect(pickCandidate(rows, 0.95).candidates[0].name).toBe("Punasipuli, paistettu");
+  });
+  it("a cooked item is steered off the raw, frozen or powdered row (grilled chop, brown sauce — plates, 2026-10-01)", () => {
+    const chop = [cand("Pork, chop, center cut, raw", "usda_foundation", 0.85, 0.85), cand("Porsaankyljys, grillattu", "fineli", 0.8, 0.8)];
+    expect(pickCandidate(chop, 0.95, undefined, "grilled").candidates[0].name).toBe("Porsaankyljys, grillattu");
+    expect(pickCandidate(chop, 0.95, undefined, "unknown").candidates[0].name).toBe("Pork, chop, center cut, raw");
+    const sauce = [cand("Gravy, brown, dry", "usda_sr_legacy", 1.02, 0.97), cand("Ruskea kastike, rasva-jauhosuurus", "fineli", 1.0, 0.9)];
+    expect(pickCandidate(sauce, 0.95, undefined, "boiled").candidates[0].name).toBe("Ruskea kastike, rasva-jauhosuurus");
+    expect(preparationPenalty("dried", "Apricots, dried")).toBe(0);
+    expect(preparationPenalty("baked", "Perunat, pakaste")).toBe(PREPARATION_PENALTY);
+  });
+  it("measures the margin on the ordering score: a branded twin named exactly like the term no longer blocks the generic row", () => {
+    const rows = [cand("Chicken Breast", "off", 1.0, 1.0), cand("Broileri, rintafilee, paistettu, nahaton", "fineli", 0.97, 0.97)];
+    const r = pickCandidate(rows, 0.95, undefined, "fried");
+    expect(r.candidates[0].source).toBe("fineli");
+    expect(r.needs_user_choice).toBe(false);
+    // Two plausible generic rows 0.05 apart still ask.
+    const twoGeneric = [cand("Sipuli, punasipuli", "fineli", 0.85, 0.85), cand("Onions, red, raw", "usda_foundation", 0.8, 0.8)];
+    expect(pickCandidate(twoGeneric, 0.95, undefined, "raw").needs_user_choice).toBe(true);
+  });
+  it("hands the review screen at most eight candidates", () => {
+    const rows = Array.from({ length: 15 }, (_, i) => cand(`row ${i}`, "off", 0.5 + i / 100, 0.5));
+    expect(pickCandidate(rows, 0.95).candidates).toHaveLength(MAX_CANDIDATES);
   });
 });

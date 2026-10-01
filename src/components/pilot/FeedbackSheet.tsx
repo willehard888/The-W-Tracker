@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FIELD_LABEL } from "@/components/ui/label";
 import BottomSheet from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,7 +39,8 @@ interface Props {
   open: boolean;
   /** null renders the freeform door rather than a catalogue question. */
   prompt: PilotPrompt | null;
-  onDismiss: () => void;
+  /** Take the sheet away. `sent` separates a send from a dismissal. */
+  onDismiss: (sent?: boolean) => void;
   onSubmit: (answer: FeedbackAnswer) => Promise<boolean>;
 }
 
@@ -70,9 +72,9 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
     setSent(false);
   };
 
-  const close = () => {
+  const close = (wasSent = false) => {
     reset();
-    onDismiss();
+    onDismiss(wasSent);
   };
 
   const send = async () => {
@@ -83,18 +85,23 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
     if (!ok) return; // The caller has already said so; the draft stays put.
     setSent(true);
     // Long enough to read the thank-you, short enough not to be in the way.
-    window.setTimeout(() => { reset(); onDismiss(); }, 1200);
+    //
+    // This only became reachable when PilotHost stopped closing the sheet
+    // on a successful submit: clearing its state unmounted this component
+    // mid-await, so `sent` never painted and the sheet cut out without its
+    // exit animation. The sheet owns its own ending.
+    window.setTimeout(() => close(true), 1200);
   };
 
   return (
     <BottomSheet open={open} onClose={close} label={title} title={title}>
       {sent ? (
-        <p className="py-8 text-center text-body text-muted-foreground">{FREEFORM_COPY.sent}</p>
+        <p className="py-8 text-center text-read text-muted-foreground">{FREEFORM_COPY.sent}</p>
       ) : (
         <div className="space-y-6 pb-2">
           {prompt?.scale && (
             <div>
-              <p className="text-body mb-3">{prompt.scale.question}</p>
+              <p className="text-read mb-3">{prompt.scale.question}</p>
               <div className="flex items-center gap-2">
                 {SCALE.map((n) => (
                   <button
@@ -104,7 +111,7 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
                     aria-pressed={rating === n}
                     onClick={() => setRating(n)}
                     className={cn(
-                      "press flex-1 min-h-11 rounded-xl border text-body font-semibold transition-colors",
+                      "press flex-1 min-h-11 rounded-xl border text-read font-semibold transition-colors",
                       rating === n
                         ? "border-gold bg-gold/[0.12] text-gold"
                         : "border-border/40 text-muted-foreground",
@@ -123,7 +130,7 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
 
           {options && (
             <div>
-              {choiceQuestion && <p className="text-body mb-3">{choiceQuestion}</p>}
+              {choiceQuestion && <p className="text-read mb-3">{choiceQuestion}</p>}
               <div className="space-y-1.5">
                 {options.map((o) => (
                   <button
@@ -134,7 +141,7 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
                     // here is optional, including one already given.
                     onClick={() => setChoice((c) => (c === o.v ? null : o.v))}
                     className={cn(
-                      "press-row w-full min-h-11 rounded-xl border px-3.5 py-2.5 text-left text-body transition-colors",
+                      "press-row w-full min-h-11 rounded-xl border px-3.5 py-2.5 text-left text-read transition-colors",
                       choice === o.v
                         ? "border-gold bg-gold/[0.08] text-foreground"
                         : "border-border/40 text-muted-foreground",
@@ -149,7 +156,7 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
 
           {commentLabel && (
             <div>
-              <label htmlFor="pilot-comment" className="mb-2 block text-body">
+              <label htmlFor="pilot-comment" className={cn(FIELD_LABEL, "mb-2 block")}>
                 {commentLabel}
               </label>
               <Textarea
@@ -169,7 +176,7 @@ const FeedbackSheet = ({ open, prompt, onDismiss, onSubmit }: Props) => {
             <Button variant="ember" size="lg" className="w-full" disabled={!hasAnswer || sending} onClick={send}>
               {sending ? "Lähetetään…" : FREEFORM_COPY.submit}
             </Button>
-            <Button variant="ghost" size="lg" className="w-full" onClick={close}>
+            <Button variant="ghost" size="lg" className="w-full" onClick={() => close()}>
               Ei nyt
             </Button>
           </div>

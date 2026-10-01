@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { useState } from "react";
 import FeedbackSheet from "../FeedbackSheet";
-import { promptById } from "@/lib/pilot/prompts";
+import { promptById, FREEFORM_COPY } from "@/lib/pilot/prompts";
 
 const day1 = promptById("DAY1")!;
 const workout = promptById("AFTER_FIRST_WORKOUT")!;
@@ -110,5 +111,84 @@ describe("the always-open door", () => {
   it("says not to put health data in the box", () => {
     render(<FeedbackSheet open prompt={null} onDismiss={() => {}} onSubmit={vi.fn()} />);
     expect(screen.getByPlaceholderText(/terveystietoja/)).toBeInTheDocument();
+  });
+});
+
+/**
+ * The thank-you, and the parent that used to destroy it.
+ *
+ * PilotHost cleared its prompt state inside the same `onSubmit` this sheet
+ * awaits, which made the host render null and unmounted this component before
+ * it could set `sent`. "Kiitos — luemme tämän." never painted, the 1 200 ms it
+ * was meant to sit there never elapsed, and the sheet vanished without its
+ * exit animation. Every tester who did the one thing we asked for got nothing
+ * back.
+ *
+ * The old tests passed because their `onSubmit` was a bare mock that never
+ * unmounted anything — they asserted the one arrangement production never has.
+ * These re-create the parent, closing over the same state it owns.
+ */
+describe("what the sheet does after a send", () => {
+  /** A stand-in for PilotHost: owns `open`, and only closes when told to. */
+  const Host = ({ onSubmit }: { onSubmit: () => Promise<boolean> }) => {
+    const [open, setOpen] = useState(true);
+    const [dismissedWith, setDismissedWith] = useState<boolean | undefined>(undefined);
+    return (
+      <>
+        <span data-testid="dismissed">{String(dismissedWith)}</span>
+        {open ? (
+          <FeedbackSheet
+            open
+            prompt={day1}
+            onDismiss={(sent) => { setDismissedWith(sent); setOpen(false); }}
+            onSubmit={onSubmit}
+          />
+        ) : null}
+      </>
+    );
+  };
+
+  const send = async () => {
+    fireEvent.click(screen.getByRole("button", { name: day1.choice!.options[0].label }));
+    fireEvent.click(screen.getByRole("button", { name: FREEFORM_COPY.submit }));
+  };
+
+  it("thanks the athlete, and is still on screen to do it", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(<Host onSubmit={() => Promise.resolve(true)} />);
+    await send();
+    await waitFor(() => expect(screen.getByText(FREEFORM_COPY.sent)).toBeInTheDocument());
+    vi.useRealTimers();
+  });
+
+  it("takes itself away once the thank-you has been read", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(<Host onSubmit={() => Promise.resolve(true)} />);
+    await send();
+    await waitFor(() => expect(screen.getByText(FREEFORM_COPY.sent)).toBeInTheDocument());
+    await act(async () => { vi.advanceTimersByTime(1300); });
+    await waitFor(() => expect(screen.queryByText(FREEFORM_COPY.sent)).not.toBeInTheDocument());
+    vi.useRealTimers();
+  });
+
+  it("tells the parent this was a send, not a dismissal", async () => {
+    // Recording an answered question as dismissed would stop it returning for
+    // the wrong reason, and answered-then-dismissed is not a state the log
+    // should ever hold.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    render(<Host onSubmit={() => Promise.resolve(true)} />);
+    await send();
+    await act(async () => { vi.advanceTimersByTime(1300); });
+    await waitFor(() => expect(screen.getByTestId("dismissed").textContent).toBe("true"));
+    vi.useRealTimers();
+  });
+
+  it("keeps the draft and says nothing when the write failed", async () => {
+    render(<Host onSubmit={() => Promise.resolve(false)} />);
+    await send();
+    await waitFor(() =>
+      expect(screen.queryByText(FREEFORM_COPY.sent), "a failed send must not thank anybody").not.toBeInTheDocument(),
+    );
+    expect(screen.getByText(day1.title), "and the sheet stays put").toBeInTheDocument();
   });
 });

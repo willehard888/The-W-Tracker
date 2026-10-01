@@ -172,7 +172,14 @@ export const FUNNEL = {
   // a self-reported body state reached a third party on every session. Both
   // are gone. Soreness still shapes the session on the device
   // (lib/recovery/build-session.ts) — it just never leaves it, and
-  // pilot-leakage.test.ts fails the build if it comes back.
+  // analytics-health-leak.test.ts reads these call sites and fails the build
+  // if it comes back.
+  //
+  // That sentence named pilot-leakage.test.ts until 2026-10-01 and was wrong:
+  // that file tests sanitizeContext, the pilot's own context whitelist, and
+  // asserts nothing about what these pages hand to track(). So the contract
+  // was back to living in a comment — the exact failure the removal was
+  // written to end, pointing the other way. The guard is real now.
   recoveryOffered: "recovery_offered",
   recoveryDismissed: "recovery_dismissed",
   recoveryOpened: "recovery_opened",

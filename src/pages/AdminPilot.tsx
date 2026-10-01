@@ -3,12 +3,13 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PageBar from "@/components/ui/page-bar";
 import { ErrorState } from "@/components/ui/error-state";
 import { SettingsSkeleton } from "@/components/skeletons/PageSkeleton";
 import { backOr } from "@/lib/nav";
 import { cn } from "@/lib/utils";
-import { fetchPilotOverview, fetchFeedback, setFeedbackStatus, type FeedbackRow } from "@/lib/pilot/rpc";
+import { fetchPilotOverview, fetchFeedback, fetchPromptStats, setFeedbackStatus, type FeedbackRow } from "@/lib/pilot/rpc";
 import { promptById } from "@/lib/pilot/prompts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -87,6 +88,15 @@ const AdminPilot = () => {
     retry: false,
     enabled: !!isAdmin,
   });
+  // What was asked, as distinct from what came back. A question with no
+  // answers might never have been shown to anybody, and those are
+  // different problems.
+  const prompts = useQuery({
+    queryKey: ["admin-pilot-prompts"],
+    queryFn: () => fetchPromptStats(null),
+    retry: false,
+    enabled: !!isAdmin,
+  });
 
   const advance = async (row: FeedbackRow) => {
     await setFeedbackStatus(row.id, STATUS_NEXT[row.status] ?? "reviewed");
@@ -101,20 +111,29 @@ const AdminPilot = () => {
   if (isAdmin === null) return <SettingsSkeleton />;
   if (!isAdmin) return <Navigate to="/" replace />;
 
+  // min-h-full, like every sibling admin page: the shell owns the viewport and
+  // scrolls. This was the only page in the repo saying otherwise, and only
+  // because min-h-dvh slips through the pattern the style guard matches on.
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-full">
       <PageBar title="Pilot" onBack={() => backOr(navigate, "/profile")} />
 
       {overview.isPending && <SettingsSkeleton />}
 
       {/* An admin page that renders zeroes when the RPC refused is worse than
-          one that says it could not read. The most likely cause by far is that
-          migration 20260925120000 has not been deployed. */}
+          one that says it could not read.
+
+          This used to name an undeployed migration, which was true until 29
+          September and then became a false lead twice over: the file had been
+          renamed AND deployed, so it sent whoever read it looking for a
+          filename that no longer existed, to fix a problem that no longer
+          existed. The function raises 'not authorized' for a non-admin, so
+          that is the likely cause now. */}
       {overview.isError && (
         <div className="px-4 pt-6">
           <ErrorState
             title="Couldn't read the pilot"
-            description="admin_pilot_overview did not answer. By far the likeliest cause is that migration 20260925120000 has not been deployed."
+            description="admin_pilot_overview did not answer. It refuses anybody without the admin role — check that first, then the connection."
             onRetry={() => void overview.refetch()}
           />
         </div>
@@ -169,21 +188,62 @@ const AdminPilot = () => {
         </>
       )}
 
+      {/* What was asked, beside what came back.
+          A question with no answers is two different findings wearing the same
+          face: nobody was asked, or everybody passed. Shown vs answered is the
+          only thing that tells them apart, and the gate each question sits
+          behind decides which one is even possible. */}
+      {(prompts.data?.length ?? 0) > 0 && (
+        <section className="px-4 pt-5">
+          <p className="text-label font-bold text-muted-foreground mb-2">What we asked</p>
+          <ul className="divide-y divide-border/35 border-y border-border/35">
+            {prompts.data!.map((p) => {
+              const known = promptById(p.prompt_id);
+              return (
+                <li key={p.prompt_id} className="flex items-baseline gap-2.5 py-2">
+                  <span className="flex-1 min-w-0 text-meta font-bold text-foreground/85 line-clamp-2">
+                    {known?.title ?? p.prompt_id}
+                  </span>
+                  <span className="text-meta tabular-nums text-muted-foreground shrink-0">
+                    {p.shown} shown
+                  </span>
+                  <span
+                    className={cn(
+                      "text-meta font-bold tabular-nums shrink-0 w-16 text-right",
+                      p.answered > 0 ? "text-xp-green" : "text-muted-foreground",
+                    )}
+                  >
+                    {p.answered} answered
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="text-label text-muted-foreground mt-2">
+            A question absent from this list was never shown to anybody — check its gate
+            before reading anything into the silence.
+          </p>
+        </section>
+      )}
+
       <section className="pt-6">
-        <div className="px-4 flex items-center gap-1.5 overflow-x-auto pb-2">
+        {/* A scrolling pill row, not a segmented track. The app uses both and
+            keeps them apart on purpose: Recipes puts five batch sizes in a
+            SEGMENT_TRACK and its open-ended tag list in a row exactly like
+            this one. Five filters with words as long as "Volunteered" do not
+            fit a fixed track at phone width. */}
+        <div className="px-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2">
           {FILTERS.map((f) => (
-            <button
+            <Button
               key={f.v}
-              type="button"
+              size="pill"
+              variant={filter === f.v ? "gold-outline" : "outline"}
               aria-pressed={filter === f.v}
               onClick={() => setFilter(f.v)}
-              className={cn(
-                "press shrink-0 min-h-11 rounded-full border px-3 text-meta font-semibold",
-                filter === f.v ? "border-gold text-gold" : "border-border/40 text-muted-foreground",
-              )}
+              className="shrink-0"
             >
               {f.label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -235,7 +295,7 @@ const AdminPilot = () => {
                 {choiceLabel(r) && <span className="text-dense">{choiceLabel(r)}</span>}
               </div>
 
-              {r.comment && <p className="mt-1 text-body text-foreground whitespace-pre-wrap">{r.comment}</p>}
+              {r.comment && <p className="mt-1 text-read text-foreground whitespace-pre-wrap">{r.comment}</p>}
 
               <p className="mt-1 text-label text-muted-foreground">
                 {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}

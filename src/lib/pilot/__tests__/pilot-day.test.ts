@@ -3,7 +3,7 @@ import { pilotDay, inObservationWindow, pilotDayLabel } from "../day";
 
 /**
  * The contract this file pins down is shared with SQL: pilot_context() in
- * migration 20260925120000 computes the same number the same way, by
+ * migration 20260929090000 computes the same number the same way, by
  * subtracting two dates taken AT TIME ZONE the tester's own zone. The server is
  * the authority — every eligibility decision uses the day it reports — so these
  * cases are written as the definition both sides answer to.

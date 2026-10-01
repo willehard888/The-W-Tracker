@@ -1,19 +1,42 @@
 # Pilot readiness — 10–20 Finnish testers, 14 days
 
-Written 2026-09-25, against `main` at `03985e0f`.
+Written 2026-09-25 against `main` at `03985e0f`. **Revised 2026-10-01**: the
+deployment blockers below have since cleared, and the verdict changed with
+them. The root-cause analysis is left as written — it is still true, and it
+is still the useful part.
 
 ---
 
 ## Verdict
 
-# NOT PILOT READY
+# ONE STEP FROM READY
 
-Not because of the code in this branch. The blockers are deployment and
-distribution, and the largest one has nothing to do with the pilot at all.
+Everything a branch can fix is fixed and everything that needed deploying is
+deployed. What remains is **three operator steps and Apple**.
 
-The honest summary: **the app is ready to be piloted; the pilot cannot start
-until a build reaches ten to twenty phones, and it cannot work until eight
-migrations are run.** Both are outside what a branch can fix.
+The migrations ran on 29 September, `types.ts` was regenerated, the edge
+functions went out — verified on 1 October by building a session against the
+live `coach-build-session` and watching the rep ranges vary. The adapter cast
+is gone, and the reminder test that was built to fail when the types caught
+up did exactly that.
+
+What the deploy then exposed, and what has since been fixed:
+
+- **The thank-you after sending feedback never rendered.** The host cleared
+  its own state inside the submit the sheet was awaiting, unmounting the
+  sheet before it could paint. Every tester who did the one thing we ask
+  would have got no acknowledgement and a hard cut. Its own test passed
+  because it never unmounted anything.
+- **`pilot-setup.sql` could never have run.** `ON CONFLICT (code)` against an
+  index on `lower(code)` — Postgres refuses the statement outright.
+- **`create_pilot_code()` could not set a cohort**, and RLS forbids fixing it
+  afterwards from the app. A NULL cohort makes the admin page blind.
+- **The admin page's error text named a migration that no longer exists** and
+  had already been deployed — a false lead twice over.
+- **A safety claim with nothing behind it.** `analytics.ts` said a test would
+  fail if `soreness` returned to the funnels. No test did.
+
+Remaining: the three operator steps in the checklist, and TestFlight.
 
 ---
 
@@ -346,26 +369,35 @@ they pass in CI.
 Run `scripts/pilot-preflight.sql` top to bottom. It answers every one of these
 and has one deliberate write.
 
-1. TestFlight distribution unblocked, build delivered
-2. All migrations through `20260925120000` deployed
-3. `types.ts` regenerated; the adapter cast in `src/lib/pilot/rpc.ts` deleted
-4. `onboarding_valid_event('RECOVERY_INTRO')` returns true
-5. Testers' profiles are not `grandfathered` (or are fresh accounts)
-6. `cohort` and `observe_days` set on the code
-7. Code capacity ≥ tester count, `expires_at` in the future
-8. Open the app as a real tester: redeem, see the toast about the two windows,
-   reach day 1, see the checkpoint
-9. The four privacy decisions made, and the shared-vs-personal code question
-   settled
+| # | Check | State |
+|---|---|---|
+| 1 | Migrations deployed | ✅ 29 September |
+| 2 | `types.ts` regenerated, adapter cast deleted | ✅ commit `e79cb538` |
+| 3 | `onboarding_valid_event('RECOVERY_INTRO')` true | ✅ same batch |
+| 4 | Privacy decisions made | ✅ told at redemption · 180-day retention · deleted with the account |
+| 5 | **Seed the code** — `scripts/pilot-setup.sql` §3 | ⬜ sets cohort and `observe_days` in the INSERT |
+| 6 | **Check grandfathering** — `pilot-preflight.sql` §3 | ⬜ **before testers install** |
+| 7 | **Capacity** — preflight §6 | ⬜ slots ≥ testers, `expires_at` ahead |
+| 8 | Open the app as a real tester | ⬜ redeem, reach day 1, see the checkpoint |
+| 9 | TestFlight build delivered | ⬜ Apple |
 
-When 1–9 are done, this reads **PILOT READY**. Until then it does not.
+### The two that bite
 
-Re-checked 27 September, 10 commits ahead of `origin/main` and nothing pushed:
-the working tree is clean, the deploy boundary has not moved (`types.ts` still
-has `ai_consent_version` and still lacks `recovery_sessions`, `score_checkin`
-and both pilot tables), and the adapter cast is still in place. `origin/main`
-last moved on 25 September at 14:44. Every blocker above stands as written.
+**Cohort is set at INSERT, and nowhere else.** `pilot_codes` carries a
+"No direct update" policy that refuses every caller, so the app can never
+repair a NULL cohort. The setup script now writes it; the widened
+`create_pilot_code()` covers the next one.
 
-**One message clears three of the nine checks**, and puts XP v3 into production
-at the same time: *run migrations `20260922100000` → `20260926100200`, then
-regenerate `types.ts`.*
+**Grandfathering must be fixed before the tester installs.** `mergeStates` is
+sticky (`local.grandfathered || incoming.grandfathered`), so a device that has
+already synced `true` keeps it until the install is cleared. And flipping that
+flag alone is not enough: the backfill also set `status: 'skipped_all'`, which
+`isEligible` checks separately. A shorter UPDATE looks like a fix and is not.
+
+A fresh tester is clean — the backfill only touched profiles that had already
+finished onboarding on 31 August.
+
+When 5–9 are done, this reads **PILOT READY**.
+
+Re-checked 1 October: migrations deployed, `types.ts` current, edge functions
+live. The deploy backlog this document was largely about no longer exists.

@@ -10,7 +10,7 @@
 // server or it does not exist.
 //
 // (Until 2026-09-29 this file carried a hand-written adapter over `supabase`
-// because the generated types did not know migration 20260925120000. They do
+// because the generated types did not know migration 20260929090000. They do
 // now; the calls go straight through.)
 
 import { supabase } from "@/integrations/supabase/client";
@@ -257,6 +257,28 @@ export const fetchPilotOverview = async (cohort?: string | null): Promise<PilotO
   if (error) throw error instanceof Error ? error : new Error("admin_pilot_overview failed");
   if (!isRecord(data)) throw new Error("admin_pilot_overview returned nothing");
   return data as unknown as PilotOverview;
+};
+
+/** One row per question: how many saw it, how many answered, how many passed. */
+export interface PromptStat {
+  prompt_id: string;
+  shown: number;
+  answered: number;
+  dismissed: number;
+}
+
+/**
+ * What was asked, and what came back.
+ *
+ * Without this, silence is ambiguous: a question with no answers might never
+ * have been shown to anybody at all, and those are different problems with
+ * different fixes. The function has been deployed since 29 September with
+ * nothing calling it, and prompts.ts has been promising it is readable.
+ */
+export const fetchPromptStats = async (cohort?: string | null): Promise<PromptStat[]> => {
+  const { data, error } = await supabase.rpc("admin_pilot_prompts", { p_cohort: cohort ?? undefined });
+  if (error) throw error instanceof Error ? error : new Error("admin_pilot_prompts failed");
+  return Array.isArray(data) ? data : [];
 };
 
 export const fetchFeedback = async (limit = 200): Promise<FeedbackRow[]> => {

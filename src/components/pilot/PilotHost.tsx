@@ -94,17 +94,39 @@ const PilotHost = () => {
   const open = freeform || !!prompt;
   if (!open) return null;
 
-  const close = () => {
+  /**
+   * Take the sheet off the screen.
+   *
+   * Called by FeedbackSheet for both endings — the athlete tapping "Ei nyt",
+   * and the thank-you timing out after a send. `sent` tells the two apart,
+   * because only one of them is a dismissal: recording a question as dismissed
+   * after it was answered would stop it returning for the wrong reason, and
+   * answered-then-dismissed is not a state the log should ever hold.
+   */
+  const close = (sent?: boolean) => {
     if (freeform) { setFreeform(false); return; }
     if (prompt) {
       // A dismissal is an answer: it is recorded so the question never returns.
-      void mark(prompt.id, "dismissed");
+      if (!sent) void mark(prompt.id, "dismissed");
       setPrompt(null);
     }
   };
 
-  const onSubmit = async (answer: FeedbackAnswer): Promise<boolean> => {
-    const ok = await submit({
+  /**
+   * Send it, and say nothing about what the sheet does next.
+   *
+   * This used to clear `prompt` on success, which made `open` false, which
+   * returned null from this component — unmounting FeedbackSheet before it
+   * could set `sent` and paint "Kiitos — luemme tämän." The thank-you, the
+   * 1 200 ms it was meant to sit there, and the sheet's own exit animation
+   * were all unreachable. Every tester who did the one thing we asked got no
+   * acknowledgement and a hard cut.
+   *
+   * The sheet owns its own ending now. This only reports whether the write
+   * landed.
+   */
+  const onSubmit = async (answer: FeedbackAnswer): Promise<boolean> =>
+    submit({
       promptId: freeform ? FREEFORM_PROMPT_ID : prompt!.id,
       kind: freeform ? (answer.choice === "bug" ? "bug" : "volunteered") : prompt!.kind,
       rating: answer.rating,
@@ -114,10 +136,6 @@ const PilotHost = () => {
       // else survives sanitizeContext().
       context: { route: location.pathname, surface: freeform ? "settings" : "prompt" },
     });
-    if (ok && !freeform) setPrompt(null);
-    if (ok && freeform) setFreeform(false);
-    return ok;
-  };
 
   return <FeedbackSheet open={open} prompt={current} onDismiss={close} onSubmit={onSubmit} />;
 };

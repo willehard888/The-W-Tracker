@@ -1,6 +1,6 @@
 // Which day of the pilot is it for this person?
 //
-// Mirrors the `day` arithmetic in pilot_context() (migration 20260925120000)
+// Mirrors the `day` arithmetic in pilot_context() (migration 20260929090000)
 // exactly, and pilot-day.test.ts proves the two agree — the same shape
 // xp-parity.mjs uses to keep SQL and TS honest about the check-in score.
 //

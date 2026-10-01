@@ -1,6 +1,7 @@
 -- ============================================================
--- PILOT SETUP — run once in the Supabase SQL editor, AFTER the three
--- migrations dated 20260831 have been applied.
+-- PILOT SETUP — run once in the Supabase SQL editor, AFTER the pilot
+-- migrations have been applied: 20260901130000_pilot_access_codes and
+-- 20260929090000_pilot_observation. Both were deployed on 29 September.
 --
 -- Run it in sections, top to bottom. Section 1 only looks; sections 2 and 3
 -- change data. Nothing here is idempotent by accident — read each section's
@@ -68,16 +69,33 @@ ORDER BY p.xp DESC;
 --    Change the code string before running. It goes out to testers as-is and
 --    is compared case-insensitively.
 -- ─────────────────────────────────────────────────────────────
-INSERT INTO public.pilot_codes (code, grant_days, max_redemptions, expires_at, note, created_by)
-VALUES (
+-- Set cohort and observe_days HERE. Nothing in the app can set them
+-- afterwards: pilot_codes carries a "No direct update" policy that refuses
+-- every caller, so the only other route is a hand-written UPDATE in this
+-- editor (preflight §5). A NULL cohort means the admin page cannot slice
+-- the feedback it collects.
+INSERT INTO public.pilot_codes
+  (code, grant_days, max_redemptions, expires_at, note, cohort, observe_days, created_by)
+SELECT
   'WHEALTH-PILOT',                     -- ← the code you hand to testers
   90,                                  -- ← days of free access per tester
   50,                                  -- ← how many testers may redeem it
   now() + interval '60 days',          -- ← code itself stops working then
   'Pilot group 1',
-  (SELECT user_id FROM public.profiles WHERE username = 'willehard')
-)
-ON CONFLICT (code) DO NOTHING;
+  'pilotti-1',                         -- ← cohort: how the admin page slices
+  14,                                  -- ← days the pilot watches for
+  p.user_id
+FROM public.profiles p
+WHERE p.username = 'willehard'
+-- The unique index is on lower(code), deliberately — a column-level UNIQUE
+-- would happily hold both 'Alpha' and 'alpha'. ON CONFLICT has to name the
+-- same expression or Postgres refuses the statement outright.
+ON CONFLICT (lower(code)) DO NOTHING;
+
+-- If that inserted nothing, the username above does not exist. created_by is
+-- NOT NULL, so a missing profile fails with a constraint error that names
+-- the column and not the cause — check first:
+--   SELECT username FROM public.profiles WHERE username ILIKE '%willehard%';
 
 
 -- ─────────────────────────────────────────────────────────────
@@ -86,6 +104,8 @@ ON CONFLICT (code) DO NOTHING;
 -- ─────────────────────────────────────────────────────────────
 SELECT
   c.code,
+  c.cohort,                            -- NULL here means the admin page is blind
+  c.observe_days,
   c.grant_days,
   c.max_redemptions,
   c.expires_at,

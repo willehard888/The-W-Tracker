@@ -124,6 +124,19 @@ const PilotCodeRedeem = () => {
           {busy ? <Loader2 aria-hidden size={16} className="animate-spin" /> : "Redeem"}
         </Button>
       </div>
+      {/* The one moment somebody knowingly joins the pilot, so the one place
+          this belongs. Three facts, because these are what a tester would
+          think to ask: how long we will be asking, that answering is optional,
+          and how long what they write is kept.
+
+          Finnish, like every other pilot surface — the questions, the
+          "Älä kirjoita tähän terveystietoja" warning, the profile row. The
+          screen around it is English because the app is; the pilot has spoken
+          to its testers in their own language since it was built. */}
+      <p className="mt-3 text-meta text-muted-foreground leading-relaxed">
+        Kysymme kokemuksestasi 14 päivän ajan. Vastaaminen on vapaaehtoista,
+        vastaukset säilytetään 180 päivää ja ne poistuvat tilin mukana.
+      </p>
       <Button variant="link" size="sm" className="mx-auto mt-1 flex" onClick={() => { setOpen(false); setCode(""); }}>
         Cancel
       </Button>

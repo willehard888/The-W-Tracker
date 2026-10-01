@@ -42,6 +42,8 @@ export interface SessionExercise {
 }
 
 /** A set the athlete has already logged. */
+import { loadAdvice } from "@/lib/training/overload";
+
 export interface LoggedSet {
   set_index: number;
   weight?: number | null;
@@ -255,16 +257,22 @@ export const setRowSeed = (
 };
 
 /**
- * The set to prefill from: the same set number last time, falling back to the
- * previous set in this session. Beginners have no idea what to load; the number
- * they used last week is the single most useful hint available.
+ * The set to prefill from. When last session earned a step up (every set at
+ * the top of the range — src/lib/training/overload.ts), every set is seeded
+ * with the new weight and the bottom of the range. Otherwise the same set
+ * number last time, falling back to the previous set in this session.
+ * Beginners have no idea what to load; the number they used last week is
+ * the single most useful hint available.
  */
 export const suggestedLoad = (
-  history: Array<LoggedSet & { logged_on?: string }> | undefined,
+  history: Array<LoggedSet & { logged_on?: string; rpe?: number | null }> | undefined,
   setIndex: number,
   currentSession: LoggedSet[] | undefined,
   prescribedReps?: string | number | null,
+  prescribedRpe?: number | null,
 ): { weight: number | null; reps: number | null } => {
+  const advice = loadAdvice(history?.filter((h): h is LoggedSet & { logged_on: string } => typeof h.logged_on === "string"), prescribedReps, prescribedRpe);
+  if (advice.move === "up") return { weight: advice.weight, reps: advice.reps };
   // "Last time" is the most recent session only (history is newest first).
   // The feed now carries months of sets, and set 3 from a 125 kg day in
   // August is not the hint for set 3 after two sets at 100 kg last week.

@@ -126,6 +126,37 @@ export const repeatWeek = (week: ProgramWeek, n = 4): ProgramWeek[] =>
   Array.from({ length: n }, (_, i) => ({ ...clone(week), week: i + 1 }));
 
 /**
+ * The four-week wave a coach-built week runs through: base → build → peak →
+ * light. The lifts and the rep ranges never change (the load climbs through
+ * double progression, src/lib/training/overload.ts); the dose does — effort
+ * rises half a point, the peak week adds a set, the light week takes one away
+ * and a full point of effort, and the next block starts again, heavier. Each
+ * week says what it is and why.
+ */
+export const WEEK_WAVE: ReadonlyArray<{ theme: string; sets: number; rpe: number; note: string }> = [
+  { theme: "Base week", sets: 0, rpe: 0, note: "Find the weights: the top of every range at the effort written." },
+  { theme: "Build week", sets: 0, rpe: 0.5, note: "Same lifts, half a point harder. Hit the top of a range on every set and the load goes up." },
+  { theme: "Peak week", sets: 1, rpe: 0.5, note: "One more set on every lift — the heaviest week of the block." },
+  { theme: "Light week", sets: -1, rpe: -1, note: "Fewer sets, easier effort. The body banks the block; the next one starts heavier." },
+];
+
+export const progressiveWeeks = (week: ProgramWeek, n = WEEK_WAVE.length): ProgramWeek[] =>
+  Array.from({ length: n }, (_, i) => {
+    const w = WEEK_WAVE[Math.min(i, WEEK_WAVE.length - 1)];
+    const c = clone(week);
+    for (const d of c.days) {
+      d.blocks = (d.blocks ?? []).map((b) => ({
+        ...b,
+        ...clampDose({
+          sets: Math.max(1, (Number(b.sets) || 1) + w.sets),
+          rpe: b.rpe == null ? undefined : b.rpe + w.rpe,
+        }),
+      }));
+    }
+    return { ...c, week: i + 1, theme: w.theme, progression_note: w.note };
+  });
+
+/**
  * True when every week from `fromWeek` on is the same seven days: a week that
  * simply repeats. Nobody planned ahead, so the page shows one week and no
  * week switcher; a block that progresses, or a member's one-week change,

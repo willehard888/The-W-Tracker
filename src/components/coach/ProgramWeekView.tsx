@@ -139,6 +139,15 @@ const ProgramWeekView = ({ program, currentWeek, todayDayIndex, logs, onLogged, 
           ))}
         </div>
       )}
+      {/* The week's place in the block, where the athlete reads it — not
+          behind the details toggle. */}
+      {plannedAhead && (week.theme || week.progression_note) && (
+        <p className="text-meta text-muted-foreground">
+          {week.theme && <span className="font-bold text-foreground">{week.theme}</span>}
+          {week.theme && week.progression_note ? " · " : ""}
+          {week.progression_note}
+        </p>
+      )}
 
       <div ref={stripRef}>
         <WeekStrip

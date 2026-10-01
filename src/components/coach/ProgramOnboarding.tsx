@@ -142,7 +142,7 @@ const ProgramOnboarding = ({ onGenerated }: Props) => {
     <div className="px-1 pt-2 pb-8">
       <h2 className="font-display text-major font-black tracking-tight leading-tight">Build my week</h2>
       <p className="text-note text-muted-foreground mt-1 mb-5 leading-relaxed">
-        One session for each of your training days. The week repeats, and the loads follow what you log.
+        One session for each of your training days, run as a four-week block: base, build, peak, light. The loads follow what you log — hit the top of a range on every set and the next one goes up a plate.
       </p>
 
       <div className="surface-tint-gold p-4 mb-5">

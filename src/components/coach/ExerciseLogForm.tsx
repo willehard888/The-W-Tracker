@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
 import { localDateKey } from "@/lib/date";
 import { formatRest, parseDecimal, setRowSeed, suggestedLoad, type SetSeed } from "@/lib/training/runner";
+import { loadAdvice, LOAD_STEP_KG } from "@/lib/training/overload";
+import { NBSP } from "@/lib/format";
 import { prescriptionGloss } from "@/lib/training/prescription";
 import { useExerciseHistory, useDaySets, useLogSet } from "@/hooks/use-workout-log";
 import { SetRow, fmtKg } from "@/components/coach/session/SetRow";
@@ -64,10 +66,14 @@ export const ExerciseLogForm = ({
   useEffect(() => { if (storedRpe != null) setRpe(String(storedRpe)); }, [storedRpe]);
 
   // The most recent PRIOR session of this movement (not today's own rows).
-  const prior = (history.data ?? []).filter(
-    (h) => !(h.program_id === programId && h.week === week && h.day_index === dayIndex),
+  const prior = useMemo(
+    () => (history.data ?? []).filter((h) => !(h.program_id === programId && h.week === week && h.day_index === dayIndex)),
+    [history.data, programId, week, dayIndex],
   );
   const last = prior.find((h) => h.weight != null);
+  // What to load next, by the double-progression rule — the number the
+  // coach would say, with the reason.
+  const advice = useMemo(() => loadAdvice(prior, block.reps, block.rpe), [prior, block.reps, block.rpe]);
 
   // Every logged session of this movement, oldest first — the curve's data.
   const sessions = useMemo(() => sessionsFor(history.data ?? []), [history.data]);
@@ -111,45 +117,54 @@ export const ExerciseLogForm = ({
   return (
     <div className="space-y-3">
       <div className="surface-panel rounded-xl p-2.5">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <p className="text-label font-bold text-muted-foreground">
-            Lock your sets{doneCount > 0 && <span className="text-xp-green"> · {doneCount}/{sets}</span>}
-          </p>
-          {last && (
-            <p className="text-label text-muted-foreground tabular-nums">
-              Last: {last.weight != null ? fmtKg(Number(last.weight)) : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}` : ""} · {daysAgo(last.logged_on)}
-            </p>
-          )}
-        </div>
+        <p className="text-label font-bold text-muted-foreground mb-1">
+          Lock your sets{doneCount > 0 && <span className="text-xp-green"> · {doneCount}/{sets}</span>}
+        </p>
         <p className="text-meta text-muted-foreground mb-2">
           {prescriptionGloss(block)}{block.rest_sec ? ` Rest ${formatRest(block.rest_sec)} between sets.` : ""}
         </p>
 
-        {/* Quick-fill from last time: every open set takes the weight, so
-            straight sets are one tap and a lock per set. */}
-        {last?.weight != null && nextSet <= sets && (
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {[
-              { label: `Same · ${fmtKg(Number(last.weight))}`, w: Number(last.weight) },
-              { label: "+2.5 kg", w: Number(last.weight) + 2.5 },
-              { label: "+5 kg", w: Number(last.weight) + 5 },
-            ].map((c) => (
-              <button
-                key={c.label}
-                type="button"
-                onClick={() => fill(c.w, last.reps ?? null)}
-                className="press relative before:absolute before:-inset-y-2.5 before:inset-x-0 before:content-[''] rounded-full bg-gold/12 border border-gold/30 px-2.5 py-1 text-label font-bold text-gold transition-transform"
-              >
-                {c.label}
-              </button>
-            ))}
+        {/* Next: the weight the rule says, why, and one tap to load it on every
+            open set. The other two chips stay for the athlete who knows better. */}
+        {last?.weight != null && advice.weight != null && nextSet <= sets && (
+          <div className={cn("rounded-xl p-2.5 mb-2", advice.move === "up" ? "surface-tint-gold" : "surface-inset")} aria-label="Next load">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-label font-bold uppercase tracking-wide text-muted-foreground/75">Next</p>
+              <p className="text-label text-muted-foreground tabular-nums">
+                Last {fmtKg(Number(last.weight))}{last.reps != null ? ` × ${last.reps}` : ""} · {daysAgo(last.logged_on)}
+              </p>
+            </div>
+            <p className="font-display text-head font-black tabular-nums leading-tight text-foreground mt-0.5">
+              {fmtKg(advice.weight)}{advice.reps != null ? ` × ${advice.reps}` : ""}
+              {advice.move === "up" && <span className="ml-2 text-dense font-black text-gold">↑ +{advice.step}{NBSP}kg</span>}
+            </p>
+            {advice.reason && <p className="text-meta text-muted-foreground mt-0.5">{advice.reason}</p>}
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {[
+                { label: `Load ${fmtKg(advice.weight)}`, w: advice.weight, r: advice.reps ?? last.reps ?? null, lead: true },
+                ...(advice.move === "up" ? [] : [{ label: `+${LOAD_STEP_KG} kg`, w: Number(last.weight) + LOAD_STEP_KG, r: last.reps ?? null, lead: false }]),
+                { label: "+5 kg", w: Number(last.weight) + 5, r: last.reps ?? null, lead: false },
+              ].map((c) => (
+                <button
+                  key={c.label}
+                  type="button"
+                  onClick={() => fill(c.w, c.r)}
+                  className={cn(
+                    "press relative before:absolute before:-inset-y-2.5 before:inset-x-0 before:content-[''] rounded-full px-2.5 py-1 text-label font-bold transition-transform",
+                    c.lead ? "bg-gold text-[hsl(26_85%_10%)]" : "bg-gold/12 border border-gold/30 text-gold",
+                  )}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         <div className="space-y-1.5">
           {Array.from({ length: sets }, (_, i) => i + 1).map((n) => {
             const existing = logged.find((s) => s.set_index === n);
-            const suggestion = suggestedLoad(history.data, n, logged, block.reps);
+            const suggestion = suggestedLoad(prior, n, logged, block.reps, block.rpe);
             const seed = setRowSeed(drafts[n], existing, suggestion, n === nextSet);
             return (
               <SetRow

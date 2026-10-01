@@ -208,6 +208,15 @@ describe("suggestedLoad", () => {
     const bw = [{ ...set(1, null, 8), logged_on: "2026-09-30" }, ...h];
     expect(suggestedLoad(bw, 1, [])).toEqual({ weight: 100, reps: 6 });
   });
+
+  it("seeds every set with one plate more and the bottom of the range when last time hit the top on every set", () => {
+    const top = [{ ...set(1, 100, 10), logged_on: "2026-09-29" }, { ...set(2, 100, 10), logged_on: "2026-09-29" }];
+    expect(suggestedLoad(top, 1, [], "6-10", 8)).toEqual({ weight: 102.5, reps: 6 });
+    expect(suggestedLoad(top, 3, [], "6-10", 8)).toEqual({ weight: 102.5, reps: 6 }); // a set last time never had
+    // One set short of the top: the same set last time, as before.
+    const short = [{ ...set(1, 100, 10), logged_on: "2026-09-29" }, { ...set(2, 100, 8), logged_on: "2026-09-29" }];
+    expect(suggestedLoad(short, 2, [], "6-10", 8)).toEqual({ weight: 100, reps: 8 });
+  });
 });
 
 describe("formatRest", () => {

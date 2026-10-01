@@ -47,14 +47,31 @@ describe("Lock your sets — the program page logs per set", () => {
     expect((screen.getByLabelText("Set 2 weight in kilograms") as HTMLInputElement).value).toBe("130");
   });
 
-  it("the quick-fill puts last time's weight on every open set, and felt RPE rides every lock", async () => {
+  it("Next: a set at the top of the range earns a step up — the lead chip loads it on every open set, and felt RPE rides every lock", async () => {
     history.mockReturnValue([row(1, 120, 8, { week: 0, logged_on: "2026-09-22" })]);
     render(<ExerciseLogForm block={block} programId="p" week={1} dayIndex={0} />);
-    expect(screen.getByText(/Last: 120 kg × 8/)).toBeInTheDocument();
-    fireEvent.click(screen.getByText("+2.5 kg"));
+    const next = screen.getByLabelText("Next load");
+    expect(next).toHaveTextContent("Last 120 kg × 8");
+    expect(next).toHaveTextContent("122.5 kg × 5");
+    expect(next).toHaveTextContent("The set hit 8 at 120 kg — add 2.5 kg, back to 5.");
+    expect(screen.queryByText("+2.5 kg")).not.toBeInTheDocument(); // the step is the lead chip now
+    // The prefill already carries the step for the current set.
     expect((screen.getByLabelText("Set 1 weight in kilograms") as HTMLInputElement).value).toBe("122.5");
+    fireEvent.click(screen.getByText("Load 122.5 kg"));
+    expect((screen.getByLabelText("Set 1 weight in kilograms") as HTMLInputElement).value).toBe("122.5");
+    expect((screen.getByLabelText("Set 1 reps") as HTMLInputElement).value).toBe("5");
     fireEvent.change(screen.getByLabelText("Felt RPE, 1 to 10"), { target: { value: "9" } });
     fireEvent.click(screen.getByText("Lock"));
-    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ setIndex: 1, weight: 122.5, reps: 8, rpe: 9 })));
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ setIndex: 1, weight: 122.5, reps: 5, rpe: 9 })));
+  });
+
+  it("Next: a set inside the range holds the weight and keeps the +2.5 chip for the athlete who knows better", () => {
+    history.mockReturnValue([row(1, 120, 6, { week: 0, logged_on: "2026-09-22" }), row(2, 120, 6, { week: 0, logged_on: "2026-09-22" })]);
+    render(<ExerciseLogForm block={block} programId="p" week={1} dayIndex={0} />);
+    const next = screen.getByLabelText("Next load");
+    expect(next).toHaveTextContent("120 kg × 8");
+    expect(next).toHaveTextContent("Same 120 kg — chase 8 on every set.");
+    fireEvent.click(screen.getByText("+2.5 kg"));
+    expect((screen.getByLabelText("Set 1 weight in kilograms") as HTMLInputElement).value).toBe("122.5");
   });
 });

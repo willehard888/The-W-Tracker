@@ -7,7 +7,7 @@ import { PROGRAM_COLUMNS, type CoachProgram, type PlanJson, type ProgramWeek } f
 import { useAthleteProfile, type AthleteProfile } from "@/hooks/use-athlete-profile";
 import { useRecentWorkoutLogs } from "@/hooks/use-workout-log";
 import { normalizeInjuries } from "@/lib/training/injuries";
-import { isRepeatingWeek, repeatWeek } from "@/lib/training/plan-edit";
+import { isRepeatingWeek, repeatWeek, progressiveWeeks } from "@/lib/training/plan-edit";
 import type { Json } from "@/integrations/supabase/types";
 
 /**
@@ -260,7 +260,9 @@ export const useCreateProgram = () => {
         week = plan.weeks[0] as ProgramWeek;
         targets = plan.weekly_check_targets;
       }
-      const plan: PlanJson = { weekly_check_targets: targets, weeks: carried ?? repeatWeek(week!, 4) };
+      // A coach-built week runs the four-week wave (base → build → peak →
+      // light); an empty week the member fills by hand repeats as built.
+      const plan: PlanJson = { weekly_check_targets: targets, weeks: carried ?? (arg.kind === "week" ? progressiveWeeks(week!) : repeatWeek(week!, 4)) };
       const row = await insertActiveProgram({
         user_id: user.id,
         goal: profile?.primary_goal ?? "all",

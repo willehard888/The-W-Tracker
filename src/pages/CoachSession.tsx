@@ -35,7 +35,9 @@ import { deferRecovery } from "@/lib/recovery/deferred";
 import { IllustrationPlayer, preloadIllustration } from "@/components/coach/ExerciseIllustration";
 import { ExerciseCoachingCompact } from "@/components/coach/ExerciseCoachingBlock";
 import RestTimer from "@/components/coach/session/RestTimer";
-import { SetRow } from "@/components/coach/session/SetRow";
+import { SetRow, fmtKg } from "@/components/coach/session/SetRow";
+import { loadAdvice } from "@/lib/training/overload";
+import { cn } from "@/lib/utils";
 import { prescriptionGloss, prescriptionLabel } from "@/lib/training/prescription";
 import SessionOverview from "@/components/coach/session/SessionOverview";
 import SessionSkeleton from "@/components/coach/session/SessionSkeleton";
@@ -303,7 +305,13 @@ const CoachSession = () => {
     if (next) preloadIllustration(next);
   }, [nextExercise]);
 
-  const { data: history } = useExerciseHistory(current?.slug ?? null);
+  const { data: historyRows } = useExerciseHistory(current?.slug ?? null);
+  // Earlier sessions only: today's own rows are `logged`, and a half-done
+  // session must not read as "last time" to the overload rule.
+  const history = useMemo(
+    () => (historyRows ?? []).filter((h) => !(h.program_id === program?.id && h.week === week && h.day_index === day)),
+    [historyRows, program?.id, week, day],
+  );
 
   // The phone lies on the bench with a set count on it: no auto-lock while a
   // session is on stage.
@@ -538,7 +546,8 @@ const CoachSession = () => {
   // set 2 there too — so the runner offered to log set 2 of a movement whose
   // set 1 did not exist, and would have written exactly that.
   const nextSet = current ? nextSetFor(current, logged[current.slug]) : progress.currentSetIndex;
-  const suggestion = suggestedLoad(history, nextSet, logged[current!.slug], current!.reps);
+  const suggestion = suggestedLoad(history, nextSet, logged[current!.slug], current!.reps, current!.rpe);
+  const advice = loadAdvice(history, current!.reps, current!.rpe);
 
   const logCurrent = async (setIndex: number, weightStr: string, repsStr: string) => {
     if (!current) return;
@@ -673,6 +682,15 @@ const CoachSession = () => {
 
             <div className="home-rise home-rise-3 mt-5" ref={loggingTargetRef}>
               <p className="text-label font-bold text-muted-foreground mb-2">Sets</p>
+              {/* The rule's one line: what to load and why, before the first set. */}
+              {advice.move !== "first" && advice.weight != null && (
+                <p className="text-meta text-muted-foreground mb-2">
+                  <span className={cn("font-bold tabular-nums", advice.move === "up" ? "text-gold" : "text-foreground")}>
+                    {advice.move === "up" ? "↑ " : ""}{fmtKg(advice.weight)}{advice.reps != null ? ` × ${advice.reps}` : ""}
+                  </span>
+                  {advice.reason ? ` — ${advice.reason.charAt(0).toLowerCase()}${advice.reason.slice(1)}` : ""}
+                </p>
+              )}
               <div className="space-y-1">
                 {Array.from({ length: current.sets }, (_, i) => i + 1).map((n) => {
                   const existing = (logged[current.slug] ?? []).find((s) => s.set_index === n);

@@ -21,7 +21,12 @@ export interface WorkoutSetLog {
 
 const tbl = () => supabase.from("workout_set_logs");
 
-/** Last N logs for one exercise — powers the "last time" hint + progression. */
+/**
+ * Every logged set of one exercise, newest day first — the "last time" hint,
+ * the runner's suggested load and the progression chart all read it. 400 rows
+ * is ~100 sessions of a four-set lift, served by the (user, slug, logged_on)
+ * index; the old cap of 8 rows was two sessions.
+ */
 export const useExerciseHistory = (slug?: string | null) => {
   const { user } = useAuth();
   return useQuery<WorkoutSetLog[]>({
@@ -36,7 +41,8 @@ export const useExerciseHistory = (slug?: string | null) => {
         .eq("user_id", user!.id)
         .eq("exercise_slug", slug!)
         .order("logged_on", { ascending: false })
-        .limit(8);
+        .order("set_index", { ascending: true })
+        .limit(400);
       if (error) throw error;
       return (data as WorkoutSetLog[]) ?? [];
     },

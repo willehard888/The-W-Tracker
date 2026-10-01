@@ -195,6 +195,19 @@ describe("suggestedLoad", () => {
   it("ignores history rows with no weight", () => {
     expect(suggestedLoad([set(1, null, 8)], 1, [])).toEqual({ weight: null, reps: null });
   });
+
+  it("reads 'last time' from the most recent session only, never a deeper set from months ago", () => {
+    const h = [
+      { ...set(1, 100, 6), logged_on: "2026-09-29" }, { ...set(2, 100, 6), logged_on: "2026-09-29" },
+      { ...set(1, 125, 5), logged_on: "2026-08-10" }, { ...set(3, 125, 3), logged_on: "2026-08-10" },
+    ];
+    expect(suggestedLoad(h, 2, [])).toEqual({ weight: 100, reps: 6 });
+    // Set 3 was not done last time → this session's previous set, not August's set 3.
+    expect(suggestedLoad(h, 3, [set(1, 100, 6), set(2, 100, 6)])).toEqual({ weight: 100, reps: 6 });
+    // A bodyweight day on top does not count as "last time" for the load.
+    const bw = [{ ...set(1, null, 8), logged_on: "2026-09-30" }, ...h];
+    expect(suggestedLoad(bw, 1, [])).toEqual({ weight: 100, reps: 6 });
+  });
 });
 
 describe("formatRest", () => {

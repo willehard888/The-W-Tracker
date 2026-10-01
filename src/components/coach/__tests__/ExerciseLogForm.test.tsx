@@ -9,7 +9,7 @@ vi.mock("@/hooks/use-workout-log", () => ({
   useExerciseHistory: () => ({ data: history() }),
   useLogSet: () => ({ mutateAsync, isPending: false }),
 }));
-vi.mock("@/lib/haptics", () => ({ hapticImpact: vi.fn(), hapticNotification: vi.fn() }));
+vi.mock("@/lib/haptics", () => ({ hapticImpact: vi.fn(), hapticNotification: vi.fn(), hapticSelection: vi.fn() }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/hooks/use-commit-pop", () => ({ useCommitPop: () => false }));
 

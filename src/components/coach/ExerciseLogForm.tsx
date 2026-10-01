@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { hapticImpact } from "@/lib/haptics";
@@ -7,7 +7,8 @@ import { formatRest, parseDecimal, setRowSeed, suggestedLoad, type SetSeed } fro
 import { prescriptionGloss } from "@/lib/training/prescription";
 import { useExerciseHistory, useDaySets, useLogSet } from "@/hooks/use-workout-log";
 import { SetRow, fmtKg } from "@/components/coach/session/SetRow";
-import Sparkline from "@/components/coach/Sparkline";
+import { ProgressionChart } from "@/components/coach/ProgressionChart";
+import { sessionsFor } from "@/lib/training/progression";
 import type { ProgramBlock } from "@/hooks/use-coach-program";
 import { Input } from "@/components/ui/input";
 
@@ -68,9 +69,8 @@ export const ExerciseLogForm = ({
   );
   const last = prior.find((h) => h.weight != null);
 
-  // Weight progression, chronological, one point per logged set.
-  const weightSeries = (history.data ?? []).filter((h) => h.weight != null).map((h) => Number(h.weight)).reverse();
-  const trend = weightSeries.length >= 2 ? weightSeries[weightSeries.length - 1] - weightSeries[0] : 0;
+  // Every logged session of this movement, oldest first — the curve's data.
+  const sessions = useMemo(() => sessionsFor(history.data ?? []), [history.data]);
 
   /** Quick-fill: the weight onto every set still open, reps from last time. */
   const fill = (w: number, r: number | null) => {
@@ -180,19 +180,11 @@ export const ExerciseLogForm = ({
         </label>
       </div>
 
-      {/* Progression — weight over time from locked sets. */}
-      {weightSeries.length >= 2 && (
+      {/* Progression — the estimated 1RM per session, and the session's sets. */}
+      {sessions.length > 0 && (
         <div className="surface-panel rounded-xl p-2.5">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-label font-bold text-muted-foreground">Progression</p>
-            <p className={cn(
-              "text-label font-black tabular-nums",
-              trend > 0 ? "text-xp-green" : trend < 0 ? "text-destructive" : "text-muted-foreground",
-            )}>
-              {trend > 0 ? "+" : ""}{trend !== 0 ? `${Math.round(trend * 10) / 10}kg` : "flat"} · {weightSeries.length} logs
-            </p>
-          </div>
-          <Sparkline values={weightSeries} className="w-full h-8" />
+          <p className="text-label font-bold text-muted-foreground mb-2">Progression</p>
+          <ProgressionChart points={sessions} name={block.name} />
         </div>
       )}
     </div>

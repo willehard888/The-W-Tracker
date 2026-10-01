@@ -2554,6 +2554,21 @@
   100% { transform: translateX(100%); }
 }
 
+/* The progression curve draws itself once (pathLength="1" on the path, so the
+   dash never needs measuring). A one-shot reveal, not an ambient — it stays
+   on touch devices and only reduced motion shows the curve at once. */
+@keyframes chart-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+.chart-draw {
+  stroke-dasharray: 1;
+  animation: chart-draw 700ms var(--ease-soft) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-draw { animation: none; stroke-dasharray: none; }
+}
+
 /* ────────────────────────────────────────────────────────────────────
    iOS production polish — overscroll containment, smooth scrolling,
    tap-highlight removal. Applied globally so every screen feels native.

@@ -260,12 +260,17 @@ export const setRowSeed = (
  * they used last week is the single most useful hint available.
  */
 export const suggestedLoad = (
-  history: LoggedSet[] | undefined,
+  history: Array<LoggedSet & { logged_on?: string }> | undefined,
   setIndex: number,
   currentSession: LoggedSet[] | undefined,
   prescribedReps?: string | number | null,
 ): { weight: number | null; reps: number | null } => {
-  const sameSetLastTime = history?.find((h) => h.set_index === setIndex && h.weight != null);
+  // "Last time" is the most recent session only (history is newest first).
+  // The feed now carries months of sets, and set 3 from a 125 kg day in
+  // August is not the hint for set 3 after two sets at 100 kg last week.
+  const lastDay = history?.find((h) => h.weight != null)?.logged_on;
+  const lastTime = lastDay == null ? history : history?.filter((h) => h.logged_on === lastDay);
+  const sameSetLastTime = lastTime?.find((h) => h.set_index === setIndex && h.weight != null);
   if (sameSetLastTime) {
     return { weight: sameSetLastTime.weight ?? null, reps: sameSetLastTime.reps ?? null };
   }

@@ -7,6 +7,7 @@ import type { useDailyPlan, Mission, MissionKind } from "@/hooks/use-daily-plan"
 import { Button } from "@/components/ui/button";
 import { hapticImpact } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { QuestionRow } from "@/components/coach/rows";
 import { toast } from "@/lib/toast";
 import { friendlyError } from "@/lib/error-copy";
 import { useOnboardingTrigger, useSpotlightTarget } from "@/components/onboarding/onboarding-context";
@@ -85,7 +86,7 @@ const whyLine = (plan: { readiness_breakdown: Record<string, number | string> })
   return `Read from ${bits.length ? bits.join(" · ") : "your recent check-ins"}.`;
 };
 
-const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) => {
+const TodaysPlanCard = ({ daily, onAsk }: { daily: ReturnType<typeof useDailyPlan>; onAsk?: (question: string) => void }) => {
   const { plan, isLoading, completedIds, done, total, checkedIn, generate } = daily;
   const navigate = useNavigate();
   // Contextual onboarding: the first time a reminder row exists, spotlight it.
@@ -225,6 +226,13 @@ const TodaysPlanCard = ({ daily }: { daily: ReturnType<typeof useDailyPlan> }) =
         <p className={cn("mt-2 text-meta tabular-nums", complete ? "font-bold text-gold" : "text-muted-foreground")}>
           {footer}
         </p>
+      )}
+
+      {/* One door into the reasoning: the coach that set these explains them. */}
+      {onAsk && total > 0 && (
+        <div className="mt-1 border-t border-border/35">
+          <QuestionRow question="Why these today?" onClick={() => onAsk("Why did you set these reminders for me today?")} />
+        </div>
       )}
     </div>
   );

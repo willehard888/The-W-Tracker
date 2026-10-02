@@ -37,7 +37,7 @@ interface CheckinTierSummaryProps {
   onProfile: () => void;
   onDashboard: () => void;
   /** Open AI Coach primed with the day's feedback so the user can go deeper. */
-  onAskCoach?: (seedText: string) => void;
+  onAskCoach?: (seedText: string, questions?: string[]) => void;
   /** A celebration overlay (badge unlock) is up — hold onboarding cards. */
   celebrating?: boolean;
 }
@@ -423,7 +423,7 @@ const PostCheckinCoachLine = ({
   onAskCoach,
 }: {
   summary: CheckinTierSummaryProps["summary"];
-  onAskCoach?: (seedText: string) => void;
+  onAskCoach?: (seedText: string, questions?: string[]) => void;
 }) => {
   const { user } = useAuth();
   // Template line renders IMMEDIATELY — the hook's defaults (calm_mentor tone,
@@ -432,7 +432,7 @@ const PostCheckinCoachLine = ({
   // line arrive ~10s late; the wait bought nothing.
   const { text: fallback } = useCoachObservation({ context: "post-checkin" });
 
-  const { data: aiText } = useQuery({
+  const { data: reaction } = useQuery({
     // Day-keyed (NOT response-keyed) so DailyCheckin's submit-time prefetch
     // shares this cache — the AI call runs in parallel with record_checkin.
     queryKey: checkinReactionKey(user?.id ?? ""),
@@ -449,6 +449,7 @@ const PostCheckinCoachLine = ({
       }),
   });
 
+  const aiText = reaction?.text;
   const text = aiText || fallback;
   if (!text) return null;
   // Chat entry is available from the first paint — the template line seeds
@@ -462,7 +463,7 @@ const PostCheckinCoachLine = ({
         <CoachLine
           text={text}
           tone="celebration"
-          onClick={canContinue ? () => onAskCoach!(text) : undefined}
+          onClick={canContinue ? () => onAskCoach!(text, reaction?.questions ?? []) : undefined}
         />
       </m.div>
       {canContinue && (

@@ -216,7 +216,7 @@ End with a single clear action for the next 24h.
 Also produce:
 - ribbon: "Week N · <the goal, exactly as written above> · <one-word status>" (≤10 words, no other text)
 - prescriptions: 3 short label/value pairs (sleep target, protein target, today's intent — fitted to the user); labels in sentence case ("Sleep target", not "Sleep Target")
-- suggested_questions: 3 sharp questions the user might ask, tailored to today.`;
+- suggested_questions: exactly 3 questions THIS athlete would ask about THIS brief, each answerable from the data above and each carrying one of their own numbers or names (a why about a figure, a what-next for today, a how-much for a target). Never generic ("Why is protein important?") — specific ("Why was my HRV 52 ms when I slept 7h24?"). ≤ 72 characters, first person.`;
 
     // Per-member daily cap before the model call (same atomic counter as the
     // chat coach). A cached brief above never counts; `force` skips the cache,
@@ -247,7 +247,7 @@ Also produce:
                     required: ["label", "value"], additionalProperties: false,
                   },
                 },
-                suggested_questions: { type: "array", items: { type: "string" } },
+                suggested_questions: { type: "array", minItems: 3, maxItems: 3, items: { type: "string", maxLength: 72 } },
               },
               required: ["ribbon", "brief_md", "prescriptions", "suggested_questions"],
               additionalProperties: false,

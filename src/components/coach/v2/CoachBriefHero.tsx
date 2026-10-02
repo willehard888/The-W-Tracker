@@ -1,6 +1,6 @@
 import ReactMarkdown from "react-markdown";
-import { Send, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QuestionRow } from "@/components/coach/rows";
 import { cn } from "@/lib/utils";
 import { useCoachBrief } from "@/hooks/use-coach-brief";
 import { stripCoachSignoff } from "@/lib/coach-signoff";
@@ -21,8 +21,8 @@ const Readiness = ({ score }: { score: number | null }) =>
 
 /**
  * CoachBriefHero: the coach speaks first. Its own words in the screen's one
- * full-weight card, the gold readiness number, tailored questions as hairline
- * rows, and the one CTA into the live chat.
+ * full-weight card, the gold readiness number, the brief's three questions
+ * as the primary rows, and a quiet link for anything else.
  */
 const CoachBriefHero = ({
   readiness,
@@ -31,7 +31,7 @@ const CoachBriefHero = ({
 }: {
   readiness: number | null;
   onOpenChat: () => void;
-  onAsk: (question: string) => void;
+  onAsk: (question: string, index: number) => void;
 }) => {
   const { brief, isLoading, error } = useCoachBrief();
 
@@ -77,12 +77,9 @@ const CoachBriefHero = ({
           )}
 
           {brief.suggested_questions?.length > 0 && (
-            <div className="mt-4 divide-y divide-border/35 border-t border-border/35">
+            <div className="mt-4 divide-y divide-border/35 border-t border-border/35" aria-label="Ask about today's brief">
               {brief.suggested_questions.slice(0, 3).map((q, i) => (
-                <button key={i} type="button" onClick={() => onAsk(q)} className="press-row w-full min-h-11 flex items-center gap-2.5 py-2.5 text-left">
-                  <MessageCircle size={14} className="text-muted-foreground shrink-0" aria-hidden />
-                  <span className="text-dense font-semibold text-foreground leading-snug">{q}</span>
-                </button>
+                <QuestionRow key={i} question={q} onClick={() => onAsk(q, i)} />
               ))}
             </div>
           )}
@@ -102,8 +99,9 @@ const CoachBriefHero = ({
         </>
       )}
 
-      <Button variant="ember" size="lg" className="w-full mt-4" onClick={onOpenChat}>
-        <Send aria-hidden size={16} /> Ask your coach
+      {/* The questions above are the way in; typing is the exception. */}
+      <Button variant="link" className="w-full mt-2" onClick={onOpenChat}>
+        Something else? Ask
       </Button>
     </div>
   );

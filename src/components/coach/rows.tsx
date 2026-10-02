@@ -52,3 +52,19 @@ export const DoorRow = ({
     <ChevronRight size={16} className="text-muted-foreground/75 shrink-0" aria-hidden />
   </button>
 );
+
+/**
+ * A ready question: the way to talk to the coach. The same row as a door,
+ * but the question wraps (72 characters never fit one phone line) and the
+ * chevron is gold — this row is the primary action wherever it stands.
+ */
+export const QuestionRow = ({ question, onClick, className }: { question: string; onClick: () => void; className?: string }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn("press-row w-full min-h-11 flex items-center gap-3 py-2.5 text-left", className)}
+  >
+    <span className="flex-1 min-w-0 text-dense font-semibold text-foreground leading-snug">{question}</span>
+    <ChevronRight size={16} className="text-gold shrink-0" aria-hidden />
+  </button>
+);

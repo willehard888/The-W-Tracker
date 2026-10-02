@@ -249,11 +249,29 @@ Apply the CONVERSATION REGISTER above — registers 1–3 exempt you from every 
 - **Ask at most ONE question, and only when the answer genuinely changes your prescription.** If you can give a sensible default with a fork ("if X, do A; if Y, do B"), do that instead of asking.
 - **Hold the standard.** No empty validation, no cheerleading — praise evidence (a rep done tired, a streak defended), not effort-theater. You are demanding AND unmistakably on their side; certainty over hedging ("do this" — not "you could consider").
 - Mirror their language and energy: terse athlete gets terse coach; "Moi" gets "Moi" energy back, not a briefing; someone struggling gets warmth first, prescription second.
-- Markdown sparingly: bold for key numbers, short list only when prescribing 2–3 steps. No headings in chat, no sign-off.
+- Markdown sparingly: bold for key numbers, short list only when prescribing 2–3 steps. No headings in chat, no sign-off (the @@FOLLOWUPS trailer below is not a sign-off — it is required).
 - **A session or a plan is the exception: write it as a numbered list, one movement or step per line** — "**Name** · sets × reps · the one cue or load that matters". Never run a session together as a paragraph; the athlete reads it between sets. One sentence before the list, one after at most.
 - If the conversation is about today's training, stay consistent with the prescribed session (or explicitly justify deviating). Never volunteer the session unprompted.
-- Health, medication, and safety boundaries: SAFETY TRIAGE above defines exactly what you may and may not do — Level 1 wellness gets full-strength concrete coaching, never reflexive "ask a doctor". Legal/financial advice needing a licensed pro: give a framework and point to one.${ventDirective}${redFlagDirective}`;
+- Health, medication, and safety boundaries: SAFETY TRIAGE above defines exactly what you may and may not do — Level 1 wellness gets full-strength concrete coaching, never reflexive "ask a doctor". Legal/financial advice needing a licensed pro: give a framework and point to one.
+${FOLLOWUPS_RULE}${ventDirective}${redFlagDirective}`;
 };
+
+/**
+ * Every coaching reply ends with the next two or three questions THIS athlete
+ * would ask, as a machine-readable trailer the app turns into tap targets.
+ * The app shows the questions instead of the composer: a member taps, they
+ * don't type. Grounded means each question carries one of their own numbers,
+ * names or dates from the knowledge blocks — never a generic "tell me more".
+ */
+const FOLLOWUPS_RULE = `
+OUTPUT FORMAT — every coaching reply (registers 4–6) ends with a follow-up trailer. This is not a sign-off: the app reads it by machine, strips it from the bubble and shows the lines as tap targets, so a reply without it leaves the athlete with nothing to tap. Exact shape, after the last sentence of the reply:
+
+@@FOLLOWUPS
+- <question 1>
+- <question 2>
+- <question 3, optional>
+
+Each line: a question THIS athlete would ask you next about what you just said — first person ("Should I…", "Why did my…"), ≤ 72 characters, carrying one of their own numbers, lifts, foods or days from what you know, and answerable from it. Never a question you already answered, never "tell me more", never small talk. No markdown around the marker or the lines. Nothing after the trailer. Omit the whole trailer only in registers 1–3 and in a Level 3 (crisis) reply.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -430,7 +448,9 @@ Deno.serve(async (req) => {
     const isPaid =
       profile?.is_elite === true ||
       (typeof credits === "string" && new Date(credits).getTime() > Date.now());
-    const dailyLimit = isPaid ? 200 : 40;
+    // 60: a member who taps the ready questions sends a handful a day; the
+    // cap exists for the account that scripts the endpoint.
+    const dailyLimit = isPaid ? 60 : 40;
     const { data: allowed } = await supabase.rpc("bump_ai_usage", { p_limit: dailyLimit, p_kind: "coach" });
     if (allowed === false) {
       return new Response(
@@ -453,10 +473,18 @@ Deno.serve(async (req) => {
         }
       : undefined;
 
-    const trimmed = messages.slice(-20).map((m) => ({
+    // Eight turns, 1 500 chars each: the week's thread lives in extracted
+    // memory, not in the prompt (20 × 4 000 was up to 20 k tokens a turn).
+    // A stored assistant turn may still carry its follow-up trailer; the
+    // model must not see its own trailers as conversation.
+    const trimmed = messages.slice(-8).map((m) => ({
       role: m.role === "assistant" ? "assistant" : "user",
-      content: String(m.content ?? "").slice(0, 4000),
+      content: String(m.content ?? "").split("\n@@FOLLOWUPS")[0].slice(0, 1500),
     }));
+    // Where the message came from (brief | plan | review | reaction | followup |
+    // post_checkin | typed) — the one line that says whether the ready
+    // questions carry the conversation.
+    const source = typeof body?.source === "string" ? body.source.slice(0, 24) : "typed";
 
     // ── Stage 2: the only two gathers with stage-1 dependencies
     // (situation needs profile.streak; program logs need the program id).
@@ -628,7 +656,7 @@ Everything below is what you KNOW — it is not your outline. Per reply, pull at
       light,
       redFlagDirective,
     );
-    console.log("ai-coach", light ? "light" : "full", "sys≈", Math.round(systemPrompt.length / 4), "tok");
+    console.log("ai-coach", light ? "light" : "full", "source", source, "sys≈", Math.round(systemPrompt.length / 4), "tok");
 
     const upstream = await openrouterFetch(
       OPENROUTER_API_KEY,

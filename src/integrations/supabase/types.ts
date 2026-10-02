@@ -762,6 +762,7 @@ export type Database = {
           performance_score: number
           program_tweak: string | null
           seen_at: string | null
+          suggested_questions: Json
           user_id: string
           week_starts_on: string
           wins: Json
@@ -778,6 +779,7 @@ export type Database = {
           performance_score?: number
           program_tweak?: string | null
           seen_at?: string | null
+          suggested_questions?: Json
           user_id: string
           week_starts_on: string
           wins?: Json
@@ -794,6 +796,7 @@ export type Database = {
           performance_score?: number
           program_tweak?: string | null
           seen_at?: string | null
+          suggested_questions?: Json
           user_id?: string
           week_starts_on?: string
           wins?: Json
@@ -4621,6 +4624,7 @@ export type Database = {
           _next_week_focus: string
           _performance_score: number
           _program_tweak: string
+          _suggested_questions?: Json
           _week_starts_on: string
           _wins: Json
         }

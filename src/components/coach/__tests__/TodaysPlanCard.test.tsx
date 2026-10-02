@@ -39,10 +39,10 @@ const daily = (over: Partial<ReturnType<typeof useDailyPlan>>): ReturnType<typeo
   ...over,
 });
 
-const mount = (d: ReturnType<typeof useDailyPlan>) =>
+const mount = (d: ReturnType<typeof useDailyPlan>, onAsk?: (q: string) => void) =>
   render(
     <MemoryRouter>
-      <TodaysPlanCard daily={d} />
+      <TodaysPlanCard daily={d} onAsk={onAsk} />
     </MemoryRouter>,
   );
 
@@ -70,5 +70,18 @@ describe("TodaysPlanCard", () => {
   it("says so when everything is covered", () => {
     mount(daily({ checkedIn: true, completedIds: new Set(["light", "wind"]), done: 2 }));
     expect(screen.getByText("All covered. You showed up.")).toBeInTheDocument();
+  });
+
+  it("offers one question about the reasoning and still no button named after a mission", () => {
+    const onAsk = vi.fn();
+    mount(daily({}), onAsk);
+    screen.getByRole("button", { name: "Why these today?" }).click();
+    expect(onAsk).toHaveBeenCalledWith("Why did you set these reminders for me today?");
+    expect(screen.queryByRole("button", { name: /morning light|wind-down/i })).toBeNull();
+  });
+
+  it("has no question row without a hand to ask", () => {
+    mount(daily({}));
+    expect(screen.queryByRole("button", { name: "Why these today?" })).toBeNull();
   });
 });

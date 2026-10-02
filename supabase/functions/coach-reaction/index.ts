@@ -44,8 +44,16 @@ const reactionTool = {
           description:
             "1-2 sentences, max ~160 chars. Reference today's ACTUAL numbers. No greetings, no emoji spam (max 1), never mention being an AI.",
         },
+        questions: {
+          type: "array",
+          minItems: 2,
+          maxItems: 2,
+          items: { type: "string", maxLength: 72 },
+          description:
+            "Two questions the athlete would ask you about THIS reaction, each answerable from the facts given and carrying one of their own numbers or habit names. First person, ≤ 72 chars, never generic.",
+        },
       },
-      required: ["text"],
+      required: ["text", "questions"],
       additionalProperties: false,
     },
   },
@@ -195,10 +203,18 @@ Rules:
     if (!args) return json({ error: "no_output" }, 502);
 
     let text = "";
-    try { text = String(JSON.parse(args)?.text ?? ""); } catch { /* fall through */ }
+    let questions: string[] = [];
+    try {
+      const parsed = JSON.parse(args);
+      text = String(parsed?.text ?? "");
+      questions = (Array.isArray(parsed?.questions) ? parsed.questions : [])
+        .filter((q: unknown): q is string => typeof q === "string" && q.trim().length > 0)
+        .map((q: string) => q.trim().slice(0, 72))
+        .slice(0, 2);
+    } catch { /* fall through */ }
     if (!text.trim()) return json({ error: "no_output" }, 502);
 
-    return json({ text: text.trim().slice(0, 220) });
+    return json({ text: text.trim().slice(0, 220), questions });
   } catch (e) {
     console.error("coach-reaction error:", e);
     return json({ error: "server_error" }, 500);

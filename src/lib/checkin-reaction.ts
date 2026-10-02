@@ -38,9 +38,15 @@ const TIMED_OUT = Symbol("timeout");
  * provider down, timeout) resolves to null — the caller's deterministic
  * template line stays, the celebration never breaks.
  */
+export interface CheckinReaction {
+  text: string;
+  /** Two follow-ups the athlete can tap to ask the coach about this line. */
+  questions: string[];
+}
+
 export const fetchCheckinReaction = async (
   body: CheckinReactionBody,
-): Promise<string | null> => {
+): Promise<CheckinReaction | null> => {
   try {
     const result = await Promise.race([
       supabase.functions.invoke("coach-reaction", { body }),
@@ -51,8 +57,13 @@ export const fetchCheckinReaction = async (
     if (result === TIMED_OUT) return null;
     const { data, error } = result;
     if (error) return null;
-    const t = (data as { text?: string } | null)?.text;
-    return typeof t === "string" && t.trim() ? t.trim() : null;
+    const d = data as { text?: string; questions?: unknown } | null;
+    const t = d?.text;
+    if (typeof t !== "string" || !t.trim()) return null;
+    const questions = (Array.isArray(d?.questions) ? d!.questions : [])
+      .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
+      .slice(0, 2);
+    return { text: t.trim(), questions };
   } catch {
     return null;
   }

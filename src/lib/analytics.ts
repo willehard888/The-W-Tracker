@@ -151,6 +151,13 @@ export const FUNNEL = {
   // for the scanner.
   coachMessageSent: "coach_message_sent",
   coachAnswerRated: "coach_answer_rated",
+  // The ready questions against the typed composer — whether members tap
+  // (brief | plan | review | reaction | followup | state | starter, with the
+  // row's index) or open the field. Never the question text.
+  coachQuestionTapped: "coach_question_tapped",
+  coachComposerOpened: "coach_composer_opened",
+  // The review wrote itself for the week (no button pressed).
+  coachWeeklyReviewAuto: "coach_weekly_review_auto",
 
   // Evening reflection: a whole feature that looked unused because nothing
   // counted it. Never the reflection text.

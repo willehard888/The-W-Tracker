@@ -889,7 +889,7 @@ const DailyCheckin = () => {
             summary={summary}
             onProfile={() => navigate("/profile")}
             onDashboard={() => navigate("/")}
-            onAskCoach={(seed) => navigate(`/coach?seed=${encodeURIComponent(seed)}`)}
+            onAskCoach={(seed, questions) => navigate(`/coach?seed=${encodeURIComponent(seed)}${questions?.length ? `&fq=${encodeURIComponent(JSON.stringify(questions))}` : ""}`)}
             celebrating={!!unlockedBadge}
           />
         )}

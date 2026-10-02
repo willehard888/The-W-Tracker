@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Settings } from "lucide-react";
-import { DoorRow } from "../rows";
+import { DoorRow, QuestionRow } from "../rows";
 import { SettingsRow } from "@/components/settings/SettingsList";
 
 // THE list row: one silhouette for a door, a settings row, a library row.
@@ -35,5 +35,20 @@ describe("DoorRow", () => {
     expect(row.className.split(" ")).toContain("press-row");
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(row.querySelector("svg.lucide-chevron-right")).not.toBeNull();
+  });
+});
+
+// The ready question: wraps, gold chevron, the same press-row rhythm.
+describe("QuestionRow", () => {
+  it("is a press-row whose text wraps and whose chevron is gold", () => {
+    const onClick = vi.fn();
+    render(<QuestionRow question="Should I add 2.5 kg to the squat on Thursday?" onClick={onClick} />);
+    const row = screen.getByRole("button", { name: "Should I add 2.5 kg to the squat on Thursday?" });
+    const cls = row.className.split(" ");
+    for (const c of ["press-row", "w-full", "min-h-11", "text-left"]) expect(cls).toContain(c);
+    expect(row.querySelector("span")?.className).not.toMatch(/truncate/);
+    expect(row.querySelector("svg.lucide-chevron-right")?.getAttribute("class")).toMatch(/text-gold/);
+    row.click();
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });

@@ -2,7 +2,9 @@ import { fmtDate } from "@/lib/format";
 import { m } from "framer-motion";
 import { Calendar, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { usePerformanceSnapshots, useLatestWeeklyReview } from "@/hooks/use-performance-snapshots";
+import { useNavigate } from "react-router-dom";
+import { usePerformanceSnapshots, useAutoWeeklyReview, reviewQuestions } from "@/hooks/use-performance-snapshots";
+import { QuestionRow } from "@/components/coach/rows";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
@@ -78,7 +80,9 @@ const ReviewLifts = ({ lifts, note }: { lifts: ReviewLift[]; note: string | null
  */
 const PerformanceOSDashboard = () => {
   const { data: snaps, isLoading } = usePerformanceSnapshots(28);
-  const { data: review } = useLatestWeeklyReview();
+  // Generates itself once a week; the button below refreshes.
+  const { data: review } = useAutoWeeklyReview();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [generating, setGenerating] = useState(false);
 
@@ -170,6 +174,13 @@ const PerformanceOSDashboard = () => {
             </div>
           )}
           <ReviewLifts lifts={reviewLifts(review.lifts)} note={review.lifts_note ?? null} />
+          {reviewQuestions(review.suggested_questions).length > 0 && (
+            <div className="mt-2 divide-y divide-border/35 border-t border-border/35" aria-label="Ask about this week">
+              {reviewQuestions(review.suggested_questions).map((q) => (
+                <QuestionRow key={q} question={q} onClick={() => navigate(`/coach?ask=${encodeURIComponent(q)}&src=review`)} />
+              ))}
+            </div>
+          )}
           {review.program_tweak && (
             <div className="surface-tint-gold rounded-lg px-2.5 py-1.5 mt-2">
               <p className="text-label font-bold text-gold">Program tweak</p>
@@ -187,7 +198,7 @@ const PerformanceOSDashboard = () => {
         onClick={generateReview}
       >
         <RefreshCw aria-hidden size={12} className="mr-1.5" />
-        {review ? "Refresh weekly review" : "Generate weekly review"}
+        {review ? "Refresh" : "Generate weekly review"}
       </Button>
     </div>
   );

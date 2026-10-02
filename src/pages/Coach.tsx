@@ -38,6 +38,9 @@ import { useOnboardingTrigger } from "@/components/onboarding/onboarding-context
 import { track, FUNNEL } from "@/lib/analytics";
 import AnswerRating from "@/components/coach/AnswerRating";
 import { MOTION } from "@/lib/motion";
+import { splitFollowups, visibleWhileStreaming } from "@/lib/coach-followups";
+import { useCoachBrief } from "@/hooks/use-coach-brief";
+import WeeklyFeedbackCard from "@/components/coach/WeeklyFeedbackCard";
 
 type Msg = { role: "user" | "assistant"; content: string };
 const STORAGE_KEY = "w_coach_messages_v1";
@@ -68,7 +71,10 @@ const Coach = () => {
   // Frozen at mount: CoachShell strips the ?seed param, and re-reading it live
   // would flip this false and bounce the user back into onboarding.
   const [hasSeed] = useState(() => {
-    try { return !!new URLSearchParams(window.location.search).get("seed"); } catch { return false; }
+    try {
+      const q = new URLSearchParams(window.location.search);
+      return !!(q.get("seed") || q.get("ask"));
+    } catch { return false; }
   });
   const {
     isLoading,
@@ -203,28 +209,46 @@ const CoachShell = ({
   // ?seed=<the day's coach feedback> → open chat with it as the opening
   // assistant bubble so the user can continue that exact conversation.
   const seedRef = useRef<string | null>(searchParams.get("seed"));
+  // ?fq=<json array> — the two questions the reaction wrote for that feedback.
+  const seedQuestionsRef = useRef<string[]>((() => {
+    try {
+      const raw = JSON.parse(searchParams.get("fq") ?? "[]");
+      return Array.isArray(raw) ? raw.filter((q): q is string => typeof q === "string" && !!q.trim()).slice(0, 3) : [];
+    } catch { return []; }
+  })());
   // ?chat=1 → open the chat with no seed: Home's coach door lands here.
   const openRef = useRef(searchParams.get("chat") === "1");
+  // ?ask=<question>&src=<origin> → open the chat and send it (the review's
+  // questions on Progress land here).
+  const askRef = useRef<{ text: string; source: QuestionSource; index: number } | null>((() => {
+    const text = searchParams.get("ask")?.trim();
+    if (!text) return null;
+    const src = searchParams.get("src");
+    return { text, source: src === "review" ? "review" : "typed", index: 0 };
+  })());
   const [seedAssistant] = useState<string | null>(() => seedRef.current);
   // Deep-linked chat opens after the page's first paint, not inside it: a
   // sheet rising while a lazy page mounts, with the keyboard summoned at the
   // same time, landed half off screen on iOS.
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatPrompt, setChatPrompt] = useState<{ text: string; source: QuestionSource; index: number } | null>(() => askRef.current);
   useEffect(() => {
-    if (!seedRef.current && !openRef.current) return;
+    if (!seedRef.current && !openRef.current && !askRef.current) return;
     const id = requestAnimationFrame(() => setChatOpen(true));
     return () => cancelAnimationFrame(id);
   }, []);
-  const [chatPrompt, setChatPrompt] = useState<string | null>(null);
   // The page's single daily-plan subscription: the hero shows its readiness
   // number, the plan card its missions. (Two calls would open two channels.)
   const daily = useDailyPlan();
 
   // Strip ?seed / ?chat once consumed so a refresh doesn't reopen the chat.
   useEffect(() => {
-    if (seedRef.current || openRef.current) {
+    if (seedRef.current || openRef.current || askRef.current) {
       searchParams.delete("seed");
+      searchParams.delete("fq");
       searchParams.delete("chat");
+      searchParams.delete("ask");
+      searchParams.delete("src");
       setSearchParams(searchParams, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -234,9 +258,9 @@ const CoachShell = ({
   // data-aware brief — then offers the live chat and the supporting rows.
   // Access control lives in the app-wide paywall gate (ProtectedRoute) plus
   // the edge function's own has_active_access check (403 → /paywall below).
-  const openChat = (prompt?: string) => {
+  const openChat = (prompt?: string, source: QuestionSource = "typed", index = 0) => {
     hapticImpact("light");
-    setChatPrompt(prompt ?? null);
+    setChatPrompt(prompt ? { text: prompt, source, index } : null);
     setChatOpen(true);
   };
 
@@ -267,18 +291,23 @@ const CoachShell = ({
           <CoachBriefHero
             readiness={daily.plan?.readiness_score ?? null}
             onOpenChat={() => openChat()}
-            onAsk={(q) => openChat(q)}
+            onAsk={(q, i) => openChat(q, "brief", i)}
           />
         </div>
 
         {/* THE PLAN: push/hold/deload and the missions you tick. */}
         <div className="home-rise home-rise-2 mt-3">
-          <TodaysPlanCard daily={daily} />
+          <TodaysPlanCard daily={daily} onAsk={(q) => openChat(q, "plan")} />
+        </div>
+
+        {/* THE WEEK: the review's verdict and its questions, Mon–Wed. */}
+        <div className="home-rise home-rise-2 mt-3 empty:hidden">
+          <WeeklyFeedbackCard onAsk={(q, i) => openChat(q, "review", i)} />
         </div>
 
         {/* SUPPORT: your read, the program door, Apple Health. Quiet rows. */}
         <div className="home-rise home-rise-3 mt-3">
-          <StateCard onAsk={(q) => openChat(q)} />
+          <StateCard onAsk={(q) => openChat(q, "state")} />
         </div>
         <div className="home-rise home-rise-4 mt-3">
           <ProgramCard />
@@ -299,6 +328,7 @@ const CoachShell = ({
         program={program}
         initialPrompt={chatPrompt}
         seedAssistant={seedAssistant}
+        seedQuestions={seedQuestionsRef.current}
         onClose={() => { setChatOpen(false); setChatPrompt(null); }}
       />
     </div>
@@ -308,7 +338,9 @@ const CoachShell = ({
 // ── Chat sheet ────────────────────────────────────────────────────────────────
 // The app-wide BottomSheet, mounted for the page's whole life and driven by
 // `open`, so the thread survives close/reopen and the sheet's exit plays.
-type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean; rated?: "up" | "down" };
+type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean; rated?: "up" | "down"; questions?: string[] };
+/** Where a question came from — the ready rows, a reply's chips, or the composer. */
+type QuestionSource = "brief" | "plan" | "review" | "reaction" | "followup" | "state" | "starter" | "typed";
 
 // 7 days: the coach should remember the week's thread — extracted memory
 // facts carry everything older. (Was 24h, which made every morning start
@@ -316,9 +348,9 @@ type ChatMsg = Msg & { faq_id?: string; failed?: boolean; isFaq?: boolean; rated
 const STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const HISTORY_TS_KEY = "w_coach_messages_v1_ts";
 
-// Follow-up chips shown when the chat is seeded from the day's coach feedback.
-// ai-coach already has today's check-in + brief in its system prompt, so these
-// answer with real, grounded advice.
+// Follow-ups for a check-in seed whose reaction carried none (an older cached
+// line). ai-coach has today's check-in + brief in its prompt, so these still
+// answer with grounded advice.
 const PERFORMANCE_FOLLOWUPS = [
   "How do I improve tomorrow?",
   "Why was my output low today?",
@@ -357,13 +389,14 @@ const ThinkingIndicator = () => (
 );
 
 const ChatSheet = ({
-  open, session, program, initialPrompt, seedAssistant, onClose,
+  open, session, program, initialPrompt, seedAssistant, seedQuestions, onClose,
 }: {
   open: boolean;
   session: Session;
   program: CoachProgram | null;
-  initialPrompt: string | null;
+  initialPrompt: { text: string; source: QuestionSource; index: number } | null;
   seedAssistant?: string | null;
+  seedQuestions?: string[];
   onClose: () => void;
 }) => {
   const navigate = useNavigate();
@@ -380,21 +413,32 @@ const ChatSheet = ({
       }
     } catch {}
     if (seedAssistant && seedAssistant.trim()) {
-      return [...prior, { role: "assistant", content: seedAssistant.trim() }];
+      // The reaction's own questions ride on its bubble as the first chips.
+      const questions = seedQuestions?.length ? seedQuestions : PERFORMANCE_FOLLOWUPS;
+      return [...prior, { role: "assistant", content: seedAssistant.trim(), questions }];
     }
     return prior;
   });
-  // Performance follow-up chips shown until the user asks their first question.
-  const [seedChipsShown, setSeedChipsShown] = useState(!!(seedAssistant && seedAssistant.trim()));
   const [input, setInput] = useState("");
-  // Focus once the sheet has finished rising (the spring settles in ~400 ms);
+  // The composer is folded behind "Type your own question": the ready
+  // questions are the way to talk to the coach, typing is the exception.
+  const [composerOpen, setComposerOpen] = useState(false);
+  const openComposer = () => {
+    hapticImpact("light");
+    setComposerOpen(true);
+    void track(FUNNEL.coachComposerOpened, {});
+  };
+  // Focus once the field has mounted and the sheet has settled (~400 ms);
   // autoFocus during the entrance made iOS scroll the layout viewport.
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (!open) return;
+    if (!open || !composerOpen) return;
     const t = setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 420);
     return () => clearTimeout(t);
-  }, [open]);
+  }, [open, composerOpen]);
+  // Today's brief questions open the empty state — the same three the hero shows.
+  const { brief } = useCoachBrief();
+  const briefQuestions = (brief?.suggested_questions ?? []).slice(0, 3);
   const [streaming, setStreaming] = useState(false);
   const [showBrowser, setShowBrowser] = useState(false);
   // Index of the bubble the user just sent: it gets the commit-pop.
@@ -474,18 +518,23 @@ const ChatSheet = ({
     ]);
   };
 
-  const callAi = async (history: ChatMsg[], opts?: { goDeep?: boolean }) => {
+  const callAi = async (history: ChatMsg[], opts?: { goDeep?: boolean; source?: QuestionSource }) => {
     setStreaming(true);
     let buf = "";
-    const upsert = (chunk: string) => {
-      buf += chunk;
+    // The reply ends with a @@FOLLOWUPS trailer the member never sees: the
+    // bubble shows the text before it (and nothing of a half-arrived marker);
+    // on completion the trailer becomes the chips under the bubble.
+    const setLastAssistant = (patch: Partial<ChatMsg>) =>
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant" && !last.isFaq) {
-          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: buf } : m));
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, ...patch } : m));
         }
-        return [...prev, { role: "assistant", content: buf }];
+        return [...prev, { role: "assistant", content: "", ...patch }];
       });
+    const upsert = (chunk: string) => {
+      buf += chunk;
+      setLastAssistant({ content: visibleWhileStreaming(buf) });
     };
 
     try {
@@ -515,9 +564,10 @@ const ChatSheet = ({
           mood_today: moodSnapshot,
           // Local tz offset so the coach can judge timing (streak at risk tonight, etc).
           tz_offset: new Date().getTimezoneOffset(),
-          // Seeded threads continue straight from today's check-in — tell the
-          // model so the opening assistant bubble isn't an unexplained turn.
-          source: seedAssistant ? "post_checkin" : undefined,
+          // Where the question came from. A seeded thread's first turn
+          // continues straight from today's check-in — the model is told so
+          // the opening assistant bubble isn't an unexplained turn.
+          source: opts?.source ?? (seedAssistant ? "post_checkin" : "typed"),
         }),
       }), 2);
       if (!resp.ok || !resp.body) {
@@ -607,11 +657,13 @@ const ChatSheet = ({
         ]);
       }
     } finally {
+      const { body, questions } = splitFollowups(buf);
+      if (buf) setLastAssistant({ content: body, questions });
       setStreaming(false);
       abortRef.current = null;
       try {
-        if (buf && buf.length > 20 && session?.access_token) {
-          const finalMsgs = [...history, { role: "assistant" as const, content: buf }];
+        if (body && body.length > 20 && session?.access_token) {
+          const finalMsgs = [...history, { role: "assistant" as const, content: body }];
           supabase.functions.invoke("coach-extract-memory", {
             body: { messages: finalMsgs.slice(-6) },
           }).catch(() => { /* silent */ });
@@ -620,9 +672,10 @@ const ChatSheet = ({
     }
   };
 
-  const send = async (textOverride?: string, opts?: { faqId?: string }) => {
+  const send = async (textOverride?: string, opts?: { faqId?: string; source?: QuestionSource; index?: number }) => {
     const text = (textOverride ?? input).trim();
     if (!text || streaming) return;
+    if (opts?.source && opts.source !== "typed") void track(FUNNEL.coachQuestionTapped, { origin: opts.source, index: opts.index ?? 0 });
 
     // Instant FAQ path
     const faq = matchFaq(text, opts?.faqId);
@@ -637,13 +690,12 @@ const ChatSheet = ({
 
     hapticImpact("light");
     setInput("");
-    setSeedChipsShown(false); // first question sent — retire the follow-up chips
     const userMsg: ChatMsg = { role: "user", content: text };
     const next = [...messages.filter((m) => !m.failed), userMsg];
     setMessages(next);
     setPopIdx(next.length - 1);
     void track(FUNNEL.coachMessageSent, { turn: next.length - 1, answered_by: "ai" });
-    await callAi(next);
+    await callAi(next, { source: opts?.source });
   };
 
   // The pilot's one direct read on whether an answer was any good. One tap,
@@ -674,17 +726,17 @@ const ChatSheet = ({
 
   // Auto-send the tapped question once per open.
   useEffect(() => {
-    if (open && !sentInitialRef.current && initialPrompt && initialPrompt.trim()) {
+    if (open && !sentInitialRef.current && initialPrompt && initialPrompt.text.trim()) {
       sentInitialRef.current = true;
-      send(initialPrompt);
+      send(initialPrompt.text, { source: initialPrompt.source, index: initialPrompt.index });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialPrompt]);
 
   const quickAnswers = COACH_FAQ.slice(0, 4);
-  // Conversational starters — real model round-trips (no faqId) so the empty
-  // state teaches "you can TALK to this coach", not just request briefings.
-  const conversationStarters = ["How am I doing?", "How should I train today?", "What should I lift next?"];
+  // Two starters — real model round-trips (no faqId) under the brief's own
+  // questions, so the empty state still says "you can TALK to this coach".
+  const conversationStarters = ["How am I doing?", "What should I lift next?"];
 
   return (
     <BottomSheet
@@ -707,7 +759,7 @@ const ChatSheet = ({
       ) : undefined}
       bodyRef={scrollRef}
       bodyClassName="py-3 space-y-3"
-      footer={
+      footer={composerOpen ? (
         <div className="flex items-center gap-2">
           <Input
             value={input}
@@ -730,16 +782,26 @@ const ChatSheet = ({
             <Send aria-hidden size={16} />
           </Button>
         </div>
-      }
+      ) : (
+        <Button variant="link" className="w-full" onClick={openComposer}>
+          Type your own question
+        </Button>
+      )}
     >
       {messages.length === 0 && (
         <div className="pt-1">
           <p className="text-meta text-muted-foreground mb-3">
-            Ask anything. Coach knows your program, your last 7 days and the playbook.
+            Tap a question. Coach knows your program, your health data, your food diary and your last 7 days.
           </p>
           <div className="flex flex-col gap-2">
-            {conversationStarters.map((q) => (
-              <button key={q} type="button" onClick={() => send(q)} className={CHIP}>{q}</button>
+            {briefQuestions.length > 0 && (
+              <p className="text-label text-muted-foreground">From today's brief</p>
+            )}
+            {briefQuestions.map((q, i) => (
+              <button key={q} type="button" onClick={() => send(q, { source: "brief", index: i })} className={CHIP}>{q}</button>
+            ))}
+            {conversationStarters.map((q, i) => (
+              <button key={q} type="button" onClick={() => send(q, { source: "starter", index: i })} className={CHIP}>{q}</button>
             ))}
             {quickAnswers.map((f) => (
               <button key={f.id} type="button" onClick={() => send(f.question, { faqId: f.id })} className={CHIP}>{f.question}</button>
@@ -803,6 +865,14 @@ const ChatSheet = ({
                 From Coach Playbook · Ask a follow-up for more
               </p>
             )}
+            {/* The reply's own next questions: the primary next action. */}
+            {m.role === "assistant" && !m.failed && !streaming && i === messages.length - 1 && !!m.questions?.length && (
+              <div className="mt-2 flex w-full max-w-[88%] flex-col gap-2" aria-label="Ask next">
+                {m.questions.map((q, qi) => (
+                  <button key={q} type="button" onClick={() => send(q, { source: m.content === seedAssistant?.trim() ? "reaction" : "followup", index: qi })} className={CHIP}>{q}</button>
+                ))}
+              </div>
+            )}
             {m.role === "assistant" && !m.failed && !m.isFaq && !streaming && i === messages.length - 1 && (
               <div className="mt-0.5 ml-1 flex items-center gap-3">
                 {m.content.length > 60 && (
@@ -821,16 +891,6 @@ const ChatSheet = ({
         ))}
       </AnimatePresence>
       {streaming && messages[messages.length - 1]?.role === "user" && <ThinkingIndicator />}
-
-      {/* Seeded from today's feedback — one-tap follow-ups on improving. */}
-      {seedChipsShown && !streaming && (
-        <div className="flex flex-col gap-2 pt-1">
-          <p className="text-meta text-muted-foreground">Ask a follow-up</p>
-          {PERFORMANCE_FOLLOWUPS.map((q) => (
-            <button key={q} type="button" onClick={() => send(q)} className={CHIP}>{q}</button>
-          ))}
-        </div>
-      )}
 
       {showBrowser && (
         <FaqBrowser

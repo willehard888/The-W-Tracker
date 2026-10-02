@@ -35,7 +35,7 @@ const TOOL = {
     parameters: {
       type: "object",
       additionalProperties: false,
-      required: ["performance_score", "driver_of_week", "wins", "frictions", "next_week_focus"],
+      required: ["performance_score", "driver_of_week", "wins", "frictions", "next_week_focus", "suggested_questions"],
       properties: {
         performance_score: { type: "integer", minimum: 0, maximum: 100 },
         driver_of_week: { type: "string", maxLength: 80 },
@@ -44,6 +44,11 @@ const TOOL = {
         next_week_focus: { type: "string", maxLength: 240 },
         program_tweak: { type: "string", maxLength: 200 },
         lifts_note: { type: "string", maxLength: 240 },
+        suggested_questions: {
+          type: "array", minItems: 3, maxItems: 3,
+          items: { type: "string", maxLength: 72 },
+          description: "Exactly 3 questions THIS athlete would ask about THIS review, first person, ≤72 characters, each carrying one of their own numbers, lifts, foods or days from the data and answerable from it.",
+        },
       },
     },
   },
@@ -109,6 +114,7 @@ Deno.serve(async (req) => {
     }));
     const liftsBlock = buildNextLoadsBlock(nextLoads);
     let lifts_note: string | null = null;
+    let suggested_questions: string[] = [];
 
     const checkins = checkinsRes.data ?? [];
     const reflections = reflectionsRes.data ?? [];
@@ -163,7 +169,7 @@ ${reflections.map((r) => `- ${r.reflection_date}: energy ${r.energy_1to5}/5, sle
 NORTH STAR: ${goal ? `${goal.title} → ${goal.current_value ?? "?"}/${goal.target_value}${goal.unit}` : "none"}
 COMPUTED PERFORMANCE SCORE: ${performance_score}/100
 ${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${liftsBlock ? `\n${liftsBlock}\n` : ""}${packBlock ? `\n${packBlock}\n` : ""}
-Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that moved the score this week (positive or negative). next_week_focus = ≤3 sentences of crisp prescription. program_tweak = ONE concrete adjustment if data warrants it (e.g. "Drop Friday VO₂ — RPE creeping above 9").${liftsBlock ? " lifts_note = ONE sentence on the lifts: which earned a plate, which hold, the one to watch — using only the NEXT LOADS numbers." : ""}`;
+Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that moved the score this week (positive or negative). next_week_focus = ≤3 sentences of crisp prescription. program_tweak = ONE concrete adjustment if data warrants it (e.g. "Drop Friday VO₂ — RPE creeping above 9").${liftsBlock ? " lifts_note = ONE sentence on the lifts: which earned a plate, which hold, the one to watch — using only the NEXT LOADS numbers." : ""} suggested_questions = the 3 questions this athlete would tap next about this review — first person, each with one of their own numbers or names above, never generic.`;
 
         const r = await openrouterFetch(OPENROUTER_API_KEY, {
             model: "google/gemini-2.5-flash",
@@ -185,6 +191,10 @@ Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that move
             next_week_focus = p.next_week_focus ?? next_week_focus;
             program_tweak = p.program_tweak ?? null;
             lifts_note = typeof p.lifts_note === "string" && lifts.length ? p.lifts_note.slice(0, 240) : null;
+            suggested_questions = (Array.isArray(p.suggested_questions) ? p.suggested_questions : [])
+              .filter((q: unknown): q is string => typeof q === "string" && q.trim().length > 0)
+              .map((q: string) => q.trim().slice(0, 72))
+              .slice(0, 3);
           }
         }
       } catch (e) {
@@ -203,6 +213,7 @@ Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that move
       _generated_with: OPENROUTER_API_KEY ? "google/gemini-2.5-flash" : "fallback",
       _lifts: lifts,
       _lifts_note: lifts_note,
+      _suggested_questions: suggested_questions,
     });
     if (rpcErr) {
       console.error("weekly rpc err", rpcErr);
@@ -226,7 +237,7 @@ Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that move
     });
 
     return new Response(JSON.stringify({
-      ok: true, review_id: rid, performance_score, driver_of_week, wins, frictions, next_week_focus, program_tweak,
+      ok: true, review_id: rid, performance_score, driver_of_week, wins, frictions, next_week_focus, program_tweak, suggested_questions,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("coach-weekly-review err", e);

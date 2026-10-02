@@ -168,10 +168,12 @@ const HealthKitConnectCard = ({ onConnected, statusOnly = false }: { onConnected
         <p className="text-dense font-bold leading-tight truncate">
           {stats?.is_verified_performer ? "Verified Performer" : via}
         </p>
+        {/* Two short facts, no truncation: "1/5 verified in 14 days · 70% earns the badge"
+            lost its last words next to the Sync button on a 402 pt phone. */}
         <p className="text-label text-muted-foreground leading-snug mt-0.5 tabular-nums truncate">
           {stats?.is_verified_performer ? `${via} · ` : ""}
-          {stats?.verified_count ?? 0}/{stats?.total_checkins ?? 0} verified in 14 days
-          {stats?.is_verified_performer ? "" : " · 70% earns the badge"}
+          {stats?.verified_count ?? 0}/{stats?.total_checkins ?? 0} verified · 14 days
+          {stats?.is_verified_performer ? "" : " · badge at 70%"}
         </p>
         {today?.sessions && (
           <p className="text-label text-foreground/85 leading-snug mt-0.5 tabular-nums truncate">Today · {today.sessions}</p>

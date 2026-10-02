@@ -472,7 +472,15 @@ const ChatSheet = ({
     return () => clearTimeout(t);
   }, [messages, streaming]);
 
+  // The stream just ended: the reply's follow-up chips arrived under it in
+  // the same commit, and they are the next action — show them. (Measured on
+  // the simulator: the chips sat 200 px below the fold and nobody scrolled.)
+  // A ref set by callAi, not a streaming→idle transition: a short reply can
+  // finish before React ever committed the streaming state.
+  const revealEndRef = useRef(false);
   useEffect(() => {
+    const ended = revealEndRef.current;
+    revealEndRef.current = false;
     requestAnimationFrame(() => {
       const el = scrollRef.current;
       if (!el) return;
@@ -480,7 +488,7 @@ const ChatSheet = ({
       // the bottom (reading along). "auto" during streaming — a smooth-scroll
       // animation retriggered per token janks; smooth only on discrete sends.
       const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
-      if (nearBottom) {
+      if (nearBottom || ended) {
         el.scrollTo({ top: el.scrollHeight, behavior: streaming ? "auto" : "smooth" });
       }
     });
@@ -659,6 +667,7 @@ const ChatSheet = ({
     } finally {
       const { body, questions } = splitFollowups(buf);
       if (buf) setLastAssistant({ content: body, questions });
+      revealEndRef.current = !!buf;
       setStreaming(false);
       abortRef.current = null;
       try {

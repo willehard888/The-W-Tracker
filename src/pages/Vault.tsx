@@ -332,9 +332,18 @@ const VaultCategoryBlock = ({
   const [expanded, setExpanded] = useState(false);
   const readCount = articles.filter((a) => readIds.has(a.id)).length;
   const panelId = `vault-shelf-${category.id}`;
+  // A cover near the bottom of the screen opened its shelf below the fold
+  // and nothing visibly happened (seen on the simulator): bring the cover to
+  // the top under the sticky bar so the shelf is what the member sees next.
+  const blockRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!expanded) return;
+    const id = requestAnimationFrame(() => blockRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }));
+    return () => cancelAnimationFrame(id);
+  }, [expanded]);
 
   return (
-    <div>
+    <div ref={blockRef} className="scroll-mt-[calc(env(safe-area-inset-top)+4.5rem)]">
       {/* The cover IS the category: art, name, a read count. Tap to open the shelf. */}
       <button
         type="button"

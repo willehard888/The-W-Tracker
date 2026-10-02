@@ -27,10 +27,17 @@ const REPLY = "Hold **100 kg** on Thursday — finish the range first.\n\n@@FOLL
 
 describe("coach chat — questions first, composer second", () => {
   const bodies: Array<Record<string, unknown>> = [];
+  const scrollTo = vi.fn();
   beforeEach(() => {
     setMode("empty");
-    // jsdom has no Element.scrollTo; the thread follows the stream with it.
-    Element.prototype.scrollTo = Element.prototype.scrollTo ?? (() => {});
+    // jsdom has no Element.scrollTo and every box is 0 px tall; give the
+    // thread a real geometry (reader far from the bottom) so only a deliberate
+    // scroll reaches the end.
+    scrollTo.mockReset();
+    Element.prototype.scrollTo = scrollTo as unknown as typeof Element.prototype.scrollTo;
+    Object.defineProperty(HTMLElement.prototype, "scrollHeight", { configurable: true, get: () => 2000 });
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, get: () => 600 });
+    Object.defineProperty(HTMLElement.prototype, "scrollTop", { configurable: true, get: () => 0, set: () => {} });
     bodies.length = 0;
     try { localStorage.setItem("w_coach_onboard_skipped", "1"); localStorage.removeItem("w_coach_messages_v1"); } catch {}
     vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
@@ -41,7 +48,13 @@ describe("coach chat — questions first, composer second", () => {
       return new Response("{}", { status: 200, headers: { "Content-Type": "application/json" } });
     }));
   });
-  afterEach(() => { vi.unstubAllGlobals(); cleanup(); });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollHeight;
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientHeight;
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollTop;
+    cleanup();
+  });
 
   it("sends a tapped question with its source, hides the trailer, shows its questions as chips, and keeps the composer folded", async () => {
     mountRoute("/coach", `/coach?ask=${encodeURIComponent("How am I doing?")}&src=review`, Coach);
@@ -51,6 +64,9 @@ describe("coach chat — questions first, composer second", () => {
     expect(bubble).toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText("Ask next")).toBeInTheDocument());
     expect(document.body.textContent).not.toContain("@@FOLLOWUPS");
+    // The stream's end scrolls the thread to the chips (smooth), whatever the
+    // reader's position — on the phone they sat 200 px below the fold.
+    await waitFor(() => expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: "smooth" })), { timeout: 4000 });
     const chips = within(screen.getByLabelText("Ask next")).getAllByRole("button");
     expect(chips.map((c) => c.textContent)).toEqual(["Should I add 2.5 kg after that?", "Why was my HRV down on Tuesday?"]);
 

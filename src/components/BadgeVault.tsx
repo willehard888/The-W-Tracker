@@ -317,7 +317,7 @@ const BadgeVault = ({
           const isFeatured = badge.id === featuredBadgeId;
 
           return (
-            <div key={badge.id} className="relative">
+            <div key={badge.id} className="relative flex flex-col">
               {isFeatured && earned && (
                 <div className="absolute -top-1.5 -right-1.5 z-10 h-5 w-5 rounded-full bg-gold flex items-center justify-center shadow-[0_0_10px_hsl(var(--gold)/0.6)]">
                   <Crown aria-hidden size={12} className="text-primary-foreground" />
@@ -328,16 +328,20 @@ const BadgeVault = ({
                 type="button"
                 onClick={() => onBadgeClick?.(badge)}
                 aria-label={`${badge.name}, ${earned ? "earned" : "not earned yet"}${isFeatured && earned ? ", your title" : ""}`}
-                className="press-row block w-full text-left"
+                className="press-row flex h-full w-full flex-col text-left"
               >
-                <BadgeCard
-                  name={badge.name}
-                  icon={badge.icon}
-                  rarity={badge.rarity}
-                  earned={earned}
-                  description={badge.description || undefined}
-                  compact
-                />
+                {/* The card fills the cell, the progress line sits under it:
+                    every tile in a row ends on the same edge. */}
+                <div className="flex-1 [&>div]:h-full">
+                  <BadgeCard
+                    name={badge.name}
+                    icon={badge.icon}
+                    rarity={badge.rarity}
+                    earned={earned}
+                    description={badge.description || undefined}
+                    compact
+                  />
+                </div>
 
                 {!earned && badgeProgress && badgeProgress.percent > 0 && (
                   <div className="mt-1.5 px-1">

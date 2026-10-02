@@ -55,32 +55,16 @@ Deno.serve(async (req) => {
     // its cache on localDateKey(), and the two disagreed for hours every day.
     const today = localDayKey(clampTzOffset(body?.tz_offset_minutes));
 
-    if (!force) {
-      const [{ data: cached }, { data: now }] = await Promise.all([
-        sb.from("coach_daily_briefs").select("payload, brief_date").eq("user_id", uid).eq("brief_date", today).maybeSingle(),
-        sb.from("profiles").select("status_tier").eq("user_id", uid).maybeSingle(),
-      ]);
-      // A brief written this morning kept calling the member a Recruit after
-      // the check-in that promoted them. A brief stored before `tier` existed
-      // carries none and is written again once.
-      const p = cached?.payload as { tier?: string } | null | undefined;
-      const outdated = !!now?.status_tier && p?.tier !== now.status_tier;
-      if (cached?.payload && !outdated) return json({ brief: cached.payload, cached: true });
-    }
-
-    // Gather context in parallel
+    // Gather context in parallel (also on a cached morning: the cache check
+    // below needs today's session, and these four selects are cheap).
     const sevenAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
-    const [profileRes, athleteRes, programRes, checkinsRes] = await Promise.all([
+    const [profileRes, athleteRes, programRes, checkinsRes, cachedRes] = await Promise.all([
       sb.from("profiles").select("username, status_tier, streak, longest_streak, level, xp, ai_consent_version").eq("user_id", uid).maybeSingle(),
       sb.from("coach_athlete_profile" as any).select("*").eq("user_id", uid).maybeSingle(),
       sb.from("coach_programs").select("*").eq("user_id", uid).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       sb.from("daily_checkins").select("checked_in_at, sleep_hours, hydration_liters, workout, sport, protein_intake, healthy_food, xp_earned, score_breakdown").eq("user_id", uid).gte("checked_in_at", sevenAgo).order("checked_in_at", { ascending: false }).limit(7),
+      force ? Promise.resolve({ data: null }) : sb.from("coach_daily_briefs").select("payload, brief_date").eq("user_id", uid).eq("brief_date", today).maybeSingle(),
     ]);
-
-    // AI consent (App Review 5.1.2(i)): a brief already written today is served
-    // above, a NEW one sends the member's week to the model, so it waits for
-    // their opt-in. Before bump_ai_usage: a refusal never costs quota.
-    if (!consentOk(profileRes.data?.ai_consent_version)) return json({ error: AI_CONSENT_REQUIRED }, 403);
 
     const profile = profileRes.data ?? {};
     const athlete: any = athleteRes.data ?? {};
@@ -107,6 +91,29 @@ Deno.serve(async (req) => {
     }
     // A session built for today leads, as it does on Home.
     todaySession = (await todaysFocusSession(sb, uid, today).catch(() => null)) ?? todaySession;
+    // What today's training IS, as a key: the focus when movements are
+    // planned, null for a rest day. The brief is written once a day, but the
+    // member can build today's session after breakfast — the cached brief
+    // then called a Biceps day a rest day until midnight.
+    const sessionKey = (todaySession?.blocks?.length ?? 0) > 0 ? String(todaySession.focus ?? "session") : null;
+
+    if (!force) {
+      const cached = cachedRes.data;
+      // A brief written this morning kept calling the member a Recruit after
+      // the check-in that promoted them. A brief stored before `tier` existed
+      // carries none and is written again once; so does one written before
+      // today's session changed under it.
+      const p = cached?.payload as { tier?: string; session_key?: string | null } | null | undefined;
+      const outdated =
+        (!!profile.status_tier && p?.tier !== profile.status_tier) ||
+        (p != null && "session_key" in p && p.session_key !== sessionKey);
+      if (cached?.payload && !outdated) return json({ brief: cached.payload, cached: true });
+    }
+
+    // AI consent (App Review 5.1.2(i)): a brief already written today is served
+    // above, a NEW one sends the member's week to the model, so it waits for
+    // their opt-in. Before bump_ai_usage: a refusal never costs quota.
+    if (!consentOk(profileRes.data?.ai_consent_version)) return json({ error: AI_CONSENT_REQUIRED }, 403);
 
     const last = checkins[0];
     const lastSleep = last?.sleep_hours ?? null;
@@ -283,6 +290,7 @@ Also produce:
     }
 
     payload.session_focus = todaySession?.focus ?? null;
+    payload.session_key = sessionKey;
     payload.tier = (profile as { status_tier?: string }).status_tier ?? null;
     payload.week = weekIdx;
     payload.day_index = dayIdx;

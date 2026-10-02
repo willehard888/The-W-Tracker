@@ -149,10 +149,12 @@ const BadgeCard = forwardRef<HTMLDivElement, BadgeCardProps>(
 
         {/* Title */}
         <div className="relative text-center w-full px-1">
+          {/* Two lines reserved in the grid: a one-line name next to a
+              two-line one used to leave the row's tiles at different heights. */}
           <p
             className={cn(
-              "font-bold text-foreground leading-tight line-clamp-2",
-              compact ? "text-meta" : "text-meta"
+              "font-bold text-foreground leading-tight line-clamp-2 text-meta",
+              compact && "min-h-[2.5em]"
             )}
           >
             {name}

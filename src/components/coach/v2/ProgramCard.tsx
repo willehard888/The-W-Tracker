@@ -112,7 +112,7 @@ const ProgramCard = () => {
     ? "Tap to view your week."
     : today.isRest
       ? "Active recovery, mobility, walk. Earn tomorrow."
-      : [today.duration ? `${today.duration} min` : null, today.blocks ? `${today.blocks} blocks` : null].filter(Boolean).join(" · ") || "Open the program";
+      : [today.duration ? `${today.duration} min` : null, today.blocks ? `${today.blocks} ${today.blocks === 1 ? "exercise" : "exercises"}` : null].filter(Boolean).join(" · ") || "Open the program";
 
   return (
     <>

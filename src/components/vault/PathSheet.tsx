@@ -1,5 +1,7 @@
-import { Check } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
+import EmptyState from "@/components/ui/empty-state";
+import AccentMark from "./AccentMark";
 import { cn } from "@/lib/utils";
 import { pathProgress } from "@/lib/vault-loop";
 import { DIMENSION_LABEL, type VaultPath } from "@/data/vault-paths";
@@ -41,8 +43,12 @@ const PathSheet = ({
       title={path.title}
       subtitle={`${DIMENSION_LABEL[path.dimension]} · ${pp.complete ? "walked" : `${pp.done} of ${pp.total} practised`}`}
     >
-      <p className="h-card pt-1">{path.thesis}</p>
+      {/* The lens voice — the same line Today in the Vault speaks in. */}
+      <p className="font-display text-subhead leading-snug tracking-tight text-foreground pt-1">{path.thesis}</p>
 
+      {articles.length === 0 ? (
+        <div className="mt-5"><EmptyState size="compact" icon={BookOpen} title="No pieces yet" /></div>
+      ) : (
       <ol className="mt-5 divide-y divide-border/35" aria-label="Steps">
         {path.steps.map((slug, i) => {
           const a = bySlug.get(slug);
@@ -53,19 +59,9 @@ const PathSheet = ({
             <li key={slug}>
               <VaultPieceRow
                 lead={
-                  <span
-                    aria-hidden
-                    className="mt-0.5 h-5 w-5 rounded-full shrink-0 flex items-center justify-center border text-label font-black"
-                    style={
-                      done
-                        ? { background: accent, borderColor: accent, color: "hsl(var(--background))" }
-                        : next
-                          ? { borderColor: accent, color: accent }
-                          : { borderColor: "hsl(var(--border) / 0.6)", color: "hsl(var(--muted-foreground) / 0.75)" }
-                    }
-                  >
-                    {done ? <Check size={12} strokeWidth={3} aria-hidden /> : i + 1}
-                  </span>
+                  <AccentMark accent={accent} state={done ? "done" : next ? "current" : "idle"} className="mt-0.5">
+                    {done ? undefined : i + 1}
+                  </AccentMark>
                 }
                 kicker={
                   <span className={cn("block text-label font-bold", !next && "text-muted-foreground")} style={next ? { color: accent } : undefined}>
@@ -85,6 +81,7 @@ const PathSheet = ({
           );
         })}
       </ol>
+      )}
 
       {pp.complete && (
         <p className="mt-5 text-meta text-muted-foreground leading-relaxed">

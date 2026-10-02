@@ -2,7 +2,7 @@ import { backOr } from "@/lib/nav";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Utensils, ChevronRight, BookOpen } from "lucide-react";
+import { Utensils, ChevronRight, BookOpen, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fmtInt } from "@/lib/format";
 import EmptyState from "@/components/ui/empty-state";
@@ -20,18 +20,28 @@ import TodayPractice from "@/components/vault/TodayPractice";
 import PathSheet from "@/components/vault/PathSheet";
 import MasterSheet from "@/components/vault/MasterSheet";
 import VaultPieceRow, { pieceMeta } from "@/components/vault/VaultPieceRow";
+import AccentMark from "@/components/vault/AccentMark";
+import { DoorRow } from "@/components/coach/rows";
 import { CATEGORIES, DIMENSION_ACCENT, WISDOM_ACCENT, accentOf, type VaultCategory } from "@/components/vault/categories";
 import { VAULT_PATHS, PATH_BY_SLUG, DIMENSION_LABEL, type VaultPath } from "@/data/vault-paths";
 import { VAULT_MASTERS, MASTER_BY_SLUG, type VaultMaster } from "@/data/vault-masters";
 import { pathProgress } from "@/lib/vault-loop";
 import { track, FUNNEL } from "@/lib/analytics";
-import { hapticImpact } from "@/lib/haptics";
+
+// The masters list folds here: six lenses on the page, the rest one tap away
+// (the library's own fold, RecoverLibrary).
+const MASTERS_SHOWN = 6;
 
 /**
  * The Vault: a map, then a library. Today's practice opens it (one thinker,
  * one piece, one question); the six paths and the masters are the
  * map; the covers below are the shelf as it was. Pieces open in a sheet;
  * paths and masters open in their own sheets and hand off to the piece.
+ *
+ * One language: type on the page above one spectacle. Every section is an
+ * `h-card` with a muted line under it, every list is the app's DoorRow on
+ * hairlines, every progress mark is the AccentMark; the illustrated covers
+ * are the one surface with weight.
  */
 const Vault = () => {
   const navigate = useNavigate();
@@ -54,6 +64,7 @@ const Vault = () => {
   );
   const [openPath, setOpenPath] = useState<VaultPath | null>(null);
   const [openMaster, setOpenMaster] = useState<VaultMaster | null>(null);
+  const [allMasters, setAllMasters] = useState(false);
   const [poppedId, setPoppedId] = useState<string | null>(null);
   // A badge earned inside the sheet waits until the sheet closes: the unlock
   // modal (z-modal) sits under the sheet (z-celebration).
@@ -181,75 +192,68 @@ const Vault = () => {
         ) : (
         <>
         {/* Today — one thinker, one piece, one question. The hero. */}
-        <div className="home-rise home-rise-1 mt-6">
+        <div className="home-rise home-rise-1 mt-7">
           <TodayPractice onOpen={openBySlug} />
         </div>
 
-        {/* Paths — six doors in a row, one per dimension. */}
-        <section className="home-rise home-rise-2 mt-7" aria-label="Paths">
-          <h3 className="font-display text-head font-black tracking-tight leading-none">Paths</h3>
+        {/* Paths — six doors, one per dimension: the mark says where you stand. */}
+        <section className="home-rise home-rise-2 mt-7" aria-labelledby="vault-paths">
+          <h3 id="vault-paths" className="h-card">Paths</h3>
           <p className="text-meta text-muted-foreground mt-1">Pieces in walking order around one change. The next step is always the first you have not practised.</p>
-          {/* scroll-px-4: mandatory snapping aligns a card to the scroller's
-              edge, which is the SCREEN edge here (-mx-4) — without it the
-              first card sat flush at x = 0, outside the page gutter. */}
-          <div className="no-scrollbar -mx-4 mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
+          <div className="mt-3 divide-y divide-border/35 border-t border-border/35">
             {VAULT_PATHS.map((p) => {
               const pp = pathProgress(p.steps, practicedSlugs);
               const accent = DIMENSION_ACCENT[p.dimension];
               return (
-                <button
+                <DoorRow
                   key={p.slug}
-                  type="button"
+                  leading={<AccentMark accent={accent} state={pp.complete ? "done" : pp.done > 0 ? "current" : "idle"} />}
+                  label={p.title}
+                  sub={`${DIMENSION_LABEL[p.dimension]} · ${pp.complete ? "Walked" : `${pp.done} of ${pp.total} practised`}`}
+                  trailing={pp.complete ? <Check size={16} className="shrink-0" style={{ color: accent }} aria-hidden /> : undefined}
                   onClick={() => setOpenPath(p)}
-                  className="press snap-start shrink-0 w-[152px] surface-card surface-card-quiet p-3.5 text-left"
-                  style={{ borderColor: pp.complete ? `${accent}66` : undefined }}
-                >
-                  <span className="block text-label font-bold" style={{ color: accent }}>
-                    {DIMENSION_LABEL[p.dimension]}
-                  </span>
-                  <span className="mt-1 block font-display text-read font-black tracking-tight leading-tight min-h-[2.4em]">
-                    {p.title}
-                  </span>
-                  <span className="mt-2 block text-label text-muted-foreground tabular-nums">
-                    {pp.complete ? "Walked" : `${pp.done} of ${pp.total} practised`}
-                  </span>
-                </button>
+                />
               );
             })}
           </div>
         </section>
 
-        {/* Masters — the thinkers as lenses. Type only; a name and its tradition. */}
-        <section className="home-rise home-rise-3 mt-7" aria-label="Masters">
-          <h3 className="font-display text-head font-black tracking-tight leading-none">Masters</h3>
+        {/* Masters — the thinkers as lenses: a name, its tradition, the door. */}
+        <section className="home-rise home-rise-3 mt-7" aria-labelledby="vault-masters">
+          <h3 id="vault-masters" className="h-card">Masters</h3>
           <p className="text-meta text-muted-foreground mt-1">{VAULT_MASTERS.length} thinkers, each a lens. Tap a name for their ideas and what kind of claim they make.</p>
-          <ul className="mt-2 grid grid-cols-2 gap-x-5">
-            {VAULT_MASTERS.map((m) => {
-              const mine = (allVaultArticles ?? []).filter((a) => a.master_slug === m.slug);
-              const done = mine.filter((a) => practicedSlugs.has(a.slug)).length;
+          <div className="mt-3 divide-y divide-border/35 border-t border-border/35">
+            {(allMasters ? VAULT_MASTERS : VAULT_MASTERS.slice(0, MASTERS_SHOWN)).map((m) => {
+              const done = (allVaultArticles ?? []).filter((a) => a.master_slug === m.slug && practicedSlugs.has(a.slug)).length;
               return (
-                <li key={m.slug} className="border-b border-border/35">
-                  <button
-                    type="button"
-                    onClick={() => setOpenMaster(m)}
-                    className="press-row w-full py-2.5 text-left"
-                  >
-                    <span className="block font-display text-dense font-black tracking-tight leading-tight truncate">{m.name}</span>
-                    <span className="block text-label text-muted-foreground leading-snug truncate" style={done ? { color: WISDOM_ACCENT } : undefined}>
-                      {done ? `${done} practised` : m.tradition}
-                    </span>
-                  </button>
-                </li>
+                <DoorRow
+                  key={m.slug}
+                  label={m.name}
+                  sub={m.tradition}
+                  trailing={done > 0 ? (
+                    <span className="text-label font-bold tabular-nums shrink-0" style={{ color: WISDOM_ACCENT }}>{done} practised</span>
+                  ) : undefined}
+                  onClick={() => setOpenMaster(m)}
+                />
               );
             })}
-          </ul>
+          </div>
+          <button
+            type="button"
+            aria-expanded={allMasters}
+            onClick={() => setAllMasters((o) => !o)}
+            className="press mt-2 min-h-11 flex items-center gap-1 text-meta font-bold text-muted-foreground"
+          >
+            {allMasters ? "Hide" : "All"} {VAULT_MASTERS.length} thinkers
+            <ChevronRight aria-hidden size={14} className={cn("transition-transform", allMasters && "rotate-90")} />
+          </button>
         </section>
 
-        {/* The shelf — covers are the categories. No frame, no strip below. */}
-        <section className="home-rise home-rise-4 mt-8" aria-label="The shelf">
-          <h3 className="font-display text-head font-black tracking-tight leading-none">The shelf</h3>
+        {/* The shelf — covers are the categories: the one surface with weight. */}
+        <section className="home-rise home-rise-4 mt-7" aria-labelledby="vault-shelf">
+          <h3 id="vault-shelf" className="h-card">The shelf</h3>
           <p className="text-meta text-muted-foreground mt-1">Every piece is graded by evidence tier and cites its research.</p>
-          <div className="mt-4 space-y-3">
+          <div className="mt-3 space-y-3">
             {CATEGORIES.map((cat) => (
               <VaultCategoryBlock
                 key={cat.id}
@@ -260,7 +264,6 @@ const Vault = () => {
                 poppedId={poppedId}
                 practicedSlugs={practicedSlugs}
                 onOpenArticle={(a) => {
-                  hapticImpact("light");
                   setPoppedId(null);
                   setOpenArticle({ article: a, accent: cat.accent, wasRead: readIds.has(a.id) });
                 }}
@@ -294,7 +297,6 @@ const Vault = () => {
         />
         <MasterSheet
           master={openMaster}
-          accent={WISDOM_ACCENT}
           open={!!openMaster}
           onClose={() => setOpenMaster(null)}
           articles={allVaultArticles ?? []}
@@ -343,7 +345,7 @@ const VaultCategoryBlock = ({
       >
         <VaultCover id={category.id} accent={category.accent} />
         {articles.length > 0 && (
-          <p className="absolute top-3 right-3 z-10 text-label font-bold tabular-nums text-white/80">
+          <p className="absolute top-3 right-3 z-10 text-label font-bold tabular-nums text-foreground/85">
             {readCount} of {articles.length} read
           </p>
         )}
@@ -352,13 +354,13 @@ const VaultCategoryBlock = ({
             <Icon size={12} strokeWidth={2.5} aria-hidden />
             {category.tagline}
           </p>
-          <p className="font-display text-head font-black leading-none tracking-tight text-white drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">
+          <p className="font-display text-head font-black leading-none tracking-tight text-foreground drop-shadow-[0_2px_8px_hsl(0_0%_0%/0.6)]">
             {category.title}
           </p>
         </div>
         <ChevronRight
           size={16}
-          className={cn("absolute bottom-4 right-4 z-10 text-white/75 transition-transform", expanded && "rotate-90")}
+          className={cn("absolute bottom-4 right-4 z-10 text-foreground/85 transition-transform", expanded && "rotate-90")}
           aria-hidden
         />
       </button>
@@ -370,16 +372,12 @@ const VaultCategoryBlock = ({
           {/* Recipes category → the full meal-prep recipe collection (poster
               style + batch scaler). A quiet row leading the pieces. */}
           {category.id === "recipes" && (
-            <button type="button" onClick={() => navigate("/recipes")} className="press-row w-full min-h-11 flex items-center gap-3 py-3 text-left">
-              <Utensils size={16} className="text-muted-foreground shrink-0" aria-hidden />
-              <span className="flex-1 min-w-0">
-                <span className="block font-display text-dense font-black tracking-tight leading-tight">Meal-prep recipes</span>
-                <span className="block text-meta text-muted-foreground leading-snug mt-0.5">
-                  {RECIPE_COUNT} high-protein recipes · scale 1×–5× · storage and reheat
-                </span>
-              </span>
-              <ChevronRight size={14} className="text-muted-foreground shrink-0" aria-hidden />
-            </button>
+            <DoorRow
+              icon={Utensils}
+              label="Meal-prep recipes"
+              sub={`${RECIPE_COUNT} high-protein recipes · scale 1×–5×`}
+              onClick={() => navigate("/recipes")}
+            />
           )}
 
           {loading &&
@@ -399,9 +397,9 @@ const VaultCategoryBlock = ({
                   key={a.id}
                   lead={
                     a.lesson_number != null ? (
-                      <span className="w-5 shrink-0 font-display text-dense font-black tabular-nums leading-tight" style={{ color: category.accent }}>
+                      <AccentMark accent={category.accent} state={readIds.has(a.id) ? "done" : "idle"} className="mt-0.5">
                         {a.lesson_number}
-                      </span>
+                      </AccentMark>
                     ) : undefined
                   }
                   title={a.title}

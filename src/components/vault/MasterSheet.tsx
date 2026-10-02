@@ -1,5 +1,8 @@
+import { BookOpen } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
+import EmptyState from "@/components/ui/empty-state";
 import { MASTER_KIND_LABEL, type VaultMaster } from "@/data/vault-masters";
+import { accentOf } from "./categories";
 import { pathOfArticle } from "@/data/vault-paths";
 import type { VaultArticleSummary } from "@/hooks/use-vault-articles";
 import VaultPieceRow, { pieceMeta } from "./VaultPieceRow";
@@ -12,7 +15,6 @@ import SectionHeader from "./SectionHeader";
  */
 const MasterSheet = ({
   master,
-  accent,
   open,
   onClose,
   articles,
@@ -20,7 +22,6 @@ const MasterSheet = ({
   onOpenSlug,
 }: {
   master: VaultMaster | null;
-  accent: string;
   open: boolean;
   onClose: () => void;
   articles: VaultArticleSummary[];
@@ -32,14 +33,16 @@ const MasterSheet = ({
 
   return (
     <BottomSheet open={open} onClose={onClose} label={master.name} title={master.name} subtitle={`${master.lived} · ${master.tradition}`}>
-      <p className="font-display text-title font-black tracking-tight leading-display pt-1">{master.lens}</p>
+      {/* The lens voice — the same line Today in the Vault speaks in. */}
+      <p className="font-display text-subhead leading-snug tracking-tight text-foreground pt-1">{master.lens}</p>
       <p className="mt-3 text-note text-muted-foreground leading-relaxed">
         {MASTER_KIND_LABEL[master.kind]}. Read for the practice you can run this week; the evidence chip on each piece rates that practice, not the worldview.
       </p>
 
-      <div className="mt-6">
-        <SectionHeader label="Ideas in the Vault" />
-      </div>
+      <SectionHeader label="Ideas in the Vault" className="mt-6" />
+      {ideas.length === 0 ? (
+        <EmptyState size="compact" icon={BookOpen} title="No pieces yet" />
+      ) : (
       <ol className="divide-y divide-border/35">
         {ideas.map((a) => {
           const done = practiced.has(a.slug);
@@ -51,17 +54,16 @@ const MasterSheet = ({
                 subtitle={a.subtitle}
                 meta={pieceMeta(a, done, path?.title)}
                 done={done}
-                accent={accent}
+                accent={accentOf(a.category_id)}
                 onClick={() => onOpenSlug(a.slug)}
               />
             </li>
           );
         })}
       </ol>
+      )}
 
-      <div className="mt-6">
-        <SectionHeader label="Works" />
-      </div>
+      <SectionHeader label="Works" className="mt-6" />
       <ul className="space-y-1">
         {master.works.map((w) => (
           <li key={w.title} className="text-meta text-foreground/85 leading-snug">

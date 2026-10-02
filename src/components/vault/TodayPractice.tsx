@@ -52,7 +52,7 @@ const TodayPractice = ({ onOpen, className }: { onOpen: (slug: string) => void; 
         {doneToday
           ? "Open the next piece"
           : `Open · ${practiceLength(article.practice_minutes)} · +${PRACTICE_XP} XP`}
-        <ChevronRight aria-hidden size={12} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
+        <ChevronRight aria-hidden size={14} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
       </p>
       <p className="mt-1 text-label text-muted-foreground/75 leading-snug">{reason}</p>
       {path && <span className="sr-only">{DIMENSION_LABEL[path.dimension]}</span>}

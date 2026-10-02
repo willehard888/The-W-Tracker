@@ -12,6 +12,8 @@ export const pieceMeta = (a: Pick<VaultArticleSummary, "evidence_tier" | "read_t
  * One piece, one row: on the shelf, on a path and under a master. A lead (the
  * lesson number or the step), an optional line above the title (the path's
  * beat), the title, a subtitle, the meta line, and where the reader stands.
+ * The DoorRow silhouette (src/components/coach/rows.tsx) with a third line:
+ * same title rung, same 16 px chevron at /75, same rhythm.
  */
 const VaultPieceRow = ({
   lead,
@@ -49,7 +51,7 @@ const VaultPieceRow = ({
     {lead}
     <span className="flex-1 min-w-0">
       {kicker}
-      <span className={cn("block font-display text-dense font-black tracking-tight leading-tight", kicker && "mt-0.5", dimmed && "text-foreground/85")}>
+      <span className={cn("block text-note font-semibold leading-tight", kicker && "mt-0.5", dimmed && "text-foreground/85")}>
         {title}
       </span>
       {subtitle && <span className="block text-meta text-muted-foreground leading-snug mt-0.5 truncate">{subtitle}</span>}
@@ -60,9 +62,9 @@ const VaultPieceRow = ({
       )}
     </span>
     {done ? (
-      <Check size={14} className="shrink-0 mt-0.5" style={{ color: accent }} aria-hidden />
+      <Check size={16} className="shrink-0 mt-0.5" style={{ color: accent }} aria-hidden />
     ) : (
-      <ChevronRight size={14} className="text-muted-foreground shrink-0 mt-0.5" aria-hidden />
+      <ChevronRight size={16} className="text-muted-foreground/75 shrink-0 mt-0.5" aria-hidden />
     )}
   </button>
 );

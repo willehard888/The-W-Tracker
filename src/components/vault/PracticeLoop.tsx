@@ -4,6 +4,7 @@ import { Check, Lock, Play, Square } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import LessonQuiz from "./LessonQuiz";
+import AccentMark from "./AccentMark";
 import { cn } from "@/lib/utils";
 import { hapticImpact, hapticNotification } from "@/lib/haptics";
 import { track, FUNNEL } from "@/lib/analytics";
@@ -113,7 +114,7 @@ const PracticeLoop = ({
                 {done ? <Check size={12} strokeWidth={3} className="inline -mt-0.5 mr-0.5" aria-hidden /> : null}
                 {s.label}
               </span>
-              {i < STAGES.length - 1 && <span aria-hidden className="h-px w-3 bg-border/60 shrink-0" />}
+              {i < STAGES.length - 1 && <span aria-hidden className="h-px w-3 bg-border/35 shrink-0" />}
             </li>
           );
         })}
@@ -133,7 +134,7 @@ const PracticeLoop = ({
           {article.quiz?.length > 0 &&
             (checkOpen ? (
               <div className="mt-4">
-                <LessonQuiz quiz={article.quiz} accent={accent} onScore={setQuizScore} />
+                <LessonQuiz quiz={article.quiz} onScore={setQuizScore} />
               </div>
             ) : (
               <Button variant="outline" className="mt-3 min-h-11" onClick={() => setCheckOpen(true)}>
@@ -254,19 +255,7 @@ const Stage = ({
   return (
     <div className="py-4">
       <div className="flex items-start gap-3">
-        <span
-          aria-hidden
-          className="mt-0.5 h-4 w-4 rounded-full shrink-0 flex items-center justify-center border"
-          style={
-            state === "done"
-              ? { background: accent, borderColor: accent, color: "hsl(var(--background))" }
-              : state === "current"
-                ? { borderColor: accent }
-                : { borderColor: "hsl(var(--border) / 0.6)" }
-          }
-        >
-          {state === "done" && <Check size={10} strokeWidth={3} aria-hidden />}
-        </span>
+        <AccentMark accent={accent} state={state === "ahead" ? "idle" : state} className="mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline justify-between gap-3">
             <p
@@ -275,14 +264,10 @@ const Stage = ({
               {label}
             </p>
             {state === "done" && editable && !open && (
-              <button type="button" onClick={() => setOpen(true)} className="text-label font-bold text-muted-foreground min-h-11 -my-3 px-2">
-                Edit
-              </button>
+              <Button variant="link" size="sm" className="-my-2 -mr-3" onClick={() => setOpen(true)}>Edit</Button>
             )}
             {state === "done" && editable && open && (
-              <button type="button" onClick={() => setOpen(false)} className="text-label font-bold text-muted-foreground min-h-11 -my-3 px-2">
-                Done
-              </button>
+              <Button variant="link" size="sm" className="-my-2 -mr-3" onClick={() => setOpen(false)}>Done</Button>
             )}
           </div>
           {state === "done" && !open && (
@@ -316,7 +301,7 @@ const AnswerBox = ({
   const dirty = text.trim() !== initial.trim();
   return (
     <div>
-      <p className="h-card">{prompt}</p>
+      <p className="text-read font-semibold leading-snug">{prompt}</p>
       <Textarea
         value={text}
         onChange={(e) => setText(e.target.value.slice(0, 1200))}
@@ -392,12 +377,7 @@ const PracticeBox = ({
       <ol className="mt-2 space-y-2">
         {steps.map((step, i) => (
           <li key={i} className="flex items-start gap-2.5 text-dense">
-            <span
-              className="mt-px h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-label font-black"
-              style={{ background: `${accent}25`, color: accent, border: `1px solid ${accent}55` }}
-            >
-              {i + 1}
-            </span>
+            <AccentMark accent={accent} state="current" className="mt-px">{i + 1}</AccentMark>
             <span className="text-foreground leading-snug">{step}</span>
           </li>
         ))}
@@ -419,9 +399,9 @@ const PracticeBox = ({
                 {left === 0 ? "Time." : mmss}
               </span>
               {left > 0 && (
-                <button type="button" onClick={stop} aria-label="Stop timer" className="press rounded-full border border-border/60 p-2 text-muted-foreground min-h-11 min-w-11 flex items-center justify-center">
-                  <Square size={12} aria-hidden />
-                </button>
+                <Button variant="outline" size="icon" aria-label="Stop timer" className="min-h-11 min-w-11" onClick={stop}>
+                  <Square aria-hidden />
+                </Button>
               )}
             </>
           )}

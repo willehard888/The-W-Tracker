@@ -25,7 +25,7 @@ const InsightQuote = () => {
       onClick={() => {
         navigate(`/vault?lesson=${insight.lessonSlug}`);
       }}
-      className="press-row group relative w-full text-left px-1.5"
+      className="press-row group relative w-full text-left"
     >
       {/* Oversized quote watermark — an editorial premium device, faint gold,
           behind the text. Purely typographic; hidden from screen readers. */}
@@ -42,7 +42,7 @@ const InsightQuote = () => {
       </p>
       <p className="flex items-center gap-1 text-label font-bold text-muted-foreground mt-3">
         From the Vault{insight.source ? ` · ${insight.source}` : ""}
-        <ChevronRight aria-hidden size={12} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
+        <ChevronRight aria-hidden size={14} className="text-gold/70 transition-transform group-active:translate-x-0.5" />
       </p>
     </button>
   );

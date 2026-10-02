@@ -11,14 +11,16 @@ import { useVaultProgress } from "@/hooks/use-vault-progress";
 import type { PracticeResult } from "@/hooks/use-vault-practice";
 import { MASTER_BY_SLUG } from "@/data/vault-masters";
 import { pathOfArticle } from "@/data/vault-paths";
+import { CATEGORIES } from "./categories";
 import { track, FUNNEL } from "@/lib/analytics";
 
 /**
- * One piece, top to bottom: what it is (hero), why it matters, the dose (the
- * one card), the reading, what to keep, what it gives and where it stops, then
- * the loop that turns it into a practice, and the sources. The shelf's accent
- * marks identity (chip, subtitle, section marks); every action is one of the
- * app's buttons, the same on every shelf.
+ * One piece, top to bottom: the sheet's own header (the shelf and the lesson),
+ * then what it is, why it matters, the dose (the one card), the reading, what
+ * to keep, what it gives and where it stops, then the loop that turns it into
+ * a practice, and the sources. The shelf's accent marks identity (chip,
+ * subtitle, section marks); every action is one of the app's buttons, the
+ * same on every shelf.
  */
 
 const EMPTY_FULL: Omit<VaultArticle, keyof VaultArticleSummary> = {
@@ -48,7 +50,7 @@ export const BodyParagraph = ({ children }: { children?: ReactNode }) => {
   if (!heading) return <p>{children}</p>;
   return (
     <>
-      <h4 className="font-display text-read font-black tracking-tight text-foreground mt-6 mb-1 first:mt-0">
+      <h4 className="h-card text-foreground mt-6 mb-1 first:mt-0">
         {(first as ReactElement<{ children?: ReactNode }>).props.children}
       </h4>
       {second !== undefined && (
@@ -100,6 +102,15 @@ const VaultArticleSheet = ({
   const path = article ? pathOfArticle(article.slug) : undefined;
   const isIdea = article?.category_id === "wisdom" || article?.category_id === "inner-work";
   const loaded = !!full && full.id === summary?.id;
+  // The sheet header names the shelf and the place: "Longevity · Lesson 2 of 10",
+  // or the path's beat for a piece that is a step rather than a lesson.
+  const category = CATEGORIES.find((c) => c.id === article?.category_id);
+  const stepIdx = article && path ? path.steps.indexOf(article.slug) : -1;
+  const place = article?.lesson_number
+    ? `Lesson ${article.lesson_number}${courseTotal ? ` of ${courseTotal}` : ""}${article.course_role === "foundations" ? " · Foundations" : ""}`
+    : path && stepIdx >= 0
+      ? `${path.title} · ${path.beats[stepIdx]}`
+      : undefined;
   const protocol = article?.protocol;
   const hasProtocol = !!(protocol?.duration || protocol?.intensity || protocol?.frequency || protocol?.prerequisites);
 
@@ -112,22 +123,19 @@ const VaultArticleSheet = ({
   }, [summary?.id, open]);
 
   return (
-    <BottomSheet open={open && !!article} onClose={onClose} label={article?.title ?? "Article"} height="tall">
+    <BottomSheet
+      open={open && !!article}
+      onClose={onClose}
+      label={article?.title ?? "Article"}
+      title={category?.title ?? "The Vault"}
+      subtitle={place}
+      height="tall"
+    >
       {article && (
         <>
-          {/* Hero */}
-          <header
-            className="relative -mx-4 px-4 pt-3 pb-5 border-b border-border/35"
-            style={{ background: `linear-gradient(180deg, ${accent}22 0%, transparent 100%)` }}
-          >
-            <div className="flex items-center gap-1.5 flex-wrap mb-2.5 pr-10">
-              {article.lesson_number && (
-                <VaultChip style={{ background: `${accent}22`, color: accent, borderColor: `${accent}55` }}>
-                  {`Lesson ${article.lesson_number}${courseTotal ? ` of ${courseTotal}` : ""}${
-                    article.course_role === "foundations" ? " · Foundations" : ""
-                  }`}
-                </VaultChip>
-              )}
+          {/* The piece: its grade and length, its name, its one line. */}
+          <header className="pt-1 pb-5 border-b border-border/35">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <EvidenceChip tier={article.evidence_tier} />
               <VaultChip className="border-border/50 bg-card/80 text-muted-foreground tabular-nums">
                 <Clock aria-hidden size={10} strokeWidth={3} />
@@ -135,9 +143,9 @@ const VaultArticleSheet = ({
               </VaultChip>
             </div>
 
-            <h2 className="font-display text-title leading-display font-black tracking-tight pr-8 text-balance">{article.title}</h2>
+            <h1 className="h-page mt-3 text-balance">{article.title}</h1>
             {article.subtitle && (
-              <p className="text-dense mt-1.5 font-semibold leading-snug" style={{ color: accent }}>
+              <p className="text-note mt-1.5 font-semibold leading-snug" style={{ color: accent }}>
                 {article.subtitle}
               </p>
             )}
@@ -230,7 +238,7 @@ const VaultArticleSheet = ({
             )}
 
             {loaded && (
-              <div className="pt-6 border-t border-border/30">
+              <div className="pt-6 border-t border-border/35">
                 <PracticeLoop
                   key={article.id}
                   article={article}
@@ -243,7 +251,7 @@ const VaultArticleSheet = ({
             )}
 
             {article.references_json?.length > 0 && (
-              <section className="pt-6 border-t border-border/30">
+              <section className="pt-6 border-t border-border/35">
                 <SectionHeader Icon={Library} label="References" />
                 <ol className="space-y-1.5 text-meta text-muted-foreground list-decimal list-inside">
                   {article.references_json.map((r, i) => (

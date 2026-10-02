@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Utensils } from "lucide-react";
 import VaultThumb from "@/components/vault/VaultThumb";
+import { VaultChip } from "@/components/vault/EvidenceChip";
 import { recipeSquare, recipeThumb } from "@/lib/recipe-images";
 import { RECIPE_COUNT } from "@/data/library-counts";
 import { cn } from "@/lib/utils";
@@ -115,16 +116,14 @@ const LibraryHub = () => {
         >
           <RowThumb id={row.key} />
           <p className="flex-1 min-w-0 text-note font-bold leading-tight truncate">{row.title}</p>
-          <span
+          <VaultChip
             className={cn(
-              "text-label font-black rounded-full px-1.5 py-0.5 tabular-nums shrink-0 border",
-              row.chipGold
-                ? "text-gold bg-gold/10 border-gold/30"
-                : "text-muted-foreground bg-secondary/60 border-border",
+              "tabular-nums shrink-0",
+              row.chipGold ? "text-gold bg-gold/10 border-gold/30" : "text-muted-foreground bg-secondary/60 border-border",
             )}
           >
             {row.chip}
-          </span>
+          </VaultChip>
           <ChevronRight aria-hidden size={16} className="text-muted-foreground shrink-0" />
         </button>
       ))}

@@ -3,14 +3,15 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { VaultQuizQ } from "@/hooks/use-vault-articles";
+import AccentMark from "./AccentMark";
 
 /**
  * The check inside the Understand stage: two or three questions, answered,
- * then marked with the reason. Optional; it never gates the loop. The pick
- * wears the shelf's accent; right and wrong wear the app's own tokens, so a
- * green shelf can never be mistaken for a correct answer.
+ * then marked with the reason. Optional; it never gates the loop. A pick is
+ * the app's chosen option (gold tint); right and wrong wear the app's own
+ * tokens, so a green shelf can never be mistaken for a correct answer.
  */
-const LessonQuiz = ({ quiz, accent, onScore }: { quiz: VaultQuizQ[]; accent: string; onScore: (score: number) => void }) => {
+const LessonQuiz = ({ quiz, onScore }: { quiz: VaultQuizQ[]; onScore: (score: number) => void }) => {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -40,15 +41,16 @@ const LessonQuiz = ({ quiz, accent, onScore }: { quiz: VaultQuizQ[]; accent: str
                       type="button"
                       aria-pressed={isPicked}
                       onClick={() => setAnswers((p) => ({ ...p, [qi]: ci }))}
+                      // The app's option row: quiet card idle, gold tint when
+                      // chosen; the mark says right or wrong once checked.
                       className={cn(
-                        "press-row w-full min-h-11 text-left rounded-xl border px-3 py-2.5 text-dense flex items-start gap-2.5 transition-colors",
+                        "press-row w-full min-h-11 text-left rounded-xl px-3 py-2.5 text-dense flex items-start gap-2.5 transition-[border-color,background-color,box-shadow]",
                         marked
-                          ? isCorrect
-                            ? "border-xp-green/55 bg-xp-green/10"
-                            : "border-destructive/45 bg-destructive/10"
-                          : !isPicked && "border-border/50 bg-background/40",
+                          ? cn("surface-card surface-card-quiet", isCorrect ? "border-xp-green/55 bg-xp-green/10" : "border-destructive/45 bg-destructive/10")
+                          : isPicked
+                            ? "surface-tint-gold border-gold/70"
+                            : "surface-card surface-card-quiet",
                       )}
-                      style={!marked && isPicked ? { background: `${accent}18`, borderColor: `${accent}66` } : undefined}
                     >
                       {marked ? (
                         isCorrect ? (
@@ -57,11 +59,7 @@ const LessonQuiz = ({ quiz, accent, onScore }: { quiz: VaultQuizQ[]; accent: str
                           <XCircle aria-hidden size={16} className="mt-0.5 shrink-0 text-destructive" />
                         )
                       ) : (
-                        <span
-                          aria-hidden
-                          className="mt-0.5 h-4 w-4 rounded-full border shrink-0"
-                          style={isPicked ? { borderColor: accent, background: accent } : { borderColor: "hsl(var(--border))" }}
-                        />
+                        <AccentMark accent="hsl(var(--gold))" state={isPicked ? "done" : "idle"} className="mt-px" />
                       )}
                       <span className="text-foreground leading-snug">{choice}</span>
                     </button>

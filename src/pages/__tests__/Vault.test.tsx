@@ -23,10 +23,13 @@ describe("Vault index — one vocabulary", () => {
     }
   });
 
+  // Text lookups inside the section: an accessible-name query over every
+  // button on the page, 27 times, is what timed this file out under load.
   it("every path is a door row with a chevron", async () => {
     await screen.findByRole("heading", { name: "Paths" });
+    const section = screen.getByRole("heading", { name: "Paths" }).closest("section")!;
     for (const p of VAULT_PATHS) {
-      const row = screen.getByRole("button", { name: new RegExp(p.title) });
+      const row = within(section).getByText(p.title).closest("button")!;
       expect(row.className.split(" ")).toContain("press-row");
       expect(row.querySelector("svg.lucide-chevron-right")).not.toBeNull();
     }
@@ -34,13 +37,14 @@ describe("Vault index — one vocabulary", () => {
 
   it("shows six masters and folds the rest behind one toggle", async () => {
     await screen.findByRole("heading", { name: "Masters" });
-    for (const m of VAULT_MASTERS.slice(0, 6)) expect(screen.getByRole("button", { name: new RegExp(m.name) })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: new RegExp(VAULT_MASTERS[6].name) })).toBeNull();
-    const fold = screen.getByRole("button", { name: new RegExp(`All ${VAULT_MASTERS.length} thinkers`) });
+    const section = screen.getByRole("heading", { name: "Masters" }).closest("section")!;
+    for (const m of VAULT_MASTERS.slice(0, 6)) expect(within(section).getByText(m.name).closest("button")).not.toBeNull();
+    expect(within(section).queryByText(VAULT_MASTERS[6].name)).toBeNull();
+    const fold = within(section).getByText(`All ${VAULT_MASTERS.length} thinkers`).closest("button")!;
     expect(fold).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(fold);
     expect(fold).toHaveAttribute("aria-expanded", "true");
-    for (const m of VAULT_MASTERS) expect(screen.getByRole("button", { name: new RegExp(m.name) })).toBeInTheDocument();
+    for (const m of VAULT_MASTERS) expect(within(section).getByText(m.name)).toBeInTheDocument();
   });
 
   it("a cover is still the accordion: aria-expanded flips and the shelf opens under it", async () => {

@@ -47,7 +47,7 @@ LADDERS = [
         (50, "Zen Master", "🧘", "Fifty sessions."),
         (100, "Still Mind", "🪷", "A hundred sessions."),
         (200, "Deep Water", "🌌", "Two hundred sessions."),
-        (300, "Enlightened", "✨", "Three hundred sessions. Morning and evening both count."),
+        (300, "Enlightened", "✨", "Three hundred meditation sessions. Morning and evening both count."),
     ]),
     ("meditation_streak", "discipline", [
         (14, "Iron Mind", "🧠", "Fourteen days of meditation without missing one."),

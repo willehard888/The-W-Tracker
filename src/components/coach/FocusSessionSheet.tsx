@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeftRight, Loader2, Shuffle } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, Loader2, Shuffle } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { BottomSheet } from "@/components/ui/sheet-bottom";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,15 @@ import { goldThumb } from "@/components/coach/gold-lines";
 import { useAthleteProfile } from "@/hooks/use-athlete-profile";
 import { useRecentWorkoutLogs } from "@/hooks/use-workout-log";
 import { fmtKg } from "@/components/coach/session/SetRow";
-import { sessionMinutes, useBuildFocusSession, useMuscleBalance, useSwapExercise, type BuiltSession, type Feel, type Focus } from "@/hooks/use-focus-session";
+import { sessionMinutes, useBuildFocusSession, useMuscleBalance, useSwapExercise, type BuiltSession, type Feel, type Focus, type SessionBlock } from "@/hooks/use-focus-session";
 import { track, FUNNEL } from "@/lib/analytics";
+
+// A row opens the movement full size — the animated demonstration, the steps,
+// the cues — so nobody has to know an exercise by its name. The preview pulls
+// the coaching prose (130 KB); a builder nobody taps a row in pays nothing.
+const ExercisePreviewSheet = lazy(() =>
+  import("@/components/coach/ExercisePreviewSheet").then((m) => ({ default: m.ExercisePreviewSheet })),
+);
 
 /**
  * Train today — say what you want (the muscles, the minutes, how it should
@@ -105,6 +112,8 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
   const [preview, setPreview] = useState<BuiltSession | null>(null);
   const [dayIndex, setDayIndex] = useState(0);
   const [swapping, setSwapping] = useState<string | null>(null);
+  // The movement opened full size from its row (null while the sheet closes).
+  const [shown, setShown] = useState<SessionBlock | null>(null);
 
   const toggle = (f: Focus) => {
     hapticSelection();
@@ -180,7 +189,7 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
       onClose={onClose}
       label={title}
       title={title}
-      subtitle="Pick what you want to hit. The session builds itself."
+      subtitle="Tap any movement to see how it's done."
       height="tall"
     >
       <div className="space-y-5 pb-2">
@@ -295,22 +304,32 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
             </div>
             <ul className="mt-3 divide-y divide-border/35 border-y border-border/35">
               {preview.blocks.map((b, i) => (
-                <li key={b.slug} className={cn("flex items-center gap-3 py-2.5", i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${i * 45}ms` } : undefined}>
-                  <Thumb slug={b.slug} name={b.name} />
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-note font-bold leading-tight truncate">{b.name}</span>
-                    <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums">
-                      {b.sets} × {b.reps} · RPE {b.rpe} · rest {formatRest(b.rest_sec)}
+                <li key={b.slug} className={cn("flex items-center gap-1", i < 4 && "animate-fade-in-up")} style={i < 4 ? { animationDelay: `${i * 45}ms` } : undefined}>
+                  {/* Two sibling controls, never one inside the other: the row
+                      shows the movement, the ⇄ swaps it. */}
+                  <button
+                    type="button"
+                    onClick={() => setShown(b)}
+                    aria-label={`See ${b.name}`}
+                    className="press-row flex-1 min-w-0 min-h-11 flex items-center gap-3 py-2.5 text-left"
+                  >
+                    <Thumb slug={b.slug} name={b.name} />
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-note font-bold leading-tight truncate">{b.name}</span>
+                      <span className="block text-meta text-muted-foreground mt-0.5 tabular-nums">
+                        {b.sets} × {b.reps} · RPE {b.rpe} · rest {formatRest(b.rest_sec)}
+                      </span>
+                      {(() => {
+                        const last = lastBySlug.get(b.slug);
+                        return last && (last.weight != null || last.reps != null) ? (
+                          <span className="block text-label text-muted-foreground/75 mt-0.5 tabular-nums">
+                            Last {last.weight != null ? fmtKg(Number(last.weight)) : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}${last.weight == null ? " reps" : ""}` : ""} · {daysAgo(last.logged_on)}
+                          </span>
+                        ) : null;
+                      })()}
                     </span>
-                    {(() => {
-                      const last = lastBySlug.get(b.slug);
-                      return last && (last.weight != null || last.reps != null) ? (
-                        <span className="block text-label text-muted-foreground/75 mt-0.5 tabular-nums">
-                          Last {last.weight != null ? fmtKg(Number(last.weight)) : ""}{last.weight != null && last.reps != null ? " × " : ""}{last.reps != null ? `${last.reps}${last.weight == null ? " reps" : ""}` : ""} · {daysAgo(last.logged_on)}
-                        </span>
-                      ) : null;
-                    })()}
-                  </span>
+                    <ChevronRight aria-hidden size={14} className="text-muted-foreground/75 shrink-0" />
+                  </button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -347,6 +366,17 @@ const FocusSessionSheet = ({ open, onClose, onUse, title = "Train today" }: Prop
           </div>
         )}
       </div>
+      {shown && (
+        <Suspense fallback={null}>
+          <ExercisePreviewSheet
+            open={!!shown}
+            onClose={() => setShown(null)}
+            block={shown}
+            source="builder"
+            onSwap={!busy && !swapping ? () => swapRow(shown.slug) : undefined}
+          />
+        </Suspense>
+      )}
     </BottomSheet>
   );
 };

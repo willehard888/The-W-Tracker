@@ -53,7 +53,7 @@ export const ExercisePreviewSheet = ({
   /** Null while the sheet animates shut — the last block is already gone. */
   block: ProgramBlock | null;
   /** Which surface opened it. A funnel does not need to know the movement. */
-  source: "program" | "runner";
+  source: "program" | "runner" | "builder";
   /** Where to write a logged result. Omitted while browsing a future week. */
   logging?: { programId: string; week: number; dayIndex: number };
   /** Hand edits, offered only while nothing is logged for this movement. */

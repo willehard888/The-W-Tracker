@@ -9,6 +9,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { SHARED_HABIT_BY_KEY, isBonusHabit } from "../_shared/checkin-habits.ts";
 import { gatherHabitGaps } from "../_shared/habit-gaps.ts";
+import { gatherAthletePack, emptyPack } from "../_shared/athlete-pack.ts";
 import { AI_CONSENT_REQUIRED, hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 
 const corsHeaders = {
@@ -113,13 +114,16 @@ Deno.serve(async (req) => {
     // Athlete context + habit history in parallel. The gaps read excludes
     // nothing explicitly, but at prefetch time today's row simply isn't
     // there yet — history is what we want from it anyway.
-    const [{ data: athlete }, gaps] = await Promise.all([
+    const [{ data: athlete }, gaps, pack] = await Promise.all([
       supabase
         .from("coach_athlete_profile")
         .select("tone_pref, i_am, language_pref")
         .eq("user_id", user.id)
         .maybeSingle(),
       gatherHabitGaps(supabase, user.id, { days: 14 }).catch(() => null),
+      // Steps, weight and the diary's week — one line each, so the reaction can
+      // name the number that mattered today.
+      gatherAthletePack(supabase, user.id, { today: new Date().toISOString().slice(0, 10), scope: "light" }).catch(() => emptyPack("")),
     ]);
 
     const tone = TONE_HINT[athlete?.tone_pref ?? "calm_mentor"] ?? TONE_HINT.calm_mentor;
@@ -146,6 +150,9 @@ Deno.serve(async (req) => {
       sleepH != null ? `Sleep last night: ${sleepH}h` : null,
       `Trained today: ${workout ? "yes" : "no"}`,
       why ? `Their WHY (who they're becoming): "${why}"` : null,
+      pack.day?.steps.avg7 != null ? `Steps this week: avg ${pack.day.steps.avg7}/day${pack.day.steps.yesterday != null ? ` (${pack.day.steps.yesterday} yesterday)` : ""}` : null,
+      pack.day?.body.massKg != null ? `Body weight: ${pack.day.body.massKg} kg${pack.day.body.delta28 != null ? ` (${pack.day.body.delta28 >= 0 ? "+" : ""}${pack.day.body.delta28} kg in 28 days)` : ""}` : null,
+      pack.diet ? `Food diary this week: ${pack.diet.daysLogged7}/7 days logged, avg ${pack.diet.avg.kcal ?? "?"} kcal, ${pack.diet.avg.protein ?? "?"} g protein${pack.diet.target?.protein ? ` / ${pack.diet.target.protein} g target, hit on ${pack.diet.proteinDaysHit} days` : ""}` : null,
     ].filter(Boolean).join("\n");
 
     // Per-member daily cap before the model call (same counter as the chat coach).

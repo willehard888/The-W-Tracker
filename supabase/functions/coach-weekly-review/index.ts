@@ -6,6 +6,7 @@
 // overload rule says next — the model only adds a one-sentence verdict.
 import { hasAiConsent, openrouterFetch } from "../_shared/openrouter.ts";
 import { gatherNextLoads, gatherProgression, buildNextLoadsBlock } from "../_shared/progression.ts";
+import { gatherAthletePack, buildPackBlocks, emptyPack } from "../_shared/athlete-pack.ts";
 import { goalLabel } from "../_shared/coach-persona.ts";
 import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
     const since = new Date(Date.now() - 7 * 86400_000).toISOString();
     const sinceDate = since.slice(0, 10);
 
-    const [checkinsRes, reflectionsRes, athleteRes, goalRes, nextLoads, progression] = await Promise.all([
+    const [checkinsRes, reflectionsRes, athleteRes, goalRes, nextLoads, progression, pack] = await Promise.all([
       supabase.from("daily_checkins")
         .select("checked_in_at, sleep_hours, workout, sport, cold_shower, healthy_food, hydration_liters, xp_earned")
         .eq("user_id", userId).gte("checked_in_at", since).order("checked_in_at", { ascending: true }),
@@ -93,9 +94,12 @@ Deno.serve(async (req) => {
       supabase.from("coach_athlete_profile").select("primary_goal, tone_pref, i_am").eq("user_id", userId).maybeSingle(),
       supabase.from("coach_goals").select("title, target_value, current_value, unit, deadline")
         .eq("user_id", userId).eq("status", "active").limit(1).maybeSingle(),
-      gatherNextLoads(supabase, userId, { days: 7 }).catch(() => []),
+      gatherNextLoads(supabase, userId).catch(() => []),
       gatherProgression(supabase, userId, { limit: 120 }).catch(() => []),
+      // The whole athlete — the review used to read sleep and check-ins only.
+      gatherAthletePack(supabase, userId, { today: sinceDate && new Date().toISOString().slice(0, 10), scope: "full", night: true, habits: true }).catch(() => emptyPack(new Date().toISOString().slice(0, 10))),
     ]);
+    const packBlock = buildPackBlocks(pack);
     // The week's lifts, stored as data: the next load per movement (the rule's
     // number and reason) and whether its last session was a PR.
     const prBySlug = new Set(progression.filter((e) => e.isPR).map((e) => e.name));
@@ -158,7 +162,7 @@ REFLECTIONS:
 ${reflections.map((r) => `- ${r.reflection_date}: energy ${r.energy_1to5}/5, sleep ${r.sleep_quality_1to5 ?? "?"}/5, RPE ${r.rpe_1to10 ?? "?"}/10. Win: "${r.win ?? "—"}". Friction: "${r.friction ?? "—"}"`).join("\n") || "(none)"}
 NORTH STAR: ${goal ? `${goal.title} → ${goal.current_value ?? "?"}/${goal.target_value}${goal.unit}` : "none"}
 COMPUTED PERFORMANCE SCORE: ${performance_score}/100
-${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${liftsBlock ? `\n${liftsBlock}\n` : ""}
+${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${liftsBlock ? `\n${liftsBlock}\n` : ""}${packBlock ? `\n${packBlock}\n` : ""}
 Return a sharp meta-review. driver_of_week = the SINGLE biggest factor that moved the score this week (positive or negative). next_week_focus = ≤3 sentences of crisp prescription. program_tweak = ONE concrete adjustment if data warrants it (e.g. "Drop Friday VO₂ — RPE creeping above 9").${liftsBlock ? " lifts_note = ONE sentence on the lifts: which earned a plate, which hold, the one to watch — using only the NEXT LOADS numbers." : ""}`;
 
         const r = await openrouterFetch(OPENROUTER_API_KEY, {

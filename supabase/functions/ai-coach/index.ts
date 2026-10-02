@@ -20,6 +20,7 @@ import {
 } from "../_shared/coach-persona.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock, gatherNextLoads, buildNextLoadsBlock } from "../_shared/progression.ts";
+import { gatherAthletePack, buildPackBlocks } from "../_shared/athlete-pack.ts";
 import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
@@ -462,7 +463,7 @@ Deno.serve(async (req) => {
     const program: any = programRes.data ?? null;
 
     const tzOffset = typeof body?.tz_offset === "number" ? body.tz_offset : undefined;
-    const [situation, logsRes, nextLoads] = await Promise.all([
+    const [situation, logsRes, nextLoads, pack] = await Promise.all([
       gatherSituation(supabase, userId, {
         tzOffsetMinutes: tzOffset,
         streak: profile?.streak ?? null,
@@ -477,6 +478,10 @@ Deno.serve(async (req) => {
         : Promise.resolve({ data: [] as any[] }),
       // The load the app's own rule says next, per lifted movement (28 days).
       gatherNextLoads(supabase, userId).catch(() => []),
+      // Everything else the member tracks — steps, weight, the food diary,
+      // reflections, today's missions, the last review (night/workouts/habits
+      // are already gathered above).
+      gatherAthletePack(supabase, userId, { today: todayDate, scope: "full" }).catch(() => null),
     ]);
     const allLogs: any[] = (logsRes as any).data ?? [];
     const recentLogs = allLogs.slice(0, 5);
@@ -519,7 +524,8 @@ Deno.serve(async (req) => {
     const causalBlock = buildCausalBlock(nightSignals as any);
     const workoutsBlock = buildWorkoutsBlock(await gatherHealthWorkouts(supabase, 7), (id) => sportName(id) ?? id);
     // The binding numbers first, the digest second: the model reads the rule before the trend.
-    const workoutLogBlock = [nextLoadsBlock, progressionBlock, causalBlock, workoutsBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
+    const packBlock = pack ? buildPackBlocks(pack) : "";
+    const workoutLogBlock = [nextLoadsBlock, progressionBlock, causalBlock, workoutsBlock, packBlock].filter(Boolean).map((b) => `\n\n${b}`).join("");
 
     // Long-term memory block — injected right after the athlete file so the
     // coach actually KNOWS the athlete across sessions.

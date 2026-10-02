@@ -29,6 +29,7 @@ type ProactiveUser = {
   timezone: string | null;
   last_active_at: string | null;
   notification_prefs: unknown;
+  ai_consent_version?: number | null;
 };
 
 const corsHeaders = {
@@ -115,7 +116,7 @@ Deno.serve(async (req) => {
     users = await fetchAll<ProactiveUser>((from, to) =>
       supabase
         .from("profiles")
-        .select("user_id, username, status_tier, level, streak, timezone, last_active_at, notification_prefs")
+        .select("user_id, username, status_tier, level, streak, timezone, last_active_at, notification_prefs, ai_consent_version")
         .or(`streak.gt.0,last_active_at.gte.${threeDaysAgoISO}`)
         .order("user_id")
         .range(from, to),

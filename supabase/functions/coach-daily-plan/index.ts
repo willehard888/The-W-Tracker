@@ -10,6 +10,7 @@ import { sportName } from "../_shared/sports.ts";
 import { buildPersonaBlock, buildHolisticContext, goalLabel } from "../_shared/coach-persona.ts";
 import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
 import { gatherProgression, buildProgressionBlock, gatherNextLoads, buildNextLoadsBlock } from "../_shared/progression.ts";
+import { gatherAthletePack, buildPackBlocks, emptyPack } from "../_shared/athlete-pack.ts";
 import { gatherHabitGaps, buildHabitGapsBlock } from "../_shared/habit-gaps.ts";
 import { programWeekState } from "../_shared/program-week.ts";
 import { clampTzOffset, localDayKey, localWeekday } from "../_shared/local-day.ts";
@@ -684,6 +685,7 @@ Deno.serve(async (req) => {
         const nightSignals = await gatherNightSignals(supabase, userId).catch(() => ({ hasData: false }));
         const causalBlock = buildCausalBlock(nightSignals as any);
         const workoutsBlock = buildWorkoutsBlock(await gatherHealthWorkouts(supabase, 7).catch(() => []), (id) => sportName(id) ?? id);
+        const packBlock = buildPackBlocks(await gatherAthletePack(supabase, userId, { today: localDayKey(tzOffsetMinutes), scope: "full" }).catch(() => emptyPack(localDayKey(tzOffsetMinutes))));
         const gapsBlock = buildHabitGapsBlock(habitGaps);
         // The athlete's own logged sets — per-lift trend, PRs and stalls. The
         // same block the chat coach and the morning brief already read. Fails
@@ -696,6 +698,7 @@ Deno.serve(async (req) => {
         const prompt = buildPrompt(profile, program, todayDay, checkins, readiness, adjustment, athlete, goal, memories, skipStats, habitContext, progressionBlock)
           + (causalBlock ? `\n\n${causalBlock}\n\nIf recovery is clearly suppressed vs baseline, bias today toward recovery/lighter load and say why in the rationale.` : "")
           + (workoutsBlock ? `\n\n${workoutsBlock}` : "")
+          + (packBlock ? `\n\n${packBlock}` : "")
           + (gapsBlock ? `\n\n${gapsBlock}` : "");
         const aiResp = await openrouterFetch(OPENROUTER_API_KEY, {
             model: "google/gemini-2.5-flash",

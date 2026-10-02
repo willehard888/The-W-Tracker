@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     for (const uid of userIds) {
       try {
         // No consent, no model: the deterministic insight below still lands.
-        const { data: consentRow } = await supabase.from("profiles").select("ai_consent_version").eq("user_id", uid).maybeSingle();
+        const { data: consentRow } = await sb.from("profiles").select("ai_consent_version").eq("user_id", uid).maybeSingle();
         const aiOk = consentOk(consentRow?.ai_consent_version);
         const [checkinsR, nightsR, daysR, reflR, habitsR, lessonsR, liftsR, tribesR, friendsR, athleteR, mealsR, targetsR] =
           await Promise.all([

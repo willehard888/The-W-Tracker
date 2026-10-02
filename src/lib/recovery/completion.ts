@@ -21,6 +21,7 @@
 // That is a missing convenience, not a missing reward.
 import { readLocal, writeLocal } from "@/lib/storage";
 import { localDateKey } from "@/lib/date";
+import { supabase } from "@/integrations/supabase/client";
 
 const KEY = "recovery-done-on";
 
@@ -100,4 +101,49 @@ export const recoveryDoneToday = (when: Date = new Date()): boolean =>
 export const habitsEarnedToday = (when: Date = new Date()): string[] => {
   const today = localDateKey(when);
   return HABITS.filter((h) => readLocal(habitKey(h)) === today);
+};
+
+/**
+ * The finished session as a row the coach can read (`recovery_sessions`). The
+ * local mark above still earns the check-in tick first; this is the record —
+ * fire-and-forget, never awaited by the UI, never blocks the tick. The table
+ * and its own-row policies have existed since 2026-09-22; nothing wrote it.
+ */
+export const recordRecoverySession = async (s: {
+  source: "post_workout" | "rest_day" | "manual";
+  programId?: string | null;
+  week?: number | null;
+  dayIndex?: number | null;
+  areas: string[];
+  movementIds: string[];
+  wasGeneral: boolean;
+  length: "quick" | "standard" | "deep";
+  plannedSec: number;
+  actualSec: number;
+  completedMovements: number;
+  startedAt: Date;
+}): Promise<void> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("recovery_sessions").insert({
+      user_id: user.id,
+      source: s.source,
+      program_id: s.programId ?? null,
+      week: s.week ?? null,
+      day_index: s.dayIndex ?? null,
+      areas: s.areas,
+      movement_ids: s.movementIds,
+      was_general: s.wasGeneral,
+      length: s.length,
+      planned_sec: Math.max(0, Math.round(s.plannedSec)),
+      actual_sec: Math.max(0, Math.round(s.actualSec)),
+      status: "completed",
+      completed_movements: Math.max(0, s.completedMovements),
+      started_at: s.startedAt.toISOString(),
+      ended_at: new Date().toISOString(),
+    });
+  } catch {
+    // The record is for the coach's eyes; a lost row costs nobody their tick.
+  }
 };

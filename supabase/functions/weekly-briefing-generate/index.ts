@@ -1,5 +1,6 @@
 // Weekly Briefing Generator — runs Sundays via pg_cron
 // Generates AI-powered weekly summary for each Elite user with ≥3 checkins this week
+import { gatherAthletePack, buildPackBlocks, emptyPack } from "../_shared/athlete-pack.ts";
 import { consentOk, openrouterFetch } from "../_shared/openrouter.ts";
 import { describeVital, meanOfPresent } from "../_shared/measurement.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -297,7 +298,10 @@ ${(checkins as Checkin[]).map((c) => `${c.checked_in_at.slice(0, 10)}: ${c.xp_ea
 ${journalSnippets.length > 0 ? `Journal excerpts:\n${journalSnippets.join("\n")}` : ""}`;
 
       // No consent, no model (App Review 5.1.2(i)): this member's briefing is skipped.
-      const aiOk = consentOk((p as { ai_consent_version?: number | null }).ai_consent_version);
+      const aiOk = consentOk((profile as { ai_consent_version?: number | null }).ai_consent_version);
+      // The athlete's week beyond check-ins: activity, body, diet, reflections,
+      // habits, lifts' last review. Service client → readers keyed on user_id.
+      const packBlock = buildPackBlocks(await gatherAthletePack(supabase, profile.user_id, { today: new Date().toISOString().slice(0, 10), scope: "full", habits: true }).catch(() => emptyPack("")));
       const aiResp = await openrouterFetch(OPENROUTER_API_KEY, {
           model: "google/gemini-3-flash-preview",
           messages: [
@@ -315,7 +319,7 @@ Rules:
   "never mention you are an AI" rule that contradicted
   _shared/coach-persona.ts and the app's AI-transparency stance.)`,
             },
-            { role: "user", content: userContext },
+            { role: "user", content: packBlock ? `${userContext}\n\n${packBlock}` : userContext },
           ],
           tools: [briefingTool],
           tool_choice: { type: "function", function: { name: "emit_briefing" } },

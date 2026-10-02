@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportBreakdown, sportName } from "../_shared/sports.ts";
 import { gatherSituation, buildSituationBlock } from "../_shared/situation.ts";
 import { gatherProgression, buildProgressionBlock, gatherNextLoads, buildNextLoadsBlock } from "../_shared/progression.ts";
+import { gatherAthletePack, buildPackBlocks, emptyPack } from "../_shared/athlete-pack.ts";
 import { gatherNightSignals, buildCausalBlock, gatherHealthWorkouts, buildWorkoutsBlock } from "../_shared/health-causal.ts";
 import { INNER_WORK_BLOCK } from "../_shared/inner-work-catalog.ts";
 import { LONGEVITY_BLOCK } from "../_shared/longevity-catalog.ts";
@@ -161,6 +162,9 @@ Deno.serve(async (req) => {
     // Sessions the watch recorded, by sport — a Polar tennis match the member
     // never checked in for is still a tennis match to the coach.
     const workoutsBlock = buildWorkoutsBlock(healthDays, (id) => sportName(id) ?? id);
+    // The rest of the athlete: steps, weight, the food diary, reflections, the
+    // last review — and the habit truth the brief never had.
+    const packBlock = buildPackBlocks(await gatherAthletePack(sb, uid, { today, scope: "full", habits: true }).catch(() => emptyPack(today)));
 
     // Whealth Index snapshot — the morning brief cites the real computed
     // state, not vibes. Fail-open.
@@ -198,7 +202,7 @@ Athlete:
 Program week: ${weekIdx}
 Today's prescribed session: ${sessionLine}
 Recent: avg sleep ${avgSleep ?? "?"}h (last night ${lastSleep ?? "?"}h), ${workouts7}/7 workouts${sports7 ? ` (${sports7})` : ""}.${lastScoreLine}
-${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${whealthBlock}
+${situationBlock ? `\n${situationBlock}\n` : ""}${progressionBlock ? `\n${progressionBlock}\n` : ""}${causalBlock ? `\n${causalBlock}\n` : ""}${workoutsBlock ? `\n${workoutsBlock}\n` : ""}${packBlock ? `\n${packBlock}\n` : ""}${whealthBlock}
 ${INNER_WORK_BLOCK}
 ${LONGEVITY_BLOCK}
 ${WISDOM_BLOCK}

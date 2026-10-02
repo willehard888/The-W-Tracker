@@ -18,7 +18,9 @@ interface NightRow {
   sleep_total_min: number | null;
   sleep_deep_min: number | null;
   sleep_rem_min: number | null;
+  sleep_core_min: number | null;
   awake_min: number | null;
+  hrv_sdnn: number | null;
   factors: string[] | null;
 }
 
@@ -34,7 +36,9 @@ const col = (rows: NightRow[], k: keyof NightRow) =>
 export interface NightSignals {
   hasData: boolean;
   last?: NightRow;
-  baseline?: { restingHr: number | null; respRate: number | null; sleepMin: number | null; deepMin: number | null; remMin: number | null };
+  baseline?: { restingHr: number | null; respRate: number | null; sleepMin: number | null; deepMin: number | null; remMin: number | null; hrv: number | null };
+  /** The last 7 nights vs the 7 before them — the direction, not one night's noise. */
+  week?: { nights: number; sleepMin: number | null; hrv: number | null; restingHr: number | null; prevSleepMin: number | null; prevHrv: number | null; prevRestingHr: number | null };
   training?: { workoutMin: number | null; activeKcal: number | null; distanceM: number | null; lastRpe: number | null; sources: string[] };
 }
 
@@ -127,6 +131,7 @@ export async function gatherNightSignals(supabase: AnyClient, _userId: string): 
       };
     } catch { /* ignore */ }
 
+    const week7 = rows.slice(0, 7), prev7 = rows.slice(7, 14);
     return {
       hasData: true,
       last,
@@ -136,6 +141,16 @@ export async function gatherNightSignals(supabase: AnyClient, _userId: string): 
         sleepMin: median(col(prior, "sleep_total_min")),
         deepMin: median(col(prior, "sleep_deep_min")),
         remMin: median(col(prior, "sleep_rem_min")),
+        hrv: median(col(prior, "hrv_sdnn")),
+      },
+      week: {
+        nights: week7.length,
+        sleepMin: median(col(week7, "sleep_total_min")),
+        hrv: median(col(week7, "hrv_sdnn")),
+        restingHr: median(col(week7, "resting_hr")),
+        prevSleepMin: median(col(prev7, "sleep_total_min")),
+        prevHrv: median(col(prev7, "hrv_sdnn")),
+        prevRestingHr: median(col(prev7, "resting_hr")),
       },
       training,
     };
@@ -164,6 +179,10 @@ export function buildCausalBlock(s: NightSignals): string {
   if (l.sleep_total_min != null) {
     const d = b?.sleepMin != null ? l.sleep_total_min - b.sleepMin : null;
     lines.push(`- Sleep: ${hm(l.sleep_total_min)}${l.sleep_deep_min != null ? `, deep ${hm(l.sleep_deep_min)}` : ""}${l.sleep_rem_min != null ? `, REM ${hm(l.sleep_rem_min)}` : ""}${l.awake_min ? `, awake ${hm(l.awake_min)}` : ""}${d != null ? ` (${d >= 0 ? "+" : ""}${Math.round(d)}min vs baseline)` : ""}`);
+  }
+  if (l.hrv_sdnn != null) {
+    const d = b?.hrv != null && b.hrv > 0 ? Math.round(((l.hrv_sdnn - b.hrv) / b.hrv) * 100) : null;
+    lines.push(`- HRV (SDNN): ${Math.round(l.hrv_sdnn)}ms${d != null ? ` (${d >= 0 ? "+" : ""}${d}% vs baseline ${Math.round(b!.hrv!)}ms)` : ""}`);
   }
   if (l.respiratory_rate != null) {
     lines.push(`- Respiratory rate: ${l.respiratory_rate}/min${respDelta != null ? ` (${respDelta >= 0 ? "+" : ""}${respDelta.toFixed(1)} vs baseline)` : ""}`);
@@ -202,13 +221,21 @@ export function buildCausalBlock(s: NightSignals): string {
   const factorsLine = l.factors && l.factors.length
     ? `\nUser tagged last night: ${l.factors.join(", ")}. Use this as ground truth for the cause.`
     : "";
+  // The week's direction: seven nights against the seven before them.
+  const w = s.week;
+  const pct = (now: number | null, prev: number | null) => (now != null && prev != null && prev > 0 ? Math.round(((now - prev) / prev) * 100) : null);
+  const weekParts: string[] = [];
+  if (w?.sleepMin != null) weekParts.push(`sleep ${hm(w.sleepMin)}/night${pct(w.sleepMin, w.prevSleepMin) != null ? ` (${pct(w.sleepMin, w.prevSleepMin)! >= 0 ? "+" : ""}${pct(w.sleepMin, w.prevSleepMin)}% vs the week before)` : ""}`);
+  if (w?.hrv != null) weekParts.push(`HRV ${Math.round(w.hrv)}ms${pct(w.hrv, w.prevHrv) != null ? ` (${pct(w.hrv, w.prevHrv)! >= 0 ? "+" : ""}${pct(w.hrv, w.prevHrv)}%)` : ""}`);
+  if (w?.restingHr != null) weekParts.push(`resting HR ${Math.round(w.restingHr)}bpm${w.prevRestingHr != null ? ` (${w.restingHr - w.prevRestingHr >= 0 ? "+" : ""}${Math.round(w.restingHr - w.prevRestingHr)})` : ""}`);
+  const weekLine = w && w.nights >= 3 && weekParts.length ? `\nLast ${w.nights} nights: ${weekParts.join(" · ")}.` : "";
   const flagLine = flags.length ? `\nDisruption flags: ${flags.join(", ")}.` : "";
   const alcoholLine = alcoholSignature
     ? `\n⚠️ This matches the classic ALCOHOL / late-heavy-meal signature (elevated resting HR + respiratory rate + suppressed deep/REM, not explained by a hard workout). Raise it as the leading hypothesis and ask them to confirm ("did you drink or eat late last night?").`
     : "";
 
   return `LAST NIGHT'S RECOVERY (from Apple Health — reason about CAUSES, not just numbers):
-${lines.join("\n")}${trainLine}${flagLine}${alcoholLine}${factorsLine}
+${lines.join("\n")}${trainLine}${weekLine}${flagLine}${alcoholLine}${factorsLine}
 
 How to use this — CAUSAL reasoning (works for gym AND sport):
 - Connect the signals to a likely CAUSE vs the athlete's own baseline. Separate a HARD session (raises resting HR but usually preserves deep sleep) from a disruptor like ALCOHOL / a late heavy meal / high stress / illness / travel (raises resting HR AND respiratory rate AND fragments/suppresses deep+REM). If the athlete tagged a factor, treat it as the cause.

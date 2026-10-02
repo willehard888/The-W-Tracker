@@ -51,7 +51,7 @@ import {
   type RecoveryLength,
   type Soreness,
 } from "@/lib/recovery/build-session";
-import { markRecoveryDone, recoveryDaysThisWeek } from "@/lib/recovery/completion";
+import { markRecoveryDone, recordRecoverySession, recoveryDaysThisWeek } from "@/lib/recovery/completion";
 import { clearDeferredRecovery } from "@/lib/recovery/deferred";
 import { preferredLength, rememberLength } from "@/lib/recovery/preferences";
 import { whyThis } from "@/lib/recovery/explain";
@@ -286,6 +286,20 @@ export default function Recovery() {
     // Before the events: `track` is fire-and-forget by contract, and what earns
     // the athlete their check-in tick must not wait on a network call.
     markRecoveryDone(new Date(), routine?.habit);
+    void recordRecoverySession({
+      source,
+      programId: source === "post_workout" ? programId : null,
+      week: source === "post_workout" ? week ?? null : null,
+      dayIndex: source === "post_workout" ? day ?? null : null,
+      areas: session.areas,
+      movementIds: session.movements.map((m) => m.id),
+      wasGeneral: session.general,
+      length,
+      plannedSec: session.totalSec,
+      actualSec: Math.round((Date.now() - startedAt.current) / 1000),
+      completedMovements: session.movements.length,
+      startedAt: new Date(startedAt.current),
+    });
     clearDeferredRecovery();
     rememberLength(length);
     void track(FUNNEL.recoveryCompleted, {
@@ -296,7 +310,7 @@ export default function Recovery() {
       movements: session.movements.length,
       seconds: Math.round((Date.now() - startedAt.current) / 1000),
     });
-  }, [length, source, session, routine]);
+  }, [length, source, session, routine, programId, week, day]);
 
   const advance = useCallback(() => {
     const current = session.movements[index];
